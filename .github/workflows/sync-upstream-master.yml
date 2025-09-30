@@ -1,0 +1,31 @@
+name: Daily sync master (with submodules)
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: master
+          submodules: false
+      - name: Add upstream and fetch only master
+        run: |
+          git remote add upstream "${{ github.event.repository.parent.clone_url }}" || true
+          git fetch --prune upstream +refs/heads/master:refs/remotes/upstream/master
+      - name: Reset master to upstream/master
+        run: |
+          git checkout -B master
+          git reset --hard upstream/master
+      - name: Update submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+      - name: Push
+        run: |
+          git push origin master || git push origin +master
