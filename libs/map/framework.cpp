@@ -2590,6 +2590,18 @@ void Framework::SetCyclingEnabled(bool enabled)
   Invalidate();
 }
 
+bool Framework::IsFogOfWarEnabled()
+{
+    bool enabled;
+    return settings::Get(kFogOfWarEnabledKey, enabled) && enabled;
+}
+
+void Framework::SetFogOfWarEnabled(bool enabled)
+{
+    settings::Set(kFogOfWarEnabledKey, enabled);
+    Invalidate();
+}
+
 void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition)
 {
   if (m_drapeEngine != nullptr)

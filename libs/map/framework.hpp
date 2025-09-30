@@ -747,6 +747,9 @@ public:
   static bool IsCyclingEnabled();
   void SetCyclingEnabled(bool enabled);
 
+  static bool IsFogOfWarEnabled();
+  void SetFogOfWarEnabled(bool enabled);
+
   static dp::ApiVersion LoadPreferredGraphicsAPI();
   static void SavePreferredGraphicsAPI(dp::ApiVersion apiVersion);
 

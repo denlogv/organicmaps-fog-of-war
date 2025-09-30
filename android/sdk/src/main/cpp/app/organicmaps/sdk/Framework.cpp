@@ -1569,6 +1569,16 @@ JNIEXPORT jboolean JNICALL Java_app_organicmaps_sdk_Framework_nativeIsCyclingLay
   return static_cast<jboolean>(frm()->IsCyclingEnabled());
 }
 
+JNIEXPORT jboolean JNICALL Java_app_organicmaps_sdk_Framework_nativeIsFogOfWarEnabled(JNIEnv *, jclass)
+{
+  return static_cast<jboolean>(frm()->IsFogOfWarEnabled());
+}
+
+JNIEXPORT void JNICALL Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarEnabled(JNIEnv *, jclass, jboolean enabled)
+{
+  frm()->SetFogOfWarEnabled(enabled);
+}
+
 JNIEXPORT jboolean JNICALL Java_app_organicmaps_sdk_Framework_nativeNeedUpdateForRoutes(JNIEnv *, jclass)
 {
   return frm()->NeedUpdateForRoutes();

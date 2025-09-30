@@ -9,6 +9,7 @@
 
 std::string_view constexpr kHikingEnabledKey = "HikingEnabled";
 std::string_view constexpr kCyclingEnabledKey = "CyclingEnabled";
+std::string_view constexpr kFogOfWarEnabledKey = "FogOfWarEnabled";
 
 namespace dp
 {
