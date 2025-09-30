@@ -1,0 +1,40 @@
+name: Daily sync master (with submodules)
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      UPSTREAM_URL: https://github.com/organicmaps/organicmaps.git
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: master
+          submodules: false
+      - name: Configure Git identity
+        run: |
+          git config user.name  "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Add upstream and fetch only master
+        run: |
+          git remote set-url upstream "$UPSTREAM_URL" 2>/dev/null || git remote add upstream "$UPSTREAM_URL"
+          git config remote.upstream.tagOpt --no-tags
+          git fetch --depth=50 upstream master
+      - name: Rebase fork master on upstream/master
+        run: |
+          git checkout master
+          git rebase upstream/master
+      - name: Update submodules
+        run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 \
+            submodule update --init --recursive \
+            --depth=1 --recommend-shallow --jobs 8
+      - name: Push
+        run: |
+          git push origin master || git push origin master --force-with-lease
