@@ -64,6 +64,7 @@ enum BackgroundMode
 {
   Default = 0,
   Satellite,
+  FogOfWar,
 
   Count
 };

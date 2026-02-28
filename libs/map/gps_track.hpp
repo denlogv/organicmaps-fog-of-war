@@ -64,6 +64,13 @@ public:
     m_collection->ForEach(fn);
   }
 
+  template <class FnT>
+  void ForEachPointSafe(FnT && fn) const
+  {
+    if (m_collection)
+      m_collection->ForEach(fn);
+  }
+
 private:
   DISALLOW_COPY_AND_MOVE(GpsTrack);
 

@@ -38,6 +38,12 @@ public:
     m_track.ForEachPoint(fn);
   }
 
+  template <class FnT>
+  void ForEachTrackPointSafe(FnT && fn) const
+  {
+    m_track.ForEachPointSafe(fn);
+  }
+
 private:
   GpsTracker();
 

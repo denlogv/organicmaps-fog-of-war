@@ -107,7 +107,8 @@ public:
     VisualScaleChanged,
     SetTileBackgroundData,
     SetTileBackgroundMode,
-    AssignTileBackgroundTexture
+    AssignTileBackgroundTexture,
+    EnableFogOfWar
   };
 
   virtual ~Message() = default;

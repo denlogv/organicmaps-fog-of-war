@@ -62,6 +62,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -741,6 +742,26 @@ public:
 
   static bool IsCyclingEnabled();
   void SetCyclingEnabled(bool enabled);
+
+  static bool LoadFogOfWarEnabled();
+  static void SaveFogOfWarEnabled(bool enabled);
+  void EnableFogOfWar(bool enable);
+
+  static int GetFogOfWarRadius();
+  void SetFogOfWarRadius(int meters);
+  static int GetFogOfWarOpacity();
+  void SetFogOfWarOpacity(int percent);
+  static int GetFogOfWarColor();
+  void SetFogOfWarColor(int colorIndex);
+
+  // Cached track segments (Mercator) for fog-of-war tile generation.
+  // Each inner vector is a contiguous segment of points.
+  // Populated on the main thread, read on the render thread.
+  std::mutex m_fogTrackPointsMutex;
+  std::vector<std::vector<m2::PointD>> m_fogTrackSegments;
+  std::optional<m2::PointD> m_fogCurrentPosition;
+  void UpdateFogTrackPoints();
+  void InvalidateFogTiles();
 
   static dp::ApiVersion LoadPreferredGraphicsAPI();
   static void SavePreferredGraphicsAPI(dp::ApiVersion apiVersion);

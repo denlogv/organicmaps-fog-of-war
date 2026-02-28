@@ -105,6 +105,10 @@ std::string_view constexpr kTrafficEnabledKey = "TrafficEnabled";
 std::string_view constexpr kTransitSchemeEnabledKey = "TransitSchemeEnabled";
 std::string_view constexpr kIsolinesEnabledKey = "IsolinesEnabled";
 std::string_view constexpr kOutdoorsEnabledKey = "OutdoorsEnabled";
+std::string_view constexpr kFogOfWarEnabledKey = "FogOfWarEnabled";
+std::string_view constexpr kFogOfWarRadiusKey = "FogOfWarRadius";
+std::string_view constexpr kFogOfWarOpacityKey = "FogOfWarOpacity";
+std::string_view constexpr kFogOfWarColorKey = "FogOfWarColor";
 std::string_view constexpr kTrafficSimplifiedColorsKey = "TrafficSimplifiedColors";
 std::string_view constexpr kLargeFontsSize = "LargeFontsSize";
 std::string_view constexpr kTranslitMode = "TransliterationMode";
@@ -200,6 +204,28 @@ void Framework::OnLocationUpdate(GpsInfo const & info)
 #endif
 
   m_routingManager.OnLocationUpdate(rInfo);
+
+  // Update fog-of-war current position and invalidate tiles.
+  if (LoadFogOfWarEnabled())
+  {
+    auto const pos = mercator::FromLatLon(rInfo.m_latitude, rInfo.m_longitude);
+    bool needInvalidate = false;
+    {
+      std::lock_guard lock(m_fogTrackPointsMutex);
+      if (!m_fogCurrentPosition.has_value())
+        needInvalidate = true;
+      else
+      {
+        // Invalidate when moved more than ~100m (avoid constant re-render).
+        constexpr double kMinMoveMercator = 100.0 / 111320.0;
+        double const dist = m_fogCurrentPosition->Length(pos);
+        needInvalidate = dist > kMinMoveMercator;
+      }
+      m_fogCurrentPosition = pos;
+    }
+    if (needInvalidate)
+      InvalidateFogTiles();
+  }
 }
 
 void Framework::OnCompassUpdate(CompassInfo const & info)
@@ -1500,6 +1526,187 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
 
   auto tileBackgroundReadFn = [this](df::TileKey const & tileKey, dp::BackgroundMode mode) -> void
   {
+    if (mode == dp::BackgroundMode::FogOfWar)
+    {
+      constexpr uint32_t kTileSize = 256;
+      constexpr uint32_t kBytesPerPixel = 4;
+
+      int const fogOpacityPct = GetFogOfWarOpacity();
+      uint8_t const fogAlpha = static_cast<uint8_t>(std::clamp(fogOpacityPct * 255 / 100, 0, 255));
+
+      int const revealRadiusMeters = GetFogOfWarRadius();
+      double const revealRadiusMercator = revealRadiusMeters / 111320.0;
+
+      int const fogColor = GetFogOfWarColor();
+      uint8_t const fogR = static_cast<uint8_t>((fogColor >> 16) & 0xFF);
+      uint8_t const fogG = static_cast<uint8_t>((fogColor >> 8) & 0xFF);
+      uint8_t const fogB = static_cast<uint8_t>(fogColor & 0xFF);
+
+      auto const tileRect = tileKey.GetGlobalRect();
+      double const tileWidth = tileRect.SizeX();
+      double const tileHeight = tileRect.SizeY();
+
+      // No pixel floor — radius must scale strictly with geography.
+      // At low zoom levels corridors become thin/invisible, which is correct.
+      double const radiusPx = revealRadiusMercator / tileWidth * kTileSize;
+
+      std::vector<uint8_t> pixels(kTileSize * kTileSize * kBytesPerPixel);
+
+      // Fill with fog color and opacity.
+      for (uint32_t i = 0; i < kTileSize * kTileSize; ++i)
+      {
+        pixels[i * kBytesPerPixel + 0] = fogR;
+        pixels[i * kBytesPerPixel + 1] = fogG;
+        pixels[i * kBytesPerPixel + 2] = fogB;
+        pixels[i * kBytesPerPixel + 3] = fogAlpha;
+      }
+
+      auto expandedRect = tileRect;
+      expandedRect.Inflate(revealRadiusMercator, revealRadiusMercator);
+
+      double const radiusSq = radiusPx * radiusPx;
+      double const innerRadiusSq = radiusSq * 0.49;  // 70% inner fully clear
+
+      // Clear alpha for a pixel given distance squared from center.
+      auto const clearPixel = [&](int x, int y, double distSq)
+      {
+        uint8_t & alpha = pixels[(y * kTileSize + x) * kBytesPerPixel + 3];
+        if (distSq <= innerRadiusSq)
+        {
+          alpha = 0;
+        }
+        else if (distSq <= radiusSq)
+        {
+          double const t = (std::sqrt(distSq) - std::sqrt(innerRadiusSq)) /
+                           (std::sqrt(radiusSq) - std::sqrt(innerRadiusSq));
+          alpha = std::min(alpha, static_cast<uint8_t>(t * fogAlpha));
+        }
+      };
+
+      // Convert Mercator point to tile pixel coordinates.
+      // Row 0 = texture Y=0 = south (minY), row 255 = texture Y=1 = north (maxY).
+      auto const toPixel = [&](m2::PointD const & mercPt) -> std::pair<double, double>
+      {
+        return {(mercPt.x - tileRect.minX()) / tileWidth * kTileSize,
+                (mercPt.y - tileRect.minY()) / tileHeight * kTileSize};
+      };
+
+      // Reveal a thick line segment between two pixel-space points (stroked path).
+      auto const revealSegment = [&](double x0, double y0, double x1, double y1)
+      {
+        // Bounding box of the segment + radius.
+        int const minPx = std::max(0, static_cast<int>(std::min(x0, x1) - radiusPx));
+        int const maxPx = std::min(static_cast<int>(kTileSize) - 1,
+                                    static_cast<int>(std::max(x0, x1) + radiusPx));
+        int const minPy = std::max(0, static_cast<int>(std::min(y0, y1) - radiusPx));
+        int const maxPy = std::min(static_cast<int>(kTileSize) - 1,
+                                    static_cast<int>(std::max(y0, y1) + radiusPx));
+
+        double const segDx = x1 - x0;
+        double const segDy = y1 - y0;
+        double const segLenSq = segDx * segDx + segDy * segDy;
+
+        for (int y = minPy; y <= maxPy; ++y)
+          for (int x = minPx; x <= maxPx; ++x)
+          {
+            // Distance from pixel to line segment.
+            double distSq;
+            if (segLenSq < 1e-9)
+            {
+              double const dx = x - x0;
+              double const dy = y - y0;
+              distSq = dx * dx + dy * dy;
+            }
+            else
+            {
+              double t = ((x - x0) * segDx + (y - y0) * segDy) / segLenSq;
+              t = std::max(0.0, std::min(1.0, t));
+              double const projX = x0 + t * segDx;
+              double const projY = y0 + t * segDy;
+              double const dx = x - projX;
+              double const dy = y - projY;
+              distSq = dx * dx + dy * dy;
+            }
+            if (distSq <= radiusSq)
+              clearPixel(x, y, distSq);
+          }
+      };
+
+      // Reveal from live GPS tracker (as individual points).
+      GpsTracker::Instance().ForEachTrackPointSafe([&](location::GpsInfo const & pt, size_t) -> bool
+      {
+        auto const merc = mercator::FromLatLon(pt.m_latitude, pt.m_longitude);
+        if (!expandedRect.IsPointInside(merc))
+          return true;
+        auto const [px, py] = toPixel(merc);
+        int const minX = std::max(0, static_cast<int>(px - radiusPx));
+        int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPx));
+        int const minY = std::max(0, static_cast<int>(py - radiusPx));
+        int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPx));
+        for (int y = minY; y <= maxY; ++y)
+          for (int x = minX; x <= maxX; ++x)
+            clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+        return true;
+      });
+
+      // Reveal from cached track segments (stroked lines like OsmAnd)
+      // and current GPS position.
+      {
+        std::lock_guard lock(m_fogTrackPointsMutex);
+
+        // Reveal circle around current GPS position.
+        if (m_fogCurrentPosition.has_value())
+        {
+          auto const & pos = *m_fogCurrentPosition;
+          if (expandedRect.IsPointInside(pos))
+          {
+            auto const [px, py] = toPixel(pos);
+            int const minX = std::max(0, static_cast<int>(px - radiusPx));
+            int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPx));
+            int const minY = std::max(0, static_cast<int>(py - radiusPx));
+            int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPx));
+            for (int y = minY; y <= maxY; ++y)
+              for (int x = minX; x <= maxX; ++x)
+                clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+          }
+        }
+
+        for (auto const & seg : m_fogTrackSegments)
+        {
+          for (size_t i = 0; i < seg.size(); ++i)
+          {
+            if (!expandedRect.IsPointInside(seg[i]) &&
+                (i == 0 || !expandedRect.IsPointInside(seg[i - 1])))
+              continue;
+
+            auto const [px, py] = toPixel(seg[i]);
+            if (i == 0)
+            {
+              // First point: just clear a circle.
+              int const minX = std::max(0, static_cast<int>(px - radiusPx));
+              int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPx));
+              int const minY = std::max(0, static_cast<int>(py - radiusPx));
+              int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPx));
+              for (int y = minY; y <= maxY; ++y)
+                for (int x = minX; x <= maxX; ++x)
+                  clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+            }
+            else
+            {
+              auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
+              revealSegment(prevPx, prevPy, px, py);
+            }
+          }
+        }
+      }
+
+      if (m_drapeEngine)
+      {
+        m_drapeEngine->SetTileBackgroundData(tileKey, kTileSize, kTileSize, dp::TextureFormat::RGBA8, mode,
+                                             std::move(pixels));
+      }
+      return;
+    }
 #if DEBUG_BACKGROUND_TILE
     constexpr uint32_t kTileSize = 64;
     constexpr uint32_t kBlockSize = 8;
@@ -1644,6 +1851,12 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
 
   auto const transitSchemeEnabled = LoadTransitSchemeEnabled();
   m_transitManager.EnableTransitSchemeMode(transitSchemeEnabled);
+
+  if (LoadFogOfWarEnabled())
+  {
+    UpdateFogTrackPoints();
+    m_drapeEngine->EnableFogOfWar(true);
+  }
 
   // Show debug info if it's enabled in the config.
   bool showDebugInfo = false;
@@ -2682,6 +2895,112 @@ void Framework::SetCyclingEnabled(bool enabled)
 {
   settings::Set(kCyclingEnabledKey, enabled);
   Invalidate();
+}
+
+bool Framework::LoadFogOfWarEnabled()
+{
+  bool enabled = true;
+  settings::Get(kFogOfWarEnabledKey, enabled);
+  return enabled;
+}
+
+void Framework::SaveFogOfWarEnabled(bool enabled)
+{
+  settings::Set(kFogOfWarEnabledKey, enabled);
+}
+
+void Framework::EnableFogOfWar(bool enable)
+{
+  SaveFogOfWarEnabled(enable);
+  if (enable)
+    UpdateFogTrackPoints();
+  if (m_drapeEngine != nullptr)
+    m_drapeEngine->EnableFogOfWar(enable);
+}
+
+void Framework::UpdateFogTrackPoints()
+{
+  std::vector<std::vector<m2::PointD>> segments;
+  if (m_bmManager)
+  {
+    auto const groups = m_bmManager->GetUnsortedBmGroupsIdList();
+    for (auto const groupId : groups)
+    {
+      auto const trackIds = m_bmManager->GetTrackIds(groupId);
+      for (auto const trackId : trackIds)
+      {
+        auto const * track = m_bmManager->GetTrack(trackId);
+        if (!track)
+          continue;
+        for (auto const & line : track->GetData().m_geometry.m_lines)
+        {
+          std::vector<m2::PointD> seg;
+          seg.reserve(line.size());
+          for (auto const & pt : line)
+            seg.push_back(pt.GetPoint());
+          if (!seg.empty())
+            segments.push_back(std::move(seg));
+        }
+      }
+    }
+  }
+  std::lock_guard lock(m_fogTrackPointsMutex);
+  m_fogTrackSegments = std::move(segments);
+}
+
+void Framework::InvalidateFogTiles()
+{
+  if (m_drapeEngine && LoadFogOfWarEnabled())
+    m_drapeEngine->EnableFogOfWar(true);
+}
+
+int Framework::GetFogOfWarRadius()
+{
+  int radius;
+  if (!settings::Get(kFogOfWarRadiusKey, radius))
+    radius = 500;
+  return radius;
+}
+
+void Framework::SetFogOfWarRadius(int meters)
+{
+  settings::Set(kFogOfWarRadiusKey, meters);
+  InvalidateFogTiles();
+}
+
+int Framework::GetFogOfWarOpacity()
+{
+  int opacity;
+  if (!settings::Get(kFogOfWarOpacityKey, opacity))
+    opacity = 100;
+  return opacity;
+}
+
+void Framework::SetFogOfWarOpacity(int percent)
+{
+  settings::Set(kFogOfWarOpacityKey, percent);
+  InvalidateFogTiles();
+}
+
+int Framework::GetFogOfWarColor()
+{
+  int color;
+  if (!settings::Get(kFogOfWarColorKey, color))
+    return 0;
+  // Migrate legacy color index (0-5) to packed RGB.
+  if (color >= 0 && color <= 5)
+  {
+    static int const kLegacy[] = {0x000000, 0x404040, 0x000050, 0x004000, 0x500000, 0xFFFFFF};
+    color = kLegacy[color];
+    settings::Set(kFogOfWarColorKey, color);
+  }
+  return color;
+}
+
+void Framework::SetFogOfWarColor(int color)
+{
+  settings::Set(kFogOfWarColorKey, color);
+  InvalidateFogTiles();
 }
 
 void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition)

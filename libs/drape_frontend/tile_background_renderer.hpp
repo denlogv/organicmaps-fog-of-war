@@ -46,6 +46,10 @@ public:
   void SetBackgroundMode(ref_ptr<dp::GraphicsContext> context, dp::BackgroundMode mode);
   dp::BackgroundMode GetBackgroundMode() const;
 
+  void InvalidateTiles(ref_ptr<dp::GraphicsContext> context);
+
+  void SetBlendingEnabled(bool enabled);
+
 private:
   struct TextureInfo
   {

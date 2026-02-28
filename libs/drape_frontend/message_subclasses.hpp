@@ -1483,4 +1483,17 @@ private:
   uint32_t m_width = 0;
   uint32_t m_height = 0;
 };
+
+class EnableFogOfWarMessage : public Message
+{
+public:
+  explicit EnableFogOfWarMessage(bool enable) : m_enable(enable) {}
+
+  Type GetType() const override { return Type::EnableFogOfWar; }
+
+  bool IsEnabled() const { return m_enable; }
+
+private:
+  bool m_enable;
+};
 }  // namespace df

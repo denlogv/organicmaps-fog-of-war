@@ -328,6 +328,7 @@ private:
 
   drape_ptr<RouteRenderer> m_routeRenderer;
   drape_ptr<TileBackgroundRenderer> m_tileBackgroundRenderer;
+  drape_ptr<TileBackgroundRenderer> m_fogOfWarRenderer;
   drape_ptr<TrafficRenderer> m_trafficRenderer;
   drape_ptr<TransitSchemeRenderer> m_transitSchemeRenderer;
   drape_ptr<dp::Framebuffer> m_buildingsFramebuffer;

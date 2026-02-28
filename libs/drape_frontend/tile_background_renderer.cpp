@@ -256,6 +256,20 @@ dp::BackgroundMode TileBackgroundRenderer::GetBackgroundMode() const
   return m_currentMode;
 }
 
+void TileBackgroundRenderer::SetBlendingEnabled(bool enabled)
+{
+  m_state.SetBlending(dp::Blending(enabled));
+  m_stateArray.SetBlending(dp::Blending(enabled));
+}
+
+void TileBackgroundRenderer::InvalidateTiles(ref_ptr<dp::GraphicsContext> context)
+{
+  if (m_currentMode == dp::BackgroundMode::Default || context == nullptr)
+    return;
+  ClearContextDependentResources(context);
+  OnUpdateViewport(context, m_lastCoverage, m_lastCurrentZoomLevel, {});
+}
+
 void TileBackgroundRenderer::RemoveTexture(ref_ptr<dp::GraphicsContext> context, TileKey const & tileKey,
                                            TextureInfo const & info)
 {

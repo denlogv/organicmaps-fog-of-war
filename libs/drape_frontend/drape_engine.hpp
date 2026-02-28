@@ -248,6 +248,8 @@ public:
                              dp::BackgroundMode mode, std::vector<uint8_t> && bytes);
   void SetTileBackgroundMode(dp::BackgroundMode mode);
 
+  void EnableFogOfWar(bool enable);
+
   dp::ApiVersion GetApiVersion() const { return m_frontend->GetApiVersion(); }
 
 private:

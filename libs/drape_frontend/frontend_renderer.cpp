@@ -144,9 +144,14 @@ private:
 
 FrontendRenderer::FrontendRenderer(Params && params)
   : BaseRenderer(ThreadsCommutator::RenderThread, params)
-  , m_tileBackgroundRenderer(new TileBackgroundRenderer(std::move(params.m_tileBackgroundReadFn),
-                                                        std::move(params.m_cancelTileBackgroundReadingFn),
-                                                        params.m_backgroundMode))
+  , m_tileBackgroundRenderer(new TileBackgroundRenderer(
+        MapDataProvider::TTileBackgroundReadFn(params.m_tileBackgroundReadFn),
+        MapDataProvider::TCancelTileBackgroundReadingFn(params.m_cancelTileBackgroundReadingFn),
+        params.m_backgroundMode))
+  , m_fogOfWarRenderer(new TileBackgroundRenderer(
+        std::move(params.m_tileBackgroundReadFn),
+        std::move(params.m_cancelTileBackgroundReadingFn),
+        dp::BackgroundMode::Default))
   , m_trafficRenderer(new TrafficRenderer())
   , m_transitSchemeRenderer(new TransitSchemeRenderer())
   , m_drapeApiRenderer(new DrapeApiRenderer())
@@ -182,6 +187,9 @@ FrontendRenderer::FrontendRenderer(Params && params)
 #ifdef DEBUG
   m_isTeardowned = false;
 #endif
+
+  // Fog of War renderer needs alpha blending to show the map through the fog.
+  m_fogOfWarRenderer->SetBlendingEnabled(true);
 
   ASSERT(m_modelViewChangedHandler, ());
   ASSERT(m_tapEventInfoHandler, ());
@@ -981,9 +989,21 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
                                                make_ref(data));
     }
 
-    m_tileBackgroundRenderer->AssignTileBackgroundTexture(m_context, msg->GetTileKey(), msg->GetTexturePool(),
-                                                          msg->GetTextureId(), msg->GetMode());
+    auto & renderer = (msg->GetMode() == dp::BackgroundMode::FogOfWar) ? m_fogOfWarRenderer : m_tileBackgroundRenderer;
+    renderer->AssignTileBackgroundTexture(m_context, msg->GetTileKey(), msg->GetTexturePool(),
+                                          msg->GetTextureId(), msg->GetMode());
     msg->MarkProcessed();
+    break;
+  }
+
+  case Message::Type::EnableFogOfWar:
+  {
+    ref_ptr<EnableFogOfWarMessage> msg = message;
+    auto const mode = msg->IsEnabled() ? dp::BackgroundMode::FogOfWar : dp::BackgroundMode::Default;
+    if (m_fogOfWarRenderer->GetBackgroundMode() != mode)
+      m_fogOfWarRenderer->SetBackgroundMode(m_context, mode);
+    else if (mode != dp::BackgroundMode::Default)
+      m_fogOfWarRenderer->InvalidateTiles(m_context);
     break;
   }
 
@@ -1068,6 +1088,7 @@ void FrontendRenderer::UpdateContextDependentResources()
 
   m_trafficRenderer->ClearContextDependentResources();
   m_tileBackgroundRenderer->ClearContextDependentResources(m_context);
+  m_fogOfWarRenderer->ClearContextDependentResources(m_context);
 
   if (IsValidCurrentZoom())
   {
@@ -1480,6 +1501,13 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
 
     if (!HasRouteData())
       RenderTransitSchemeLayer(modelView);
+
+    // Fog of War: render after all map content (including labels) but before UI.
+    if (IsValidCurrentZoom())
+    {
+      m_fogOfWarRenderer->Render(m_context, make_ref(m_gpuProgramManager), modelView, GetCurrentZoom(),
+                                 m_frameValues);
+    }
 
     m_drapeApiRenderer->Render(m_context, make_ref(m_gpuProgramManager), modelView, m_frameValues);
 
@@ -2271,6 +2299,7 @@ TTilesCollection FrontendRenderer::ResolveTileKeys(ScreenBase const & screen)
 
   m_trafficRenderer->OnUpdateViewport(result, GetCurrentZoom(), tilesToDelete);
   m_tileBackgroundRenderer->OnUpdateViewport(m_context, result, GetCurrentZoom(), tilesToDelete);
+  m_fogOfWarRenderer->OnUpdateViewport(m_context, result, GetCurrentZoom(), tilesToDelete);
 
 #if defined(DRAPE_MEASURER_BENCHMARK) && defined(GENERATING_STATISTIC)
   DrapeMeasurer::Instance().StartScenePreparing();
@@ -2308,6 +2337,7 @@ void FrontendRenderer::OnContextDestroy()
   m_gpsTrackRenderer->ClearRenderData();
   m_trafficRenderer->ClearContextDependentResources();
   m_tileBackgroundRenderer->ClearContextDependentResources(m_context);
+  m_fogOfWarRenderer->ClearContextDependentResources(m_context);
   m_drapeApiRenderer->Clear();
   m_postprocessRenderer->ClearContextDependentResources();
   m_transitSchemeRenderer->ClearContextDependentResources(nullptr /* overlayTree */);
@@ -2417,7 +2447,7 @@ void FrontendRenderer::Routine::Do()
 
   m_renderer.CreateContext();
 
-#if defined(DEBUG) || defined(DEBUG_DRAPE_XCODE) || defined(SCENARIO_ENABLE)
+#if 0 // Disabled for fog-of-war builds
   gui::DrapeGui::Instance().GetScaleFpsHelper().SetVisible(true);
 #endif
 
@@ -2464,6 +2494,7 @@ void FrontendRenderer::ReleaseResources()
   m_buildingsFramebuffer.reset();
   m_screenQuadRenderer.reset();
   m_tileBackgroundRenderer.reset();
+  m_fogOfWarRenderer.reset();
   m_trafficRenderer.reset();
   m_transitSchemeRenderer.reset();
   m_postprocessRenderer.reset();
