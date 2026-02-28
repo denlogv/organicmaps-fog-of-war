@@ -54,6 +54,11 @@
   <string name="tag_menu_collapse" translatable="false">collapse</string>
   <string name="tag_height_limited" translatable="false">height limited</string>
 
+  <string name="pref_fog_of_war" translatable="false">FogOfWar</string>
+  <string name="pref_fog_of_war_radius" translatable="false">FogOfWarRadius</string>
+  <string name="pref_fog_of_war_opacity" translatable="false">FogOfWarOpacity</string>
+  <string name="pref_fog_of_war_color" translatable="false">FogOfWarColor</string>
+
   <string name="pref_privacy" translatable="false">pref_privacy</string>
   <string name="pref_search_history" translatable="false">pref_search_history</string>
   <string name="never_enum_value" translatable="false">NEVER</string>

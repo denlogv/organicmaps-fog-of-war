@@ -1554,6 +1554,46 @@ JNIEXPORT jboolean Java_app_organicmaps_sdk_Framework_nativeIsCyclingLayerEnable
   return static_cast<jboolean>(frm()->IsCyclingEnabled());
 }
 
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarEnabled(JNIEnv *, jclass, jboolean enabled)
+{
+  frm()->EnableFogOfWar(static_cast<bool>(enabled));
+}
+
+JNIEXPORT jboolean Java_app_organicmaps_sdk_Framework_nativeIsFogOfWarEnabled(JNIEnv *, jclass)
+{
+  return static_cast<jboolean>(Framework::LoadFogOfWarEnabled());
+}
+
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarRadius(JNIEnv *, jclass, jint meters)
+{
+  frm()->SetFogOfWarRadius(static_cast<int>(meters));
+}
+
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogOfWarRadius(JNIEnv *, jclass)
+{
+  return static_cast<jint>(Framework::GetFogOfWarRadius());
+}
+
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarOpacity(JNIEnv *, jclass, jint percent)
+{
+  frm()->SetFogOfWarOpacity(static_cast<int>(percent));
+}
+
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogOfWarOpacity(JNIEnv *, jclass)
+{
+  return static_cast<jint>(Framework::GetFogOfWarOpacity());
+}
+
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarColor(JNIEnv *, jclass, jint colorIndex)
+{
+  frm()->SetFogOfWarColor(static_cast<int>(colorIndex));
+}
+
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogOfWarColor(JNIEnv *, jclass)
+{
+  return static_cast<jint>(Framework::GetFogOfWarColor());
+}
+
 JNIEXPORT jboolean Java_app_organicmaps_sdk_Framework_nativeNeedUpdateForRoutes(JNIEnv *, jclass)
 {
   return frm()->NeedUpdateForRoutes();

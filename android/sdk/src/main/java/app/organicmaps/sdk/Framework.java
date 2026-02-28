@@ -297,6 +297,15 @@ public class Framework
   public static native void nativeSetCyclingLayerEnabled(boolean enabled);
   public static native boolean nativeIsCyclingLayerEnabled();
 
+  public static native void nativeSetFogOfWarEnabled(boolean enabled);
+  public static native boolean nativeIsFogOfWarEnabled();
+  public static native void nativeSetFogOfWarRadius(int meters);
+  public static native int nativeGetFogOfWarRadius();
+  public static native void nativeSetFogOfWarOpacity(int percent);
+  public static native int nativeGetFogOfWarOpacity();
+  public static native void nativeSetFogOfWarColor(int colorIndex);
+  public static native int nativeGetFogOfWarColor();
+
   public static native boolean nativeNeedUpdateForRoutes();
 
   @NonNull

@@ -64,6 +64,10 @@ public class LayerBottomSheetItem
       drawableResId = R.drawable.ic_layers_cycling;
       buttonTextResource = R.string.button_layer_cycling;
       break;
+    case FOG_OF_WAR:
+      drawableResId = R.drawable.ic_layers_outdoors;
+      buttonTextResource = R.string.button_layer_fog_of_war;
+      break;
     }
     return new LayerBottomSheetItem(drawableResId, buttonTextResource, mode, layerItemClickListener);
   }

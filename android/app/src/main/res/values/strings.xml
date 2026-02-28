@@ -644,6 +644,13 @@
     <string name="button_layer_hiking">Hiking</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">Cycling</string>
+    <string name="button_layer_fog_of_war">Fog of War</string>
+    <string name="prefs_group_fog_of_war">Fog of War</string>
+    <string name="pref_fog_of_war_radius_title">Reveal radius</string>
+    <string name="pref_fog_of_war_radius_summary">Corridor width around tracks and position (meters)</string>
+    <string name="pref_fog_of_war_opacity_title">Fog opacity</string>
+    <string name="pref_fog_of_war_opacity_summary">Transparency of the fog overlay (%)</string>
+    <string name="pref_fog_of_war_color_title">Fog color</string>
     <string name="button_layer_subway">Subway</string>
     <string name="layers_title">Map Styles and Layers</string>
     <string name="bookmarks_empty_list_title">This list is empty</string>

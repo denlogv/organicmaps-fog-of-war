@@ -103,6 +103,13 @@ void OnBookmarksChanged(JNIEnv * env)
   jobject bookmarkManagerInstance = env->GetStaticObjectField(g_bookmarkManagerClass, g_bookmarkManagerInstanceField);
   env->CallVoidMethod(bookmarkManagerInstance, g_onBookmarksChangedMethod);
   jni::HandleJavaException(env);
+
+  // Re-cache fog-of-war track data when bookmarks change.
+  if (frm()->LoadFogOfWarEnabled())
+  {
+    frm()->UpdateFogTrackPoints();
+    frm()->InvalidateFogTiles();
+  }
 }
 
 void OnAsyncLoadingStarted(JNIEnv * env)

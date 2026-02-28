@@ -166,7 +166,36 @@
     </PreferenceScreen>
   </androidx.preference.PreferenceCategory>
   <androidx.preference.PreferenceCategory
-    android:key="@string/pref_privacy"
+    android:key="@string/pref_fog_of_war"
+    android:title="@string/prefs_group_fog_of_war"
+    android:order="0">
+    <androidx.preference.SeekBarPreference
+      android:key="@string/pref_fog_of_war_radius"
+      android:title="@string/pref_fog_of_war_radius_title"
+      app:singleLineTitle="false"
+      android:summary="@string/pref_fog_of_war_radius_summary"
+      android:max="2000"
+      android:defaultValue="500"
+      app:min="50"
+      app:showSeekBarValue="true"
+      android:order="1" />
+    <androidx.preference.SeekBarPreference
+      android:key="@string/pref_fog_of_war_opacity"
+      android:title="@string/pref_fog_of_war_opacity_title"
+      app:singleLineTitle="false"
+      android:summary="@string/pref_fog_of_war_opacity_summary"
+      android:max="100"
+      android:defaultValue="100"
+      app:min="10"
+      app:showSeekBarValue="true"
+      android:order="2" />
+    <Preference
+      android:key="@string/pref_fog_of_war_color"
+      android:title="@string/pref_fog_of_war_color_title"
+      app:singleLineTitle="false"
+      android:order="3" />
+  </androidx.preference.PreferenceCategory>
+  <androidx.preference.PreferenceCategory
     android:title="@string/privacy"
     android:order="6">
     <SwitchPreferenceCompat

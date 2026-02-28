@@ -1,5 +1,8 @@
 package app.organicmaps.settings;
 
+import android.graphics.drawable.GradientDrawable;
+import android.widget.FrameLayout;
+import androidx.appcompat.app.AlertDialog;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
+import androidx.preference.SeekBarPreference;
 import androidx.preference.TwoStatePreference;
 import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
@@ -69,6 +73,7 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
     initScreenSleepEnabledPrefsCallbacks();
     initShowOnLockScreenPrefsCallbacks();
     initNightNavigationPrefsCallbacks();
+    initFogOfWarPrefsCallbacks();
   }
 
   private void updateVoiceInstructionsPrefsSummary()
@@ -521,6 +526,71 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
       Framework.nativeSetShowDownloadedRegions((boolean) newValue);
       return true;
     });
+  }
+
+  private void initFogOfWarPrefsCallbacks()
+  {
+    final SeekBarPreference radiusPref = getPreference(getString(R.string.pref_fog_of_war_radius));
+    radiusPref.setValue(Framework.nativeGetFogOfWarRadius());
+    radiusPref.setSummary(radiusPref.getValue() + " m");
+    radiusPref.setOnPreferenceChangeListener((preference, newValue) -> {
+      Framework.nativeSetFogOfWarRadius((Integer) newValue);
+      radiusPref.setSummary(newValue + " m");
+      return true;
+    });
+
+    final SeekBarPreference opacityPref = getPreference(getString(R.string.pref_fog_of_war_opacity));
+    opacityPref.setValue(Framework.nativeGetFogOfWarOpacity());
+    opacityPref.setOnPreferenceChangeListener((preference, newValue) -> {
+      Framework.nativeSetFogOfWarOpacity((Integer) newValue);
+      return true;
+    });
+
+    final Preference colorPref = getPreference(getString(R.string.pref_fog_of_war_color));
+    updateFogColorSwatch(colorPref, Framework.nativeGetFogOfWarColor());
+    colorPref.setOnPreferenceClickListener(preference -> {
+      showFogColorPickerDialog(colorPref);
+      return true;
+    });
+  }
+
+  private void updateFogColorSwatch(Preference pref, int color)
+  {
+    float density = getResources().getDisplayMetrics().density;
+    GradientDrawable swatch = new GradientDrawable();
+    swatch.setShape(GradientDrawable.OVAL);
+    swatch.setColor(color | 0xFF000000);
+    swatch.setStroke((int) density, 0x40000000);
+    int size = (int) (24 * density);
+    swatch.setSize(size, size);
+    pref.setIcon(swatch);
+    pref.setSummary(String.format("#%06X", color & 0xFFFFFF));
+  }
+
+  private void showFogColorPickerDialog(Preference colorPref)
+  {
+    ColorPickerView pickerView = new ColorPickerView(requireContext());
+    pickerView.setColor(Framework.nativeGetFogOfWarColor() | 0xFF000000);
+
+    float density = getResources().getDisplayMetrics().density;
+    int padding = (int) (20 * density);
+
+    FrameLayout container = new FrameLayout(requireContext());
+    container.addView(pickerView, new FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT,
+        FrameLayout.LayoutParams.WRAP_CONTENT));
+    container.setPadding(padding, padding, padding, 0);
+
+    new AlertDialog.Builder(requireContext())
+        .setTitle(R.string.pref_fog_of_war_color_title)
+        .setView(container)
+        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+          int color = pickerView.getColor() & 0xFFFFFF;
+          Framework.nativeSetFogOfWarColor(color);
+          updateFogColorSwatch(colorPref, color);
+        })
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
   }
 
   private void removePreference(@NonNull String categoryKey, @NonNull Preference preference)

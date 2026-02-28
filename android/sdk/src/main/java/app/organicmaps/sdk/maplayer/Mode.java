@@ -99,6 +99,20 @@ public enum Mode
       if (isEnabled)
         showUpdateToastIfNeeded(context);
     }
+  },
+
+  FOG_OF_WAR {
+    @Override
+    public boolean isEnabled(@NonNull Context context)
+    {
+      return Framework.nativeIsFogOfWarEnabled();
+    }
+
+    @Override
+    public void setEnabled(@NonNull Context context, boolean isEnabled)
+    {
+      Framework.nativeSetFogOfWarEnabled(isEnabled);
+    }
   };
 
   public abstract boolean isEnabled(@NonNull Context context);
