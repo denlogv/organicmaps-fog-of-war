@@ -1594,6 +1594,36 @@ JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogOfWarColor(JNIEnv 
   return static_cast<jint>(Framework::GetFogOfWarColor());
 }
 
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarGradient(JNIEnv *, jclass, jint percent)
+{
+  frm()->SetFogOfWarGradient(static_cast<int>(percent));
+}
+
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogOfWarGradient(JNIEnv *, jclass)
+{
+  return static_cast<jint>(Framework::GetFogOfWarGradient());
+}
+
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogThrottleSpeed(JNIEnv *, jclass, jint tier, jint speed)
+{
+  Framework::SetFogThrottleSpeed(static_cast<int>(tier), static_cast<int>(speed));
+}
+
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogThrottleSpeed(JNIEnv *, jclass, jint tier)
+{
+  return static_cast<jint>(Framework::GetFogThrottleSpeed(static_cast<int>(tier)));
+}
+
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogThrottleInterval(JNIEnv *, jclass, jint tier, jint interval)
+{
+  Framework::SetFogThrottleInterval(static_cast<int>(tier), static_cast<int>(interval));
+}
+
+JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogThrottleInterval(JNIEnv *, jclass, jint tier)
+{
+  return static_cast<jint>(Framework::GetFogThrottleInterval(static_cast<int>(tier)));
+}
+
 JNIEXPORT jboolean Java_app_organicmaps_sdk_Framework_nativeNeedUpdateForRoutes(JNIEnv *, jclass)
 {
   return frm()->NeedUpdateForRoutes();

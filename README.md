@@ -19,24 +19,38 @@ The fog is revealed by:
 - **Your current GPS position** — a circle around you clears in real time
 - **Imported GPX tracks** — load your past routes and watch the map light up
 
-<p align="center">
-  <img src="docs/screenshots/fog-of-war-map.png" width="300" />
-</p>
-
 ## Features
 
 - 🗺️ **Fog of war overlay** rendered natively in the Drape engine (no performance hacks)
-- 📍 **Real-time reveal** around your GPS position
+- 📍 **Real-time reveal** around your GPS position (throttled, smooth updates)
 - 📂 **GPX track support** — import tracks to reveal previously visited areas
+- 🔄 **Live fog updates** — fog clears as you move, with automatic track recording
 - ⚙️ **Configurable settings:**
   - **Reveal radius** (50–2000 m)
   - **Fog opacity** (10–100%)
   - **Fog color** — full HSV color picker
+  - **Gradient edge width** (1–100%) — controls how sharply the fog fades at the reveal boundary
+  - **Advanced throttle table** — per-speed-tier update intervals (Slow / Medium / Medium-fast / Fast), fully configurable in km/h and ms
 
 <p align="center">
   <img src="docs/screenshots/fog-of-war-settings.png" width="300" />
   &nbsp;&nbsp;
   <img src="docs/screenshots/fog-of-war-colorpicker.png" width="300" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/fog-of-war-advanced-settings.jpg" width="300" />
+</p>
+
+### Gradient edge width
+
+The gradient edge width controls how sharply the fog fades at the boundary of revealed areas. A narrow gradient gives hard, crisp edges; a wide gradient produces soft, feathered transitions.
+
+<p align="center">
+  <img src="docs/screenshots/fog-of-war-min-gradient-width.jpg" width="300" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/fog-of-war-max-gradient-width.jpg" width="300" />
+</p>
+<p align="center">
+  <em>Left: gradient width 10% (sharp edge) &nbsp;·&nbsp; Right: gradient width 90% (soft edge)</em>
 </p>
 
 ## How it works
