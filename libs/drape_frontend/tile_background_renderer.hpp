@@ -64,6 +64,7 @@ private:
 
   dp::BackgroundMode m_currentMode = dp::BackgroundMode::Default;
 
+  // Viewport-level tiles for the current zoom (with reveals).
   std::unordered_set<TileKey> m_awaitingTiles;
   std::unordered_map<TileKey, TextureInfo> m_tileTextures;
 
@@ -72,6 +73,7 @@ private:
 
   CoverageResult m_lastCoverage;
   int m_lastCurrentZoomLevel = 0;
+  bool m_needInvalidation = false;
 
   dp::RenderState m_state;
   dp::RenderState m_stateArray;

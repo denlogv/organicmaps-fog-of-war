@@ -3,8 +3,6 @@
 #include "drape_frontend/render_state_extension.hpp"
 #include "drape_frontend/shape_view_params.hpp"
 
-#include "base/logging.hpp"
-
 #include <algorithm>
 
 namespace df
@@ -37,18 +35,22 @@ void TileBackgroundRenderer::OnUpdateViewport(ref_ptr<dp::GraphicsContext> conte
   if (m_currentMode == dp::BackgroundMode::Default)
     return;
 
-  if (context == nullptr)
+  if (context == nullptr || currentZoomLevel <= 0)
     return;
 
-  // Cancel awaiting tile background reading requests for deleted tiles
+  // Cancel awaiting tile background reading requests for deleted tiles.
+  // For fog tiles, keep old-zoom textures as fallback during zoom transitions
+  // to avoid flash-of-revealed-map. They'll be cleaned up in
+  // AssignTileBackgroundTexture once new-zoom tiles arrive.
   for (auto const & tileKey : tilesToDelete)
   {
     if (m_awaitingTiles.erase(tileKey) > 0)
       m_cancelTileBackgroundReadingFn(tileKey, m_currentMode);
 
-    // Remove textures for deleted tiles
+    // Only remove textures at the CURRENT zoom level (same-zoom panning).
+    // Old-zoom tiles are kept as fallback during zoom transitions.
     auto it = m_tileTextures.find(tileKey);
-    if (it != m_tileTextures.end())
+    if (it != m_tileTextures.end() && tileKey.m_zoomLevel == currentZoomLevel)
     {
       RemoveTexture(context, it->first, it->second);
       m_tileTextures.erase(it);
@@ -56,22 +58,49 @@ void TileBackgroundRenderer::OnUpdateViewport(ref_ptr<dp::GraphicsContext> conte
   }
 
   // Request tile background reading for new tiles in the coverage area
+  bool const fullRefresh = m_needInvalidation;
+  m_needInvalidation = false;
+
+  if (fullRefresh)
+  {
+    // Flush stale cached textures — fog tiles must always be regenerated
+    // with the latest GPS data.
+    for (auto const & [k, info] : m_removedTextures)
+      info.m_texturePool->ReleaseTexture(context, info.m_textureId);
+    m_removedTextures.clear();
+  }
+
   for (int x = coverage.m_minTileX; x < coverage.m_maxTileX; ++x)
   {
     for (int y = coverage.m_minTileY; y < coverage.m_maxTileY; ++y)
     {
       TileKey const key(x, y, static_cast<uint8_t>(currentZoomLevel));
 
-      // Restore texture from cache if possible
-      auto maybeTextureInfo = RestoreRemovedTexture(key);
-      if (maybeTextureInfo)
+      if (!fullRefresh)
       {
-        m_tileTextures[key] = *maybeTextureInfo;
-        continue;
+        // Normal path: restore from cache, skip existing tiles.
+        auto maybeTextureInfo = RestoreRemovedTexture(key);
+        if (maybeTextureInfo)
+        {
+          m_tileTextures[key] = *maybeTextureInfo;
+          continue;
+        }
+
+        if (m_tileTextures.count(key) > 0)
+          continue;
       }
 
-      if (m_tileTextures.count(key) == 0 && m_awaitingTiles.insert(key).second)
+      // Request (or re-request) the tile. Old textures keep rendering
+      // until each is individually replaced — no flicker.
+      if (fullRefresh)
+      {
+        m_awaitingTiles.insert(key);
         m_tileBackgroundReadFn(key, m_currentMode);
+      }
+      else if (m_awaitingTiles.insert(key).second)
+      {
+        m_tileBackgroundReadFn(key, m_currentMode);
+      }
     }
   }
 }
@@ -83,49 +112,53 @@ void TileBackgroundRenderer::AssignTileBackgroundTexture(ref_ptr<dp::GraphicsCon
   if (context == nullptr)
     return;
 
-  // Ignore textures for wrong background mode and zoom level
-  if (mode != m_currentMode || tileKey.m_zoomLevel != m_lastCurrentZoomLevel)
+  // Ignore textures for wrong background mode.
+  if (mode != m_currentMode)
   {
     m_awaitingTiles.erase(tileKey);
     RemoveTexture(context, tileKey, TextureInfo{texturePool, textureId});
     return;
   }
 
-  // Ignore textures for tiles that are not awaited
-  auto it = m_awaitingTiles.find(tileKey);
-  if (it == m_awaitingTiles.end())
+  // Viewport tiles: ignore if zoom level doesn't match current zoom.
+  if (tileKey.m_zoomLevel != m_lastCurrentZoomLevel)
   {
+    m_awaitingTiles.erase(tileKey);
     RemoveTexture(context, tileKey, TextureInfo{texturePool, textureId});
     return;
   }
 
-  // Texture should not be re-assigned. Performance may degrade because of it.
-  // If you see the warning message, you probably call DrapeEngine::SetTileBackgroundData() not correctly.
-  // You should call it only once for each tileKey when the tile background image data reading is finished.
-  if (auto it = m_tileTextures.find(tileKey); it != m_tileTextures.end())
-  {
-    LOG(LWARNING, ("Tile background texture for tile ", tileKey.Coord2String(), " is already assigned"));
-    auto & info = it->second;
-    info.m_texturePool->ReleaseTexture(context, info.m_textureId);
-  }
+  m_awaitingTiles.erase(tileKey);
 
-  // Remove tiles with different zoom levels
-  auto tileIt = m_tileTextures.begin();
-  while (tileIt != m_tileTextures.end())
-  {
-    if (tileIt->first.m_zoomLevel != tileKey.m_zoomLevel)
-    {
-      RemoveTexture(context, tileIt->first, tileIt->second);
-      tileIt = m_tileTextures.erase(tileIt);
-    }
-    else
-    {
-      ++tileIt;
-    }
-  }
+  // Replace existing tile texture for this key (in-place update, no flicker).
+  auto prevIt = m_tileTextures.find(tileKey);
+  if (prevIt != m_tileTextures.end())
+    prevIt->second.m_texturePool->ReleaseTexture(context, prevIt->second.m_textureId);
 
   m_tileTextures[tileKey] = {texturePool, textureId};
-  m_awaitingTiles.erase(it);
+
+  // Remove old-zoom tiles only when ALL awaiting new tiles have arrived,
+  // so old tiles keep rendering as fallback during the transition.
+  if (m_awaitingTiles.empty())
+  {
+    size_t removedCount = 0;
+    auto tileIt = m_tileTextures.begin();
+    while (tileIt != m_tileTextures.end())
+    {
+      if (tileIt->first.m_zoomLevel != tileKey.m_zoomLevel)
+      {
+        tileIt->second.m_texturePool->ReleaseTexture(context, tileIt->second.m_textureId);
+        tileIt = m_tileTextures.erase(tileIt);
+        ++removedCount;
+      }
+      else
+        ++tileIt;
+    }
+    if (removedCount > 0)
+    {
+      // Old-zoom tiles cleaned up after all new tiles arrived.
+    }
+  }
 }
 
 void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::ProgramManager> mng,
@@ -140,16 +173,15 @@ void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_pt
   math::Matrix<float, 4, 4> const mv = screen.GetModelView(pivot, 1.0f);
   m_programParams.m_modelView = glsl::make_mat4(mv.m_data);
 
-  // Sort tiles by texture pointer to minimize texture switches.
   static std::vector<std::pair<TileKey, TextureInfo>> sortedTiles;
   sortedTiles.clear();
-  sortedTiles.reserve(m_tileTextures.size());
+
   for (auto const & [tileKey, textureInfo] : m_tileTextures)
   {
-    if (!screen.ClipRect().IsIntersect(tileKey.GetGlobalRect()))
-      continue;
-    sortedTiles.emplace_back(tileKey, textureInfo);
+    if (screen.ClipRect().IsIntersect(tileKey.GetGlobalRect()))
+      sortedTiles.emplace_back(tileKey, textureInfo);
   }
+
   if (sortedTiles.empty())
     return;
 
@@ -164,7 +196,6 @@ void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_pt
 
   // Render tiles in batches with the same texture.
   uint32_t instanceIndex = 0;
-  ref_ptr<dp::Texture> prevTex = nullptr;
   ref_ptr<dp::GpuProgram> prevProgram = nullptr;
   for (size_t i = 0; i < sortedTiles.size(); ++i)
   {
@@ -173,17 +204,17 @@ void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_pt
     auto const minR = (m2::PointD(r.minX(), r.minY()) - pivot);
     auto const maxR = (m2::PointD(r.maxX(), r.maxY()) - pivot);
     m_programParams.m_tileCoordsMinMax[instanceIndex] = glsl::vec4(
-        static_cast<float>(minR.x), static_cast<float>(minR.y), static_cast<float>(maxR.x), static_cast<float>(maxR.y));
+        static_cast<float>(minR.x), static_cast<float>(minR.y),
+        static_cast<float>(maxR.x), static_cast<float>(maxR.y));
     m_programParams.m_textureIndex[instanceIndex] = static_cast<int>(textureInfo.m_textureId);
 
     auto const tex = textureInfo.m_texturePool->GetTexture(textureInfo.m_textureId);
-    bool const nextTextureIsDifferent =
+    bool const nextTexDiff =
         (i + 1 < sortedTiles.size() &&
          tex != sortedTiles[i + 1].second.m_texturePool->GetTexture(sortedTiles[i + 1].second.m_textureId));
-    if ((instanceIndex + 1) == gpu::kTileBackgroundMaxCount || (i + 1 == sortedTiles.size()) || nextTextureIsDifferent)
+    if ((instanceIndex + 1) == gpu::kTileBackgroundMaxCount || (i + 1 == sortedTiles.size()) || nextTexDiff)
     {
       auto & state = textureInfo.m_texturePool->IsHardwareTexture2dArrayUsed() ? m_stateArray : m_state;
-
       state.SetColorTexture(tex);
 
       auto program = mng->GetProgram(state.GetProgram<gpu::Program>());
@@ -195,17 +226,11 @@ void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_pt
       }
       dp::ApplyState(context, program, state);
       mng->GetParamsSetter()->Apply(context, program, m_programParams);
-
       m_instancing->DrawInstancedTriangleStrip(context, instanceIndex + 1, 4);
-
-      // Restart filling from the beginning
       instanceIndex = 0;
     }
     else
-    {
       ++instanceIndex;
-    }
-    prevTex = tex;
   }
 
   if (prevProgram != nullptr)
@@ -219,17 +244,14 @@ void TileBackgroundRenderer::ClearContextDependentResources(ref_ptr<dp::Graphics
 {
   CHECK(context != nullptr, ());
 
-  // Cancel awaiting tile background reading requests for the previous mode
   for (auto const & tileKey : m_awaitingTiles)
     m_cancelTileBackgroundReadingFn(tileKey, m_currentMode);
   m_awaitingTiles.clear();
 
-  // Release all tile background textures for the previous mode
   for (auto const & [tileKey, info] : m_tileTextures)
     info.m_texturePool->ReleaseTexture(context, info.m_textureId);
   m_tileTextures.clear();
 
-  // Release all cached removed textures
   for (auto const & [tileKey, info] : m_removedTextures)
     info.m_texturePool->ReleaseTexture(context, info.m_textureId);
   m_removedTextures.clear();
@@ -266,8 +288,12 @@ void TileBackgroundRenderer::InvalidateTiles(ref_ptr<dp::GraphicsContext> contex
 {
   if (m_currentMode == dp::BackgroundMode::Default || context == nullptr)
     return;
-  ClearContextDependentResources(context);
-  OnUpdateViewport(context, m_lastCoverage, m_lastCurrentZoomLevel, {});
+
+  m_needInvalidation = true;
+
+  for (auto const & [k, info] : m_removedTextures)
+    info.m_texturePool->ReleaseTexture(context, info.m_textureId);
+  m_removedTextures.clear();
 }
 
 void TileBackgroundRenderer::RemoveTexture(ref_ptr<dp::GraphicsContext> context, TileKey const & tileKey,

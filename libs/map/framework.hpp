@@ -57,6 +57,7 @@
 
 #include "base/macros.hpp"
 #include "base/strings_bundle.hpp"
+#include "base/timer.hpp"
 
 #include "std/target_os.hpp"
 
@@ -753,13 +754,27 @@ public:
   void SetFogOfWarOpacity(int percent);
   static int GetFogOfWarColor();
   void SetFogOfWarColor(int colorIndex);
+  static int GetFogOfWarGradient();
+  void SetFogOfWarGradient(int percent);
+  static int GetFogThrottleSpeed(int tier);
+  static void SetFogThrottleSpeed(int tier, int speed);
+  static int GetFogThrottleInterval(int tier);
+  static void SetFogThrottleInterval(int tier, int interval);
 
   // Cached track segments (Mercator) for fog-of-war tile generation.
   // Each inner vector is a contiguous segment of points.
   // Populated on the main thread, read on the render thread.
   std::mutex m_fogTrackPointsMutex;
   std::vector<std::vector<m2::PointD>> m_fogTrackSegments;
+  // Per-segment bounding rects for fast tile-vs-segment culling.
+  std::vector<m2::RectD> m_fogSegmentBounds;
   std::optional<m2::PointD> m_fogCurrentPosition;
+  // Accumulated live GPS positions for fog reveals.
+  std::vector<m2::PointD> m_fogGpsPositions;
+  // Bounding rect of all GPS positions + track segments for fast-path tile culling.
+  m2::RectD m_fogDataBoundingRect;
+  base::Timer m_fogInvalidateTimer;
+
   void UpdateFogTrackPoints();
   void InvalidateFogTiles();
 

@@ -109,6 +109,14 @@ std::string_view constexpr kFogOfWarEnabledKey = "FogOfWarEnabled";
 std::string_view constexpr kFogOfWarRadiusKey = "FogOfWarRadius";
 std::string_view constexpr kFogOfWarOpacityKey = "FogOfWarOpacity";
 std::string_view constexpr kFogOfWarColorKey = "FogOfWarColor";
+std::string_view constexpr kFogOfWarGradientKey = "FogOfWarGradient";
+std::string_view constexpr kFogThrottleSpeed1Key = "FogThrottleSpeed1";
+std::string_view constexpr kFogThrottleSpeed2Key = "FogThrottleSpeed2";
+std::string_view constexpr kFogThrottleSpeed3Key = "FogThrottleSpeed3";
+std::string_view constexpr kFogThrottleInterval1Key = "FogThrottleInterval1";
+std::string_view constexpr kFogThrottleInterval2Key = "FogThrottleInterval2";
+std::string_view constexpr kFogThrottleInterval3Key = "FogThrottleInterval3";
+std::string_view constexpr kFogThrottleInterval4Key = "FogThrottleInterval4";
 std::string_view constexpr kTrafficSimplifiedColorsKey = "TrafficSimplifiedColors";
 std::string_view constexpr kLargeFontsSize = "LargeFontsSize";
 std::string_view constexpr kTranslitMode = "TransliterationMode";
@@ -213,18 +221,51 @@ void Framework::OnLocationUpdate(GpsInfo const & info)
     {
       std::lock_guard lock(m_fogTrackPointsMutex);
       if (!m_fogCurrentPosition.has_value())
+      {
         needInvalidate = true;
+      }
       else
       {
-        // Invalidate when moved more than ~100m (avoid constant re-render).
-        constexpr double kMinMoveMercator = 100.0 / 111320.0;
+        constexpr double kMinMoveMercator = 10.0 / 111320.0;
         double const dist = m_fogCurrentPosition->Length(pos);
         needInvalidate = dist > kMinMoveMercator;
       }
       m_fogCurrentPosition = pos;
+      // Only accumulate when position actually moved significantly.
+      if (needInvalidate)
+      {
+        m_fogGpsPositions.push_back(pos);
+        m_fogDataBoundingRect.Add(pos);
+      }
     }
     if (needInvalidate)
-      InvalidateFogTiles();
+    {
+      // Speed-adaptive throttle using configurable thresholds and intervals.
+      // Speeds stored as km/h, intervals as ×100 ms.
+      double const speed = rInfo.HasSpeed() ? rInfo.m_speed : 0.0;
+      double const speedKmh = speed * 3.6;
+      int const speed1 = GetFogThrottleSpeed(0);
+      int const speed2 = GetFogThrottleSpeed(1);
+      int const speed3 = GetFogThrottleSpeed(2);
+      double throttleSec;
+      if (speedKmh < speed1)
+        throttleSec = GetFogThrottleInterval(0) * 0.1;
+      else if (speedKmh < speed2)
+        throttleSec = GetFogThrottleInterval(1) * 0.1;
+      else if (speedKmh < speed3)
+        throttleSec = GetFogThrottleInterval(2) * 0.1;
+      else
+        throttleSec = GetFogThrottleInterval(3) * 0.1;
+
+      if (m_fogInvalidateTimer.ElapsedSeconds() >= throttleSec)
+      {
+        m_fogInvalidateTimer.Reset();
+        // Skip UpdateFogTrackPoints — tracks don't change during GPS movement.
+        // GPS positions are already accumulated in m_fogGpsPositions above.
+        if (m_drapeEngine)
+          m_drapeEngine->EnableFogOfWar(true);
+      }
+    }
   }
 }
 
@@ -1256,6 +1297,12 @@ void Framework::EnterForeground()
     m_drapeEngine->OnEnterForeground();
 
   m_trafficManager.OnEnterForeground();
+
+  // Refresh fog tiles: the GPS tracker may have accumulated positions
+  // while the app was in background, and the track recorder may have
+  // flushed new data to disk. Re-read everything and invalidate.
+  if (LoadFogOfWarEnabled())
+    InvalidateFogTiles();
 }
 
 void Framework::InitCountryInfoGetter()
@@ -1528,7 +1575,10 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
   {
     if (mode == dp::BackgroundMode::FogOfWar)
     {
-      constexpr uint32_t kTileSize = 256;
+      // Use reduced resolution for fog tiles — fog is a smooth overlay with
+      // no sharp features, so 128×128 bilinear-filtered by the GPU looks
+      // identical to 256×256 while being 4× faster to compute and upload.
+      constexpr uint32_t kTileSize = 128;
       constexpr uint32_t kBytesPerPixel = 4;
 
       int const fogOpacityPct = GetFogOfWarOpacity();
@@ -1546,113 +1596,170 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
       double const tileWidth = tileRect.SizeX();
       double const tileHeight = tileRect.SizeY();
 
-      // No pixel floor — radius must scale strictly with geography.
-      // At low zoom levels corridors become thin/invisible, which is correct.
-      double const radiusPx = revealRadiusMercator / tileWidth * kTileSize;
-
-      std::vector<uint8_t> pixels(kTileSize * kTileSize * kBytesPerPixel);
-
-      // Fill with fog color and opacity.
-      for (uint32_t i = 0; i < kTileSize * kTileSize; ++i)
-      {
-        pixels[i * kBytesPerPixel + 0] = fogR;
-        pixels[i * kBytesPerPixel + 1] = fogG;
-        pixels[i * kBytesPerPixel + 2] = fogB;
-        pixels[i * kBytesPerPixel + 3] = fogAlpha;
-      }
+      // Ensure reveals are always visible: enforce a minimum pixel radius
+      // so the trail doesn't vanish at high zoom-out levels.
+      constexpr double kMinRadiusPx = 8.0;
+      double const radiusPx = std::max(kMinRadiusPx,
+                                        revealRadiusMercator / tileWidth * kTileSize);
 
       auto expandedRect = tileRect;
       expandedRect.Inflate(revealRadiusMercator, revealRadiusMercator);
 
+      // Fast path: check if this tile has any GPS data nearby using bounding rect.
+      // Do this BEFORE pixel allocation to skip work for tiles far from any data.
+      bool hasNearbyGpsData = false;
+      {
+        std::lock_guard lock(m_fogTrackPointsMutex);
+        if (m_fogCurrentPosition.has_value() && expandedRect.IsPointInside(*m_fogCurrentPosition))
+          hasNearbyGpsData = true;
+        if (!hasNearbyGpsData && m_fogDataBoundingRect.IsValid())
+        {
+          auto dataBounds = m_fogDataBoundingRect;
+          dataBounds.Inflate(revealRadiusMercator, revealRadiusMercator);
+          hasNearbyGpsData = expandedRect.IsIntersect(dataBounds);
+        }
+      }
+
+      constexpr uint32_t kPixelCount = kTileSize * kTileSize;
+      std::vector<uint8_t> pixels(kPixelCount * kBytesPerPixel);
+
+      // Fill with fog color and opacity using 32-bit writes.
+      uint32_t const fogPixel = static_cast<uint32_t>(fogR) |
+                                (static_cast<uint32_t>(fogG) << 8) |
+                                (static_cast<uint32_t>(fogB) << 16) |
+                                (static_cast<uint32_t>(fogAlpha) << 24);
+      auto * pixelData = reinterpret_cast<uint32_t *>(pixels.data());
+      for (uint32_t i = 0; i < kPixelCount; ++i)
+        pixelData[i] = fogPixel;
+
+      if (!hasNearbyGpsData)
+      {
+        // Pure solid fog — skip all reveal pixel processing.
+        if (m_drapeEngine)
+          m_drapeEngine->SetTileBackgroundData(tileKey, kTileSize, kTileSize,
+                                               dp::TextureFormat::RGBA8, mode,
+                                               std::move(pixels));
+        return;
+      }
+
       double const radiusSq = radiusPx * radiusPx;
-      double const innerRadiusSq = radiusSq * 0.49;  // 70% inner fully clear
+      // Configurable gradient: gradient width % of radius is transition zone.
+      int const gradientPercent = GetFogOfWarGradient();
+      double const innerFraction = 1.0 - gradientPercent / 100.0;
+      double const innerRadiusSq = radiusSq * innerFraction * innerFraction;
+
+      // Pre-compute sqrt values to avoid per-pixel sqrt calls in the gradient ring.
+      float const innerRadius = std::sqrt(static_cast<float>(innerRadiusSq));
+      float const outerRadius = std::sqrt(static_cast<float>(radiusSq));
+      float const invRadiusDiff = (outerRadius > innerRadius)
+                                     ? 1.0f / (outerRadius - innerRadius)
+                                     : 0.0f;
+      float const radiusSqF = static_cast<float>(radiusSq);
+      float const innerRadiusSqF = static_cast<float>(innerRadiusSq);
 
       // Clear alpha for a pixel given distance squared from center.
-      auto const clearPixel = [&](int x, int y, double distSq)
+      auto const clearPixel = [&](int x, int y, float distSq)
       {
         uint8_t & alpha = pixels[(y * kTileSize + x) * kBytesPerPixel + 3];
-        if (distSq <= innerRadiusSq)
+        if (alpha == 0)
+          return;  // Already fully revealed — skip.
+        if (distSq <= innerRadiusSqF)
         {
           alpha = 0;
         }
-        else if (distSq <= radiusSq)
+        else if (distSq <= radiusSqF)
         {
-          double const t = (std::sqrt(distSq) - std::sqrt(innerRadiusSq)) /
-                           (std::sqrt(radiusSq) - std::sqrt(innerRadiusSq));
-          alpha = std::min(alpha, static_cast<uint8_t>(t * fogAlpha));
+          // Smooth cubic ease-in for a gentler gradient.
+          float const t = (std::sqrt(distSq) - innerRadius) * invRadiusDiff;
+          float const smooth = t * t * (3.0f - 2.0f * t);  // smoothstep
+          alpha = std::min(alpha, static_cast<uint8_t>(smooth * fogAlpha));
         }
       };
 
-      // Convert Mercator point to tile pixel coordinates.
-      // Row 0 = texture Y=0 = south (minY), row 255 = texture Y=1 = north (maxY).
-      auto const toPixel = [&](m2::PointD const & mercPt) -> std::pair<double, double>
+      // Convert Mercator point to tile pixel coordinates (float for faster per-pixel math).
+      auto const toPixel = [&](m2::PointD const & mercPt) -> std::pair<float, float>
       {
-        return {(mercPt.x - tileRect.minX()) / tileWidth * kTileSize,
-                (mercPt.y - tileRect.minY()) / tileHeight * kTileSize};
+        return {static_cast<float>((mercPt.x - tileRect.minX()) / tileWidth * kTileSize),
+                static_cast<float>((mercPt.y - tileRect.minY()) / tileHeight * kTileSize)};
       };
 
+      float const radiusPxF = static_cast<float>(radiusPx);
+
       // Reveal a thick line segment between two pixel-space points (stroked path).
-      auto const revealSegment = [&](double x0, double y0, double x1, double y1)
+      auto const revealSegment = [&](float x0, float y0, float x1, float y1)
       {
         // Bounding box of the segment + radius.
-        int const minPx = std::max(0, static_cast<int>(std::min(x0, x1) - radiusPx));
+        int const minPx = std::max(0, static_cast<int>(std::min(x0, x1) - radiusPxF));
         int const maxPx = std::min(static_cast<int>(kTileSize) - 1,
-                                    static_cast<int>(std::max(x0, x1) + radiusPx));
-        int const minPy = std::max(0, static_cast<int>(std::min(y0, y1) - radiusPx));
+                                    static_cast<int>(std::max(x0, x1) + radiusPxF));
+        int const minPy = std::max(0, static_cast<int>(std::min(y0, y1) - radiusPxF));
         int const maxPy = std::min(static_cast<int>(kTileSize) - 1,
-                                    static_cast<int>(std::max(y0, y1) + radiusPx));
+                                    static_cast<int>(std::max(y0, y1) + radiusPxF));
 
-        double const segDx = x1 - x0;
-        double const segDy = y1 - y0;
-        double const segLenSq = segDx * segDx + segDy * segDy;
+        float const segDx = x1 - x0;
+        float const segDy = y1 - y0;
+        float const segLenSq = segDx * segDx + segDy * segDy;
 
         for (int y = minPy; y <= maxPy; ++y)
           for (int x = minPx; x <= maxPx; ++x)
           {
             // Distance from pixel to line segment.
-            double distSq;
-            if (segLenSq < 1e-9)
+            float distSq;
+            if (segLenSq < 1e-6f)
             {
-              double const dx = x - x0;
-              double const dy = y - y0;
+              float const dx = x - x0;
+              float const dy = y - y0;
               distSq = dx * dx + dy * dy;
             }
             else
             {
-              double t = ((x - x0) * segDx + (y - y0) * segDy) / segLenSq;
-              t = std::max(0.0, std::min(1.0, t));
-              double const projX = x0 + t * segDx;
-              double const projY = y0 + t * segDy;
-              double const dx = x - projX;
-              double const dy = y - projY;
+              float t = ((x - x0) * segDx + (y - y0) * segDy) / segLenSq;
+              t = std::max(0.0f, std::min(1.0f, t));
+              float const projX = x0 + t * segDx;
+              float const projY = y0 + t * segDy;
+              float const dx = x - projX;
+              float const dy = y - projY;
               distSq = dx * dx + dy * dy;
             }
-            if (distSq <= radiusSq)
+            if (distSq <= radiusSqF)
               clearPixel(x, y, distSq);
           }
       };
 
-      // Reveal from live GPS tracker (as individual points).
-      GpsTracker::Instance().ForEachTrackPointSafe([&](location::GpsInfo const & pt, size_t) -> bool
-      {
-        auto const merc = mercator::FromLatLon(pt.m_latitude, pt.m_longitude);
-        if (!expandedRect.IsPointInside(merc))
-          return true;
-        auto const [px, py] = toPixel(merc);
-        int const minX = std::max(0, static_cast<int>(px - radiusPx));
-        int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPx));
-        int const minY = std::max(0, static_cast<int>(py - radiusPx));
-        int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPx));
-        for (int y = minY; y <= maxY; ++y)
-          for (int x = minX; x <= maxX; ++x)
-            clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
-        return true;
-      });
-
-      // Reveal from cached track segments (stroked lines like OsmAnd)
-      // and current GPS position.
+      // Reveal from cached GPS positions and track segments.
+      // All data is protected by m_fogTrackPointsMutex — no direct
+      // GpsTracker iteration (which is not thread-safe).
       {
         std::lock_guard lock(m_fogTrackPointsMutex);
+
+        // Reveal from accumulated live GPS positions as connected segments.
+        for (size_t gi = 0; gi < m_fogGpsPositions.size(); ++gi)
+        {
+          auto const & gpsPos = m_fogGpsPositions[gi];
+          bool const curInside = expandedRect.IsPointInside(gpsPos);
+          bool const prevInside = (gi > 0) && expandedRect.IsPointInside(m_fogGpsPositions[gi - 1]);
+          if (!curInside && !prevInside)
+            continue;
+
+          auto const [px, py] = toPixel(gpsPos);
+          if (gi == 0 || (!prevInside && curInside))
+          {
+            // First point or re-entering tile: just reveal a circle.
+            int const minX = std::max(0, static_cast<int>(px - radiusPxF));
+            int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
+            int const minY = std::max(0, static_cast<int>(py - radiusPxF));
+            int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
+            for (int y = minY; y <= maxY; ++y)
+              for (int x = minX; x <= maxX; ++x)
+                clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+          }
+          else
+          {
+            // Connect to previous point with a thick line segment.
+            auto const [prevPx, prevPy] = toPixel(m_fogGpsPositions[gi - 1]);
+            revealSegment(prevPx, prevPy, px, py);
+          }
+        }
 
         // Reveal circle around current GPS position.
         if (m_fogCurrentPosition.has_value())
@@ -1661,18 +1768,28 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
           if (expandedRect.IsPointInside(pos))
           {
             auto const [px, py] = toPixel(pos);
-            int const minX = std::max(0, static_cast<int>(px - radiusPx));
-            int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPx));
-            int const minY = std::max(0, static_cast<int>(py - radiusPx));
-            int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPx));
+            int const minX = std::max(0, static_cast<int>(px - radiusPxF));
+            int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
+            int const minY = std::max(0, static_cast<int>(py - radiusPxF));
+            int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
             for (int y = minY; y <= maxY; ++y)
               for (int x = minX; x <= maxX; ++x)
                 clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
           }
         }
 
-        for (auto const & seg : m_fogTrackSegments)
+        for (size_t si = 0; si < m_fogTrackSegments.size(); ++si)
         {
+          // Skip entire segment if its bounding box doesn't overlap the tile.
+          if (si < m_fogSegmentBounds.size())
+          {
+            auto segBounds = m_fogSegmentBounds[si];
+            segBounds.Inflate(revealRadiusMercator, revealRadiusMercator);
+            if (!expandedRect.IsIntersect(segBounds))
+              continue;
+          }
+
+          auto const & seg = m_fogTrackSegments[si];
           for (size_t i = 0; i < seg.size(); ++i)
           {
             if (!expandedRect.IsPointInside(seg[i]) &&
@@ -1683,10 +1800,10 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
             if (i == 0)
             {
               // First point: just clear a circle.
-              int const minX = std::max(0, static_cast<int>(px - radiusPx));
-              int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPx));
-              int const minY = std::max(0, static_cast<int>(py - radiusPx));
-              int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPx));
+              int const minX = std::max(0, static_cast<int>(px - radiusPxF));
+              int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
+              int const minY = std::max(0, static_cast<int>(py - radiusPxF));
+              int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
               for (int y = minY; y <= maxY; ++y)
                 for (int x = minX; x <= maxX; ++x)
                   clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
@@ -1854,6 +1971,13 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
 
   if (LoadFogOfWarEnabled())
   {
+    // Auto-enable GPS tracker so live position points accumulate for fog reveals.
+    auto & tracker = GpsTracker::Instance();
+    if (!tracker.IsEnabled())
+    {
+      tracker.SetEnabled(true);
+      tracker.Connect(bind(&Framework::OnUpdateGpsTrackPointsCallback, this, _1, _2, _3));
+    }
     UpdateFogTrackPoints();
     m_drapeEngine->EnableFogOfWar(true);
   }
@@ -1881,6 +2005,10 @@ void Framework::OnRecoverSurface(int width, int height, bool recreateContextDepe
   m_trafficManager.OnRecoverSurface();
   m_transitManager.Invalidate();
   m_isolinesManager.Invalidate();
+
+  // Re-render fog tiles after surface recovery (e.g. wake from screen-off).
+  // GPS positions may have accumulated while rendering was disabled.
+  InvalidateFogTiles();
 }
 
 void Framework::OnDestroySurface()
@@ -2918,6 +3046,23 @@ void Framework::EnableFogOfWar(bool enable)
     m_drapeEngine->EnableFogOfWar(enable);
 }
 
+// Decimate a polyline in-place: keep only points that are >= minDistSq apart.
+// Always preserves the first and last points.
+static void DecimatePoints(std::vector<m2::PointD> & pts, double minDistSq)
+{
+  if (pts.size() <= 2)
+    return;
+  size_t write = 0;
+  for (size_t read = 1; read < pts.size(); ++read)
+  {
+    double const dx = pts[read].x - pts[write].x;
+    double const dy = pts[read].y - pts[write].y;
+    if (dx * dx + dy * dy >= minDistSq || read == pts.size() - 1)
+      pts[++write] = pts[read];
+  }
+  pts.resize(write + 1);
+}
+
 void Framework::UpdateFogTrackPoints()
 {
   std::vector<std::vector<m2::PointD>> segments;
@@ -2944,14 +3089,83 @@ void Framework::UpdateFogTrackPoints()
       }
     }
   }
+
+  // Decimate track segments: points closer than 30% of the reveal radius
+  // are redundant for fog rendering. This dramatically reduces point count
+  // for dense GPX tracks (e.g. 1-second GPS intervals).
+  int const revealRadiusMeters = GetFogOfWarRadius();
+  double const decimateDist = std::max(10.0, revealRadiusMeters * 0.3) / 111320.0;
+  double const decimateDistSq = decimateDist * decimateDist;
+  for (auto & seg : segments)
+    DecimatePoints(seg, decimateDistSq);
+
   std::lock_guard lock(m_fogTrackPointsMutex);
   m_fogTrackSegments = std::move(segments);
+
+  // Decimate accumulated GPS positions too.
+  DecimatePoints(m_fogGpsPositions, decimateDistSq);
+
+  // Build per-segment bounding rects for fast tile culling.
+  m_fogSegmentBounds.clear();
+  m_fogSegmentBounds.reserve(m_fogTrackSegments.size());
+
+  // Rebuild bounding rect from all data sources.
+  m_fogDataBoundingRect.MakeEmpty();
+  for (auto const & seg : m_fogTrackSegments)
+  {
+    m2::RectD segRect;
+    for (auto const & pt : seg)
+    {
+      segRect.Add(pt);
+      m_fogDataBoundingRect.Add(pt);
+    }
+    m_fogSegmentBounds.push_back(segRect);
+  }
+  for (auto const & pt : m_fogGpsPositions)
+    m_fogDataBoundingRect.Add(pt);
+  if (m_fogCurrentPosition.has_value())
+    m_fogDataBoundingRect.Add(*m_fogCurrentPosition);
+
+  // Always merge GPS tracker points so that positions accumulated
+  // during background (wake-up) are picked up. Use a set-like merge:
+  // tracker points older than the latest accumulated position are skipped
+  // (they were already added via OnLocationUpdate).
+  {
+    m2::PointD lastAccumulated;
+    bool hasLast = !m_fogGpsPositions.empty();
+    if (hasLast)
+      lastAccumulated = m_fogGpsPositions.back();
+
+    GpsTracker::Instance().ForEachTrackPointSafe([&](location::GpsInfo const & pt, size_t) -> bool
+    {
+      auto const merc = mercator::FromLatLon(pt.m_latitude, pt.m_longitude);
+      // Skip points we already have (they appear before the last accumulated point).
+      if (hasLast)
+      {
+        constexpr double kEpsSq = 1e-14;
+        double const dx = merc.x - lastAccumulated.x;
+        double const dy = merc.y - lastAccumulated.y;
+        if (dx * dx + dy * dy < kEpsSq)
+        {
+          hasLast = false;  // Found the match; accept all subsequent points.
+          return true;
+        }
+        return true;  // Still before the match — skip.
+      }
+      m_fogGpsPositions.push_back(merc);
+      m_fogDataBoundingRect.Add(merc);
+      return true;
+    });
+  }
 }
 
 void Framework::InvalidateFogTiles()
 {
   if (m_drapeEngine && LoadFogOfWarEnabled())
+  {
+    UpdateFogTrackPoints();
     m_drapeEngine->EnableFogOfWar(true);
+  }
 }
 
 int Framework::GetFogOfWarRadius()
@@ -3001,6 +3215,60 @@ void Framework::SetFogOfWarColor(int color)
 {
   settings::Set(kFogOfWarColorKey, color);
   InvalidateFogTiles();
+}
+
+int Framework::GetFogOfWarGradient()
+{
+  int gradient;
+  if (!settings::Get(kFogOfWarGradientKey, gradient))
+    gradient = 60;
+  return gradient;
+}
+
+void Framework::SetFogOfWarGradient(int percent)
+{
+  settings::Set(kFogOfWarGradientKey, percent);
+  InvalidateFogTiles();
+}
+
+namespace
+{
+std::string_view constexpr kFogThrottleSpeedKeys[] = {kFogThrottleSpeed1Key, kFogThrottleSpeed2Key, kFogThrottleSpeed3Key};
+// Defaults in km/h: ~5 km/h (walking), ~20 km/h (cycling), ~50 km/h (driving)
+int constexpr kFogThrottleSpeedDefaults[] = {5, 20, 50};
+std::string_view constexpr kFogThrottleIntervalKeys[] = {kFogThrottleInterval1Key, kFogThrottleInterval2Key, kFogThrottleInterval3Key, kFogThrottleInterval4Key};
+// Defaults in ×100 ms: 1.0s, 2.0s, 3.0s, 5.0s
+int constexpr kFogThrottleIntervalDefaults[] = {10, 20, 30, 50};
+}  // namespace
+
+int Framework::GetFogThrottleSpeed(int tier)
+{
+  ASSERT(tier >= 0 && tier < 3, ());
+  int val;
+  if (!settings::Get(kFogThrottleSpeedKeys[tier], val))
+    val = kFogThrottleSpeedDefaults[tier];
+  return val;
+}
+
+void Framework::SetFogThrottleSpeed(int tier, int speed)
+{
+  ASSERT(tier >= 0 && tier < 3, ());
+  settings::Set(kFogThrottleSpeedKeys[tier], speed);
+}
+
+int Framework::GetFogThrottleInterval(int tier)
+{
+  ASSERT(tier >= 0 && tier < 4, ());
+  int val;
+  if (!settings::Get(kFogThrottleIntervalKeys[tier], val))
+    val = kFogThrottleIntervalDefaults[tier];
+  return val;
+}
+
+void Framework::SetFogThrottleInterval(int tier, int interval)
+{
+  ASSERT(tier >= 0 && tier < 4, ());
+  settings::Set(kFogThrottleIntervalKeys[tier], interval);
 }
 
 void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition)

@@ -47,10 +47,25 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
     return R.xml.prefs_main;
   }
 
+  private boolean isSubScreen()
+  {
+    final Bundle args = getArguments();
+    return args != null
+        && args.getString(androidx.preference.PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) != null;
+  }
+
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
   {
     super.onViewCreated(view, savedInstanceState);
+
+    // When navigating into a sub-screen (e.g. "Advanced" fog settings), Android reuses this
+    // fragment class with the sub-screen as root. Skip main-screen inits to avoid crashes.
+    if (isSubScreen())
+    {
+      initFogOfWarAdvancedCallbacks();
+      return;
+    }
 
     initStoragePrefCallbacks();
     initMeasureUnitsPrefsCallbacks();
@@ -73,7 +88,7 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
     initScreenSleepEnabledPrefsCallbacks();
     initShowOnLockScreenPrefsCallbacks();
     initNightNavigationPrefsCallbacks();
-    initFogOfWarPrefsCallbacks();
+    initFogOfWarBasicCallbacks();
   }
 
   private void updateVoiceInstructionsPrefsSummary()
@@ -111,6 +126,10 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
   public void onResume()
   {
     super.onResume();
+
+    // Sub-screens (e.g. Advanced fog settings) don't have main-screen prefs.
+    if (isSubScreen())
+      return;
 
     updateProfileSettingsPrefsSummary();
     updateVoiceInstructionsPrefsSummary();
@@ -528,7 +547,7 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
     });
   }
 
-  private void initFogOfWarPrefsCallbacks()
+  private void initFogOfWarBasicCallbacks()
   {
     final SeekBarPreference radiusPref = getPreference(getString(R.string.pref_fog_of_war_radius));
     radiusPref.setValue(Framework.nativeGetFogOfWarRadius());
@@ -550,6 +569,59 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
     updateFogColorSwatch(colorPref, Framework.nativeGetFogOfWarColor());
     colorPref.setOnPreferenceClickListener(preference -> {
       showFogColorPickerDialog(colorPref);
+      return true;
+    });
+  }
+
+  private void initFogOfWarAdvancedCallbacks()
+  {
+    final SeekBarPreference gradientPref = findPreference(getString(R.string.pref_fog_of_war_gradient));
+    if (gradientPref != null)
+    {
+      gradientPref.setValue(Framework.nativeGetFogOfWarGradient());
+      gradientPref.setSummary(gradientPref.getValue() + "%");
+      gradientPref.setOnPreferenceChangeListener((preference, newValue) -> {
+        Framework.nativeSetFogOfWarGradient((Integer) newValue);
+        gradientPref.setSummary(newValue + "%");
+        return true;
+      });
+    }
+
+    initFogThrottlePref(R.string.pref_fog_throttle_speed1, 0, true);
+    initFogThrottlePref(R.string.pref_fog_throttle_speed2, 1, true);
+    initFogThrottlePref(R.string.pref_fog_throttle_speed3, 2, true);
+    initFogThrottlePref(R.string.pref_fog_throttle_interval1, 0, false);
+    initFogThrottlePref(R.string.pref_fog_throttle_interval2, 1, false);
+    initFogThrottlePref(R.string.pref_fog_throttle_interval3, 2, false);
+    initFogThrottlePref(R.string.pref_fog_throttle_interval4, 3, false);
+  }
+
+  private static String formatThrottleValue(int value, boolean isSpeed)
+  {
+    if (isSpeed)
+      return value + " km/h";
+    // Intervals stored as ×100ms
+    double sec = value * 0.1;
+    if (sec == (int) sec)
+      return (int) sec + " s";
+    return String.format(java.util.Locale.US, "%.1f s", sec);
+  }
+
+  private void initFogThrottlePref(int keyResId, int tier, boolean isSpeed)
+  {
+    final SeekBarPreference pref = findPreference(getString(keyResId));
+    if (pref == null)
+      return;
+    int value = isSpeed ? Framework.nativeGetFogThrottleSpeed(tier) : Framework.nativeGetFogThrottleInterval(tier);
+    pref.setValue(value);
+    pref.setSummary(formatThrottleValue(value, isSpeed));
+    pref.setOnPreferenceChangeListener((preference, newValue) -> {
+      int val = (Integer) newValue;
+      if (isSpeed)
+        Framework.nativeSetFogThrottleSpeed(tier, val);
+      else
+        Framework.nativeSetFogThrottleInterval(tier, val);
+      pref.setSummary(formatThrottleValue(val, isSpeed));
       return true;
     });
   }
