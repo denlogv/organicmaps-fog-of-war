@@ -58,6 +58,15 @@
   <string name="pref_fog_of_war_radius" translatable="false">FogOfWarRadius</string>
   <string name="pref_fog_of_war_opacity" translatable="false">FogOfWarOpacity</string>
   <string name="pref_fog_of_war_color" translatable="false">FogOfWarColor</string>
+  <string name="pref_fog_of_war_advanced" translatable="false">FogOfWarAdvanced</string>
+  <string name="pref_fog_of_war_gradient" translatable="false">FogOfWarGradient</string>
+  <string name="pref_fog_throttle_speed1" translatable="false">FogThrottleSpeed1</string>
+  <string name="pref_fog_throttle_speed2" translatable="false">FogThrottleSpeed2</string>
+  <string name="pref_fog_throttle_speed3" translatable="false">FogThrottleSpeed3</string>
+  <string name="pref_fog_throttle_interval1" translatable="false">FogThrottleInterval1</string>
+  <string name="pref_fog_throttle_interval2" translatable="false">FogThrottleInterval2</string>
+  <string name="pref_fog_throttle_interval3" translatable="false">FogThrottleInterval3</string>
+  <string name="pref_fog_throttle_interval4" translatable="false">FogThrottleInterval4</string>
 
   <string name="pref_privacy" translatable="false">pref_privacy</string>
   <string name="pref_search_history" translatable="false">pref_search_history</string>

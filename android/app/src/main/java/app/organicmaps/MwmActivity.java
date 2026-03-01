@@ -274,6 +274,10 @@ public class MwmActivity extends BaseMwmFragmentActivity
       saveAndStopTrackRecording();
     }
 
+    // Auto-start track recording when fog of war is enabled.
+    if (Framework.nativeIsFogOfWarEnabled() && !TrackRecorder.nativeIsTrackRecordingEnabled())
+      startTrackRecording();
+
     processIntent();
     migrateOAuthCredentials();
   }

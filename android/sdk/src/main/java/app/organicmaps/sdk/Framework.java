@@ -305,6 +305,12 @@ public class Framework
   public static native int nativeGetFogOfWarOpacity();
   public static native void nativeSetFogOfWarColor(int colorIndex);
   public static native int nativeGetFogOfWarColor();
+  public static native void nativeSetFogOfWarGradient(int percent);
+  public static native int nativeGetFogOfWarGradient();
+  public static native void nativeSetFogThrottleSpeed(int tier, int speed);
+  public static native int nativeGetFogThrottleSpeed(int tier);
+  public static native void nativeSetFogThrottleInterval(int tier, int interval);
+  public static native int nativeGetFogThrottleInterval(int tier);
 
   public static native boolean nativeNeedUpdateForRoutes();
 

@@ -1003,7 +1003,10 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
     if (m_fogOfWarRenderer->GetBackgroundMode() != mode)
       m_fogOfWarRenderer->SetBackgroundMode(m_context, mode);
     else if (mode != dp::BackgroundMode::Default)
+    {
       m_fogOfWarRenderer->InvalidateTiles(m_context);
+      m_forceUpdateScene = true;
+    }
     break;
   }
 
