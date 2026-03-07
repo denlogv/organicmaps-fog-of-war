@@ -17,7 +17,7 @@ subprocess.Popen([sys.executable, SERVER_RUNNABLE], stdout=subprocess.DEVNULL, s
 
 HOST='localhost'
 PORT=34568  # Should match config.py
-TIMEOUT_SECONDS=3.0
+TIMEOUT_SECONDS=15.0
 
 # Source: https://gist.github.com/butla/2d9a4c0f35ea47b7452156c96a4e7b12
 start_time = time.perf_counter()

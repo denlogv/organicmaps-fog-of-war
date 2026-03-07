@@ -111,20 +111,13 @@ class SiblingKiller:
 
 
     def process_using_port(self, port):
-        def isListenOnPort(pid):
-            info_line = self.exec_command(f"lsof -a -p{pid} -i4")
-            return info_line.endswith("(LISTEN)") and str(port) in info_line
-
-        listening_process = list(filter(isListenOnPort, self.all_pids))
-
-        if len(listening_process) > 1:
-            pass
-            # We should panic here
-        
-        if not listening_process:
+        output = self.exec_command(f"lsof -t -i:{port} -sTCP:LISTEN 2>/dev/null").strip()
+        if not output:
             return None
-        
-        return listening_process[0]
+        try:
+            return int(output.split('\n')[0])
+        except ValueError:
+            return None
     
     
     def my_process_id(self):
@@ -158,7 +151,7 @@ class SiblingKiller:
 
         logging.debug(f"Pinging returned html: {html}")
 
-        return html == "pong"
+        return html in (b"pong", "pong")
 
 
     def serving_process_id(self):
