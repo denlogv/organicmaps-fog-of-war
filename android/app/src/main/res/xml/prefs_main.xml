@@ -211,9 +211,16 @@
         app:showSeekBarValue="true"
         app:updatesContinuously="true"
         android:order="1" />
+      <androidx.preference.SwitchPreferenceCompat
+        android:key="@string/pref_fog_of_war_min_visible"
+        android:title="@string/pref_fog_of_war_min_visible_title"
+        app:singleLineTitle="false"
+        android:summary="@string/pref_fog_of_war_min_visible_summary"
+        android:defaultValue="true"
+        android:order="2" />
       <androidx.preference.PreferenceCategory
         android:title="@string/prefs_fog_throttle_slow"
-        android:order="2">
+        android:order="3">
         <androidx.preference.SeekBarPreference
           android:key="@string/pref_fog_throttle_speed1"
           android:title="@string/pref_fog_throttle_speed1_title"
@@ -239,7 +246,7 @@
       </androidx.preference.PreferenceCategory>
       <androidx.preference.PreferenceCategory
         android:title="@string/prefs_fog_throttle_medium"
-        android:order="3">
+        android:order="4">
         <androidx.preference.SeekBarPreference
           android:key="@string/pref_fog_throttle_speed2"
           android:title="@string/pref_fog_throttle_speed2_title"
@@ -265,7 +272,7 @@
       </androidx.preference.PreferenceCategory>
       <androidx.preference.PreferenceCategory
         android:title="@string/prefs_fog_throttle_fast"
-        android:order="4">
+        android:order="5">
         <androidx.preference.SeekBarPreference
           android:key="@string/pref_fog_throttle_speed3"
           android:title="@string/pref_fog_throttle_speed3_title"
@@ -291,7 +298,7 @@
       </androidx.preference.PreferenceCategory>
       <androidx.preference.PreferenceCategory
         android:title="@string/prefs_fog_throttle_very_fast"
-        android:order="5">
+        android:order="6">
         <androidx.preference.SeekBarPreference
           android:key="@string/pref_fog_throttle_interval4"
           android:title="@string/pref_fog_throttle_interval4_title"

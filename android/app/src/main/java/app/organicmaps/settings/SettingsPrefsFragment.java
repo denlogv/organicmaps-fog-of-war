@@ -13,6 +13,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.SeekBarPreference;
+import androidx.preference.SwitchPreferenceCompat;
 import androidx.preference.TwoStatePreference;
 import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
@@ -583,6 +584,16 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
       gradientPref.setOnPreferenceChangeListener((preference, newValue) -> {
         Framework.nativeSetFogOfWarGradient((Integer) newValue);
         gradientPref.setSummary(newValue + "%");
+        return true;
+      });
+    }
+
+    final SwitchPreferenceCompat minVisiblePref = findPreference(getString(R.string.pref_fog_of_war_min_visible));
+    if (minVisiblePref != null)
+    {
+      minVisiblePref.setChecked(Framework.nativeIsFogOfWarMinVisible());
+      minVisiblePref.setOnPreferenceChangeListener((preference, newValue) -> {
+        Framework.nativeSetFogOfWarMinVisible((Boolean) newValue);
         return true;
       });
     }

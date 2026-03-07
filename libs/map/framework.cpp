@@ -110,6 +110,7 @@ std::string_view constexpr kFogOfWarRadiusKey = "FogOfWarRadius";
 std::string_view constexpr kFogOfWarOpacityKey = "FogOfWarOpacity";
 std::string_view constexpr kFogOfWarColorKey = "FogOfWarColor";
 std::string_view constexpr kFogOfWarGradientKey = "FogOfWarGradient";
+std::string_view constexpr kFogOfWarMinVisibleKey = "FogOfWarMinVisible";
 std::string_view constexpr kFogThrottleSpeed1Key = "FogThrottleSpeed1";
 std::string_view constexpr kFogThrottleSpeed2Key = "FogThrottleSpeed2";
 std::string_view constexpr kFogThrottleSpeed3Key = "FogThrottleSpeed3";
@@ -1596,11 +1597,13 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
       double const tileWidth = tileRect.SizeX();
       double const tileHeight = tileRect.SizeY();
 
-      // Ensure reveals are always visible: enforce a minimum pixel radius
-      // so the trail doesn't vanish at high zoom-out levels.
+      // When "minimum visible size" is enabled, enforce a floor so the trail
+      // doesn't vanish at high zoom-out levels.  Otherwise use true scale.
       constexpr double kMinRadiusPx = 8.0;
-      double const radiusPx = std::max(kMinRadiusPx,
-                                        revealRadiusMercator / tileWidth * kTileSize);
+      double const naturalRadiusPx = revealRadiusMercator / tileWidth * kTileSize;
+      bool const minVisible = GetFogOfWarMinVisible();
+      double const radiusPx = minVisible ? std::max(kMinRadiusPx, naturalRadiusPx)
+                                         : naturalRadiusPx;
 
       auto expandedRect = tileRect;
       expandedRect.Inflate(revealRadiusMercator, revealRadiusMercator);
@@ -3228,6 +3231,19 @@ int Framework::GetFogOfWarGradient()
 void Framework::SetFogOfWarGradient(int percent)
 {
   settings::Set(kFogOfWarGradientKey, percent);
+  InvalidateFogTiles();
+}
+
+bool Framework::GetFogOfWarMinVisible()
+{
+  bool enabled = true;
+  settings::Get(kFogOfWarMinVisibleKey, enabled);
+  return enabled;
+}
+
+void Framework::SetFogOfWarMinVisible(bool enabled)
+{
+  settings::Set(kFogOfWarMinVisibleKey, enabled);
   InvalidateFogTiles();
 }
 
