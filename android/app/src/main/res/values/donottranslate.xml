@@ -60,6 +60,7 @@
   <string name="pref_fog_of_war_color" translatable="false">FogOfWarColor</string>
   <string name="pref_fog_of_war_advanced" translatable="false">FogOfWarAdvanced</string>
   <string name="pref_fog_of_war_gradient" translatable="false">FogOfWarGradient</string>
+  <string name="pref_fog_of_war_min_visible" translatable="false">FogOfWarMinVisible</string>
   <string name="pref_fog_throttle_speed1" translatable="false">FogThrottleSpeed1</string>
   <string name="pref_fog_throttle_speed2" translatable="false">FogThrottleSpeed2</string>
   <string name="pref_fog_throttle_speed3" translatable="false">FogThrottleSpeed3</string>
