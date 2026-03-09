@@ -185,6 +185,7 @@ tools/unix/maps/settings.sh
 
 # AppStore metadata
 screenshots/
+!docs/screenshots/
 android/src/google/play/listings/
 keywords/
 iphone/metadata/**/keywords.txt
