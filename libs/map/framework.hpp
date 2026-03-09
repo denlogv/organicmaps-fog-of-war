@@ -756,8 +756,7 @@ public:
   void SetFogOfWarColor(int colorIndex);
   static int GetFogOfWarGradient();
   void SetFogOfWarGradient(int percent);
-  static bool GetFogOfWarMinVisible();
-  void SetFogOfWarMinVisible(bool enabled);
+
   static int GetFogThrottleSpeed(int tier);
   static void SetFogThrottleSpeed(int tier, int speed);
   static int GetFogThrottleInterval(int tier);

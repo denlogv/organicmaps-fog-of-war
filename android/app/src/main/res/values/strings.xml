@@ -628,8 +628,6 @@
     <string name="pref_fog_of_war_advanced_title">Advanced settings</string>
     <string name="pref_fog_of_war_gradient_title">Gradient width</string>
     <string name="pref_fog_of_war_gradient_summary">Transition zone between clear and fogged area (%)</string>
-    <string name="pref_fog_of_war_min_visible_title">Minimum visible size</string>
-    <string name="pref_fog_of_war_min_visible_summary">Keep revealed trail visible when zoomed out, even if it exceeds its real-world area</string>
     <string name="prefs_fog_throttle_slow">Slow movement (e.g. walking)</string>
     <string name="prefs_fog_throttle_medium">Medium movement (e.g. cycling)</string>
     <string name="prefs_fog_throttle_fast">Fast movement (e.g. driving)</string>

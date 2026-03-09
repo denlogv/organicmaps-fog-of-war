@@ -112,7 +112,6 @@ std::string_view constexpr kFogOfWarRadiusKey = "FogOfWarRadius";
 std::string_view constexpr kFogOfWarOpacityKey = "FogOfWarOpacity";
 std::string_view constexpr kFogOfWarColorKey = "FogOfWarColor";
 std::string_view constexpr kFogOfWarGradientKey = "FogOfWarGradient";
-std::string_view constexpr kFogOfWarMinVisibleKey = "FogOfWarMinVisible";
 std::string_view constexpr kFogThrottleSpeed1Key = "FogThrottleSpeed1";
 std::string_view constexpr kFogThrottleSpeed2Key = "FogThrottleSpeed2";
 std::string_view constexpr kFogThrottleSpeed3Key = "FogThrottleSpeed3";
@@ -1612,16 +1611,18 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
       double const tileWidth = tileRect.SizeX();
       double const tileHeight = tileRect.SizeY();
 
-      // When "minimum visible size" is enabled, enforce a floor so the trail
-      // doesn't vanish at high zoom-out levels.  Otherwise use true scale.
-      constexpr double kMinRadiusPx = 8.0;
+      // Enforce an absolute floor so the trail doesn't vanish when
+      // the natural radius is sub-pixel at far zoom.
+      constexpr double kMinRadiusPx = 1.5;
       double const naturalRadiusPx = revealRadiusMercator / tileWidth * kTileSize;
-      bool const minVisible = GetFogOfWarMinVisible();
-      double const radiusPx = minVisible ? std::max(kMinRadiusPx, naturalRadiusPx)
-                                         : naturalRadiusPx;
+      double const radiusPx = std::max(kMinRadiusPx, naturalRadiusPx);
 
+      // Use the effective pixel-space radius (back-converted to Mercator)
+      // for the expanded rect so that the kMinRadiusPx boost is respected
+      // when culling points near tile boundaries at far zoom.
+      double const effectiveRadiusMerc = radiusPx / kTileSize * tileWidth;
       auto expandedRect = tileRect;
-      expandedRect.Inflate(revealRadiusMercator, revealRadiusMercator);
+      expandedRect.Inflate(effectiveRadiusMerc, effectiveRadiusMerc);
 
       // Fast path: check if this tile has any GPS data nearby using bounding rect.
       // Do this BEFORE pixel allocation to skip work for tiles far from any data.
@@ -1754,15 +1755,13 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
         for (size_t gi = 0; gi < m_fogGpsPositions.size(); ++gi)
         {
           auto const & gpsPos = m_fogGpsPositions[gi];
-          bool const curInside = expandedRect.IsPointInside(gpsPos);
-          bool const prevInside = (gi > 0) && expandedRect.IsPointInside(m_fogGpsPositions[gi - 1]);
-          if (!curInside && !prevInside)
-            continue;
 
-          auto const [px, py] = toPixel(gpsPos);
-          if (gi == 0 || (!prevInside && curInside))
+          if (gi == 0)
           {
-            // First point or re-entering tile: just reveal a circle.
+            // First point: reveal circle if within reach of this tile.
+            if (!expandedRect.IsPointInside(gpsPos))
+              continue;
+            auto const [px, py] = toPixel(gpsPos);
             int const minX = std::max(0, static_cast<int>(px - radiusPxF));
             int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
             int const minY = std::max(0, static_cast<int>(py - radiusPxF));
@@ -1770,13 +1769,24 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
             for (int y = minY; y <= maxY; ++y)
               for (int x = minX; x <= maxX; ++x)
                 clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+            continue;
           }
-          else
+
+          // For segments: skip only if the segment bbox can't reach this tile.
+          // A long segment may cross the tile even when both endpoints are outside.
+          auto const & prevPos = m_fogGpsPositions[gi - 1];
+          bool const curInside = expandedRect.IsPointInside(gpsPos);
+          bool const prevInside = expandedRect.IsPointInside(prevPos);
+          if (!curInside && !prevInside)
           {
-            // Connect to previous point with a thick line segment.
-            auto const [prevPx, prevPy] = toPixel(m_fogGpsPositions[gi - 1]);
-            revealSegment(prevPx, prevPy, px, py);
+            m2::RectD segBox(gpsPos, prevPos);
+            if (!expandedRect.IsIntersect(segBox))
+              continue;
           }
+
+          auto const [px, py] = toPixel(gpsPos);
+          auto const [prevPx, prevPy] = toPixel(prevPos);
+          revealSegment(prevPx, prevPy, px, py);
         }
 
         // Reveal circle around current GPS position.
@@ -1810,14 +1820,11 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
           auto const & seg = m_fogTrackSegments[si];
           for (size_t i = 0; i < seg.size(); ++i)
           {
-            if (!expandedRect.IsPointInside(seg[i]) &&
-                (i == 0 || !expandedRect.IsPointInside(seg[i - 1])))
-              continue;
-
-            auto const [px, py] = toPixel(seg[i]);
             if (i == 0)
             {
-              // First point: just clear a circle.
+              if (!expandedRect.IsPointInside(seg[i]))
+                continue;
+              auto const [px, py] = toPixel(seg[i]);
               int const minX = std::max(0, static_cast<int>(px - radiusPxF));
               int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
               int const minY = std::max(0, static_cast<int>(py - radiusPxF));
@@ -1825,12 +1832,22 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
               for (int y = minY; y <= maxY; ++y)
                 for (int x = minX; x <= maxX; ++x)
                   clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+              continue;
             }
-            else
+
+            // Skip only if segment bbox can't reach this tile.
+            bool const curInside = expandedRect.IsPointInside(seg[i]);
+            bool const prevInside = expandedRect.IsPointInside(seg[i - 1]);
+            if (!curInside && !prevInside)
             {
-              auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
-              revealSegment(prevPx, prevPy, px, py);
+              m2::RectD segBox(seg[i], seg[i - 1]);
+              if (!expandedRect.IsIntersect(segBox))
+                continue;
             }
+
+            auto const [px, py] = toPixel(seg[i]);
+            auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
+            revealSegment(prevPx, prevPy, px, py);
           }
         }
       }
@@ -3249,18 +3266,6 @@ void Framework::SetFogOfWarGradient(int percent)
   InvalidateFogTiles();
 }
 
-bool Framework::GetFogOfWarMinVisible()
-{
-  bool enabled = true;
-  settings::Get(kFogOfWarMinVisibleKey, enabled);
-  return enabled;
-}
-
-void Framework::SetFogOfWarMinVisible(bool enabled)
-{
-  settings::Set(kFogOfWarMinVisibleKey, enabled);
-  InvalidateFogTiles();
-}
 
 namespace
 {
