@@ -1,4 +1,5 @@
 #include "map/bookmark_manager.hpp"
+#include "base/assert.hpp"
 #include "map/bookmark_helpers.hpp"
 #include "map/gps_tracker.hpp"
 #include "map/search_api.hpp"
@@ -306,6 +307,7 @@ void BookmarkManager::DeleteUserMark(kml::MarkId markId)
   CHECK_THREAD_CHECKER(m_threadChecker, ());
   ASSERT(!IsBookmark(markId), ());
   auto it = m_userMarks.find(markId);
+  CHECK(it != m_userMarks.end(), ());
   auto const groupId = it->second->GetGroupId();
   GetGroup(groupId)->DetachUserMark(markId);
   m_changesTracker.OnDeleteMark(markId);
@@ -519,6 +521,7 @@ void BookmarkManager::AttachTrack(kml::TrackId trackId, kml::MarkGroupId groupId
 {
   CHECK_THREAD_CHECKER(m_threadChecker, ());
   auto it = m_tracks.find(trackId);
+  CHECK(it != m_tracks.end(), ());
   it->second->Attach(groupId);
   GetBmCategory(groupId)->AttachTrack(trackId);
 }
@@ -536,6 +539,7 @@ void BookmarkManager::DeleteTrack(kml::TrackId trackId)
   CHECK_THREAD_CHECKER(m_threadChecker, ());
   DeleteTrackSelectionMark(trackId);
   auto it = m_tracks.find(trackId);
+  CHECK(it != m_tracks.end(), ());
   auto const groupId = it->second->GetGroupId();
   if (groupId != kml::kInvalidMarkGroupId)
     GetBmCategory(groupId)->DetachTrack(trackId);
@@ -2285,7 +2289,7 @@ void BookmarkManager::UpdateTrack(kml::TrackId trackId, kml::TrackData const & t
 {
   CHECK_THREAD_CHECKER(m_threadChecker, ());
   auto * track = GetTrackForEdit(trackId);
-  track->setData(trackData);
+  track->SetData(trackData);
 }
 
 kml::MarkGroupId BookmarkManager::LastEditedBMCategory()
@@ -2441,7 +2445,7 @@ bool BookmarkManager::HasBookmark(kml::MarkId markId) const
 bool BookmarkManager::HasTrack(kml::TrackId trackId) const
 {
   CHECK_THREAD_CHECKER(m_threadChecker, ());
-  ASSERT(IsBookmark(trackId), ());
+  ASSERT_NOT_EQUAL(trackId, kml::kInvalidTrackId, ());
   return (GetTrack(trackId) != nullptr);
 }
 
@@ -2511,7 +2515,7 @@ kml::MarkGroupId BookmarkManager::CreateBookmarkCategory(std::string const & nam
   return groupId;
 }
 
-void BookmarkManager::UpdateBookmarkCategory(kml::MarkGroupId & groupId, kml::CategoryData && data,
+void BookmarkManager::UpdateBookmarkCategory(kml::MarkGroupId groupId, kml::CategoryData && data,
                                              bool autoSave /* = true */)
 {
   CHECK_THREAD_CHECKER(m_threadChecker, ());
@@ -2904,13 +2908,11 @@ BookmarkManager::KMLDataCollectionPtr BookmarkManager::PrepareToSaveBookmarksFor
   CHECK_THREAD_CHECKER(m_threadChecker, ());
   auto collection = std::make_shared<KMLDataCollection>();
   auto const & track = GetTrack(trackId);
-  auto const & categoryData = new kml::CategoryData();
   auto name = kml::LocalizableString();
   kml::SetDefaultStr(name, track->GetName());
-  categoryData->m_name = name;
   auto const & trackData = track->GetData();
   auto const & fileData = new kml::FileData();
-  fileData->m_categoryData = *categoryData;
+  fileData->m_categoryData = kml::CategoryData{.m_name = name};
   fileData->m_tracksData.push_back(trackData);
   collection->emplace_back("", fileData);
   return collection;

@@ -232,7 +232,7 @@ double IndexRouter::BestEdgeComparator::GetSquaredDist(Edge const & edge) const
 IndexRouter::IndexRouter(VehicleType vehicleType, bool loadAltitudes,
                          CountryParentNameGetterFn const & countryParentNameGetterFn,
                          TCountryFileFn const & countryFileFn, CountryRectFn const & countryRectFn,
-                         shared_ptr<NumMwmIds> numMwmIds, unique_ptr<m4::Tree<NumMwmId>> numMwmTree,
+                         shared_ptr<NumMwmIds> numMwmIds, shared_ptr<m4::Tree<NumMwmId>> numMwmTree,
                          traffic::TrafficCache const & trafficCache, DataSource & dataSource)
   : m_vehicleType(vehicleType)
   , m_loadAltitudes(loadAltitudes)
@@ -316,7 +316,7 @@ bool IndexRouter::FindClosestProjectionToRoad(m2::PointD const & point, m2::Poin
 
 void IndexRouter::SetGuides(GuidesTracks && guides)
 {
-  m_guides = GuidesConnections(guides);
+  m_guides = GuidesConnections(std::move(guides));
 }
 
 RouterResultCode IndexRouter::CalculateRoute(Checkpoints const & checkpoints, m2::PointD const & startDirection,
@@ -423,9 +423,8 @@ uint32_t IndexRouter::ConnectTracksOnGuidesToOsm(std::vector<m2::PointD> const &
       continue;
 
     bool foundSegmentsForProjection = false;
-    for (size_t i = 0; i < osmConnections.size(); ++i)
+    for (auto & link : osmConnections)
     {
-      auto & link = osmConnections[i];
       geometry::PointWithAltitude const & proj = link.m_projectedPoint;
 
       auto const & segmentsProj = GetBestOutgoingSegments(proj.GetPoint(), graph);
@@ -492,40 +491,22 @@ RouterResultCode IndexRouter::DoCalculateRoute(Checkpoints const & checkpoints, 
                                                RouterDelegate const & delegate, Route & route)
 {
   m_lastRoute.reset();
-  // MwmId used for guides segments in RedressRoute().
-  NumMwmId guidesMwmId = kFakeNumMwmId;
-
-  for (auto const & checkpoint : checkpoints.GetPoints())
-  {
-    auto const country = platform::CountryFile(m_countryFileFn(checkpoint));
-
-    if (country.IsEmpty())
-    {
-      /// @todo Can we pass an error into \a route instance with final message like:
-      /// "Please, try to move start/end point a bit .."
-
-      LOG(LWARNING, ("For point", mercator::ToLatLon(checkpoint),
-                     "CountryInfoGetter returns an empty CountryFile(). It happens when checkpoint "
-                     "is put at gaps between mwm."));
-      return RouterResultCode::InternalError;
-    }
-
-    if (!m_dataSource.IsLoaded(country))
-      route.AddAbsentCountry(country.GetName());
-    else if (guidesMwmId == kFakeNumMwmId)
-      guidesMwmId = m_numMwmIds->GetId(country);
-  }
-
-  if (!route.GetAbsentCountries().empty())
-    return RouterResultCode::NeedMoreMaps;
 
   TrafficStash::Guard guard(m_trafficStash);
   unique_ptr<WorldGraph> graph = MakeWorldGraph();
 
   vector<Segment> segments;
 
-  m_guides.SetGuidesGraphParams(guidesMwmId, m_estimator->GetMaxWeightSpeedMpS());
-  m_guides.ConnectToGuidesGraph(checkpoints.GetPoints());
+  // MwmId used for guides segments in RedressRoute().
+  {
+    NumMwmId guidesMwmId = kFakeNumMwmId;
+    platform::CountryFile const country(m_countryFileFn(checkpoints.GetStart()));
+    if (!country.IsEmpty())
+      guidesMwmId = m_numMwmIds->GetId(country);
+
+    m_guides.SetGuidesGraphParams(guidesMwmId, m_estimator->GetMaxWeightSpeedMpS());
+    m_guides.ConnectToGuidesGraph(checkpoints.GetPoints());
+  }
 
   uint32_t const startIdx = ConnectTracksOnGuidesToOsm(checkpoints.GetPoints(), *graph);
   ConnectCheckpointsOnGuidesToOsm(checkpoints.GetPoints(), *graph);
@@ -748,6 +729,7 @@ namespace
 {
 void CollapseForward_ReverseLoops(std::vector<Segment> & path)
 {
+  ASSERT_GREATER(path.size(), 1, ());  // was checked on empty beforehand
   for (size_t i = 1; i < path.size() - 2;)
   {
     auto const beg = path.begin() + i;
@@ -1130,7 +1112,7 @@ void IndexRouter::PointsOnEdgesSnapping::FillDeadEndsCache(m2::PointD const & po
   m_deadEnds[0].clear();
   EraseIfDeadEnd(point, closestRoads, m_deadEnds[0]);
 
-  vector<EdgeProjectionT> candidates;
+  std::vector<EdgeProjectionT> candidates;
   m_deadEnds[1].clear();
   RoadsToNearestEdges(point, closestRoads, [this](EdgeProjectionT const & proj)
   {
@@ -1691,7 +1673,6 @@ RouterResultCode IndexRouter::RedressRoute(vector<Segment> const & segments, bas
         if (m_trafficStash)
           routeSegment.SetTraffic(m_trafficStash->GetSpeedGroup(segment));
 
-        // No need conditional speed -> time here, since it is needed for showing mapped speed limit sign.
         routeSegment.SetSpeedLimit(worldGraph.GetSpeedLimit(segment));
       }
     }

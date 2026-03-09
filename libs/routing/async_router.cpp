@@ -1,18 +1,16 @@
 #include "routing/async_router.hpp"
 
-#include "geometry/mercator.hpp"
+#include "platform/platform.hpp"
 
 #include "base/logging.hpp"
 #include "base/macros.hpp"
 #include "base/timer.hpp"
 
 #include <functional>
-#include <mutex>
-#include <utility>
 
 namespace routing
 {
-using std::lock_guard, std::unique_lock;
+using std::lock_guard;
 // ----------------------------------------------------------------------------------------------------------------------------
 
 AsyncRouter::RouterDelegateProxy::RouterDelegateProxy(ReadyCallbackOwnership const & onReady,
@@ -77,6 +75,7 @@ void AsyncRouter::RouterDelegateProxy::Cancel()
 bool AsyncRouter::FindClosestProjectionToRoad(m2::PointD const & point, m2::PointD const & direction, double radius,
                                               EdgeProj & proj)
 {
+  /// @todo No need to put a lock_guard at first glance. May be wrong ..
   return m_router->FindClosestProjectionToRoad(point, direction, radius, proj);
 }
 
@@ -133,7 +132,7 @@ AsyncRouter::AsyncRouter(PointCheckCallback const & pointCheckCallback)
 AsyncRouter::~AsyncRouter()
 {
   {
-    unique_lock ul(m_guard);
+    lock_guard ul(m_guard);
 
     ResetDelegate();
 
@@ -146,7 +145,7 @@ AsyncRouter::~AsyncRouter()
 
 void AsyncRouter::SetRouter(std::unique_ptr<IRouter> && router, std::unique_ptr<AbsentRegionsFinder> && finder)
 {
-  unique_lock ul(m_guard);
+  lock_guard ul(m_guard);
 
   ResetDelegate();
 
@@ -160,7 +159,7 @@ void AsyncRouter::CalculateRoute(Checkpoints const & checkpoints, m2::PointD con
                                  RemoveRouteCallback const & removeRouteCallback,
                                  ProgressCallback const & progressCallback, uint32_t timeoutSec)
 {
-  unique_lock ul(m_guard);
+  lock_guard ul(m_guard);
 
   m_checkpoints = checkpoints;
   m_startDirection = direction;
@@ -177,13 +176,13 @@ void AsyncRouter::CalculateRoute(Checkpoints const & checkpoints, m2::PointD con
 
 void AsyncRouter::SetGuidesTracks(GuidesTracks && guides)
 {
-  unique_lock ul(m_guard);
+  lock_guard ul(m_guard);
   m_guides = std::move(guides);
 }
 
 void AsyncRouter::ClearState()
 {
-  unique_lock ul(m_guard);
+  lock_guard ul(m_guard);
 
   m_clearState = true;
   m_threadCondVar.notify_one();
@@ -239,7 +238,7 @@ void AsyncRouter::ThreadFunc()
   while (true)
   {
     {
-      unique_lock ul(m_guard);
+      std::unique_lock ul(m_guard);
       m_threadCondVar.wait(ul, [this]() { return m_threadExit || m_hasRequest || m_clearState; });
 
       if (m_clearState && m_router)
@@ -271,7 +270,7 @@ void AsyncRouter::CalculateRoute()
   std::string routerName;
 
   {
-    unique_lock ul(m_guard);
+    lock_guard ul(m_guard);
 
     bool hasRequest = m_hasRequest;
     m_hasRequest = false;
@@ -295,7 +294,7 @@ void AsyncRouter::CalculateRoute()
   }
 
   auto route = std::make_shared<Route>(router->GetName(), routeId);
-  RouterResultCode code;
+  RouterResultCode code = RouterResultCode::NoError;
 
   base::Timer timer;
   double elapsedSec = 0.0;
@@ -305,13 +304,16 @@ void AsyncRouter::CalculateRoute()
     LOG(LINFO, ("Calculating the route of direct length", checkpoints.GetSummaryLengthBetweenPointsMeters(),
                 "m. checkpoints:", checkpoints, "startDirection:", startDirection, "router name:", router->GetName()));
 
+    // Can be nullptr for the Ruler router.
     if (absentRegionsFinder)
-      absentRegionsFinder->GenerateAbsentRegions(checkpoints, delegateProxy->GetDelegate());
+      code = absentRegionsFinder->GenerateAbsentRegions(checkpoints, delegateProxy->GetDelegate());
 
-    // Run basic request.
-    code = router->CalculateRoute(checkpoints, startDirection, adjustToPrevRoute, delegateProxy->GetDelegate(), *route);
+    if (code == RouterResultCode::NoError)
+      code =
+          router->CalculateRoute(checkpoints, startDirection, adjustToPrevRoute, delegateProxy->GetDelegate(), *route);
+
     router->SetGuides({});
-    elapsedSec = timer.ElapsedSeconds();  // routing time
+    elapsedSec = timer.ElapsedSeconds();  // routing build time
     LogCode(code, elapsedSec);
     LOG(LINFO, ("ETA:", route->GetTotalTimeSec(), "sec."));
   }
@@ -335,15 +337,10 @@ void AsyncRouter::CalculateRoute()
                           [delegateProxy, route, code]() { delegateProxy->OnReady(route, code); });
   }
 
-  bool const needAbsentRegions = (code != RouterResultCode::Cancelled && route->GetRouterId() != "ruler-router");
-
-  std::set<std::string> absent;
-  if (needAbsentRegions)
+  AbsentRegionsFinder::RegionsSetT absent;
+  if (absentRegionsFinder && code != RouterResultCode::Cancelled)
   {
-    if (absentRegionsFinder)
-      absentRegionsFinder->GetAbsentRegions(absent);
-
-    absent.insert(route->GetAbsentCountries().cbegin(), route->GetAbsentCountries().cend());
+    absent = absentRegionsFinder->GetAbsentRegions();
     if (!absent.empty())
     {
       code = RouterResultCode::NeedMoreMaps;
@@ -359,6 +356,7 @@ void AsyncRouter::CalculateRoute()
   {
     if (code == RouterResultCode::NeedMoreMaps)
     {
+      /// @todo Move 'absent' regions.
       GetPlatform().RunTask(Platform::Thread::Gui,
                             [delegateProxy, routeId, absent]() { delegateProxy->OnNeedMoreMaps(routeId, absent); });
     }

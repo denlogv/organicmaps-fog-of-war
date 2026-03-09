@@ -84,24 +84,20 @@ public:
 
     RoadNameInfo() = default;
     RoadNameInfo(std::string name) : m_name(std::move(name)) {}
-    RoadNameInfo(std::string name, std::string destination_ref)
-      : m_name(std::move(name))
-      , m_destination_ref(std::move(destination_ref))
-    {}
     RoadNameInfo(std::string name, std::string destination_ref, std::string junction_ref)
       : m_name(std::move(name))
       , m_destination_ref(std::move(destination_ref))
       , m_junction_ref(std::move(junction_ref))
     {}
-    RoadNameInfo(std::string name, std::string ref, std::string junction_ref, std::string destination_ref,
-                 std::string destination, bool isLink)
-      : m_name(std::move(name))
-      , m_destination_ref(std::move(destination_ref))
-      , m_junction_ref(std::move(junction_ref))
-      , m_destination(std::move(destination))
-      , m_ref(std::move(ref))
-      , m_isLink(std::move(isLink))
-    {}
+
+    void ClearUselessStringsForTailSegments()
+    {
+      // Keep 'name' since it is used in turns comparison.
+      m_destination_ref.clear();
+      m_junction_ref.clear();
+      m_destination.clear();
+      m_ref.clear();
+    }
 
     bool HasBasicTextInfo() const { return !m_ref.empty() || !m_name.empty(); }
     bool HasExitInfo() const { return m_isLink || HasExitTextInfo(); }
@@ -175,8 +171,17 @@ public:
   traffic::SpeedGroup GetTraffic() const { return m_traffic; }
   void SetTraffic(traffic::SpeedGroup group) { m_traffic = group; }
 
-  SpeedInUnits const & GetSpeedLimit() const { return m_speedLimit; }
-  void SetSpeedLimit(SpeedInUnits const & speed) { m_speedLimit = speed; }
+  SpeedInUnits GetSpeedLimit(time_t time) const
+  {
+    ASSERT(time > 0, ());
+    return m_speedLimit.GetCurrentSpeed(time, m_segment.IsForward());
+  }
+  void SetSpeedLimit(Maxspeed speed) { m_speedLimit = std::move(speed); }
+
+  /// Is 'from' a segregated turn before this turn.
+  bool IsSegregatedTurn(RouteSegment const & from) const;
+  /// Merge lanes info from segregated 'from' into this if needed.
+  void MergeLanes(RouteSegment & from);
 
 private:
   Segment m_segment;
@@ -193,7 +198,7 @@ private:
   RoadNameInfo m_roadNameInfo;
 
   /// Speed limit of |m_segment| if any.
-  SpeedInUnits m_speedLimit;
+  Maxspeed m_speedLimit;
 
   /// Distance from the route (not the subroute) beginning to the farthest end of |m_segment| in meters.
   double m_distFromBeginningMeters = 0.0;
@@ -382,7 +387,7 @@ public:
   void GetCurrentStreetName(RouteSegment::RoadNameInfo & roadNameInfo) const;
 
   /// \brief Returns current speed limit
-  void GetCurrentSpeedLimit(SpeedInUnits & speedLimit) const;
+  SpeedInUnits GetCurrentSpeedLimit() const;
 
   /// \brief Return name info of a street according to the next turn.
   void GetNextTurnStreetName(RouteSegment::RoadNameInfo & roadNameInfo) const;
@@ -405,12 +410,6 @@ public:
   /// \brief Finds projection of |location| to the nearest route and sets |routeMatchingInfo|.
   /// fields accordingly.
   bool MatchLocationToRoute(location::GpsInfo & location, location::RouteMatchingInfo & routeMatchingInfo) const;
-
-  /// Add country name if we have no country filename to make route.
-  void AddAbsentCountry(std::string const & name);
-
-  /// Get absent file list of a routing files for shortest path finding.
-  std::set<std::string> const & GetAbsentCountries() const { return m_absentCountries; }
 
   inline void SetRoutingSettings(RoutingSettings const & routingSettings) { m_routingSettings = routingSettings; }
 
@@ -481,7 +480,6 @@ private:
 
   FollowedPolyline m_poly;
 
-  std::set<std::string> m_absentCountries;
   std::vector<RouteSegment> m_routeSegments;
   // |m_haveAltitudes| is true if and only if all route points have altitude information.
   bool m_haveAltitudes = false;
