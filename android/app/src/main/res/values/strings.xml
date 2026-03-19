@@ -623,6 +623,7 @@
     <string name="bookmarks_new_list_hint">New list</string>
     <string name="bookmarks_error_title_list_name_already_taken">This name is already taken</string>
     <string name="bookmarks_error_message_list_name_already_taken">Please choose another name</string>
+    <string name="change_all_bookmarks_color">Change all bookmarks color</string>
     <string name="please_wait">Please wait…</string>
     <string name="phone_number">Phone number</string>
     <string name="profile">OpenStreetMap profile</string>
