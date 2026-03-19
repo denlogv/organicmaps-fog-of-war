@@ -18,11 +18,22 @@ jobs:
         with:
           ref: fog-of-war
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Configure authenticated origin remote
+        env:
+          PUSH_TOKEN: ${{ secrets.WORKFLOW_SYNC_TOKEN }}
+        run: |
+          if [ -z "$PUSH_TOKEN" ]; then
+            echo "::error::Repository secret WORKFLOW_SYNC_TOKEN is required to push workflow file changes. Set it to a token with repo and workflow scopes."
+            exit 1
+          fi
+          git remote set-url origin "https://x-access-token:${PUSH_TOKEN}@github.com/${{ github.repository }}.git"
 
       - name: Add upstream remote
         run: git remote add upstream https://github.com/organicmaps/organicmaps.git
