@@ -6,8 +6,11 @@
     <string name="cancel">Одустани</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Претрага</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">Тренутно су сви локацијски сервиси на овом уређају или апликацији искључени. Потребно је да их укључите у Подешавањима.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">Преузимање није успело</string>
+    <string name="close">Затвори</string>
     <string name="download">Преузми</string>
     <string name="download_resources">Пре него што почнете да користите апликацију, прво преузмите на ваш уређај општу мапу света.\nЗа то ће бити потребно %s меморије.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Категорије</string>
     <string name="search_not_found">Упс, нема резултата.</string>
     <string name="search_history_text">Погледајте ваше недавне претраге.</string>
+    <string name="p2p_start">Крени</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">Нон-стоп (24 сата)</string>
     <string name="editor_time_open">Отворено</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Избегавај трајекте</string>
     <string name="avoid_motorways">Избегавај аутопутеве</string>
+    <string name="unable_to_calc_alert_title">Није могуће израчунати руту</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Сортирање маркера</string>
     <!-- Android -->
@@ -94,4 +99,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Преузимање</string>
     <string name="download_map_title">Преузми мапу света</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps у Android Auto-у је потребна дозвола за локацију да ефикасно раде</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Одобри дозволе</string>
 </resources>

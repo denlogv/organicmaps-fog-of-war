@@ -342,6 +342,7 @@
     <string name="terms_of_use">Términos de uso</string>
     <string name="layers_title">Estilos de mapa y capas</string>
     <string name="bookmarks_empty_list_message">Para añadir un marcador, toque un lugar en el mapa y después toque el ícono de estrella</string>
+    <string name="change_all_bookmarks_color">Cambiar el color de todos los marcadores</string>
     <string name="delete_list">Borrar lista</string>
     <string name="speedcams_alert_title">Radares de tráfico</string>
     <string name="place_description_title">Descripción de lugares</string>
@@ -439,8 +440,6 @@
     <string name="aa_location_permissions_request">Organic Maps necesita acceder a la ubicación. Cuando sea seguro, revise la notificación en el teléfono.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Esta aplicación necesita tu permiso</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Organic Maps en Android Auto necesita un permiso de ubicación para funcionar de manera eficaz</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->
     <string name="button_layer_outdoor">Senderismo</string>
     <!-- Bookmark categories screen, button that opens share dialog to export all bookmarks and tracks -->

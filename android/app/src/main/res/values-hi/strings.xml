@@ -431,6 +431,7 @@
     <string name="terms_of_use">उपयोग की शर्तें</string>
     <string name="button_layer_subway">भूमिगत मार्ग</string>
     <string name="layers_title">मानचित्र शैलियाँ और परतें</string>
+    <string name="change_all_bookmarks_color">सभी बुकมार्क का रंग बदलें</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">निर्यात KMZ</string>
     <!-- Menu title for exporting a file in GPX format -->
@@ -524,8 +525,6 @@
     <string name="aa_location_permissions_request">ऑर्गेनिक मैप्स को स्थान पहुंच की आवश्यकता है। जब यह सुरक्षित हो, तो अपने फ़ोन पर अधिसूचना जांचें।</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">इस ऐप को आपकी अनुमति की आवश्यकता है</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">एंड्रॉइड ऑटो में ऑर्गेनिक मैप्स को प्रभावी ढंग से काम करने के लिए स्थान अनुमति की आवश्यकता होती है</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">अनुमतियाँ प्रदान करें</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

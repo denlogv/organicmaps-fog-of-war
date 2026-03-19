@@ -619,6 +619,7 @@
     <string name="layers_title">Stiluri și straturi de hartă</string>
     <string name="bookmarks_empty_list_title">Lista este goală</string>
     <string name="bookmarks_empty_list_message">Pentru a adăuga un loc preferat, ține apăsat un loc pe hartă și după aceea atinge simbolul în formă de stea</string>
+    <string name="change_all_bookmarks_color">Schimbă culoarea tuturor marcajelor</string>
     <string name="category_desc_more">…mai mult</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Export KMZ</string>
@@ -782,8 +783,6 @@
     <string name="aa_location_permissions_request">Organic Maps are nevoie de acces la locație. Când este sigur, verificați notificarea de pe telefon.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Această aplicație are nevoie de permisiunea dvs.</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Organic Maps din Android Auto are nevoie de o permisiune de localizare pentru a funcționa eficient</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Acordarea de permisiuni</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

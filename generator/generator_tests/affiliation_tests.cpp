@@ -18,8 +18,6 @@
 #include <string>
 #include <vector>
 
-namespace
-{
 class AffiliationTests
 {
 public:
@@ -92,6 +90,8 @@ private:
 std::string const AffiliationTests::kOne = "One";
 std::string const AffiliationTests::kTwo = "Two";
 
+namespace
+{
 bool Test(std::vector<std::string> && res, std::set<std::string> const & answ)
 {
   if (res.size() != answ.size())
@@ -185,7 +185,7 @@ UNIT_CLASS_TEST(AffiliationTests, CountriesFilesIndexAffiliationTests)
 UNIT_TEST(Lithuania_Belarus_Border)
 {
   using namespace borders;
-  auto const bordersDir = base::JoinPath(GetPlatform().WritableDir(), BORDERS_DIR);
+  auto const bordersDir = base::JoinPath(GetPlatform().ResourcesDir(), BORDERS_DIR);
 
   // https://www.openstreetmap.org/node/3951697639 should belong to both countries.
   auto const point = mercator::FromLatLon({54.5443346, 25.6997363});

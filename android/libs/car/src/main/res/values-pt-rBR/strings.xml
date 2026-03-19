@@ -4,6 +4,8 @@
     <!-- SECTION: Strings -->
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Buscar</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">Atualmente todos os serviços de localização para este dispositivo ou aplicativo estão desativados. Por favor ative-os em configurações.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">O download falhou</string>
     <string name="download">Baixar</string>
@@ -40,6 +42,7 @@
     <!-- SECTION: Strings for downloading map from search -->
     <string name="search_not_found">Sinto muito, nenhum resultado foi encontrado.</string>
     <string name="search_history_text">Visualizar as buscas recentes.</string>
+    <string name="p2p_start">Início</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">O dia todo (24 horas)</string>
     <string name="twentyfour_seven">24/7</string>
@@ -55,6 +58,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Evitar balsas</string>
     <string name="avoid_motorways">Evitar rodovias</string>
+    <string name="unable_to_calc_alert_title">Incapaz de calcular rota</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Classificar marcadores</string>
     <!-- Android -->
@@ -63,4 +67,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Baixando</string>
     <string name="download_map_title">Baixar a visão geral mundial</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">O Organic Maps no Android Auto precisa de uma permissão de localização para funcionar corretamente</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Conceder permissões</string>
 </resources>

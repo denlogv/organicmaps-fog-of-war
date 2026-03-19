@@ -622,6 +622,7 @@
     <string name="layers_title">Maparen estiloak eta geruzak</string>
     <string name="bookmarks_empty_list_title">Zerrenda hau hutsik dago</string>
     <string name="bookmarks_empty_list_message">Markagailu bat gehitzeko, ukitu mapako toki bat eta, ondoren, ukitu izarraren ikonoa</string>
+    <string name="change_all_bookmarks_color">Aldatu markagailu guztien kolorea</string>
     <string name="category_desc_more">…gehiago</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Esportatu KMZ</string>
@@ -797,8 +798,6 @@
     <string name="aa_location_permissions_request">Organic Maps-ek kokapenerako sarbidea behar du. Seguru dagoenean, egiaztatu zure telefonoko jakinarazpena.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Aplikazio honek zure baimena behar du</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Android Auto-ko Organic Maps-ek kokapen-baimena behar du eraginkortasunez funtzionatzeko</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Eman baimenak</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

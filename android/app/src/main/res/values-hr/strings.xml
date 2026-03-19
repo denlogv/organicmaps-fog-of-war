@@ -401,6 +401,7 @@
     <string name="layers_title">Stilovi karta i slojevi</string>
     <string name="bookmarks_empty_list_title">Ovaj je popis prazan</string>
     <string name="bookmarks_empty_list_message">Za dodavanje zabilješke dodirni mjesto na karti, a zatim dodirni ikonu zvjezdice</string>
+    <string name="change_all_bookmarks_color">Promijeni boju svih zabilješki</string>
     <string name="category_desc_more">… više</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Izvezi KMZ</string>
@@ -546,8 +547,6 @@
     <string name="aa_location_permissions_request">Organic Maps treba pristup lokacijama. Kada je sigurno, provjeri obavijest na telefonu.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Ova aplikacija treba tvoju dozvolu</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Za učinkovit rad Organic Maps treba dozvole za lokacije u aplikaciji Android Auto</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Odobri dozvole</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

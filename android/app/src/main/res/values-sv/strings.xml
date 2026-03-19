@@ -622,6 +622,7 @@
     <string name="layers_title">Kartstilar och lager</string>
     <string name="bookmarks_empty_list_title">Listan är tom</string>
     <string name="bookmarks_empty_list_message">För att lägga till bokmärken, tryck på kartan och sedan på stjärnikonen</string>
+    <string name="change_all_bookmarks_color">Ändra färg på alla bokmärken</string>
     <string name="category_desc_more">…mer</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Exportera KMZ</string>
@@ -797,8 +798,6 @@
     <string name="aa_location_permissions_request">Organic Maps behöver platsåtkomst. När det är säkert kan du kontrollera aviseringen på din telefon.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Denna app behöver ditt tillstånd</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Organic Maps i Android Auto behöver tillgång till platsinformation för att fungera effektivt</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Tilldela behörigheter</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

@@ -37,9 +37,6 @@ def getCommitMessage() {
   return run(['git', '--no-pager', 'show', '-s', '--format=%s%n%n%b', 'HEAD']).trim()
 }
 
-project.ext.appId = 'app.organicmaps'
-project.ext.appName = 'Organic Maps'
-
 android {
   namespace = 'app.organicmaps'
 
@@ -67,13 +64,13 @@ android {
     versionName = rootProject.ext.versionName
     println('Version: ' + versionName)
     println('VersionCode: ' + versionCode)
-    applicationId project.ext.appId
+    applicationId rootProject.ext.appId
     buildConfigField 'String', 'SUPPORT_MAIL', '"android@organicmaps.app"'
     // Should be customized in flavors.
     buildConfigField 'String', 'REVIEW_URL', '""'
     resourceConfigurations += [project.ext.supportedLocalizations]
 
-    base.archivesName = appName.replaceAll('\\s', '') + '-' + defaultConfig.versionCode
+    base.archivesName = rootProject.name.replaceAll('\\s', '') + '-' + defaultConfig.versionCode
 
     ndk.debugSymbolLevel = 'full'
   }
@@ -168,12 +165,6 @@ android {
 
       // Enable jni debug build
       jniDebuggable true
-
-      packagingOptions {
-        jniLibs {
-          keepDebugSymbols += ['**/liborganicmaps.so']
-        }
-      }
     }
 
     release {
@@ -270,6 +261,7 @@ dependencies {
   implementation libs.androidx.annotation
   implementation libs.androidx.appcompat
   implementation libs.androidx.car.app
+  implementation libs.androidx.car.app.projected
   implementation libs.androidx.constraintlayout
   implementation libs.androidx.fragment
   implementation libs.androidx.preference
@@ -320,8 +312,16 @@ def allowedPermissions = [
 ]
 registerCheckApkPermissionsTasks(project, allowedPermissions)
 
+
 androidComponents {
   def adb = sdkComponents.adb
+
+  // Keep debug symbols in local debug builds for native debugging.
+  if (!rootProject.ext.CI) {
+    onVariants(selector().withBuildType("debug")) { variant ->
+      variant.packaging.jniLibs.keepDebugSymbols.add("**/liborganicmaps.so")
+    }
+  }
 
   onVariants(selector().all()) { variant ->
     variant.buildConfigFields.put('FILE_PROVIDER_AUTHORITY',
@@ -394,7 +394,7 @@ huaweiPublish {
     huaweiRelease {
       credentialsPath = "$projectDir/huawei-appgallery.json"
       buildFormat = 'aab'
-      deployType = 'draft' // confirm manually
+      deployType = 'draft' // Requires manual confirmation in Huawei AppGallery Connect.
       def releaseDescriptions = []
       def localeOverride = [
           'am'   : 'am-ET',
@@ -410,8 +410,11 @@ huaweiPublish {
       def files = fileTree(dir: "$projectDir/src/fdroid/play/listings",
           include: '**/release-notes.txt')
       files.each { File file ->
-        def path = file.getPath()
         def locale = file.parentFile.getName()
+        if (locale == 'hy-AM') {
+          return // Armenian locale is not supported by Huawei AppGallery, skip it.
+        }
+        def path = file.getPath()
         locale = localeOverride.get(locale, locale)
         releaseDescriptions.add(new ReleaseNote(locale, path))
       }

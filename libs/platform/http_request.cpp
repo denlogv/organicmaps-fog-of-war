@@ -12,7 +12,6 @@
 #include "coding/internal/file_data.hpp"
 
 #include "base/logging.hpp"
-#include "base/string_utils.hpp"
 
 #include <list>
 #include <memory>
@@ -127,6 +126,16 @@ class FileHttpRequest
   size_t m_goodChunksCount;
   bool m_doCleanProgressFiles;
 
+#ifdef DEBUG
+  std::optional<threads::ThreadID> m_callbackThreadId;
+  bool IsCalledOnOriginalThread()
+  {
+    if (!m_callbackThreadId)
+      m_callbackThreadId = threads::GetCurrentThreadID();
+    return m_callbackThreadId == threads::GetCurrentThreadID();
+  }
+#endif
+
   ChunksDownloadStrategy::ResultT StartThreads()
   {
     string url;
@@ -165,15 +174,18 @@ class FileHttpRequest
 
   virtual bool OnWrite(int64_t offset, void const * buffer, size_t size)
   {
-#ifdef DEBUG
-    static threads::ThreadID const id = threads::GetCurrentThreadID();
-    ASSERT_EQUAL(id, threads::GetCurrentThreadID(), ("OnWrite called from different threads"));
-#endif
+    ASSERT(IsCalledOnOriginalThread(), ());
 
     try
     {
       m_writer->Seek(offset);
       m_writer->Write(buffer, size);
+
+      /// @DebugNote Uncomment to debug broken files downloading.
+      // m_writer->Seek(offset + size / 2);
+      // uint8_t zero = 0;
+      // m_writer->Write(&zero, 1);
+
       return true;
     }
     catch (Writer::Exception const & e)
@@ -201,10 +213,7 @@ class FileHttpRequest
   /// Called for each chunk by one main (GUI) thread.
   virtual void OnFinish(long httpOrErrorCode, int64_t begRange, int64_t endRange)
   {
-#ifdef DEBUG
-    static threads::ThreadID const id = threads::GetCurrentThreadID();
-    ASSERT_EQUAL(id, threads::GetCurrentThreadID(), ("OnFinish called from different threads"));
-#endif
+    ASSERT(IsCalledOnOriginalThread(), ());
 
     bool const isChunkOk = (httpOrErrorCode == 200);
     string const urlError = m_strategy.ChunkFinished(isChunkOk, std::make_pair(begRange, endRange));

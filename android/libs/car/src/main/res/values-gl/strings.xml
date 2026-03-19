@@ -6,8 +6,11 @@
     <string name="cancel">Cancelar</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Buscar</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">Non se pode acceder aos servizos de localización neste dispositivo ou aplicación. Actíveos na configuración.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">Erro durante a descarga</string>
+    <string name="close">Pechar</string>
     <string name="download">Descargar</string>
     <string name="download_resources">Antes de comezar, permita que descarguemos no seu dispositivo un mapamundi xeral. \nRequírense %s de almacenamento.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Categorías</string>
     <string name="search_not_found">Non se atopou ningún resultado.</string>
     <string name="search_history_text">Ver procuras recentes.</string>
+    <string name="p2p_start">Empezar</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">Todo o día (24 horas)</string>
     <string name="editor_time_open">Aberto</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Evitar ferris</string>
     <string name="avoid_motorways">Evitar autoestradas</string>
+    <string name="unable_to_calc_alert_title">Non se pode calcular a ruta</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Ordenar marcadores</string>
     <!-- Android -->
@@ -94,4 +99,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Descargando</string>
     <string name="download_map_title">Descarga o mapa xeral do mundo</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps en Android Auto necesita permisos de localización para funcionar eficazmente</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Conceder permisos</string>
 </resources>

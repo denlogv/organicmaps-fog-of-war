@@ -625,6 +625,7 @@
     <string name="layers_title">Kaartstijlen en -lagen</string>
     <string name="bookmarks_empty_list_title">Deze lijst is leeg</string>
     <string name="bookmarks_empty_list_message">Om een bladwijzer toe te voegen, tikt u op een plaats op de kaart en vervolgens op het sterpictogram</string>
+    <string name="change_all_bookmarks_color">Kleur van alle bladwijzers wijzigen</string>
     <string name="category_desc_more">…meer</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Exporteer KMZ</string>
@@ -800,8 +801,6 @@
     <string name="aa_location_permissions_request">Organic Maps heeft locatietoegang nodig. Als het veilig is, controleer je de melding op je telefoon.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Deze app heeft je toestemming nodig</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Organic Maps in Android Auto heeft locatietoestemming nodig om effectief te werken</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Geef toestemming</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

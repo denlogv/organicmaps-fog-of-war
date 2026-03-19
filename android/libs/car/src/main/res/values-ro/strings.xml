@@ -6,8 +6,11 @@
     <string name="cancel">Anulare</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Caută</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">În prezent, toate serviciile de localizare pentru acest dispozitiv sau aplicație sunt dezactivate. Le poți activa din setări.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">Descărcarea a eșuat</string>
+    <string name="close">Închide</string>
     <string name="download">Descarcă</string>
     <string name="download_resources">Înainte de a începe, trebuie descărcată harta generală a lumii în dispozitivul tău.\nSe vor descărca %s.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Categorii</string>
     <string name="search_not_found">Nu s-a găsit nimic.</string>
     <string name="search_history_text">Arată căutările recente.</string>
+    <string name="p2p_start">Pornește</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">Toată ziua (24 ore)</string>
     <string name="editor_time_open">Deschis</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Evită trecerile cu bac</string>
     <string name="avoid_motorways">Evitați autostrăzile</string>
+    <string name="unable_to_calc_alert_title">Nu poate fi creat un traseu</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Sortează preferatele</string>
     <!-- Android -->
@@ -94,4 +99,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Se descarcă</string>
     <string name="download_map_title">Descarcă harta lumii</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps din Android Auto are nevoie de o permisiune de localizare pentru a funcționa eficient</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Acordarea de permisiuni</string>
 </resources>

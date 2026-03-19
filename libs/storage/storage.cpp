@@ -157,8 +157,7 @@ Storage::Storage(string const & referenceCountriesTxtJsonForTesting,
 {
   m_downloader->SetDownloadingPolicy(m_downloadingPolicy);
 
-  m_currentVersion = LoadCountriesFromBuffer(referenceCountriesTxtJsonForTesting, m_countries, m_affiliations,
-                                             m_countryNameSynonyms, m_mwmTopCityGeoIds, m_mwmTopCountryGeoIds);
+  m_currentVersion = LoadCountriesFromBuffer(referenceCountriesTxtJsonForTesting, m_countries, m_countriesInfo);
   CHECK_LESS_OR_EQUAL(0, m_currentVersion, ("Can't load test countries file"));
 
   m_downloader->SetDataVersion(m_currentVersion);
@@ -417,39 +416,32 @@ CountryFile const & Storage::GetCountryFile(CountryId const & countryId) const
   return CountryLeafByCountryId(countryId).GetFile();
 }
 
-LocalFilePtr Storage::GetLatestLocalFile(CountryFile const & countryFile) const
-{
-  CHECK_THREAD_CHECKER(m_threadChecker, ());
-
-  CountryId const & countryId = FindCountryIdByFile(countryFile.GetName());
-  if (IsLeaf(countryId))
-  {
-    LocalFilePtr localFile = GetLatestLocalFile(countryId);
-    if (localFile)
-      return localFile;
-  }
-
-  auto const it = m_localFilesForFakeCountries.find(countryFile);
-  if (it != m_localFilesForFakeCountries.end())
-    return it->second;
-
-  return LocalFilePtr();
-}
-
 LocalFilePtr Storage::GetLatestLocalFile(CountryId const & countryId) const
 {
   // CHECK_THREAD_CHECKER(m_threadChecker, ());
 
   auto const it = m_localFiles.find(countryId);
-  if (it == m_localFiles.end() || it->second.empty())
-    return LocalFilePtr();
+  if (it != m_localFiles.end())
+  {
+    // 2 is possible in the moment of updating the map (old and new are both present).
+    auto const & files = it->second;
+    size_t const sz = files.size();
+    ASSERT(sz > 0 && sz < 3, (sz));
 
-  list<LocalFilePtr> const & files = it->second;
-  LocalFilePtr latest = files.front();
-  for (LocalFilePtr const & file : files)
-    if (file->GetVersion() > latest->GetVersion())
-      latest = file;
-  return latest;
+    LocalFilePtr latest = files.front();
+    for (LocalFilePtr const & file : files)
+      if (file->GetVersion() > latest->GetVersion())
+        latest = file;
+
+    return latest;
+  }
+  else
+  {
+    auto const it = m_localFilesForFakeCountries.find(CountryFile(countryId));
+    if (it != m_localFilesForFakeCountries.end())
+      return it->second;
+  }
+  return {};
 }
 
 Status Storage::CountryStatus(CountryId const & countryId) const
@@ -481,9 +473,25 @@ Status Storage::CountryStatusEx(CountryId const & countryId) const
   if (status != Status::UnknownError)
     return status;
 
-  auto localFile = GetLatestLocalFile(countryId);
+  auto const localFile = GetLatestLocalFile(countryId);
   if (!localFile || !(localFile->OnDisk(MapFileType::Map) || localFile->IsInBundle()))
+  {
+    auto it = m_countriesInfo.m_mwmToOld.find(countryId);
+    if (it != m_countriesInfo.m_mwmToOld.end())
+    {
+      auto const lf = GetLatestLocalFile(it->second);
+      if (lf && lf->OnDisk(MapFileType::Map))
+        return Status::OnDiskOutOfDate;
+    }
     return Status::NotDownloaded;
+  }
+  else
+  {
+    // Check if it is an "old" (outdated) country.
+    for (auto const & [_, oldCountry] : m_countriesInfo.m_mwmToOld)
+      if (oldCountry == countryId)
+        return Status::OnDiskOutOfDate;
+  }
 
   auto const & countryFile = GetCountryFile(countryId);
   if (GetRemoteSize(countryFile) == 0)
@@ -624,8 +632,7 @@ void Storage::LoadCountriesFile(string const & pathToCountriesFile)
 {
   if (m_countries.IsEmpty())
   {
-    m_currentVersion = LoadCountriesFromFile(pathToCountriesFile, m_countries, m_affiliations, m_countryNameSynonyms,
-                                             m_mwmTopCityGeoIds, m_mwmTopCountryGeoIds);
+    m_currentVersion = LoadCountriesFromFile(pathToCountriesFile, m_countries, m_countriesInfo);
     LOG(LINFO, ("Loaded countries list for version:", m_currentVersion));
     if (m_currentVersion < 0)
       LOG(LERROR, ("Can't load countries file", pathToCountriesFile));
@@ -732,8 +739,8 @@ void Storage::OnDownloadFinished(QueuedCountry const & queuedCountry, DownloadSt
       if (coding::SHA1::CalculateBase64(path) != sha1)
       {
         base::DeleteFileX(path);
-        LOG(LERROR, ("SHA check error for", path));
         status = DownloadStatus::FailedSHA;
+        LOG(LERROR, ("SHA check error for", path));
       }
 
       GetPlatform().RunTask(Platform::Thread::Gui, [fn = std::move(fn), status]()
@@ -815,6 +822,25 @@ void Storage::RegisterDownloadedFiles(CountryId const & countryId, MapFileType t
     return;
   }
 
+  // Delete "old" (outdated) country, if any.
+  auto const it = m_countriesInfo.m_mwmToOld.find(countryId);
+  if (it != m_countriesInfo.m_mwmToOld.end())
+  {
+    auto const iFile = m_localFilesForFakeCountries.find(CountryFile(it->second));
+    if (iFile != m_localFilesForFakeCountries.end())
+    {
+      auto lf = iFile->second;
+      if (!m_willDelete(it->second, lf))
+      {
+        DeleteCountryIndexes(*lf);
+        lf->DeleteFromDisk(MapFileType::Map);
+
+        m_localFilesForFakeCountries.erase(iFile);
+      }
+    }
+  }
+
+  // Register new file.
   RegisterCountryFiles(localFile);
   fn(true);
 }
@@ -1031,9 +1057,7 @@ void Storage::RunCountriesCheckAsync()
       LOG(LDEBUG, (COUNTRIES_FILE, "downloaded"));
 
       std::shared_ptr<Storage> storage(new Storage(7 /* dummy */));
-      storage->m_currentVersion =
-          LoadCountriesFromBuffer(buffer, storage->m_countries, storage->m_affiliations, storage->m_countryNameSynonyms,
-                                  storage->m_mwmTopCityGeoIds, storage->m_mwmTopCountryGeoIds);
+      storage->m_currentVersion = LoadCountriesFromBuffer(buffer, storage->m_countries, storage->m_countriesInfo);
       if (storage->m_currentVersion > 0)
       {
         LOG(LDEBUG, ("Apply new version", storage->m_currentVersion, dataVersion));
@@ -1265,7 +1289,10 @@ bool Storage::IsAllowedToEditVersion(CountryId const & countryId) const
   case Status::OnDiskOutOfDate:
   {
     auto const localFile = GetLatestLocalFile(countryId);
-    ASSERT(localFile, ("Local file shouldn't be nullptr."));
+    // Under "old" (outdated) countries.
+    if (!localFile)
+      return false;
+
     auto const currentVersionTime = base::YYMMDDToSecondsSinceEpoch(static_cast<uint32_t>(m_currentVersion));
     auto const localVersionTime = base::YYMMDDToSecondsSinceEpoch(static_cast<uint32_t>(localFile->GetVersion()));
     return currentVersionTime - localVersionTime < kMaxSecondsTillLastVersionUpdate &&
@@ -1598,11 +1625,13 @@ StatusAndError Storage::GetNodeStatusInfo(CountryTree::Node const & node,
 
 void Storage::GetNodeAttrs(CountryId const & countryId, NodeAttrs & nodeAttrs) const
 {
+  ASSERT(!countryId.empty(), ());
   CHECK_THREAD_CHECKER(m_threadChecker, ());
 
   CountryTree::NodesBufferT nodes;
   m_countries.Find(countryId, nodes);
   CHECK(!nodes.empty(), (countryId));
+
   // If nodes.size() > 1 countryId corresponds to a disputed territories.
   // In that case it's guaranteed that most of attributes are equal for
   // each element of nodes. See Country class description for further details.
@@ -1753,7 +1782,18 @@ void Storage::UpdateNode(CountryId const & countryId)
 {
   ForEachInSubtree(countryId, [this](CountryId const & descendantId, bool groupNode)
   {
-    if (!groupNode && m_localFiles.find(descendantId) != m_localFiles.end())
+    if (groupNode)
+      return;
+
+    bool isDownload = m_localFiles.count(descendantId) > 0;
+    if (!isDownload)
+    {
+      auto it = m_countriesInfo.m_mwmToOld.find(descendantId);
+      if (it != m_countriesInfo.m_mwmToOld.end())
+        isDownload = m_localFilesForFakeCountries.count(CountryFile(it->second)) > 0;
+    }
+
+    if (isDownload)
       DownloadNode(descendantId, true /* isUpdate */);
   });
 }
@@ -1839,93 +1879,24 @@ bool Storage::GetUpdateInfo(CountryId const & countryId, UpdateInfo & updateInfo
 /// @{
 Affiliations const * Storage::GetAffiliations() const
 {
-  return &m_affiliations;
+  return &m_countriesInfo.m_affiliations;
 }
 
 CountryNameSynonyms const & Storage::GetCountryNameSynonyms() const
 {
-  return m_countryNameSynonyms;
-}
-
-MwmTopCityGeoIds const & Storage::GetMwmTopCityGeoIds() const
-{
-  return m_mwmTopCityGeoIds;
-}
-
-std::vector<base::GeoObjectId> Storage::GetTopCountryGeoIds(CountryId const & countryId) const
-{
-  std::vector<base::GeoObjectId> result;
-
-  ForEachAncestorExceptForTheRoot(countryId, [this, &result](CountryId const & id, CountryTree::Node const &)
-  {
-    auto const it = m_mwmTopCountryGeoIds.find(id);
-    if (it != m_mwmTopCountryGeoIds.cend())
-      result.insert(result.end(), it->second.cbegin(), it->second.cend());
-  });
-
-  return result;
+  return m_countriesInfo.m_countryNameSynonyms;
 }
 /// @}
-
-void Storage::GetQueuedChildren(CountryId const & parent, CountriesVec & queuedChildren) const
-{
-  CountryTree::Node const * const node = m_countries.FindFirst(parent);
-  if (!node)
-  {
-    ASSERT(false, ());
-    return;
-  }
-
-  queuedChildren.clear();
-  node->ForEachChild([&queuedChildren, this](CountryTree::Node const & child)
-  {
-    NodeStatus status = GetNodeStatus(child).status;
-    ASSERT_NOT_EQUAL(status, NodeStatus::Undefined, ());
-    if (status == NodeStatus::Downloading || status == NodeStatus::InQueue)
-      queuedChildren.push_back(child.Value().Name());
-  });
-}
-
-void Storage::GetGroupNodePathToRoot(CountryId const & groupNode, CountriesVec & path) const
-{
-  path.clear();
-
-  CountryTree::NodesBufferT nodes;
-  m_countries.Find(groupNode, nodes);
-  if (nodes.empty())
-  {
-    LOG(LWARNING, ("CountryId =", groupNode, "not found in m_countries."));
-    return;
-  }
-
-  if (nodes.size() != 1)
-  {
-    LOG(LWARNING, (groupNode, "Group node can't have more than one parent."));
-    return;
-  }
-
-  if (nodes[0]->ChildrenCount() == 0)
-  {
-    LOG(LWARNING, (nodes[0]->Value().Name(), "is a leaf node."));
-    return;
-  }
-
-  ForEachAncestorExceptForTheRoot(nodes,
-                                  [&path](CountryId const & id, CountryTree::Node const &) { path.push_back(id); });
-  path.push_back(m_countries.GetRoot().Value().Name());
-}
 
 void Storage::GetTopmostNodesFor(CountryId const & countryId, CountriesVec & nodes, size_t level) const
 {
   nodes.clear();
+  if (countryId.empty())
+    return;
 
   CountryTree::NodesBufferT treeNodes;
   m_countries.Find(countryId, treeNodes);
-  if (treeNodes.empty())
-  {
-    LOG(LWARNING, ("CountryId =", countryId, "not found in m_countries."));
-    return;
-  }
+  CHECK(!treeNodes.empty(), (countryId));
 
   nodes.resize(treeNodes.size());
   for (size_t i = 0; i < treeNodes.size(); ++i)
@@ -1939,26 +1910,24 @@ void Storage::GetTopmostNodesFor(CountryId const & countryId, CountriesVec & nod
   }
 }
 
-CountryId const Storage::GetParentIdFor(CountryId const & countryId) const
+CountryId Storage::GetParentIdFor(CountryId const & countryId) const
 {
+  ASSERT(!countryId.empty(), ());
+
   CountryTree::NodesBufferT nodes;
   m_countries.Find(countryId, nodes);
-  if (nodes.empty())
-  {
-    LOG(LWARNING, ("CountryId =", countryId, "not found in m_countries."));
-    return string();
-  }
+  CHECK(!nodes.empty(), (countryId));
 
   if (nodes.size() > 1)
   {
     // Disputed territory. Has multiple parents.
-    return string();
+    return {};
   }
 
   return nodes[0]->Value().GetParent();
 }
 
-CountryId const Storage::GetTopmostParentFor(CountryId const & countryId) const
+CountryId Storage::GetTopmostParentFor(CountryId const & countryId) const
 {
   return ::storage::GetTopmostParentFor(m_countries, countryId);
 }

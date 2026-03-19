@@ -6,8 +6,11 @@
     <string name="cancel">لغو</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">جست‌وجو</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">سرویس موقعیت مکانی شما غیر فعال است. لطفا جهت کارکرد صحیح نرم افزار آن را فعال کنید.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">دانلود با شکست مواجه شد</string>
+    <string name="close">بستن</string>
     <string name="download">دانلود</string>
     <string name="download_resources">قبل از استفاده از برنامه، اجازه دهید تا ما نقشه جهانی را بر روی موبایل شما دانلود کنیم. \nمقدار %s از حافظه شما اشغال می‌شود.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">دسته‌بندی‌ها</string>
     <string name="search_not_found">اوه، نتیجه‌ای یافت نشد.</string>
     <string name="search_history_text">جستجوهای اخیر خود را مشاهده کنید.</string>
+    <string name="p2p_start">شروع</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">شبانه روزی (24 ساعته)</string>
     <string name="editor_time_open">باز</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">اجتناب از گذرگاه‌های کشتی</string>
     <string name="avoid_motorways">از بزرگراه دوری کنید</string>
+    <string name="unable_to_calc_alert_title">امکان محاسبه مسیر نیست</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">مرتب‌سازی نشانک‌ها</string>
     <!-- Android -->
@@ -94,4 +99,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">در حال دانلود</string>
     <string name="download_map_title">نقشه نمای کلی جهان را دانلود کنید</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps در Android Auto برای عملکرد بهتر به مجوزهای مکان نیاز دارد</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">اعطای مجوزها</string>
 </resources>

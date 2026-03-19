@@ -6,8 +6,11 @@
     <string name="cancel">Avbryt</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Søk</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">Du har for øyeblikket deaktivert alle posisjonstjenester for denne enheten eller applikasjonen. Slå dem på i «Innstillinger».</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">Laster ned mislyktes</string>
+    <string name="close">Lukk</string>
     <string name="download">Last ned</string>
     <string name="download_resources">Før du begynner, la oss laste ned det generelle verdenskartet til enheten. Det trengs %s med data.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Kategorier</string>
     <string name="search_not_found">Beklager, jeg fant ingenting.</string>
     <string name="search_history_text">Vis de siste søkene raskt.</string>
+    <string name="p2p_start">Start</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">Hele dagen (24 timer)</string>
     <string name="editor_time_open">Åpen</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Unngå fergeoverganger</string>
     <string name="avoid_motorways">Unngå motorveien</string>
+    <string name="unable_to_calc_alert_title">Kan ikke beregne rute</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Sortere merker</string>
     <!-- Android -->
@@ -94,4 +99,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Nedlasting</string>
     <string name="download_map_title">Last ned verdenskart</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps i Android Auto trenger en posisjonstillatelse for å fungere effektivt</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Gi tillatelser</string>
 </resources>

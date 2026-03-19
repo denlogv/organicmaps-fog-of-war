@@ -624,6 +624,7 @@
     <string name="layers_title">Kartenstile und Ebenen</string>
     <string name="bookmarks_empty_list_title">Die Liste ist leer</string>
     <string name="bookmarks_empty_list_message">Zum Hinzufügen eine Lesezeichens tippe in der Karte auf den Ort und dann unten auf das Sternchen</string>
+    <string name="change_all_bookmarks_color">Farbe aller Lesezeichen ändern</string>
     <string name="category_desc_more">…mehr</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">KMZ exportieren</string>
@@ -799,8 +800,6 @@
     <string name="aa_location_permissions_request">Organic Maps benötigt Zugriff auf den Standort. Wenn es sicher ist, überprüfe die Benachrichtigung auf deinem Telefon.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Diese App braucht deine Erlaubnis</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Organic Maps in Android Auto benötigt Standortberechtigungen, um effektiv zu funktionieren</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Erlaubnis erteilen</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

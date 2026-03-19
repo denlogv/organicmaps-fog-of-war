@@ -641,7 +641,7 @@ zh-Hant = 搜尋地圖
 
 [location_is_disabled_long_text]
 comment = Location services are disabled by user alert - message
-tags = android-app
+tags = android-app,android-libs-car
 en = You currently have all Location Services for this device or application disabled. Please enable them in Settings.
 af = Alle liggingsdienste vir hierdie toestel of toepassing is tans gedeaktiveer. Aktiveer dit asb. in Instellings.
 ar = التطبيق أو جميع خدمات تحديد المواقع معطلة لديك في الوقت الحالي. الرجاء تفعيلها في الإعدادات.
@@ -1380,7 +1380,7 @@ zh-Hans = 位置设置
 zh-Hant = 位置設定
 
 [close]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Close
 af = Sluit
 ar = إغلاق
@@ -13547,7 +13547,7 @@ zh-Hans = 您的位置
 zh-Hant = 您的位置
 
 [p2p_start]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Start
 af = Begin
 ar = ابدأ
@@ -24660,6 +24660,61 @@ vi = Để thêm dấu trang, hãy nhấn vào một địa điểm trên bản 
 zh-Hans = 要添加新书签，请点击对象卡片中的星形图标
 zh-Hant = 要增加新書籤，請點擊對象卡片中的星型圖標
 
+[change_all_bookmarks_color]
+comment = Button to change the color of all bookmarks in the current list
+tags = android-app
+en = Change all bookmarks color
+af = Verander kleur van alle boekmerke
+ar = تغيير لون جميع الإشارات المرجعية
+az = Bütün əlfəcinlərin rəngini dəyişdir
+be = Змяніць колер усіх закладак
+bg = Промяна на цвета на всички отметки
+ca = Canvia el color de tots els marcadors
+cs = Změnit barvu všech značek
+da = Skift farve på alle bogmærker
+de = Farbe aller Lesezeichen ändern
+el = Αλλαγή χρώματος όλων των σελιδοδεικτών
+es = Cambiar el color de todos los marcadores
+et = Muuda kõikide järjehoidjate värvi
+eu = Aldatu markagailu guztien kolorea
+fa = تغییر رنگ همه نشانک‌ها
+fi = Vaihda kaikkien kirjanmerkkien väri
+fr = Changer la couleur de tous les signets
+gl = Cambiar a cor de todos os marcadores
+he = שנה צבע של כל הסימניות
+hi = सभी बुकมार्क का रंग बदलें
+hr = Promijeni boju svih zabilješki
+hu = Összes könyvjelző színének módosítása
+hy = Փոխել բոլոր էջանիշների գույնը
+id = Ubah warna semua bookmark
+is = Breyta lit allra bókamerkja
+it = Cambia colore di tutti i preferiti
+ja = すべてのブックマークの色を変更
+ko = 모든 북마크 색상 변경
+lo = ປ່ຽນສີຂອງບຸກມາກທັງໝົດ
+lt = Keisti visų žymų spalvą
+lv = Mainīt visu grāmatzīmju krāsu
+mr = सर्व बुकमार्कचा रंग बदला
+mt = Ibdel il-kulur tal-bookmarks kollha
+nb = Endre farge på alle bokmerker
+nl = Kleur van alle bladwijzers wijzigen
+pl = Zmień kolor wszystkich zakładek
+pt = Alterar a cor de todos os favoritos
+ro = Schimbă culoarea tuturor marcajelor
+ru = Изменить цвет всех меток
+sk = Zmeniť farbu všetkých záložiek
+sl = Spremeni barvo vseh zaznamkov
+sq = Ndrysho ngjyrën e të gjithë faqeshënuesve
+sr = Промени боју свих обележивача
+sv = Ändra färg på alla bokmärken
+sw = Badilisha rangi ya alamisho zote
+th = เปลี่ยนสีที่คั่นหน้าทั้งหมด
+tr = Tüm yer imlerinin rengini değiştir
+uk = Змінити колір усіх міток
+vi = Thay đổi màu tất cả dấu trang
+zh-Hans = 更改所有书签颜色
+zh-Hant = 更改所有書籤顏色
+
 [category_desc_more]
 tags = android-app
 en = …more
@@ -26061,7 +26116,7 @@ zh-Hans = 避开高速公路
 zh-Hant = 避開高速公路
 
 [unable_to_calc_alert_title]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Unable to calculate route
 af = Kan nie ’n roete bereken nie
 ar = لا يمكن حساب الطريق
@@ -36311,7 +36366,7 @@ zh-Hant = 此應用程式需要您的許可
 
 [aa_request_permission_activity_text]
 comment = The text in the activity for location permission request.
-tags = android-app
+tags = android-libs-car
 en = Organic Maps in Android Auto needs location permissions to work effectively
 af = Organic Maps in Android Auto het 'n liggingtoestemming nodig om effektief te werk
 ar = تحتاج الخرائط العضوية في أندرويد أوتو إلى أذونات الموقع للعمل بفعالية
@@ -36367,7 +36422,7 @@ zh-Hant = Android Auto 中的 Organic Maps 需要位置權限才能有效運作
 
 [aa_grant_permissions]
 comment = Grant Permissions button.
-tags = android-app
+tags = android-app,android-libs-car
 en = Grant Permissions
 ar = أذونات المنح
 az = İcazələr verin

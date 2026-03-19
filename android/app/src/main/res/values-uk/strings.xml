@@ -629,6 +629,7 @@
     <string name="layers_title">Стилі та шари мапи</string>
     <string name="bookmarks_empty_list_title">Список порожній</string>
     <string name="bookmarks_empty_list_message">Щоб додати нову мітку, натисніть на значок зірочки в картці об’єкта</string>
+    <string name="change_all_bookmarks_color">Змінити колір усіх міток</string>
     <string name="category_desc_more">…ще</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Експорт KMZ</string>
@@ -804,8 +805,6 @@
     <string name="aa_location_permissions_request">Для роботи Organic Maps потрібен доступ до місцезнаходження. Коли це буде безпечно, перевірте сповіщення на телефоні.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Ця програма потребує вашого дозволу</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Для ефективної роботи Organic Maps в Android Auto потрібні дозвіли на розташування</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Надавати дозволи</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->

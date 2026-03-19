@@ -27,6 +27,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Epuka vivuko vya feri</string>
     <string name="avoid_motorways">Epuka barabara</string>
+    <string name="unable_to_calc_alert_title">Haiwezi kukokotoa njia</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Ainisha alamisho</string>
     <!-- Android -->
@@ -42,4 +43,8 @@
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Inapakua</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps katika Android Auto zinahitaji ruhusa ya eneo ili kufanya kazi kwa ufanisi</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Ruhusa za ruzuku</string>
 </resources>

@@ -6,8 +6,11 @@
     <string name="cancel">ยกเลิก</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">ค้นหา</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">ในปัจจุบันนี้มีการปิดการใช้งานการบริการตำแหน่งที่ตั้งสำหรับอุปกรณ์หรือแอปพลิเคชันนี้ โปรดเปิดใช้งานในการตั้งค่า</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">การดาวน์โหลดล้มเหลว</string>
+    <string name="close">ปิด</string>
     <string name="download">ดาวน์โหลด</string>
     <string name="download_resources">ก่อนที่คุณจะเริ่มต้น โปรดให้เราดาวน์โหลดแผนที่โลกลงในอุปกรณ์ของคุณ\nจำเป็นต้องใช้ %s ของข้อมูล</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">หมวดหมู่</string>
     <string name="search_not_found">ขออภัย ฉันไม่พบสิ่งใด</string>
     <string name="search_history_text">เข้าถึงคำถามที่ใช้ในการค้นหาเมื่อเร็ว ๆ นี้ได้อย่างรวดเร็ว</string>
+    <string name="p2p_start">เริ่มต้น</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">ตลอดวัน (24 ชั่วโมง)</string>
     <string name="editor_time_open">เปิด</string>
@@ -76,6 +80,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">เลี่ยงการข้ามฟากด้วยเรือ</string>
     <string name="avoid_motorways">หลีกเลี่ยงมอเตอร์เวย์</string>
+    <string name="unable_to_calc_alert_title">ไม่สามารถคำนวณเส้นทาง</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">เรียงบุ๊กมาร์ก</string>
     <!-- Android -->
@@ -91,4 +96,8 @@
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">การดาวน์โหลด</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">แผนที่ทั่วไปใน Android Auto ต้องได้รับอนุญาตจากตำแหน่งจึงจะทำงานได้อย่างมีประสิทธิภาพ</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">ให้สิทธิ์</string>
 </resources>

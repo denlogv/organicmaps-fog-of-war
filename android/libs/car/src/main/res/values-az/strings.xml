@@ -6,8 +6,11 @@
     <string name="cancel">Ləğv et</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Axtar</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">Bütün Məkan Xidmətləri hazırda bu cihaz və ya tətbiq üçün deaktiv edilib. Zəhmət olmasa bunu parametrlərdən aktiv edin.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">Yükləmə uğursuz oldu</string>
+    <string name="close">Yaxın</string>
     <string name="download">Yüklə</string>
     <string name="download_resources">Başlamazdan əvvəl gəlin ümumi dünya xəritəsini cihazınıza endirək.\n%s yer tələb olunur.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Kateqoriyalar</string>
     <string name="search_not_found">Üzr istəyirik, heç bir nəticə tapılmadı.</string>
     <string name="search_history_text">Son axtarışlara baxın.</string>
+    <string name="p2p_start">Başla</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">Bütün gün (24 saat)</string>
     <string name="editor_time_open">Açıq</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Bərə keçidlərindən çəkinin</string>
     <string name="avoid_motorways">Magistral yoldan çəkinin</string>
+    <string name="unable_to_calc_alert_title">Marşrutu hesablamaq mümkün deyil</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Əlfəcinləri çeşidləyin</string>
     <!-- Android -->
@@ -94,4 +99,6 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Endirilir</string>
     <string name="download_map_title">Dünya xəritəsini yükləyin</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">İcazələr verin</string>
 </resources>

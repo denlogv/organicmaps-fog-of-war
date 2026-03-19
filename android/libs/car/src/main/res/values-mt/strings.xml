@@ -6,8 +6,11 @@
     <string name="cancel">Ikkanċella</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Fittex</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">Bħalissa għandek kull Servizzi tal-Lokażżjoni fuq dan l-apparat jew l-applikazzjoni mitfijin. Jekk jogħġbok erġa ixgħelhom ġos-Settings.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">It-tniżżil falla</string>
+    <string name="close">Ġħalaq</string>
     <string name="download">Niżżel</string>
     <string name="download_resources">Qabel ma tibda tuża l-applikazzjoni, niżżel il-mappa ġenerali tad-dinja fuq l-apparat. \nDan ser juża %s ta\' storage.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Kategoriji</string>
     <string name="search_not_found">Oops, ma nstab l-ebda riżultat.</string>
     <string name="search_history_text">Ara t-tfittxijiet riċenti tiegħek.</string>
+    <string name="p2p_start">Ibda</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">Il-Ġurnata Kollha (24 siegħa)</string>
     <string name="editor_time_open">Miftuħ</string>
@@ -77,6 +81,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Evita l-laneċ</string>
     <string name="avoid_motorways">Evita l-passaġġi ħielsa</string>
+    <string name="unable_to_calc_alert_title">Ir-rotta ma\' tistax tiġi kalkulata</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Issortja l-bookmarks</string>
     <!-- Android -->
@@ -93,4 +98,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Tniżżil</string>
     <string name="download_map_title">Niżżel il-mappa ġenerali tad-dinja</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">organic Maps ġo\' Android Auto jeħtieġ permessi tal-post biex jaħdem b ’mod effettiv</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Għati Permess</string>
 </resources>

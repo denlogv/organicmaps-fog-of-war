@@ -6,8 +6,11 @@
     <string name="cancel">Cancel</string>
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Search</string>
+    <!-- Location services are disabled by user alert - message -->
+    <string name="location_is_disabled_long_text">You currently have all Location Services for this device or application disabled. Please enable them in Settings.</string>
     <!-- Message to display at the center of the screen when the country download has failed -->
     <string name="country_status_download_failed">Download has failed</string>
+    <string name="close">Close</string>
     <string name="download">Download</string>
     <string name="download_resources">Before you start using the app, please download the world overview map to your device.\nIt will use %s of storage.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
@@ -57,6 +60,7 @@
     <string name="categories">Categories</string>
     <string name="search_not_found">Oops, no results found.</string>
     <string name="search_history_text">View your recent searches.</string>
+    <string name="p2p_start">Start</string>
     <!-- Text for allday switch. -->
     <string name="editor_time_allday">All Day (24 hours)</string>
     <string name="editor_time_open">Open</string>
@@ -78,6 +82,7 @@
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_ferry">Avoid ferries</string>
     <string name="avoid_motorways">Avoid freeways</string>
+    <string name="unable_to_calc_alert_title">Unable to calculate route</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Sort bookmarks</string>
     <!-- Android -->
@@ -94,4 +99,8 @@
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="downloader_loading_ios">Downloading</string>
     <string name="download_map_title">Download the world overview map</string>
+    <!-- The text in the activity for location permission request. -->
+    <string name="aa_request_permission_activity_text">Organic Maps in Android Auto needs location permissions to work effectively</string>
+    <!-- Grant Permissions button. -->
+    <string name="aa_grant_permissions">Grant Permissions</string>
 </resources>

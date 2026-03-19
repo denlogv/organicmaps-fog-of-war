@@ -202,6 +202,7 @@
     <string name="layers_title">Mitindo ya Ramani na Tabaka</string>
     <string name="bookmarks_empty_list_title">Orodha hii ni tupu</string>
     <string name="bookmarks_empty_list_message">Ili kuongeza ramani, gusa mahali kwenye ramani na kisha gusa ikoni ya nyota</string>
+    <string name="change_all_bookmarks_color">Badilisha rangi ya alamisho zote</string>
     <string name="category_desc_more">…zaidi</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
     <string name="export_file">Hamisha KMZ</string>
@@ -345,8 +346,6 @@
     <string name="aa_location_permissions_request">Organic Maps zinahitaji ufikiaji wa eneo. Ikiwa salama, angalia arifa kwenye simu yako.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">Programu hii inahitaji idhini yako</string>
-    <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Organic Maps katika Android Auto zinahitaji ruhusa ya eneo ili kufanya kazi kwa ufanisi</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Ruhusa za ruzuku</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->
