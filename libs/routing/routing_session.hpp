@@ -6,10 +6,7 @@
 #include "routing/route.hpp"
 #include "routing/router.hpp"
 #include "routing/routing_callbacks.hpp"
-#include "routing/routing_exceptions.hpp"
-#include "routing/speed_camera.hpp"
 #include "routing/speed_camera_manager.hpp"
-#include "routing/turns.hpp"
 #include "routing/turns_notification_manager.hpp"
 
 #include "traffic/speed_groups.hpp"
@@ -21,16 +18,10 @@
 
 #include "geometry/point2d.hpp"
 #include "geometry/point_with_altitude.hpp"
-#include "geometry/polyline2d.hpp"
 
 #include "base/thread_checker.hpp"
 
-#include <cstdint>
-#include <functional>
-#include <limits>
-#include <map>
 #include <memory>
-#include <queue>
 #include <string>
 
 namespace location
@@ -99,6 +90,7 @@ public:
   bool GetRouteJunctionPoints(std::vector<geometry::PointWithAltitude> & routeJunctionPoints) const;
 
   SessionState OnLocationPositionChanged(location::GpsInfo const & info);
+  /// @pre Function is called exactly while moving the route. Depends on current time, no pre-caching.
   void GetRouteFollowingInfo(FollowingInfo & info) const;
 
   bool MatchLocationToRoute(location::GpsInfo & location, location::RouteMatchingInfo & routeMatchingInfo);

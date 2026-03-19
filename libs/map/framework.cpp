@@ -1,4 +1,5 @@
 #include "map/framework.hpp"
+#include "base/assert.hpp"
 #include "map/benchmark_tools.hpp"
 #include "map/gps_tracker.hpp"
 #include "map/place_page_info.hpp"
@@ -17,6 +18,7 @@
 #include "search/locality_finder.hpp"
 
 #include "storage/country_info_getter.hpp"
+#include "storage/routing_helpers.hpp"
 #include "storage/storage.hpp"
 #include "storage/storage_helpers.hpp"
 
@@ -429,8 +431,6 @@ Framework::Framework(FrameworkParams const & params, bool loadMaps)
   m_storage.SetDownloadingPolicy(&m_storageDownloadingPolicy);
   m_storage.SetStartDownloadingCallback([this]() { UpdatePlacePageInfoForCurrentSelection(); });
 
-  m_routingManager.SetRouterImpl(RouterType::Vehicle);
-
   UpdateMinBuildingsTapZoom();
 
   LOG(LINFO, ("System languages:", languages::GetPreferred()));
@@ -585,6 +585,8 @@ void Framework::LoadMapsSync()
   m_featuresFetcher.GetDataSource().AddObserver(editor);
   LOG(LDEBUG, ("Editor initialized"));
 
+  InitRouting();
+
   GetStorage().RestoreDownloadQueue();
 }
 
@@ -604,7 +606,13 @@ void Framework::LoadMapsAsync(std::function<void()> && callback)
     m_featuresFetcher.GetDataSource().AddObserver(editor);
     LOG(LDEBUG, ("Editor initialized"));
 
-    GetPlatform().RunTask(Platform::Thread::Gui, [callback = std::move(callback)]() { callback(); });
+    GetPlatform().RunTask(Platform::Thread::Gui, [this, callback = std::move(callback)]()
+    {
+      /// @todo Investigate if we can call it async after "Editor initialized".
+      InitRouting();
+
+      callback();
+    });
 
     LOG(LINFO, ("Finished async loading"));
   }).detach();
@@ -647,7 +655,7 @@ void Framework::FillPointInfoForBookmark(Bookmark const & bmk, place_page::Info 
 {
   // Convert indices to sorted classifier types.
   Classificator const & cl = classif();
-  buffer_vector<uint8_t, 8> types;
+  buffer_vector<uint32_t, 8> types;
   for (uint32_t i : bmk.GetData().m_featureTypes)
     types.push_back(cl.GetTypeForIndex(i));
   std::sort(types.begin(), types.end());
@@ -820,10 +828,10 @@ void Framework::FillInfoFromFeatureType(FeatureType & ft, place_page::Info & inf
   bool const isState = ftypes::IsStateChecker::Instance()(types);
   if (isState || ftypes::IsCountryChecker::Instance()(types))
   {
-    size_t const level = isState ? 1 : 0;
-    CountriesVec countries;
+    // countryId may be empty after all
     CountryId countryId = m_infoGetter->GetRegionCountryId(info.GetMercator());
-    GetStorage().GetTopmostNodesFor(countryId, countries, level);
+    CountriesVec countries;
+    GetStorage().GetTopmostNodesFor(countryId, countries, isState ? 1 : 0 /* level */);
     if (countries.size() == 1)
       countryId = countries.front();
 
@@ -1154,8 +1162,15 @@ namespace
 
 double ScaleModeToFactor(Framework::EScaleMode mode)
 {
-  double factors[] = {2.0, 1.5, 0.5, 0.67};
-  return factors[mode];
+  switch (mode)
+  {
+    using enum Framework::EScaleMode;
+  case SCALE_MAG: return 2.0;
+  case SCALE_MAG_LIGHT: return 1.5;
+  case SCALE_MIN: return 0.5;
+  case SCALE_MIN_LIGHT: return 0.67;
+  }
+  UNREACHABLE();
 }
 
 }  // namespace
@@ -1597,16 +1612,20 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
       double const tileWidth = tileRect.SizeX();
       double const tileHeight = tileRect.SizeY();
 
-      // When "minimum visible size" is enabled, enforce a floor so the trail
-      // doesn't vanish at high zoom-out levels.  Otherwise use true scale.
-      constexpr double kMinRadiusPx = 8.0;
+      // Keep the true scale by default, but allow enforcing a larger minimum
+      // footprint when the user wants revealed areas to stay visible while zoomed out.
+      constexpr double kDefaultMinRadiusPx = 1.5;
+      constexpr double kMinVisibleRadiusPx = 8.0;
       double const naturalRadiusPx = revealRadiusMercator / tileWidth * kTileSize;
-      bool const minVisible = GetFogOfWarMinVisible();
-      double const radiusPx = minVisible ? std::max(kMinRadiusPx, naturalRadiusPx)
-                                         : naturalRadiusPx;
+      double const minRadiusPx = GetFogOfWarMinVisible() ? kMinVisibleRadiusPx : kDefaultMinRadiusPx;
+      double const radiusPx = std::max(minRadiusPx, naturalRadiusPx);
 
+      // Use the effective pixel-space radius (back-converted to Mercator)
+      // for the expanded rect so that the kMinRadiusPx boost is respected
+      // when culling points near tile boundaries at far zoom.
+      double const effectiveRadiusMerc = radiusPx / kTileSize * tileWidth;
       auto expandedRect = tileRect;
-      expandedRect.Inflate(revealRadiusMercator, revealRadiusMercator);
+      expandedRect.Inflate(effectiveRadiusMerc, effectiveRadiusMerc);
 
       // Fast path: check if this tile has any GPS data nearby using bounding rect.
       // Do this BEFORE pixel allocation to skip work for tiles far from any data.
@@ -1739,15 +1758,13 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
         for (size_t gi = 0; gi < m_fogGpsPositions.size(); ++gi)
         {
           auto const & gpsPos = m_fogGpsPositions[gi];
-          bool const curInside = expandedRect.IsPointInside(gpsPos);
-          bool const prevInside = (gi > 0) && expandedRect.IsPointInside(m_fogGpsPositions[gi - 1]);
-          if (!curInside && !prevInside)
-            continue;
 
-          auto const [px, py] = toPixel(gpsPos);
-          if (gi == 0 || (!prevInside && curInside))
+          if (gi == 0)
           {
-            // First point or re-entering tile: just reveal a circle.
+            // First point: reveal circle if within reach of this tile.
+            if (!expandedRect.IsPointInside(gpsPos))
+              continue;
+            auto const [px, py] = toPixel(gpsPos);
             int const minX = std::max(0, static_cast<int>(px - radiusPxF));
             int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
             int const minY = std::max(0, static_cast<int>(py - radiusPxF));
@@ -1755,13 +1772,24 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
             for (int y = minY; y <= maxY; ++y)
               for (int x = minX; x <= maxX; ++x)
                 clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+            continue;
           }
-          else
+
+          // For segments: skip only if the segment bbox can't reach this tile.
+          // A long segment may cross the tile even when both endpoints are outside.
+          auto const & prevPos = m_fogGpsPositions[gi - 1];
+          bool const curInside = expandedRect.IsPointInside(gpsPos);
+          bool const prevInside = expandedRect.IsPointInside(prevPos);
+          if (!curInside && !prevInside)
           {
-            // Connect to previous point with a thick line segment.
-            auto const [prevPx, prevPy] = toPixel(m_fogGpsPositions[gi - 1]);
-            revealSegment(prevPx, prevPy, px, py);
+            m2::RectD segBox(gpsPos, prevPos);
+            if (!expandedRect.IsIntersect(segBox))
+              continue;
           }
+
+          auto const [px, py] = toPixel(gpsPos);
+          auto const [prevPx, prevPy] = toPixel(prevPos);
+          revealSegment(prevPx, prevPy, px, py);
         }
 
         // Reveal circle around current GPS position.
@@ -1795,14 +1823,11 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
           auto const & seg = m_fogTrackSegments[si];
           for (size_t i = 0; i < seg.size(); ++i)
           {
-            if (!expandedRect.IsPointInside(seg[i]) &&
-                (i == 0 || !expandedRect.IsPointInside(seg[i - 1])))
-              continue;
-
-            auto const [px, py] = toPixel(seg[i]);
             if (i == 0)
             {
-              // First point: just clear a circle.
+              if (!expandedRect.IsPointInside(seg[i]))
+                continue;
+              auto const [px, py] = toPixel(seg[i]);
               int const minX = std::max(0, static_cast<int>(px - radiusPxF));
               int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
               int const minY = std::max(0, static_cast<int>(py - radiusPxF));
@@ -1810,12 +1835,22 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
               for (int y = minY; y <= maxY; ++y)
                 for (int x = minX; x <= maxX; ++x)
                   clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+              continue;
             }
-            else
+
+            // Skip only if segment bbox can't reach this tile.
+            bool const curInside = expandedRect.IsPointInside(seg[i]);
+            bool const prevInside = expandedRect.IsPointInside(seg[i - 1]);
+            if (!curInside && !prevInside)
             {
-              auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
-              revealSegment(prevPx, prevPy, px, py);
+              m2::RectD segBox(seg[i], seg[i - 1]);
+              if (!expandedRect.IsIntersect(segBox))
+                continue;
             }
+
+            auto const [px, py] = toPixel(seg[i]);
+            auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
+            revealSegment(prevPx, prevPy, px, py);
           }
         }
       }
@@ -3247,6 +3282,7 @@ void Framework::SetFogOfWarMinVisible(bool enabled)
   InvalidateFogTiles();
 }
 
+
 namespace
 {
 std::string_view constexpr kFogThrottleSpeedKeys[] = {kFogThrottleSpeed1Key, kFogThrottleSpeed2Key, kFogThrottleSpeed3Key};
@@ -3954,21 +3990,24 @@ void Framework::OnRouteFollow(routing::RouterType type)
 }
 
 // RoutingManager::Delegate
-void Framework::RegisterCountryFilesOnRoute(shared_ptr<routing::NumMwmIds> ptr) const
+void Framework::InitRouting()
 {
-  m_storage.ForEachCountry([&ptr](storage::Country const & country) { ptr->RegisterFile(country.GetFile()); });
+  m_routingManager.Init(routing::CreateNumMwmIds(m_storage));
+
+  LOG(LDEBUG, ("Routing initialized"));
 }
 
 void Framework::SetPlacePageLocation(place_page::Info & info)
 {
   ASSERT(m_infoGetter, ());
 
+  // countryId may be empty after all
   if (info.GetCountryId().empty())
     info.SetCountryId(m_infoGetter->GetRegionCountryId(info.GetMercator()));
 
-  CountriesVec countries;
   if (info.GetTopmostCountryIds().empty())
   {
+    CountriesVec countries;
     GetStorage().GetTopmostNodesFor(info.GetCountryId(), countries);
     info.SetTopmostCountryIds(std::move(countries));
   }

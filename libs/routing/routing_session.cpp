@@ -8,10 +8,6 @@
 #include "geometry/angles.hpp"
 #include "geometry/mercator.hpp"
 
-#include "indexer/road_shields_parser.hpp"
-
-#include <utility>
-
 namespace
 {
 int constexpr kOnRouteMissedCount = 10;
@@ -424,8 +420,7 @@ void RoutingSession::GetRouteFollowingInfo(FollowingInfo & info) const
   info.m_distToTurn = platform::Distance::CreateFormatted(distanceToTurnMeters);
   info.m_turn = turn.m_turn;
 
-  SpeedInUnits speedLimit;
-  m_route->GetCurrentSpeedLimit(speedLimit);
+  SpeedInUnits const speedLimit = m_route->GetCurrentSpeedLimit();
   if (speedLimit.IsNumeric())
     info.m_speedLimitMps = measurement_utils::KmphToMps(speedLimit.GetSpeedKmPH());
   else if (speedLimit.GetSpeed() == kNoneMaxSpeed)

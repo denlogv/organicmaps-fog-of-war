@@ -139,6 +139,7 @@ public:
     void SetIsVisible(kml::MarkGroupId groupId, bool visible);
 
     void MoveBookmark(kml::MarkId bmID, kml::MarkGroupId curGroupID, kml::MarkGroupId newGroupID);
+    /// @todo Get data by value and make moves by call-chain.
     void UpdateBookmark(kml::MarkId bmId, kml::BookmarkData const & bm);
 
     void AttachBookmark(kml::MarkId bmId, kml::MarkGroupId groupId);
@@ -150,6 +151,7 @@ public:
     void AttachTrack(kml::TrackId trackId, kml::MarkGroupId groupId);
     void DetachTrack(kml::TrackId trackId, kml::MarkGroupId groupId);
     void ChangeTrackColor(kml::TrackId trackId, dp::Color color);
+    /// @todo Get data by value and make moves by call-chain.
     void UpdateTrack(kml::TrackId trackId, kml::TrackData const & trackData);
 
     void SetCategoryName(kml::MarkGroupId categoryId, std::string const & name);
@@ -157,6 +159,7 @@ public:
     void SetCategoryTags(kml::MarkGroupId categoryId, std::vector<std::string> const & tags);
     void SetCategoryAccessRules(kml::MarkGroupId categoryId, kml::AccessRules accessRules);
     void SetCategoryCustomProperty(kml::MarkGroupId categoryId, std::string const & key, std::string const & value);
+    void SetCategoryBookmarksColor(kml::MarkGroupId groupId, size_t colorIndex);
 
     /// Removes the category from the list of categories and deletes the related file.
     /// @param permanently If true, the file will be removed from the disk. If false, the file will be marked as deleted
@@ -263,7 +266,7 @@ public:
 
   kml::MarkGroupId CreateBookmarkCategory(kml::CategoryData && data, bool autoSave = true);
   kml::MarkGroupId CreateBookmarkCategory(std::string const & name, bool autoSave = true);
-  void UpdateBookmarkCategory(kml::MarkGroupId & groupId, kml::CategoryData && data, bool autoSave);
+  void UpdateBookmarkCategory(kml::MarkGroupId groupId, kml::CategoryData && data, bool autoSave);
 
   BookmarkCategory * CreateBookmarkCompilation(kml::CategoryData && data);
 
@@ -272,6 +275,7 @@ public:
   kml::MarkGroupId GetCategoryByFileName(std::string const & fileName) const;
   m2::RectD GetCategoryRect(kml::MarkGroupId categoryId, bool addIconsSize) const;
   kml::CategoryData const & GetCategoryData(kml::MarkGroupId categoryId) const;
+  std::string GetCategoryCustomProperty(kml::MarkGroupId categoryId, std::string const & key) const;
 
   kml::MarkGroupId GetCategoryId(std::string const & name) const;
 

@@ -1,0 +1,29 @@
+plugins {
+  id 'com.android.library'
+}
+
+apply from: "${rootProject.rootDir}/groovy/common-config.gradle"
+
+android {
+  namespace 'app.organicmaps.car'
+
+  compileOptions {
+    coreLibraryDesugaringEnabled = true
+  }
+}
+
+dependencies {
+  implementation project(':libs:api')
+  implementation project(':libs:branding')
+  implementation project(':libs:downloader')
+  implementation project(':libs:googleassistant')
+  implementation project(':libs:routing')
+  implementation project(':libs:utils')
+
+  implementation project(':sdk')
+  implementation project(':sdk:car')
+
+  coreLibraryDesugaring libs.android.tools.desugaring
+
+  implementation libs.androidx.car.app
+}

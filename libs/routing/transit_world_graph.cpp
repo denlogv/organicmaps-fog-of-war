@@ -15,7 +15,7 @@ TransitWorldGraph::TransitWorldGraph(unique_ptr<CrossMwmGraph> crossMwmGraph, un
   : m_crossMwmGraph(std::move(crossMwmGraph))
   , m_indexLoader(std::move(indexLoader))
   , m_transitLoader(std::move(transitLoader))
-  , m_estimator(estimator)
+  , m_estimator(std::move(estimator))
 {
   CHECK(m_indexLoader, ());
   CHECK(m_transitLoader, ());
@@ -195,7 +195,7 @@ unique_ptr<TransitInfo> TransitWorldGraph::GetTransitInfo(Segment const & segmen
   return {};
 }
 
-void TransitWorldGraph::GetTwinsInner(Segment const & segment, bool isOutgoing, vector<Segment> & twins)
+void TransitWorldGraph::GetTwinsInner(Segment const & segment, bool isOutgoing, TwinSegmentsListT & twins)
 {
   if (m_mode == WorldGraphMode::SingleMwm || !m_crossMwmGraph || !m_crossMwmGraph->IsTransition(segment, isOutgoing))
     return;

@@ -39,7 +39,7 @@ void SingleVehicleWorldGraph::CheckAndProcessTransitFeatures(Segment const & par
   {
     JointSegment const & target = jointEdges[i].GetTarget();
 
-    vector<Segment> twins;
+    TwinSegmentsListT twins;
     m_crossMwmGraph->GetTwinFeature(target.GetSegment(true /* start */), isOutgoing, twins);
     if (twins.empty())
     {
@@ -183,10 +183,10 @@ vector<RouteSegment::SpeedCamera> SingleVehicleWorldGraph::GetSpeedCamInfo(Segme
   return m_loader->GetSpeedCameraInfo(segment);
 }
 
-SpeedInUnits SingleVehicleWorldGraph::GetSpeedLimit(Segment const & segment)
+Maxspeed SingleVehicleWorldGraph::GetSpeedLimit(Segment const & segment)
 {
   ASSERT(segment.IsRealSegment(), ());
-  return GetIndexGraph(segment.GetMwmId()).GetGeometry().GetSavedMaxspeed(segment.GetFeatureId(), segment.IsForward());
+  return GetIndexGraph(segment.GetMwmId()).GetGeometry().GetSavedMaxspeed(segment.GetFeatureId());
 }
 
 RoadGeometry const & SingleVehicleWorldGraph::GetRoadGeometry(NumMwmId mwmId, uint32_t featureId)
@@ -194,7 +194,7 @@ RoadGeometry const & SingleVehicleWorldGraph::GetRoadGeometry(NumMwmId mwmId, ui
   return m_loader->GetGeometry(mwmId).GetRoad(featureId);
 }
 
-void SingleVehicleWorldGraph::GetTwinsInner(Segment const & segment, bool isOutgoing, vector<Segment> & twins)
+void SingleVehicleWorldGraph::GetTwinsInner(Segment const & segment, bool isOutgoing, TwinSegmentsListT & twins)
 {
   m_crossMwmGraph->GetTwins(segment, isOutgoing, twins);
 }

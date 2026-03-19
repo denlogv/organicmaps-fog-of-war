@@ -3,7 +3,6 @@
 #include "platform/country_defines.hpp"
 #include "platform/local_country_file.hpp"
 
-#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -11,6 +10,8 @@ class ModelReader;
 
 namespace platform
 {
+bool IsDownloaderFile(std::string const & name);
+
 // Removes all files downloader creates during downloading of a country.
 // Note. The the maps are deleted from writable dir/|dataDir|/|version| directory.
 // If |dataDir| is empty (or is not set) the function deletes maps from writable dir.
@@ -43,6 +44,10 @@ size_t FindAllLocalMapsInDirectoryAndCleanup(std::string const & directory, int6
 void FindAllLocalMapsAndCleanup(int64_t latestVersion, std::vector<LocalCountryFile> & localFiles);
 void FindAllLocalMapsAndCleanup(int64_t latestVersion, std::string const & dataDir,
                                 std::vector<LocalCountryFile> & localFiles);
+
+// Scans ResourcesDir for versioned subdirectories with map files.
+// Useful when --writable_path differs from ResourcesDir (e.g., in tests).
+void FindAllLocalMapsInResourcesDir(std::vector<LocalCountryFile> & localFiles);
 
 void FindAllDiffs(std::string const & dataDir, std::vector<LocalCountryFile> & diffs);
 

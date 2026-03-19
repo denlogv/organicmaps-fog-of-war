@@ -1,7 +1,6 @@
 #include "routing/regions_router.hpp"
 
 #include "routing/dummy_world_graph.hpp"
-#include "routing/index_graph_loader.hpp"
 #include "routing/index_graph_starter.hpp"
 #include "routing/junction_visitor.hpp"
 #include "routing/regions_sparse_graph.hpp"
@@ -128,15 +127,11 @@ void RegionsRouter::Do()
         if (name.empty() && !IndexGraphStarter::IsFakeSegment(s))
           name = m_numMwmIds->GetFile(s.GetMwmId()).GetName();
 
-        m_mwmNames.emplace(name);
+        if (!name.empty())
+          m_mwmNames.insert(std::move(name));
       }
     }
   }
-}
-
-std::unordered_set<std::string> const & RegionsRouter::GetMwmNames() const
-{
-  return m_mwmNames;
 }
 
 std::pair<m2::PointD, std::string> RegionsRouter::GetCheckpointRegion(size_t index) const

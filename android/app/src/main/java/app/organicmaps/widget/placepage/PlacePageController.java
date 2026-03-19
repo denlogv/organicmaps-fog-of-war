@@ -91,6 +91,7 @@ public class PlacePageController
       // This callback may be called before insets are updated when resuming the app
       if (mCurrentWindowInsets == null)
         return;
+
       final int topInset = mCurrentWindowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
       // Only animate the status bar background if the place page can reach it
       if (mCoordinator.getHeight() - mPlacePageContainer.getHeight() < topInset)
@@ -113,16 +114,20 @@ public class PlacePageController
     private void onScreenFilled()
     {
       UiUtils.show(mPlacePageStatusBarBackground);
-      MaterialShapeDrawable bg = (MaterialShapeDrawable) mPlacePage.getBackground();
-      mPlacePageCornerRadius = bg.getTopLeftCornerResolvedSize();
-      bg.setCornerSize(0);
+      // LiveData observer fires before the layout pass that creates MaterialShapeDrawable.
+      if (mPlacePage.getBackground() instanceof MaterialShapeDrawable bg)
+      {
+        mPlacePageCornerRadius = bg.getTopLeftCornerResolvedSize();
+        bg.setCornerSize(0);
+      }
     }
 
     private void onScreenUnfilled()
     {
       UiUtils.hide(mPlacePageStatusBarBackground);
-      MaterialShapeDrawable bg = (MaterialShapeDrawable) mPlacePage.getBackground();
-      bg.setCornerSize(mPlacePageCornerRadius);
+      // LiveData observer fires before the layout pass that creates MaterialShapeDrawable.
+      if (mPlacePage.getBackground() instanceof MaterialShapeDrawable bg)
+        bg.setCornerSize(mPlacePageCornerRadius);
     }
   };
 
@@ -222,11 +227,14 @@ public class PlacePageController
       });
     }
     mPlacePage.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+      // This callback may be called before insets are updated when resuming the app
+      if (mCurrentWindowInsets == null)
+        return;
+
       final int topInset = mCurrentWindowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
       if (mPlacePage.getHeight() >= mCoordinator.getHeight() - topInset)
-      {
         mPlacePageDistanceToTopObserver.onChanged(oldTop);
-      }
+
       if (top != oldTop)
       {
         mDistanceToTop = oldTop;
@@ -327,13 +335,22 @@ public class PlacePageController
     // Prevent the place page from showing under the status bar
     // If we are in planning mode, prevent going above the header
     final int topInsets = insets.top + (RoutingController.get().isPlanning() ? mRoutingHeaderHeight : 0);
-    final int maxHeight = Math.min(minHeight + insets.bottom, mCoordinator.getHeight() - topInsets);
+    final int availableHeight = mCoordinator.getHeight() - topInsets;
+    final int maxHeight = Math.min(minHeight + insets.bottom, availableHeight);
     // Set the minimum height of the place page to prevent jumps when new data results in SMALLER content
     // This cannot be set on the place page itself as it has the fitToContent property set
     mPlacePageContainer.setMinimumHeight(minHeight);
     // Set the maximum height of the place page to prevent jumps when new data results in BIGGER content
     // It does not take into account the navigation bar height so we need to add it manually
     mPlacePageBehavior.setMaxHeight(maxHeight);
+
+    // Add bottom padding when content requires scrolling in landscape to prevent
+    // the last elements from being cut off by the navigation bar
+    final boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    final boolean needsBottomInset = isLandscape && (minHeight + insets.bottom > availableHeight);
+    final int bottomPadding = needsBottomInset ? insets.bottom : 0;
+    if (mPlacePageContainer.getPaddingBottom() != bottomPadding)
+      mPlacePageContainer.setPadding(0, 0, 0, bottomPadding);
   }
 
   /**
@@ -370,10 +387,10 @@ public class PlacePageController
    */
   private void animatePeekHeight(int peekHeight)
   {
+    // This callback may be called before insets are updated when resuming the app
     if (mCurrentWindowInsets == null)
-    {
       return;
-    }
+
     final int bottomInsets = mCurrentWindowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
     // Make sure to start from the current height of the place page
     final int parentHeight = ((View) mPlacePage.getParent()).getHeight();

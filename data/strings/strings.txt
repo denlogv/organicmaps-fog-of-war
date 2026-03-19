@@ -59,7 +59,7 @@ zh-Hant = 返回
 
 [cancel]
 comment = Button text (should be short)
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Cancel
 af = Kanselleer
 ar = إلغاء
@@ -523,7 +523,7 @@ zh-Hant = 以後再說
 
 [search]
 comment = View and button titles for accessibility. Also used in iPhone home screen quick actions.
-tags = android-app,apple-infoplist,apple-maps
+tags = android-app,android-libs-car,apple-infoplist,apple-maps
 en = Search
 af = Soek
 ar = البحث
@@ -641,7 +641,7 @@ zh-Hant = 搜尋地圖
 
 [location_is_disabled_long_text]
 comment = Location services are disabled by user alert - message
-tags = android-app
+tags = android-app,android-libs-car
 en = You currently have all Location Services for this device or application disabled. Please enable them in Settings.
 af = Alle liggingsdienste vir hierdie toestel of toepassing is tans gedeaktiveer. Aktiveer dit asb. in Instellings.
 ar = التطبيق أو جميع خدمات تحديد المواقع معطلة لديك في الوقت الحالي. الرجاء تفعيلها في الإعدادات.
@@ -868,7 +868,7 @@ zh-Hant = 在地圖上顯示
 
 [country_status_download_failed]
 comment = Message to display at the center of the screen when the country download has failed
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Download has failed
 af = Aflaai het misluk
 ar = فشلت عملية تنزيل
@@ -1380,7 +1380,7 @@ zh-Hans = 位置设置
 zh-Hant = 位置設定
 
 [close]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Close
 af = Sluit
 ar = إغلاق
@@ -1491,7 +1491,7 @@ zh-Hans = 该应用程序需要硬件加速的 OpenGL。很遗憾，您的设备
 zh-Hant = 該應用程式需要硬體加速的 OpenGL。很遺憾，您的裝置不受支援。
 
 [download]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Download
 af = Laai af
 ar = تنزيل
@@ -1661,7 +1661,7 @@ zh-Hans = 请先释放一些 SD 卡 / USB 存储空间以使用本应用
 zh-Hant = 請先釋放一些 SD 卡 / USB 儲存空間以使用 Organic Maps
 
 [download_resources]
-tags = android-app
+tags = android-app,android-libs-car
 en = Before you start using the app, please download the world overview map to your device.\nIt will use %@ of storage.
 af = Voordat u die toep begin gebruik, moet u asb. die algemene wêreldkaart na u toestel aflaai.\nDit sal %@ se spasie opneem.
 ar = قبل البدء في استخدام التطبيق، يرجى تنزيل خريطة نظرة عامة على العالم على جهازك.\nسيستخدم %@ من مساحة التخزين.
@@ -2225,7 +2225,7 @@ zh-Hant = 書籤列表名稱
 
 [bookmarks]
 comment = Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied.
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Bookmarks
 af = Boekmerke
 ar = الإشارات المرجعية
@@ -2509,7 +2509,7 @@ zh-Hant = 清單
 
 [settings]
 comment = Settings button in system menu
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Settings
 af = Instellings
 ar = الإعدادات
@@ -3341,7 +3341,7 @@ zh-Hant = 書籤列表
 
 [category_eat]
 comment = Search category for cafes, bars, restaurants; any changes should be duplicated in categories.txt @category_eat!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Where to eat
 af = Waar om te eet
 ar = أمكان لتناول الطعام
@@ -3394,7 +3394,7 @@ zh-Hant = 在哪裡吃
 
 [category_food]
 comment = Search category for grocery stores; any changes should be duplicated in categories.txt @category_food!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Groceries
 af = Kruideniersware
 ar = بقالية
@@ -3502,7 +3502,7 @@ zh-Hant = 交通
 
 [category_fuel]
 comment = Search category for fuel stations; any changes should be duplicated in categories.txt @category_fuel!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Gas
 af = Brandstof
 ar = وقود الحافلات
@@ -3556,7 +3556,7 @@ zh-Hant = 加油站
 
 [category_parking]
 comment = Search category for parking lots; any changes should be duplicated in categories.txt @category_parking!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Parking
 af = Parkering
 ar = مرافق ركن السيارات
@@ -3715,7 +3715,7 @@ zh-Hant = 二手商店
 
 [category_hotel]
 comment = Search category for places to stay; any changes should be duplicated in categories.txt @category_hotel!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Hotel
 af = Hotel
 ar = فندق
@@ -4197,7 +4197,7 @@ zh-Hant = 醫院
 
 [category_toilet]
 comment = Search category for toilets; any changes should be duplicated in categories.txt @category_toilet!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Toilet
 af = Toilet
 ar = مرحاض
@@ -4465,7 +4465,7 @@ zh-Hant = 水
 
 [category_rv]
 comment = Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv!
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = RV Facilities
 af = Karavaanfasiliteite
 ar = منشآت للمنازل المتنقلة
@@ -5630,7 +5630,7 @@ zh-Hant = 完成
 
 [data_version]
 comment = Data version in «About» screen, %@ is replaced by a local, human readable date.
-tags = android-app
+tags = android-app,android-libs-car
 en = OpenStreetMap data: %@
 af = OpenStreetMap-data: %@
 ar = بيانات خريطة الشارع المفتوحة: %@
@@ -6236,7 +6236,7 @@ zh-Hant = 在黑暗中導航時的夜間風格
 
 [pref_map_style_title]
 comment = Settings «Map» category: «Night style» title
-tags = android-app
+tags = android-app,android-libs-car
 en = Night Mode
 af = Nagmodus
 ar = الوضع الليلي
@@ -6291,7 +6291,7 @@ zh-Hant = 夜間模式
 
 [off]
 comment = Generic «Off» string
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Off
 ar = تعطيل
 az = Bağlı
@@ -6345,7 +6345,7 @@ zh-Hant = 關閉
 
 [on]
 comment = Generic «On» string
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = On
 af = Aan
 ar = تشغيل
@@ -6400,7 +6400,7 @@ zh-Hant = 開啟
 
 [auto]
 comment = Generic «Auto» string
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Auto
 af = Outomaties
 ar = تلقائي
@@ -6511,7 +6511,7 @@ zh-Hant = 透視圖
 
 [pref_map_3d_buildings_title]
 comment = Settings «Map» category: «3D buildings» title
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = 3D buildings
 af = 3D-geboue
 ar = مباني ثلاثية الأبعاد
@@ -7452,7 +7452,7 @@ zh-Hant = 為我們評分
 
 [help]
 comment = Text in menu
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Help
 af = Help
 ar = مساعدة
@@ -8390,7 +8390,7 @@ zh-Hant = 在我附近
 
 [downloader_status_maps]
 comment = In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10"
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Maps
 af = Kaarte
 ar = الخرائط
@@ -8609,7 +8609,7 @@ zh-Hant = 要刪除地圖，請停止導航。
 
 [routing_failed_cross_mwm_building]
 comment = PointsInDifferentMWM
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Routes can only be created that are fully contained within a map of a single region.
 af = Slegs die roetes wat in hul geheel in ’n kaart is van ’n enkele streek is, kan geskep word.
 ar = يمكن فقط إنشاء المسارات التي توجد بشكل كامل ضمن خريطة دولة واحدة.
@@ -8663,7 +8663,7 @@ zh-Hant = 路線只能完全處在同一地圖裡時才能被規劃。
 
 [downloader_download_map]
 comment = Context menu item for downloader.
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Download map
 af = Laai kaart af
 ar = تنزيل الخريطة
@@ -8719,7 +8719,7 @@ zh-Hant = 下載地圖
 
 [downloader_retry]
 comment = Item status in downloader.
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Retry
 af = Probeer weer
 ar = المحاولة مجدداً
@@ -8829,7 +8829,7 @@ zh-Hant = 刪除地圖
 
 [downloader_update_map]
 comment = Item in context menu.
-tags = android-app
+tags = android-app,android-libs-routing
 en = Update Map
 af = Werk kaart by
 ar = تحديث الخريطة
@@ -8996,7 +8996,7 @@ zh-Hant = 使用藍牙、WiFi 或行動數據快速確定您的大致位置
 
 [routing_download_maps_along]
 comment = Text for routing error dialog
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Download all of the maps along your route
 af = Laai al die kaarte langs u roete af
 ar = تنزيل الخرائط على طول طريقك
@@ -9051,7 +9051,7 @@ zh-Hant = 下載路線上的所有地圖
 
 [routing_requires_all_map]
 comment = Text for routing error dialog
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = In order to create a route, we need to download and update all the maps from your location to your destination.
 af = Om ’n roete te skep moet ons al die kaarte van u ligging na u bestemming aflaai en bywerk.
 ar = من أجل تعيين الطريق، نحتاج إلى تنزيل أو تحديث جميع الخرائط التي تغطي المنطقة من موقعك إلى وجهتك.
@@ -11514,7 +11514,7 @@ zh-Hans = 上路时请当心，祝您一路平安！
 zh-Hant = 上路時請當心，祝您一路平安！
 
 [dialog_routing_check_gps]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Check GPS signal
 af = Gaan GPS-sein na
 ar = تحقق من إشارة نظام تحديد الموقع الجغرافي
@@ -11568,7 +11568,7 @@ zh-Hans = 检查 GPS 信号
 zh-Hant = 檢查 GPS 訊號
 
 [dialog_routing_error_location_not_found]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Unable to create route. Current GPS coordinates could not be identified.
 af = Kan nie roete bereken nie. Huidige GPD-koördinate kon nie geïdentifiseer word nie.
 ar = تعذر إنشاء مسار. لم نستطع تحديد الإحداثيات الجغرافية الحالية.
@@ -11622,7 +11622,7 @@ zh-Hans = 无法规划路线。无法识别当前 GPS 坐标。
 zh-Hant = 無法規劃路線。無法識別目前 GPS 座標。
 
 [dialog_routing_location_turn_wifi]
-tags = android-app,apple-maps
+tags = android-app,android-libs-routing,apple-maps
 en = Please check your GPS signal. Enabling Wi-Fi will improve your location accuracy.
 af = Kaan asb. u GPS-sein na. Met Wi-Fi sal u liggingakkuraatheid verbeter.
 ar = الرجاء التحقق من إشارة نظام تحديد الموقع. إن تفعيل الWi-Fi سيحسب دقة الموقع.
@@ -11676,7 +11676,7 @@ zh-Hans = 请检查您的 GPS 信号。启用无线网络将改善定位精度�
 zh-Hant = 請檢查您的 GPS 訊號。啟用無線網路將改善定位精度。
 
 [dialog_routing_location_turn_on]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Enable location services
 af = Aktiveer liggingdienste
 ar = تفعيل خدمات الموقع الجغرافي
@@ -11730,7 +11730,7 @@ zh-Hans = 启用定位服务
 zh-Hant = 啟用定位服務
 
 [dialog_routing_location_unknown_turn_on]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Unable to locate current GPS coordinates. Enable location services to calculate route.
 af = Kan nie huidige GPD-koördinate opspoor nie. Aktiveer liggingdienste om roete te bereken.
 ar = لم نستطع تحديد الإحداثيات الجغرافية الحالي. قم بتفعيل خدمات الموقع الجغرافي لحساب الطريق المناسب.
@@ -11784,7 +11784,7 @@ zh-Hans = 无法定位当前 GPS 坐标。请启用定位服务以规划路线�
 zh-Hant = 無法定位目前 GPS 座標。請啟用定位服務以規劃路線。
 
 [dialog_routing_unable_locate_route]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Unable to locate route
 af = Kan nie roete opspoor nie
 ar = تعذر إيجاد المسار
@@ -11838,7 +11838,7 @@ zh-Hans = 无法定位路线
 zh-Hant = 無法定位路線
 
 [dialog_routing_cant_build_route]
-tags = android-app
+tags = android-libs-routing
 en = Unable to create route.
 af = Kan nie roete bereken nie.
 ar = تعذر إنشاء مسار.
@@ -11892,7 +11892,7 @@ zh-Hans = 无法规划路线。
 zh-Hant = 無法規劃路線。
 
 [dialog_routing_change_start_or_end]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Please adjust your starting point or destination.
 af = Pas asb. u beginpunt of bestemming aan.
 ar = الرجاء تعديل نقطة بدء أو تعديل وجهتك.
@@ -11945,7 +11945,7 @@ zh-Hans = 请调整您的起点或目的地。
 zh-Hant = 請調整您的起點或目的地。
 
 [dialog_routing_change_start]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Adjust starting point
 af = Pas beginpunt aan
 ar = تعديل نقطة البدء
@@ -11998,7 +11998,7 @@ zh-Hans = 调整出发点
 zh-Hant = 調整出發點
 
 [dialog_routing_start_not_determined]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Route was not created. Unable to locate starting point.
 af = Roete is nie bereken nie. Kan nie beginpunt opspoor nie.
 ar = لم يتم إنشاء المسار. تعذر تحديد موقع نقطة البدء.
@@ -12052,7 +12052,7 @@ zh-Hans = 路线未规划。无法定位起点。
 zh-Hant = 路線未規劃。無法定位起點。
 
 [dialog_routing_select_closer_start]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Please select a starting point closer to a road.
 af = Kies asb. ’n beginpunt nader aan ’n pad.
 ar = يُرجى تحديد نقطة بدء أكثر قربًا للطريق.
@@ -12105,7 +12105,7 @@ zh-Hans = 请选择更靠近公路的起点。
 zh-Hant = 請選擇更接近道路的起點。
 
 [dialog_routing_change_end]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Adjust destination
 af = Pas bestemming aan
 ar = تعديل الوجهة
@@ -12157,7 +12157,7 @@ zh-Hans = 调整目的地
 zh-Hant = 調整目的地
 
 [dialog_routing_end_not_determined]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Route was not created. Unable to locate the destination.
 af = Roete is nie bereken nie. Kan nie die bestemming ospoor nie.
 ar = لم يتم إنشاء المسار. تعذر تحديد موقع الوجهة.
@@ -12211,7 +12211,7 @@ zh-Hans = 路线未规划。无法定位目的地。
 zh-Hant = 路線未規劃。無法定位目的地。
 
 [dialog_routing_select_closer_end]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Please select a destination point located closer to a road.
 af = Kies asb. ’n bestemmingspunt wat nader aan ’n pad is.
 ar = يُرجى تحديد نقطة وجهة تقع أكثر قربًا من الطريق.
@@ -12264,7 +12264,7 @@ zh-Hans = 请选择更靠近公路的目的地位置。
 zh-Hant = 請選擇更接近道路的目的地位置。
 
 [dialog_routing_change_intermediate]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Unable to locate the intermediate point.
 af = Kan nie die tussenstop opspoor nie.
 ar = تعذر تحديد مكان النقطة الوسيطة.
@@ -12318,7 +12318,7 @@ zh-Hans = 无法定位途径点。
 zh-Hant = 無法定位途經點。
 
 [dialog_routing_intermediate_not_determined]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Please adjust your intermediate point.
 af = Werk asb. u tussenstop by.
 ar = الرجاء ضبط النقطة الوسيطة الخاصة بك.
@@ -12372,7 +12372,7 @@ zh-Hans = 请调整您的途径点。
 zh-Hant = 請調整您的途經點。
 
 [dialog_routing_system_error]
-tags = android-app,apple-maps
+tags = android-app,android-libs-routing,apple-maps
 en = System error
 af = Stelselfout
 ar = خطأ في النظام
@@ -12425,7 +12425,7 @@ zh-Hans = 系统错误
 zh-Hant = 系統錯誤
 
 [dialog_routing_application_error]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Unable to create route due to an application error.
 af = Kan weens ’n toepassingfout nie ’n roete berkeen nie.
 ar = تعذر إنشاء مسار نتيجة وجود خطأ في التطبيق.
@@ -12479,7 +12479,7 @@ zh-Hans = 由于应用程序出错，因此无法规划路线。
 zh-Hant = 由於應用程式出錯，因此無法規劃路線。
 
 [dialog_routing_try_again]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Please try again
 af = Probeer asb. weer
 ar = الرجاء إعادة المحاولة
@@ -12587,7 +12587,7 @@ zh-Hans = 以后再说
 zh-Hant = 以後再說
 
 [dialog_routing_download_and_build_cross_route]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Would you like to download the map and create a more optimal route spanning more than one map?
 af = Wil u die kaart aflaai en ’n meer optimale roete bereken wat oor meer as een kaart loop?
 ar = هل ترغب في تنزيل الخريطة وإنشاء مسار أفضل يمتد عبر أكثر من خريطة؟
@@ -12640,7 +12640,7 @@ zh-Hans = 您是否要下载地图，以规划跨越边界的更佳路线？
 zh-Hant = 您是否要下載地圖，以規劃跨越邊界的更佳路線？
 
 [dialog_routing_download_cross_route]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Download additional maps to create a better route that crosses the boundaries of this map.
 af = Laai bykomende kaarte af om ’n beter roete te bereken wat die grense van hierdie kaart oorskry.
 ar = تنزيل خرائط إضافية لإنشاء مسار أفضل يعبر حافة هذه الخريطة.
@@ -13017,7 +13017,7 @@ zh-Hans = 隐藏
 zh-Hant = 隱藏
 
 [categories]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Categories
 af = Kategorieë
 ar = التصنيفات
@@ -13126,7 +13126,7 @@ zh-Hans = 历史
 zh-Hant = 歷史
 
 [search_not_found]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Oops, no results found.
 af = Oeps, geen resultate gevind.
 ar = المعذرة، لم أعثر على أية نتائج.
@@ -13294,7 +13294,7 @@ zh-Hans = 搜索历史记录
 zh-Hant = 搜尋歷史紀錄
 
 [search_history_text]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = View your recent searches.
 af = Bekyk al u onlangse soektogte.
 ar = عرض عمليات البحث الأخيرة.
@@ -13547,7 +13547,7 @@ zh-Hans = 您的位置
 zh-Hant = 您的位置
 
 [p2p_start]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Start
 af = Begin
 ar = ابدأ
@@ -14084,7 +14084,7 @@ zh-Hant = 刪除排程
 
 [editor_time_allday]
 comment = Text for allday switch.
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = All Day (24 hours)
 af = Heeldag (24 uur)
 ar = طوال اليوم (٢٤ ساعة)
@@ -14138,7 +14138,7 @@ zh-Hans = 全天（24 小时）
 zh-Hant = 全天 (24 小時)
 
 [editor_time_open]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Open
 af = Oop
 ar = مفتوح
@@ -15168,7 +15168,7 @@ zh-Hans = 每天
 zh-Hant = 每天
 
 [twentyfour_seven]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = 24/7
 af = 24/7
 ar = ٢٤/٧(ليلاً ونهاراً)
@@ -15222,7 +15222,7 @@ zh-Hans = 24/7 全天候营业
 zh-Hant = 24/7 全天候營業
 
 [day_off_today]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Closed today
 af = Vandag gesluit
 ar = مغلق اليوم
@@ -15379,7 +15379,7 @@ zh-Hans = 今天
 zh-Hant = 今天
 
 [opens_in]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Opens in %@
 af = Open oor %@
 ar = يفتح بعد %@
@@ -15430,7 +15430,7 @@ zh-Hans = 将于 %@ 后营业
 zh-Hant = 將於 %@ 後開業
 
 [closes_in]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Closes in %@
 af = Sluit oor %@
 ar = يغلق في غضون %@
@@ -15481,7 +15481,7 @@ zh-Hans = 将于 %@ 后不营业
 zh-Hant = 將於 %@ 後歇業
 
 [closed]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Closed
 af = Gesluit
 ar = مغلق
@@ -16996,7 +16996,7 @@ zh-Hans = 所有对地图的修改都将与地图一起被删除。
 zh-Hant = 所有對地圖的修改都將與地圖一起被刪除。
 
 [downloader_update_maps]
-tags = android-app,apple-maps
+tags = android-app,android-libs-routing,apple-maps
 en = Update Maps
 af = Werk kaarte by
 ar = تحديث الخرائط
@@ -17048,7 +17048,7 @@ zh-Hans = 更新地图
 zh-Hant = 更新地圖
 
 [downloader_mwm_migration_dialog]
-tags = android-app
+tags = android-libs-routing
 en = To create a route, you need to update all maps and then plan the route again.
 af = Om ’n roete te skep moet u alle kaarte bywerk en die roete dan weer beplan.
 ar = لإنشاء مسار، فأنت تحتاج إلى تحديث كافة الخرائط ثم إعادة تخطيط المسار مرة أخرى.
@@ -17154,7 +17154,7 @@ zh-Hans = 搜索地图
 zh-Hant = 搜尋地圖
 
 [common_check_internet_connection_dialog]
-tags = android-app,apple-maps
+tags = android-app,android-libs-downloader,apple-maps
 en = Please make sure your device is connected to the Internet.
 af = Maak asb. seker u toestel het ’n internetverbinding.
 ar = يرجى التحقق من الإعدادات والتأكد من اتصال جهازك بالإنترنت.
@@ -17207,7 +17207,7 @@ zh-Hans = 请检查您的设置并确保您的设备已连接至网络。
 zh-Hant = 請檢查您的設定並確保您的裝置已連接至網路。
 
 [downloader_no_space_title]
-tags = android-app,apple-maps
+tags = android-app,android-libs-downloader,apple-maps
 en = Not enough space
 af = Nie genoeg spasie nie
 ar = لا تتوفر مساحة كافية
@@ -19413,7 +19413,7 @@ zh-Hans = 小时
 zh-Hant = 小時
 
 [minute]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = min
 af = min
 ar = د
@@ -21531,7 +21531,7 @@ zh-Hans = 诺要显示交通数据，必须更新地图。
 zh-Hant = 若要顯示交通資料，必須更新地圖。
 
 [big_font]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Increase size for map labels
 af = Vergroot lettergrootte op kaart
 ar = زيادة حجم الخط على الخريطة
@@ -21963,7 +21963,7 @@ zh-Hans = 如需了解更多信息，请查阅此指南。
 zh-Hant = 如需瞭解更多資訊，請參閱此指南。
 
 [transliteration_title]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Transliterate into Latin alphabet
 af = Transliterasie in Latynse alfabet
 ar = ترجمة حرفية إلى الأبجدية اللاتينية
@@ -24660,6 +24660,61 @@ vi = Để thêm dấu trang, hãy nhấn vào một địa điểm trên bản 
 zh-Hans = 要添加新书签，请点击对象卡片中的星形图标
 zh-Hant = 要增加新書籤，請點擊對象卡片中的星型圖標
 
+[change_all_bookmarks_color]
+comment = Button to change the color of all bookmarks in the current list
+tags = android-app
+en = Change all bookmarks color
+af = Verander kleur van alle boekmerke
+ar = تغيير لون جميع الإشارات المرجعية
+az = Bütün əlfəcinlərin rəngini dəyişdir
+be = Змяніць колер усіх закладак
+bg = Промяна на цвета на всички отметки
+ca = Canvia el color de tots els marcadors
+cs = Změnit barvu všech značek
+da = Skift farve på alle bogmærker
+de = Farbe aller Lesezeichen ändern
+el = Αλλαγή χρώματος όλων των σελιδοδεικτών
+es = Cambiar el color de todos los marcadores
+et = Muuda kõikide järjehoidjate värvi
+eu = Aldatu markagailu guztien kolorea
+fa = تغییر رنگ همه نشانک‌ها
+fi = Vaihda kaikkien kirjanmerkkien väri
+fr = Changer la couleur de tous les signets
+gl = Cambiar a cor de todos os marcadores
+he = שנה צבע של כל הסימניות
+hi = सभी बुकมार्क का रंग बदलें
+hr = Promijeni boju svih zabilješki
+hu = Összes könyvjelző színének módosítása
+hy = Փոխել բոլոր էջանիշների գույնը
+id = Ubah warna semua bookmark
+is = Breyta lit allra bókamerkja
+it = Cambia colore di tutti i preferiti
+ja = すべてのブックマークの色を変更
+ko = 모든 북마크 색상 변경
+lo = ປ່ຽນສີຂອງບຸກມາກທັງໝົດ
+lt = Keisti visų žymų spalvą
+lv = Mainīt visu grāmatzīmju krāsu
+mr = सर्व बुकमार्कचा रंग बदला
+mt = Ibdel il-kulur tal-bookmarks kollha
+nb = Endre farge på alle bokmerker
+nl = Kleur van alle bladwijzers wijzigen
+pl = Zmień kolor wszystkich zakładek
+pt = Alterar a cor de todos os favoritos
+ro = Schimbă culoarea tuturor marcajelor
+ru = Изменить цвет всех меток
+sk = Zmeniť farbu všetkých záložiek
+sl = Spremeni barvo vseh zaznamkov
+sq = Ndrysho ngjyrën e të gjithë faqeshënuesve
+sr = Промени боју свих обележивача
+sv = Ändra färg på alla bokmärken
+sw = Badilisha rangi ya alamisho zote
+th = เปลี่ยนสีที่คั่นหน้าทั้งหมด
+tr = Tüm yer imlerinin rengini değiştir
+uk = Змінити колір усіх міток
+vi = Thay đổi màu tất cả dấu trang
+zh-Hans = 更改所有书签颜色
+zh-Hant = 更改所有書籤顏色
+
 [category_desc_more]
 tags = android-app
 en = …more
@@ -25052,7 +25107,7 @@ zh-Hant = 地點說明
 
 [notification_channel_downloader]
 comment = this text will be shown in application notification preferences opposite checkbox which enable/disable downloader notifications. Devices on Android 8+ are affected.
-tags = android-app
+tags = android-app,android-libs-car
 en = Map downloader
 af = Kaartaflaaier
 ar = مُنزّل الخريطة
@@ -25779,7 +25834,7 @@ zh-Hans = 临时启用此选项，以便使用“报告错误”功能在帮助�
 zh-Hant = 暫時啟用此選項，以便使用“報告問題”功能在幫助對話框中記錄並手動發送詳細的診斷日誌給我們。日誌可能包含位置資訊。
 
 [driving_options_title]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Routing options
 af = Ompadopsies
 ar = خيارات رسم المسار
@@ -25836,7 +25891,7 @@ zh-Hant = 繞行設定
 
 [avoid_tolls]
 comment = Recommended length for CarPlay and Android Auto is around 25-27 characters
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Avoid tolls
 ar = تجنب الطرق ذات الرسوم
 az = Rüsumlardan çəkinin
@@ -25892,7 +25947,7 @@ zh-Hant = 避開收費公路
 
 [avoid_unpaved]
 comment = Recommended length for CarPlay and Android Auto is around 25-27 characters
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Avoid unpaved roads
 af = Vermy grondpaaie
 ar = تجنب الطرق الغير معبدة
@@ -25949,7 +26004,7 @@ zh-Hant = 避開無鋪面道路
 
 [avoid_ferry]
 comment = Recommended length for CarPlay and Android Auto is around 25-27 characters
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Avoid ferries
 af = Vermy veerbootkruisings
 ar = تجنب استخدام العبّارات
@@ -26005,7 +26060,7 @@ zh-Hans = 避开轮渡
 zh-Hant = 避開渡輪
 
 [avoid_motorways]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Avoid freeways
 ar = تجنب الطريق السريع
 az = Magistral yoldan çəkinin
@@ -26061,7 +26116,7 @@ zh-Hans = 避开高速公路
 zh-Hant = 避開高速公路
 
 [unable_to_calc_alert_title]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Unable to calculate route
 af = Kan nie ’n roete bereken nie
 ar = لا يمكن حساب الطريق
@@ -26838,7 +26893,7 @@ zh-Hans = 您已到达目的地！
 zh-Hant = 您已到達目的地！
 
 [ok]
-tags = android-app,apple-maps
+tags = android-app,android-libs-routing,apple-maps
 en = OK
 af = Goed
 ar = موافق
@@ -26950,7 +27005,7 @@ zh-Hant = 排序…
 
 [sort_bookmarks]
 comment = Android, title, max 20-22 symbols
-tags = android-app
+tags = android-app,android-libs-car
 en = Sort bookmarks
 af = Sorteer boekmerke
 ar = رتّب العلامات المرجعية
@@ -27006,7 +27061,7 @@ zh-Hant = 分類排序
 
 [by_default]
 comment = Android
-tags = android-app
+tags = android-app,android-libs-car
 en = By default
 af = Verstek
 ar = بشكل افتراضي
@@ -27061,7 +27116,7 @@ zh-Hant = 使用默認值
 
 [by_type]
 comment = Android
-tags = android-app
+tags = android-app,android-libs-car
 en = By type
 af = Volgens tipe
 ar = حسب النوع
@@ -27115,7 +27170,7 @@ zh-Hant = 按類型
 
 [by_distance]
 comment = Android
-tags = android-app
+tags = android-app,android-libs-car
 en = By distance
 af = Volgens afstand
 ar = حسب المسافة
@@ -27169,7 +27224,7 @@ zh-Hant = 按距離
 
 [by_date]
 comment = Android
-tags = android-app
+tags = android-app,android-libs-car
 en = By date
 af = Volgens datum
 ar = حسب التاريخ
@@ -27223,7 +27278,7 @@ zh-Hant = 按時間
 
 [by_name]
 comment = Android
-tags = android-app
+tags = android-app,android-libs-car
 en = By name
 af = Op Naam
 ar = بالاسم
@@ -33702,7 +33757,7 @@ zh-Hans = 选择列表
 zh-Hant = 選擇列表
 
 [transit_not_found]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Subway navigation in this region is not available yet
 af = Moltreinnavigasie is nog nie in hierdie streek beskikbaar nie
 ar = التنقل باستخدام مترو الأنفاق في هذه المنطقة غير متاح حتى الآن
@@ -33758,7 +33813,7 @@ zh-Hans = 本区域的地铁导航目前不可用
 zh-Hant = 本區域的捷運導航目前不可用
 
 [dialog_pedestrian_route_is_long_header]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = No subway route found
 af = Moltreinroete nie gevind
 ar = لم يتم العثور على مسار مترو الأنفاق
@@ -33814,7 +33869,7 @@ zh-Hans = 未找到地铁路线图
 zh-Hant = 未找到捷運路線
 
 [dialog_pedestrian_route_is_long_message]
-tags = android-app,apple-maps
+tags = android-libs-routing,apple-maps
 en = Please choose a start or end point closer to a subway station
 af = Kies asb. ’n begin- of eindpunt nader aan die moltreinstasie
 ar = يرجى اختيار نقطة بداية أو نهاية أقرب لمحطة مترو الأنفاق
@@ -34477,7 +34532,7 @@ zh-Hans = 放大地图以查看等高线
 zh-Hant = 放大地圖以查看等高線
 
 [downloader_loading_ios]
-tags = android-app,apple-maps
+tags = android-app,android-libs-car,apple-maps
 en = Downloading
 af = Laai tans af
 ar = جاري التنزيل
@@ -34533,7 +34588,7 @@ zh-Hans = 正在下载
 zh-Hant = 正在下載
 
 [download_map_title]
-tags = android-app
+tags = android-app,android-libs-car
 en = Download the world overview map
 af = Laai die wêreldkaart af
 ar = تنزيل الخريطة العامة للعالم
@@ -36311,7 +36366,7 @@ zh-Hant = 此應用程式需要您的許可
 
 [aa_request_permission_activity_text]
 comment = The text in the activity for location permission request.
-tags = android-app
+tags = android-libs-car
 en = Organic Maps in Android Auto needs location permissions to work effectively
 af = Organic Maps in Android Auto het 'n liggingtoestemming nodig om effektief te werk
 ar = تحتاج الخرائط العضوية في أندرويد أوتو إلى أذونات الموقع للعمل بفعالية
@@ -36367,7 +36422,7 @@ zh-Hant = Android Auto 中的 Organic Maps 需要位置權限才能有效運作
 
 [aa_grant_permissions]
 comment = Grant Permissions button.
-tags = android-app
+tags = android-app,android-libs-car
 en = Grant Permissions
 ar = أذونات المنح
 az = İcazələr verin
@@ -41243,6 +41298,7 @@ fr = Itinéraire
 gl = Ruta
 he = נתיב
 hi = रास्ता
+hr = Ruta
 hu = Útvonal
 hy = Երթուղի
 id = Rute
@@ -41496,8 +41552,8 @@ zh-Hans = 使用浏览器登录
 zh-Hant = 使用瀏覽器登入
 
 [editor_add_select_category_recent_subtitle]
-tags = apple-maps
 comment = Editor section title that shows recently used categories (types of objects) when adding a place on the map
+tags = apple-maps
 en = Recently Used
 af = Onlangs gebruik
 ar = مستخدمة مؤخراً
@@ -41512,7 +41568,6 @@ da = Nyligt brugt
 de = Zuletzt verwendet
 el = Πρόσφατα χρησιμοποιημένα
 es = Recientes
-es-MX = Recientes
 et = Hiljuti kasutatud
 eu = Orain dela gutxi erabilitakoa
 fa = به‌تازگی استفاده شده
@@ -41541,7 +41596,6 @@ oc = Utilizats recentament
 pa = ਹਾਲ ਹੀ ਵਿੱਚ ਵਰਤੇ ਗਏ
 pl = Ostatnio używane
 pt = Recentes
-pt-BR = Recentes
 ro = Folosite recent
 ru = Недавно использованные
 sk = Nedávno použité

@@ -46,7 +46,7 @@ bool GuidesConnections::IsActive() const
 
 std::vector<ConnectionToOsm> GuidesConnections::GetOsmConnections(size_t checkpointIdx) const
 {
-  auto it = m_connectionsToOsm.find(checkpointIdx);
+  auto const it = m_connectionsToOsm.find(checkpointIdx);
   if (it == m_connectionsToOsm.end())
     return {};
   return it->second;
@@ -63,8 +63,6 @@ void GuidesConnections::UpdateOsmConnections(size_t checkpointIdx, std::vector<C
   if (it->second.empty())
     m_connectionsToOsm.erase(it);
 }
-
-GuidesConnections::GuidesConnections(GuidesTracks const & guides) : m_allTracks(guides) {}
 
 void GuidesConnections::PullCheckpointsToTracks(std::vector<m2::PointD> const & checkpoints)
 {

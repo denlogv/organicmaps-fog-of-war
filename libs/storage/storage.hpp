@@ -14,16 +14,15 @@
 
 #include "base/cancellable.hpp"
 #include "base/thread_checker.hpp"
-#include "base/thread_pool_delayed.hpp"
+
+#include "defines.hpp"
 
 #include <algorithm>
 #include <functional>
 #include <list>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace storage_tests
@@ -184,11 +183,12 @@ private:
   /// stores countries whose download has failed recently
   CountriesSet m_failedCountries;
 
-  /// @todo Do we really store a list of local files here (of different versions)?
-  /// I suspect that only one at a time, old versions are deleted automatically.
+  /// Usually the list value has only 1 entry.
+  /// 2 entries are possible in a moment of updating a map (old and new are present).
   std::map<CountryId, std::list<LocalFilePtr>> m_localFiles;
 
   // World and WorldCoasts are fake countries, together with any custom mwm in data folder.
+  // Together with "old" (outdated) countries, that were splitted with the new regions set.
   std::map<platform::CountryFile, LocalFilePtr> m_localFilesForFakeCountries;
 
   // Since the diffs applying runs on a different thread, the result
@@ -241,21 +241,7 @@ private:
 
   CountryNameGetter m_countryNameGetter;
 
-  /**
-   * @brief Mapping from countryId to the list of names of
-   * geographical objects (such as countries) that encompass this countryId.
-   * @note Affiliations are inherited from ancestors of the countryId in country tree.
-   * Initialized with data of countries.txt (field "affiliations").
-   * Once filled, they are not changed.
-   */
-  Affiliations m_affiliations;
-  CountryNameSynonyms m_countryNameSynonyms;
-
-  /// @todo This containers are empty for now, but probably will be used in future.
-  /// @{
-  MwmTopCityGeoIds m_mwmTopCityGeoIds;
-  MwmTopCountryGeoIds m_mwmTopCountryGeoIds;
-  /// @}
+  CountriesInfo m_countriesInfo;
 
   ThreadChecker m_threadChecker;
 
@@ -343,16 +329,6 @@ public:
   /// nor World.mwm and WorldCoasts.mwm.
   void GetChildrenInGroups(CountryId const & parent, CountriesVec & downloadedChildren, CountriesVec & availChildren,
                            bool keepAvailableChildren = false) const;
-  /// \brief Fills |queuedChildren| with children of |parent| if they (or thier childen) are in |m_queue|.
-  /// \note For group node children if one of child's ancestor has status
-  /// NodeStatus::Downloading or NodeStatus::InQueue the child is considered as a queued child
-  /// and will be added to |queuedChildren|.
-  void GetQueuedChildren(CountryId const & parent, CountriesVec & queuedChildren) const;
-
-  /// \brief Fills |path| with list of CountryId corresponding with path to the root of hierachy.
-  /// \param groupNode is start of path, can't be a leaf node.
-  /// \param path is resulting array of CountryId.
-  void GetGroupNodePathToRoot(CountryId const & groupNode, CountriesVec & path) const;
 
   /// \brief Fills |nodes| with CountryIds of topmost nodes for this |countryId|.
   /// \param level is distance from top level except root.
@@ -363,10 +339,10 @@ public:
   /// \brief Returns topmost country id prior root id or |countryId| itself, if it's already
   /// a topmost node or disputed territory id if |countryId| is a disputed territory or belongs to
   /// disputed territory.
-  CountryId const GetTopmostParentFor(CountryId const & countryId) const;
+  CountryId GetTopmostParentFor(CountryId const & countryId) const;
   /// \brief Returns parent id for node if node has single parent. Otherwise (if node is disputed
   /// territory and has multiple parents or does not exist) returns empty CountryId
-  CountryId const GetParentIdFor(CountryId const & countryId) const;
+  CountryId GetParentIdFor(CountryId const & countryId) const;
 
   /// \brief Returns current version for mwms which are used by storage.
   inline int64_t GetCurrentDataVersion() const { return m_currentVersion; }
@@ -446,8 +422,6 @@ public:
   /// @return Pointer that will be stored for later use.
   Affiliations const * GetAffiliations() const;
   CountryNameSynonyms const & GetCountryNameSynonyms() const;
-  MwmTopCityGeoIds const & GetMwmTopCityGeoIds() const;
-  std::vector<base::GeoObjectId> GetTopCountryGeoIds(CountryId const & countryId) const;
   /// @}
 
   /// For each node with \a root subtree (including).
@@ -539,7 +513,6 @@ public:
   LocalAndRemoteSize CountrySizeInBytes(CountryId const & countryId) const;
   MwmSize GetRemoteSize(platform::CountryFile const & file) const;
   platform::CountryFile const & GetCountryFile(CountryId const & countryId) const;
-  LocalFilePtr GetLatestLocalFile(platform::CountryFile const & countryFile) const;
   LocalFilePtr GetLatestLocalFile(CountryId const & countryId) const;
 
   /// Slow version, but checks if country is out of date
@@ -725,7 +698,10 @@ void Storage::ForEachCountry(ToDo && toDo) const
   m_countries.GetRoot().ForEachInSubtree([&](CountryTree::Node const & node)
   {
     if (IsCountryLeaf(node))
-      toDo(node.Value());
+      toDo(node.Value().GetFile());
   });
+
+  for (auto const & [country, _] : m_localFilesForFakeCountries)
+    toDo(country);
 }
 }  // namespace storage

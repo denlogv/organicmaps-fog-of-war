@@ -1,4 +1,5 @@
 #include "routing/route.hpp"
+#include "routing/road_access.hpp"
 
 #include "traffic/speed_groups.hpp"
 
@@ -37,6 +38,31 @@ std::string DebugPrint(RouteSegment::SpeedCamera const & rhs)
   return "SpeedCamera{ " + std::to_string(rhs.m_coef) + ", " + std::to_string(int(rhs.m_maxSpeedKmPH)) + " }";
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+// RouteSegment implementation
+
+bool RouteSegment::IsSegregatedTurn(RouteSegment const & from) const
+{
+  // Treat 'from' -> this turn is segregated candidate when (distance is checked by a caller):
+  // - "st A" -> "st A" or
+  // - Any -> unnamed link
+
+  if (!m_roadNameInfo.m_name.empty())
+    return m_roadNameInfo.m_name == from.m_roadNameInfo.m_name;
+  else
+    return m_roadNameInfo.m_isLink;
+}
+
+void RouteSegment::MergeLanes(RouteSegment & from)
+{
+  /// @todo Keep 'from' lanes now. Probably, can move and clear.
+  if (m_turn.m_lanes.empty())
+    m_turn.m_lanes = from.m_turn.m_lanes;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Route implementation
+
 Route::Route(string const & router, vector<m2::PointD> const & points, uint64_t routeId, string const & name)
   : m_router(router)
   , m_routingSettings(GetRoutingSettings(VehicleType::Car))
@@ -44,12 +70,6 @@ Route::Route(string const & router, vector<m2::PointD> const & points, uint64_t 
   , m_poly(points.begin(), points.end())
   , m_routeId(routeId)
 {}
-
-void Route::AddAbsentCountry(string const & name)
-{
-  if (!name.empty())
-    m_absentCountries.insert(name);
-}
 
 double Route::GetTotalDistanceMeters() const
 {
@@ -91,6 +111,7 @@ double Route::GetTotalTimeSec() const
 
 double Route::GetCurrentTimeToEndSec() const
 {
+  ASSERT(!m_routeSegments.empty(), ());
   return GetCurrentTimeToSegmentSec(m_routeSegments.size() - 1);
 }
 
@@ -153,17 +174,15 @@ double Route::GetCurrentTimeToSegmentSec(size_t segIdx) const
   return endTimeSec - passedTimeSec;
 }
 
-void Route::GetCurrentSpeedLimit(SpeedInUnits & speedLimit) const
+SpeedInUnits Route::GetCurrentSpeedLimit() const
 {
-  if (!IsValid())
+  if (IsValid())
   {
-    speedLimit = {};
-    return;
+    auto const idx = m_poly.GetCurrentIter().m_ind;
+    if (idx < m_routeSegments.size())
+      return m_routeSegments[idx].GetSpeedLimit(GetCurrentTimestamp());
   }
-
-  auto const idx = m_poly.GetCurrentIter().m_ind;
-  if (idx < m_routeSegments.size())
-    speedLimit = m_routeSegments[idx].GetSpeedLimit();
+  return {};
 }
 
 void Route::GetCurrentStreetName(RouteSegment::RoadNameInfo & roadNameInfo) const
@@ -417,13 +436,14 @@ size_t Route::GetSubrouteCount() const
   return m_subrouteAttrs.size();
 }
 
-void Route::GetSubrouteInfo(size_t subrouteIdx, vector<RouteSegment> & segments) const
+void Route::GetSubrouteInfo(size_t subrouteIdx, std::vector<RouteSegment> & segments) const
 {
   segments.clear();
   SubrouteAttrs const & attrs = GetSubrouteAttrs(subrouteIdx);
 
   CHECK_LESS_OR_EQUAL(attrs.GetEndSegmentIdx(), m_routeSegments.size(), ());
 
+  segments.reserve(attrs.GetSize());
   for (size_t i = attrs.GetBeginSegmentIdx(); i < attrs.GetEndSegmentIdx(); ++i)
     segments.push_back(m_routeSegments[i]);
 }
@@ -468,6 +488,8 @@ void Route::GetAltitudes(geometry::Altitudes & altitudes) const
   altitudes.clear();
 
   CHECK(!m_subrouteAttrs.empty(), ());
+
+  altitudes.reserve(m_routeSegments.size() + 1);
   altitudes.push_back(m_subrouteAttrs.front().GetStart().GetAltitude());
 
   for (auto const & s : m_routeSegments)

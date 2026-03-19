@@ -4,8 +4,6 @@
 #include "routing/routing_helpers.hpp"
 #include "routing/turns.hpp"
 
-#include "routing/base/followed_polyline.hpp"
-
 #include "routing/routing_tests/tools.hpp"
 
 #include "platform/location.hpp"
@@ -14,14 +12,12 @@
 #include "geometry/point2d.hpp"
 #include "geometry/point_with_altitude.hpp"
 
-#include <set>
 #include <string>
 #include <vector>
 
 namespace route_tests
 {
 using namespace routing;
-using namespace routing::turns;
 using namespace std;
 
 // For all test geometry: geometry[0] == geometry[1], since info about 1st point will be lost.
@@ -34,11 +30,7 @@ static vector<turns::TurnItem> const kTestTurns({turns::TurnItem(1, turns::CarDi
                                                  turns::TurnItem(4, turns::CarDirection::None),
                                                  turns::TurnItem(5, turns::CarDirection::ReachedYourDestination)});
 static vector<double> const kTestTimes = {0.0, 7.0, 10.0, 19.0, 20.0};
-static vector<RouteSegment::RoadNameInfo> const kTestNames = {{"Street0", "", "", "", "", false},
-                                                              {"Street1", "", "", "", "", false},
-                                                              {"Street2", "", "", "", "", false},
-                                                              {"", "", "", "", "", false},
-                                                              {"Street3", "", "", "", "", false}};
+static vector<RouteSegment::RoadNameInfo> const kTestNames = {{"Street0"}, {"Street1"}, {"Street2"}, {""}, {"Street3"}};
 
 void GetTestRouteSegments(vector<m2::PointD> const & routePoints, vector<turns::TurnItem> const & turns,
                           vector<RouteSegment::RoadNameInfo> const & streets, vector<double> const & times,
@@ -68,20 +60,6 @@ vector<vector<Segment>> const GetSegments()
   vector<Segment> const segmentsFakeHeadAndTail = {
       {kFakeNumMwmId, 0, 0, true}, {0, 0, 1, true}, {0, 0, 2, true}, {0, 0, 3, true}, {kFakeNumMwmId, 0, 4, true}};
   return {segmentsAllReal, segmentsFakeHeadAndTail, segmentsAllFake};
-}
-
-UNIT_TEST(AddAbsentCountryToRouteTest)
-{
-  Route route("TestRouter", 0 /* route id */);
-  route.AddAbsentCountry("A");
-  route.AddAbsentCountry("A");
-  route.AddAbsentCountry("B");
-  route.AddAbsentCountry("C");
-  route.AddAbsentCountry("B");
-  set<string> const & absent = route.GetAbsentCountries();
-  TEST(absent.find("A") != absent.end(), ());
-  TEST(absent.find("B") != absent.end(), ());
-  TEST(absent.find("C") != absent.end(), ());
 }
 
 UNIT_TEST(FinshRouteOnSomeDistanceToTheFinishPointTest)

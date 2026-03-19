@@ -124,7 +124,7 @@ public class MapObject implements PlacePageData
     mWikiArticle = Objects.requireNonNull(source.readString());
     mOsmDescription = source.readString();
     mRoadWarningMarkType = RoadWarningMarkType.values()[source.readInt()];
-    source.readStringList(mRawTypes);
+    mRawTypes = source.createStringArrayList();
   }
 
   @NonNull
@@ -151,7 +151,7 @@ public class MapObject implements PlacePageData
     if (getClass() != other.getClass())
       return false;
 
-    return mMapObjectType == other.mMapObjectType && mTitle.equals(other.mTitle) && mSubtitle.equals(other.mTitle)
+    return mMapObjectType == other.mMapObjectType && mTitle.equals(other.mTitle) && mSubtitle.equals(other.mSubtitle)
  && Double.doubleToLongBits(mLon) == Double.doubleToLongBits(other.mLon)
  && Double.doubleToLongBits(mLat) == Double.doubleToLongBits(other.mLat);
   }
@@ -292,6 +292,13 @@ public class MapObject implements PlacePageData
     if (mRawTypes == null)
       return false;
     return mRawTypes.contains("amenity-atm");
+  }
+
+  public boolean isTramStop()
+  {
+    if (mRawTypes == null)
+      return false;
+    return mRawTypes.contains("railway-tram_stop");
   }
 
   public final boolean isMyPosition()

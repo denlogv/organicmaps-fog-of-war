@@ -7,7 +7,8 @@ private enum Constants {
   static let slowSwipeVelocity: CGFloat = 500
   static let fastSwipeDownVelocity: CGFloat = 4000
   static let fastSwipeUpVelocity: CGFloat = 3000
-  static let translationThreshold: CGFloat = 50
+  static let minRecognizedTranslation: CGFloat = 50
+  static let maxRecognizedTranslation: CGFloat = 200
 }
 
 final class ModalPresentationStepsController<Step: ModalPresentationStep> {
@@ -57,13 +58,14 @@ final class ModalPresentationStepsController<Step: ModalPresentationStep> {
   }
 
   func handlePan(_ gesture: UIPanGestureRecognizer) {
-    guard let presentedView else { return }
+    guard let presentedView, let containerViewController else { return }
     let translation = gesture.translation(in: presentedView)
     let velocity = gesture.velocity(in: presentedView)
     var currentFrame = presentedView.frame
 
     switch gesture.state {
     case .began:
+      maxAvailableFrame = stepStrategy.frame(.expanded, for: presentedView, in: containerViewController)
       initialTranslationY = presentedView.frame.origin.y
       isPanning = true
     case .changed:
@@ -74,20 +76,26 @@ final class ModalPresentationStepsController<Step: ModalPresentationStep> {
     case .ended:
       let nextStep: Step
       if velocity.y > Constants.fastSwipeDownVelocity {
-        didUpdateHandler?(.didClose)
-        return
+        nextStep = .hidden
       } else if velocity.y < -Constants.fastSwipeUpVelocity {
         nextStep = .expanded
-      } else if velocity.y > Constants.slowSwipeVelocity || translation.y > Constants.translationThreshold {
+      } else if abs(translation.y) > Constants.maxRecognizedTranslation {
+        nextStep = nearestStep(for: currentFrame.origin.y)
+      } else if velocity.y > Constants.slowSwipeVelocity && translation.y > Constants.minRecognizedTranslation {
         if stepStrategy.lowerTo(currentStep) == .hidden {
-          didUpdateHandler?(.didClose)
-          return
+          nextStep = .hidden
+        } else {
+          nextStep = stepStrategy.lowerTo(currentStep)
         }
-        nextStep = stepStrategy.lowerTo(currentStep)
-      } else if velocity.y < -Constants.slowSwipeVelocity || translation.y < -Constants.translationThreshold {
+      } else if velocity.y < -Constants.slowSwipeVelocity && translation.y < -Constants.minRecognizedTranslation {
         nextStep = stepStrategy.upperTo(currentStep)
       } else {
-        nextStep = currentStep
+        nextStep = nearestStep(for: currentFrame.origin.y)
+      }
+
+      guard nextStep != .hidden else {
+        didUpdateHandler?(.didClose)
+        return
       }
 
       let animation: PresentationStepChangeAnimation = abs(velocity.y) > Constants.slowSwipeVelocity ? .slideAndBounce : .slide
@@ -122,7 +130,24 @@ final class ModalPresentationStepsController<Step: ModalPresentationStep> {
 
   private func frame(for step: Step) -> CGRect {
     guard let presentedView, let containerViewController else { return .zero }
-    maxAvailableFrame = stepStrategy.frame(.expanded, for: presentedView, in: containerViewController)
     return stepStrategy.frame(step, for: presentedView, in: containerViewController)
+  }
+
+  private func nearestStep(for positionY: CGFloat) -> Step {
+    let steps = stepStrategy.steps
+    guard !steps.isEmpty else { return currentStep }
+
+    var bestStep = steps.contains(currentStep) ? currentStep : steps[0]
+    var bestDistance = abs(frame(for: bestStep).origin.y - positionY)
+
+    for step in steps where step != bestStep {
+      let distance = abs(frame(for: step).origin.y - positionY)
+      if distance < bestDistance {
+        bestStep = step
+        bestDistance = distance
+      }
+    }
+
+    return bestStep
   }
 }

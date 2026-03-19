@@ -758,6 +758,7 @@ public:
   void SetFogOfWarGradient(int percent);
   static bool GetFogOfWarMinVisible();
   void SetFogOfWarMinVisible(bool enabled);
+
   static int GetFogThrottleSpeed(int tier);
   static void SetFogThrottleSpeed(int tier, int speed);
   static int GetFogThrottleInterval(int tier);
@@ -791,7 +792,7 @@ public:
 protected:
   /// RoutingManager::Delegate
   void OnRouteFollow(routing::RouterType type) override;
-  void RegisterCountryFilesOnRoute(std::shared_ptr<routing::NumMwmIds> ptr) const override;
+  void InitRouting();
 
 public:
   /// @returns false in case when coordinate is in the ocean or mwm is not downloaded.

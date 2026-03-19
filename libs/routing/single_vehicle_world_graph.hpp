@@ -67,7 +67,7 @@ public:
   RoutingOptions GetRoutingOptions(Segment const & segment) override;
 
   std::vector<RouteSegment::SpeedCamera> GetSpeedCamInfo(Segment const & segment) override;
-  SpeedInUnits GetSpeedLimit(Segment const & segment) override;
+  Maxspeed GetSpeedLimit(Segment const & segment) override;
 
   IndexGraph & GetIndexGraph(NumMwmId numMwmId) override { return m_loader->GetIndexGraph(numMwmId); }
 
@@ -102,7 +102,7 @@ private:
                                       bool isOutgoing);
   /// @name WorldGraph overrides.
   /// @{
-  void GetTwinsInner(Segment const & s, bool isOutgoing, std::vector<Segment> & twins) override;
+  void GetTwinsInner(Segment const & s, bool isOutgoing, TwinSegmentsListT & twins) override;
   RouteWeight GetCrossBorderPenalty(NumMwmId mwmId1, NumMwmId mwmId2) override;
   /// @}
 

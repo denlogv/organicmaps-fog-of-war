@@ -5,6 +5,8 @@
 #include "base/logging.hpp"
 #include "base/string_utils.hpp"
 
+#include "defines.hpp"
+
 namespace search
 {
 using namespace std;
@@ -39,12 +41,8 @@ void GetPathToRoot(storage::CountryId const & id, storage::CountryTree const & c
 void RegionInfoGetter::LoadCountriesTree()
 {
   using namespace storage;
-  Affiliations affiliations;
-  CountryNameSynonyms countryNameSynonyms;
-  MwmTopCityGeoIds mwmTopCityGeoIds;
-  MwmTopCountryGeoIds mwmTopCountryGeoIds;
-  LoadCountriesFromFile(COUNTRIES_FILE, m_countries, affiliations, countryNameSynonyms, mwmTopCityGeoIds,
-                        mwmTopCountryGeoIds);
+  CountriesInfo countriesInfo;
+  LoadCountriesFromFile(COUNTRIES_FILE, m_countries, countriesInfo);
 }
 
 void RegionInfoGetter::SetLocale(string const & locale)

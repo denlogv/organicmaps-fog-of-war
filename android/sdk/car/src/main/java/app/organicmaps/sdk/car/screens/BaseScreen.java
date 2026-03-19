@@ -6,6 +6,8 @@ import androidx.car.app.CarContext;
 import androidx.car.app.model.Template;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
+import app.organicmaps.sdk.OrganicMaps;
+import app.organicmaps.sdk.location.LocationHelper;
 import app.organicmaps.sdk.util.log.Logger;
 
 public abstract class BaseScreen extends androidx.car.app.Screen implements DefaultLifecycleObserver
@@ -13,12 +15,27 @@ public abstract class BaseScreen extends androidx.car.app.Screen implements Defa
   @NonNull
   private final String TAG;
 
-  public BaseScreen(@NonNull CarContext carContext)
+  private final OrganicMaps mOrganicMapsContext;
+
+  public BaseScreen(@NonNull CarContext carContext, @NonNull OrganicMaps organicMapsContext)
   {
     super(carContext);
     TAG = getClass().getSimpleName();
+    mOrganicMapsContext = organicMapsContext;
 
     getLifecycle().addObserver(this);
+  }
+
+  @NonNull
+  public OrganicMaps getOrganicMapsContext()
+  {
+    return mOrganicMapsContext;
+  }
+
+  @NonNull
+  protected LocationHelper getLocationHelper()
+  {
+    return getOrganicMapsContext().getLocationHelper();
   }
 
   @NonNull
