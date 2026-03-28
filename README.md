@@ -66,6 +66,8 @@ For a deep dive into the architecture, see [`docs/FOG_OF_WAR_ARCHITECTURE.md`](d
 
 Follow the standard [Organic Maps build instructions](https://github.com/organicmaps/organicmaps/blob/master/docs/INSTALL.md).
 
+Android F-Droid pre-releases from this fork use the package name `app.organicmaps.fogofwar` and a distinct launcher icon, so they can be installed alongside the upstream Organic Maps app.
+
 ```bash
 git clone --recursive https://github.com/denlogv/organicmaps-fog-of-war.git
 cd organicmaps-fog-of-war/android
