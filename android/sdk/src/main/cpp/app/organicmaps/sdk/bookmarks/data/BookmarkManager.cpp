@@ -285,6 +285,15 @@ JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_BookmarkManager_nativeDel
   frm()->GetBookmarkManager().GetEditSession().DeleteTrack(static_cast<kml::TrackId>(trkId));
 }
 
+JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_BookmarkManager_nativeDeleteTrackSegment(
+    JNIEnv *, jobject, jlong trkId, jdouble startDistM, jdouble endDistM)
+{
+  auto & f = *frm();
+  f.GetBookmarkManager().GetEditSession().DeleteTrackSegment(
+      static_cast<kml::TrackId>(trkId), static_cast<double>(startDistM), static_cast<double>(endDistM));
+  f.UpdateFogOfWarAfterTrackChange();
+}
+
 JNIEXPORT jobject Java_app_organicmaps_sdk_bookmarks_data_BookmarkManager_nativeAddBookmarkToLastEditedCategory(
     JNIEnv * env, jobject, double lat, double lon)
 {
