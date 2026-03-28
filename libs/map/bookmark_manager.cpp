@@ -2299,6 +2299,227 @@ void BookmarkManager::UpdateTrack(kml::TrackId trackId, kml::TrackData const & t
   track->SetData(trackData);
 }
 
+namespace
+{
+struct CutPoint
+{
+  size_t m_lineIndex = 0;
+  size_t m_pointIndex = 0;
+  double m_factor = 0.0;  // Interpolation factor between pointIndex and pointIndex+1
+  bool m_exactMatch = false;
+};
+
+CutPoint FindCutPoint(kml::MultiGeometry const & geometry, double targetDistM)
+{
+  CutPoint result;
+  double cumulativeDist = 0.0;
+
+  for (size_t li = 0; li < geometry.m_lines.size(); ++li)
+  {
+    auto const & line = geometry.m_lines[li];
+    for (size_t pi = 0; pi + 1 < line.size(); ++pi)
+    {
+      double const segLen = mercator::DistanceOnEarth(line[pi].GetPoint(), line[pi + 1].GetPoint());
+      if (cumulativeDist + segLen >= targetDistM)
+      {
+        result.m_lineIndex = li;
+        result.m_pointIndex = pi;
+        double const remaining = targetDistM - cumulativeDist;
+        if (remaining <= 0.0)
+        {
+          result.m_factor = 0.0;
+          result.m_exactMatch = true;
+        }
+        else if (segLen > 0.0)
+        {
+          result.m_factor = remaining / segLen;
+          // If factor is essentially 1.0, advance to the next point instead.
+          if (result.m_factor >= 1.0 - 1e-9)
+          {
+            result.m_pointIndex = pi + 1;
+            result.m_factor = 0.0;
+            result.m_exactMatch = true;
+          }
+        }
+        return result;
+      }
+      cumulativeDist += segLen;
+    }
+  }
+  // targetDistM is beyond track end — clamp to last point.
+  if (!geometry.m_lines.empty())
+  {
+    auto const lastLine = geometry.m_lines.size() - 1;
+    result.m_lineIndex = lastLine;
+    result.m_pointIndex = geometry.m_lines[lastLine].empty() ? 0 : geometry.m_lines[lastLine].size() - 1;
+    result.m_factor = 0.0;
+    result.m_exactMatch = true;
+  }
+  return result;
+}
+
+geometry::PointWithAltitude InterpolatePoint(geometry::PointWithAltitude const & p1,
+                                             geometry::PointWithAltitude const & p2,
+                                             double factor)
+{
+  auto const pt = p1.GetPoint() * (1.0 - factor) + p2.GetPoint() * factor;
+  auto const alt1 = p1.GetAltitude();
+  auto const alt2 = p2.GetAltitude();
+  geometry::Altitude alt = geometry::kInvalidAltitude;
+  if (alt1 != geometry::kInvalidAltitude && alt2 != geometry::kInvalidAltitude)
+    alt = static_cast<geometry::Altitude>(alt1 + (alt2 - alt1) * factor);
+  return {pt, alt};
+}
+}  // namespace
+
+void BookmarkManager::DeleteTrackSegment(kml::TrackId trackId, double startDistM, double endDistM)
+{
+  CHECK_THREAD_CHECKER(m_threadChecker, ());
+  if (startDistM > endDistM)
+    std::swap(startDistM, endDistM);
+
+  auto const * track = GetTrack(trackId);
+  CHECK(track != nullptr, ());
+
+  auto data = track->GetData();
+  auto const & geom = data.m_geometry;
+
+  if (geom.m_lines.empty())
+    return;
+
+  auto const cutStart = FindCutPoint(geom, startDistM);
+  auto const cutEnd = FindCutPoint(geom, endDistM);
+
+  bool const hasTimestamps = geom.HasTimestamps();
+
+  kml::MultiGeometry newGeom;
+
+  // Part 1: everything before the start cut (the "before" portion).
+  {
+    kml::MultiGeometry::LineT beforeLine;
+    kml::MultiGeometry::TimeT beforeTime;
+
+    // Copy all complete lines before cutStart.m_lineIndex.
+    for (size_t li = 0; li < cutStart.m_lineIndex; ++li)
+    {
+      newGeom.m_lines.push_back(geom.m_lines[li]);
+      if (hasTimestamps && geom.HasTimestampsFor(li))
+        newGeom.m_timestamps.push_back(geom.m_timestamps[li]);
+      else if (hasTimestamps)
+        newGeom.m_timestamps.emplace_back();
+    }
+
+    // Copy points in cutStart's line up to the cut point.
+    auto const & startLine = geom.m_lines[cutStart.m_lineIndex];
+    for (size_t pi = 0; pi <= cutStart.m_pointIndex; ++pi)
+      beforeLine.push_back(startLine[pi]);
+
+    if (hasTimestamps && geom.HasTimestampsFor(cutStart.m_lineIndex))
+    {
+      auto const & ts = geom.m_timestamps[cutStart.m_lineIndex];
+      for (size_t pi = 0; pi <= cutStart.m_pointIndex; ++pi)
+        beforeTime.push_back(ts[pi]);
+    }
+
+    // Add interpolated point at exact startDistM if not on an existing point.
+    if (cutStart.m_factor > 0.0 && cutStart.m_pointIndex + 1 < startLine.size())
+    {
+      auto const interp = InterpolatePoint(startLine[cutStart.m_pointIndex],
+                                           startLine[cutStart.m_pointIndex + 1],
+                                           cutStart.m_factor);
+      beforeLine.push_back(interp);
+      if (hasTimestamps && !beforeTime.empty() &&
+          geom.HasTimestampsFor(cutStart.m_lineIndex) &&
+          cutStart.m_pointIndex + 1 < geom.m_timestamps[cutStart.m_lineIndex].size())
+      {
+        auto const t1 = geom.m_timestamps[cutStart.m_lineIndex][cutStart.m_pointIndex];
+        auto const t2 = geom.m_timestamps[cutStart.m_lineIndex][cutStart.m_pointIndex + 1];
+        beforeTime.push_back(static_cast<kml::MultiGeometry::TimeInt>(t1 + (t2 - t1) * cutStart.m_factor));
+      }
+    }
+
+    if (beforeLine.size() >= 2)
+    {
+      newGeom.m_lines.push_back(std::move(beforeLine));
+      if (hasTimestamps)
+        newGeom.m_timestamps.push_back(std::move(beforeTime));
+    }
+  }
+
+  // Part 2: everything after the end cut (the "after" portion).
+  {
+    kml::MultiGeometry::LineT afterLine;
+    kml::MultiGeometry::TimeT afterTime;
+
+    auto const & endLine = geom.m_lines[cutEnd.m_lineIndex];
+
+    // Add interpolated point at exact endDistM if not on an existing point.
+    if (cutEnd.m_factor > 0.0 && cutEnd.m_pointIndex + 1 < endLine.size())
+    {
+      auto const interp = InterpolatePoint(endLine[cutEnd.m_pointIndex],
+                                           endLine[cutEnd.m_pointIndex + 1],
+                                           cutEnd.m_factor);
+      afterLine.push_back(interp);
+      if (hasTimestamps && geom.HasTimestampsFor(cutEnd.m_lineIndex) &&
+          cutEnd.m_pointIndex + 1 < geom.m_timestamps[cutEnd.m_lineIndex].size())
+      {
+        auto const t1 = geom.m_timestamps[cutEnd.m_lineIndex][cutEnd.m_pointIndex];
+        auto const t2 = geom.m_timestamps[cutEnd.m_lineIndex][cutEnd.m_pointIndex + 1];
+        afterTime.push_back(static_cast<kml::MultiGeometry::TimeInt>(t1 + (t2 - t1) * cutEnd.m_factor));
+      }
+    }
+
+    // Copy remaining points after the cut in cutEnd's line.
+    size_t startPt = (cutEnd.m_factor > 0.0) ? cutEnd.m_pointIndex + 1 : cutEnd.m_pointIndex;
+    // If factor is 0, skip the exact cut point since it's the boundary.
+    if (cutEnd.m_factor == 0.0 && !cutEnd.m_exactMatch)
+      startPt = cutEnd.m_pointIndex;
+    else if (cutEnd.m_factor == 0.0)
+      startPt = cutEnd.m_pointIndex;
+
+    for (size_t pi = startPt; pi < endLine.size(); ++pi)
+      afterLine.push_back(endLine[pi]);
+
+    if (hasTimestamps && geom.HasTimestampsFor(cutEnd.m_lineIndex))
+    {
+      auto const & ts = geom.m_timestamps[cutEnd.m_lineIndex];
+      for (size_t pi = startPt; pi < ts.size(); ++pi)
+        afterTime.push_back(ts[pi]);
+    }
+
+    if (afterLine.size() >= 2)
+    {
+      newGeom.m_lines.push_back(std::move(afterLine));
+      if (hasTimestamps)
+        newGeom.m_timestamps.push_back(std::move(afterTime));
+    }
+
+    // Copy all complete lines after cutEnd.m_lineIndex.
+    for (size_t li = cutEnd.m_lineIndex + 1; li < geom.m_lines.size(); ++li)
+    {
+      newGeom.m_lines.push_back(geom.m_lines[li]);
+      if (hasTimestamps && geom.HasTimestampsFor(li))
+        newGeom.m_timestamps.push_back(geom.m_timestamps[li]);
+      else if (hasTimestamps)
+        newGeom.m_timestamps.emplace_back();
+    }
+  }
+
+  // If nothing remains, delete the entire track.
+  if (newGeom.m_lines.empty())
+  {
+    DeleteTrack(trackId);
+    return;
+  }
+
+  // Ensure m_timestamps always matches m_lines in size (serializer requires it).
+  newGeom.m_timestamps.resize(newGeom.m_lines.size());
+
+  data.m_geometry = std::move(newGeom);
+  UpdateTrack(trackId, data);
+  DeleteTrackSelectionMark(trackId);
+}
+
 kml::MarkGroupId BookmarkManager::LastEditedBMCategory()
 {
   CHECK_THREAD_CHECKER(m_threadChecker, ());
@@ -3593,6 +3814,11 @@ void BookmarkManager::EditSession::UpdateBookmark(kml::MarkId bmId, kml::Bookmar
 void BookmarkManager::EditSession::UpdateTrack(kml::TrackId trackId, kml::TrackData const & trackData)
 {
   return m_bmManager.UpdateTrack(trackId, trackData);
+}
+
+void BookmarkManager::EditSession::DeleteTrackSegment(kml::TrackId trackId, double startDistM, double endDistM)
+{
+  m_bmManager.DeleteTrackSegment(trackId, startDistM, endDistM);
 }
 
 void BookmarkManager::EditSession::ChangeTrackColor(kml::TrackId trackId, dp::Color color)

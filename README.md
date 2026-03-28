@@ -25,6 +25,7 @@ The fog is revealed by:
 - 📍 **Real-time reveal** around your GPS position (throttled, smooth updates)
 - 📂 **GPX track support** — import tracks to reveal previously visited areas
 - 🔄 **Live fog updates** — fog clears as you move, with automatic track recording
+- ✂️ **Track editor** — select a range on the elevation profile and delete it from the GPX file (Android). Long-press the chart to set the second point; the fog of war is automatically refreshed after editing.
 - ⚙️ **Configurable settings:**
   - **Reveal radius** (50–2000 m)
   - **Fog opacity** (10–100%)

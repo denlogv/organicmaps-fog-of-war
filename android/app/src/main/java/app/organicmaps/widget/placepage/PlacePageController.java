@@ -493,6 +493,7 @@ public class PlacePageController
     {
     case BOOKMARK_SAVE, BOOKMARK_DELETE -> onBookmarkBtnClicked();
     case TRACK_DELETE -> onTrackRemoveClicked();
+    case TRACK_DELETE_SELECTION -> onTrackDeleteSelectionClicked();
     case TRACK_RECORDING_SAVE -> mPlacePageListener.onTrackRecordingSaved();
     case TRACK_RECORDING_DELETE -> mPlacePageListener.onTrackRecordingCancelled();
     case BACK -> onBackBtnClicked();
@@ -526,6 +527,38 @@ public class PlacePageController
     if (mMapObject == null)
       return;
     showTrackDeleteAlertDialog();
+  }
+
+  private void onTrackDeleteSelectionClicked()
+  {
+    if (mMapObject == null || !(mMapObject instanceof Track))
+      return;
+    showTrackDeleteSelectionDialog();
+  }
+
+  void showTrackDeleteSelectionDialog()
+  {
+    if (mMapObject == null)
+      return;
+    final double[] range = mViewModel.getTrackSelectionRange();
+    if (range == null)
+      return;
+
+    dismissAlertDialog();
+    mViewModel.isAlertDialogShowing = true;
+    new MaterialAlertDialogBuilder(requireContext(), R.style.MwmTheme_AlertDialog)
+        .setTitle(R.string.delete_track_selection_dialog_title)
+        .setCancelable(true)
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.delete,
+                           (dialog, which) -> {
+                             BookmarkManager.INSTANCE.deleteTrackSegment(
+                                 ((Track) mMapObject).getTrackId(), range[0], range[1]);
+                             BookmarkManager.INSTANCE.updateTrackPlacePage();
+                             mViewModel.clearTrackSelectionRange();
+                           })
+        .setOnDismissListener(dialog -> dismissAlertDialog())
+        .show();
   }
 
   void showTrackDeleteAlertDialog()
@@ -709,7 +742,11 @@ public class PlacePageController
         buttons.add(mapObject.isBookmark() ? PlacePageButtons.ButtonType.BOOKMARK_DELETE
                                            : PlacePageButtons.ButtonType.BOOKMARK_SAVE);
         if (mapObject.isTrack())
+        {
+          if (mViewModel.getTrackSelectionRange() != null)
+            buttons.add(PlacePageButtons.ButtonType.TRACK_DELETE_SELECTION);
           buttons.add(PlacePageButtons.ButtonType.TRACK_DELETE);
+        }
       }
 
       if (needToShowRoutingButtons)
@@ -759,6 +796,10 @@ public class PlacePageController
     mPlacePageBehavior.addBottomSheetCallback(mDefaultBottomSheetCallback);
     mViewModel.getMapObject().observe(requireActivity(), this);
     mViewModel.getPlacePageDistanceToTop().observe(requireActivity(), mPlacePageDistanceToTopObserver);
+    mViewModel.getTrackSelectionRangeLiveData().observe(requireActivity(), range -> {
+      if (mMapObject != null && mMapObject.isTrack())
+        updateButtons(mMapObject, false, !(mMapObject.isMyPosition() || mMapObject.isTrackRecording()));
+    });
   }
 
   @Override

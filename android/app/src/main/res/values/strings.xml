@@ -921,6 +921,10 @@
     <string name="share_track">Share Track</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Delete %s?</string>
+    <!-- Button label for deleting a selected range of a track -->
+    <string name="delete_selection">Delete selection</string>
+    <!-- Title for the dialog when deleting a selected portion of a track -->
+    <string name="delete_track_selection_dialog_title">Delete selected part of the track?</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->

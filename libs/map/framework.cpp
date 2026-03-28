@@ -3082,6 +3082,15 @@ void Framework::EnableFogOfWar(bool enable)
     m_drapeEngine->EnableFogOfWar(enable);
 }
 
+void Framework::UpdateFogOfWarAfterTrackChange()
+{
+  if (LoadFogOfWarEnabled())
+  {
+    UpdateFogTrackPoints();
+    InvalidateFogTiles();
+  }
+}
+
 // Decimate a polyline in-place: keep only points that are >= minDistSq apart.
 // Always preserves the first and last points.
 static void DecimatePoints(std::vector<m2::PointD> & pts, double minDistSq)
