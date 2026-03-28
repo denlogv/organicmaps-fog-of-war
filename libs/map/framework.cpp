@@ -866,6 +866,7 @@ void Framework::FillMyPositionInfo(place_page::Info & info, place_page::BuildInf
   CHECK(position, ());
   info.SetMercator(*position);
   info.SetCustomName(m_stringsBundle.GetString("core_my_position"));
+  info.SetCanEditOrAdd(CanEditMapForPosition(*position));
 
   UserMark const * mark = FindUserMarkInTapPosition(buildInfo);
   if (mark != nullptr && mark->GetMarkType() == UserMark::Type::ROUTING)
@@ -3975,7 +3976,8 @@ void Framework::OnRouteFollow(routing::RouterType type)
   // TODO. We need to sync two enums VehicleType and RouterType to be able to pass
   // GetRoutingSettings(type).m_matchRoute to the FollowRoute() instead of |isPedestrianRoute|.
   // |isArrowGlued| parameter fully corresponds to |m_matchRoute| in RoutingSettings.
-  m_drapeEngine->FollowRoute(scale, scale3d, enableAutoZoom, !isPedestrianRoute /* isArrowGlued */);
+  // For pedestrian and bicycle modes, use compass heading when stopped (isArrowGlued = false).
+  m_drapeEngine->FollowRoute(scale, scale3d, enableAutoZoom, !(isPedestrianRoute || isBicycleRoute) /* isArrowGlued */);
 }
 
 // RoutingManager::Delegate
