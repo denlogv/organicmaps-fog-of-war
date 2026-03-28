@@ -14,8 +14,6 @@
 
 namespace search
 {
-using namespace std;
-
 namespace
 {
 // See search/search_quality/scoring_model.py for details. In short,
@@ -45,7 +43,10 @@ double constexpr kAltOldName = -0.3;  // Some reasonable penalty like kErrorsMad
 // - should be greater than fabs(kErrorsMade) / 2
 // - shoulbe be comparable with kRank to keep cities/towns
 double constexpr kViewportDiffThreshold = 0.29;
-static_assert(kViewportDiffThreshold < -kAltOldName && kViewportDiffThreshold > -kErrorsMade / 2);
+// clang-format off
+// See https://github.com/llvm/llvm-project/issues/187936
+static_assert(kViewportDiffThreshold < -kAltOldName && kViewportDiffThreshold > - kErrorsMade / 2);
+// clang-format on
 static_assert(kViewportDiffThreshold < kAllTokensUsed);
 
 double constexpr kNameScore[] = {
@@ -104,6 +105,7 @@ double constexpr kStreetType[] = {
     0.004,  // Minors
     0.004,  // Residential
     0.005,  // Regular
+    0.005,  // Square
     0.006,  // Motorway
 };
 static_assert(std::size(kStreetType) == base::Underlying(StreetType::Count));
@@ -123,7 +125,7 @@ double TransformDistance(double distance)
   return std::min(distance, RankingInfo::kMaxDistMeters) / RankingInfo::kMaxDistMeters;
 }
 
-void PrintParse(ostringstream & oss, array<TokenRange, Model::TYPE_COUNT> const & ranges, size_t numTokens)
+void PrintParse(std::ostringstream & oss, std::array<TokenRange, Model::TYPE_COUNT> const & ranges, size_t numTokens)
 {
   std::vector<Model::Type> types(numTokens, Model::TYPE_COUNT);
   for (size_t i = 0; i < ranges.size(); ++i)
@@ -145,60 +147,30 @@ void PrintParse(ostringstream & oss, array<TokenRange, Model::TYPE_COUNT> const 
   }
   oss << "]";
 }
+}  // namespace
 
-class BaseTypesChecker
+ResultTypeResolver::IsAttractionChecker::IsAttractionChecker()
 {
-protected:
-  std::vector<uint32_t> m_types;
+  // We have several lists for attractions: short list in search categories for @tourism and long
+  // list in ftypes::AttractionsChecker. We have highway-pedestrian, place-square, historic-tomb,
+  // landuse-cemetery, amenity-townhall etc in long list and logic of long list is "if this object
+  // has high popularity and/or wiki description probably it is attraction". It's better to use
+  // short list here.
+  m_types = search::GetCategoryTypes("sights", "en", GetDefaultCategories());
 
-public:
-  bool operator()(feature::TypesHolder const & th) const
-  {
-    return base::AnyOf(m_types, [&th](uint32_t t) { return th.HasWithSubclass(t); });
-  }
-};
+  // Add _attraction_ leisures too!
+  base::StringIL const types[] = {
+      {"leisure", "beach_resort"},   {"leisure", "garden"}, {"leisure", "marina"},
+      {"leisure", "nature_reserve"}, {"leisure", "park"},
+  };
 
-class IsAttraction
-{
-  std::vector<uint32_t> m_types;
+  Classificator const & c = classif();
+  for (auto const & e : types)
+    m_types.push_back(c.GetTypeByPath(e));
+}
 
-public:
-  bool operator()(feature::TypesHolder const & th) const
-  {
-    // Strict check (unlike in BaseTypesChecker) to avoid matching:
-    // - historic-memorial-plaque
-    // - leisure-garden-residential
-    return base::AnyOf(m_types, [&th](uint32_t t) { return th.Has(t); });
-  }
-
-public:
-  IsAttraction()
-  {
-    // We have several lists for attractions: short list in search categories for @tourism and long
-    // list in ftypes::AttractionsChecker. We have highway-pedestrian, place-square, historic-tomb,
-    // landuse-cemetery, amenity-townhall etc in long list and logic of long list is "if this object
-    // has high popularity and/or wiki description probably it is attraction". It's better to use
-    // short list here.
-    m_types = search::GetCategoryTypes("sights", "en", GetDefaultCategories());
-
-    // Add _attraction_ leisures too!
-    base::StringIL const types[] = {
-        {"leisure", "beach_resort"},   {"leisure", "garden"}, {"leisure", "marina"},
-        {"leisure", "nature_reserve"}, {"leisure", "park"},
-    };
-
-    Classificator const & c = classif();
-    for (auto const & e : types)
-      m_types.push_back(c.GetTypeByPath(e));
-  }
-};
-
-class IsShopOrAmenity : public BaseTypesChecker
-{
-public:
-  IsShopOrAmenity()
-  {
-    base::StringIL const types[] = {
+ResultTypeResolver::IsShopOrAmenityChecker::IsShopOrAmenityChecker()
+  : ftypes::BaseCheckerEx({
         {"shop"},
 
         // Amenity types are very fragmented, so take only most _interesting_ here.
@@ -217,20 +189,11 @@ public:
         {"amenity", "post_office"},
         {"amenity", "stripclub"},
         {"amenity", "theatre"},
-    };
+    })
+{}
 
-    Classificator const & c = classif();
-    for (auto const & e : types)
-      m_types.push_back(c.GetTypeByPath(e));
-  }
-};
-
-class IsCarInfra : public BaseTypesChecker
-{
-public:
-  IsCarInfra()
-  {
-    base::StringIL const types[] = {
+ResultTypeResolver::IsCarInfraChecker::IsCarInfraChecker()
+  : ftypes::BaseCheckerEx({
         {"amenity", "car_rental"},
         {"amenity", "car_sharing"},
         {"amenity", "car_wash"},
@@ -241,28 +204,19 @@ public:
 
         {"highway", "rest_area"},
         {"highway", "services"},
-    };
+    })
+{}
 
-    Classificator const & c = classif();
-    for (auto const & e : types)
-      m_types.push_back(c.GetTypeByPath(e));
-  }
-};
+ResultTypeResolver::IsServiceTypeChecker::IsServiceTypeChecker()
+  : ftypes::BaseCheckerEx({{"barrier"}, {"power"}, {"traffic_calming"}})
+{}
 
-class IsServiceTypeChecker : public BaseTypesChecker
-{
-public:
-  IsServiceTypeChecker()
-  {
-    Classificator const & c = classif();
-    for (char const * e : {"barrier", "power", "traffic_calming"})
-      m_types.push_back(c.GetTypeByPath({e}));
-  }
-};
-}  // namespace
+ResultTypeResolver::IsSkipRegionInfo::IsSkipRegionInfo()
+  : ftypes::BaseCheckerEx({{"place", "continent"}, {"place", "country"}})
+{}
 
 // static
-void RankingInfo::PrintCSVHeader(ostream & os)
+void RankingInfo::PrintCSVHeader(std::ostream & os)
 {
   os << "DistanceToPivot"
      << ",Rank"
@@ -283,7 +237,7 @@ void RankingInfo::PrintCSVHeader(ostream & os)
 
 std::string DebugPrint(StoredRankingInfo const & info)
 {
-  ostringstream os;
+  std::ostringstream os;
   os << "StoredRankingInfo "
      << "{ m_distanceToPivot: " << info.m_distanceToPivot << ", m_type: " << DebugPrint(info.m_type)
      << ", m_classifType: ";
@@ -297,10 +251,10 @@ std::string DebugPrint(StoredRankingInfo const & info)
   return os.str();
 }
 
-string DebugPrint(RankingInfo const & info)
+std::string DebugPrint(RankingInfo const & info)
 {
-  ostringstream os;
-  os << boolalpha << "RankingInfo { " << DebugPrint(static_cast<StoredRankingInfo const &>(info)) << ", ";
+  std::ostringstream os;
+  os << std::boolalpha << "RankingInfo { " << DebugPrint(static_cast<StoredRankingInfo const &>(info)) << ", ";
 
   PrintParse(os, info.m_tokenRanges, info.m_numTokens);
 
@@ -317,9 +271,9 @@ string DebugPrint(RankingInfo const & info)
   return os.str();
 }
 
-void RankingInfo::ToCSV(ostream & os) const
+void RankingInfo::ToCSV(std::ostream & os) const
 {
-  os << fixed;
+  os << std::fixed;
   os << m_distanceToPivot << ",";
   os << static_cast<int>(m_rank) << ",";
   os << static_cast<int>(m_popularity) << ",";
@@ -348,8 +302,8 @@ double RankingInfo::GetLinearRankViewportThreshold()
 double RankingInfo::GetLinearModelRank(bool viewportMode /* = false */) const
 {
   double const distanceToPivot = TransformDistance(m_distanceToPivot);
-  double const rank = static_cast<double>(m_rank) / numeric_limits<uint8_t>::max();
-  double const popularity = static_cast<double>(m_popularity) / numeric_limits<uint8_t>::max();
+  double const rank = static_cast<double>(m_rank) / std::numeric_limits<uint8_t>::max();
+  double const popularity = static_cast<double>(m_popularity) / std::numeric_limits<uint8_t>::max();
 
   double result = 0.0;
   if (!m_categorialRequest)
@@ -415,7 +369,7 @@ double RankingInfo::GetLinearModelRank(bool viewportMode /* = false */) const
 double RankingInfo::GetErrorsMadePerToken() const
 {
   if (!m_errorsMade.IsValid())
-    return GetMaxErrorsForTokenLength(numeric_limits<size_t>::max());
+    return GetMaxErrorsForTokenLength(std::numeric_limits<size_t>::max());
 
   ASSERT_GREATER(m_numTokens, 0, ());
   return m_errorsMade.m_errorsMade / static_cast<double>(m_numTokens);
@@ -468,43 +422,35 @@ PoiType RankingInfo::GetPoiTypeScore() const
   return (m_pureCats ? PoiType::PureCategory : m_classifType.poi);
 }
 
-PoiType GetPoiType(feature::TypesHolder const & th)
+PoiType ResultTypeResolver::GetPoiType(feature::TypesHolder const & th) const
 {
-  using namespace ftypes;
-
-  if (IsEatChecker::Instance()(th))
+  if (m_isEat(th))
     return PoiType::Eat;
-  if (IsHotelChecker::Instance()(th))
+  if (m_isHotel(th))
     return PoiType::Hotel;
 
-  if (IsRailwayStationChecker::Instance()(th) || IsSubwayStationChecker::Instance()(th) ||
-      IsAirportChecker::Instance()(th))
-  {
+  if (m_isRwStation(th) || m_isSbStation(th) || m_isAirport(th))
     return PoiType::TransportMajor;
-  }
-  if (IsPublicTransportStopChecker::Instance()(th) || IsTaxiChecker::Instance()(th))
+
+  if (m_isPtStop(th) || m_isTaxi(th))
     return PoiType::TransportLocal;
 
-  static IsAttraction const attractionCheck;
-  if (attractionCheck(th))
+  if (m_isAttraction(th))
     return PoiType::Attraction;
 
-  static IsShopOrAmenity const shopOrAmenityCheck;
-  if (shopOrAmenityCheck(th))
+  if (m_isShopOrAmenity(th))
     return PoiType::ShopOrAmenity;
 
-  static IsCarInfra const carInfra;
-  if (carInfra(th))
+  if (m_isCarInfra(th))
     return PoiType::CarInfra;
 
-  static IsServiceTypeChecker const serviceCheck;
-  if (serviceCheck(th))
+  if (m_isServiceType(th))
     return PoiType::Service;
 
   return PoiType::General;
 }
 
-string DebugPrint(PoiType type)
+std::string DebugPrint(PoiType type)
 {
   switch (type)
   {
@@ -534,6 +480,7 @@ std::string DebugPrint(StreetType type)
   case StreetType::Minors: return "Minors";
   case StreetType::Residential: return "Residential";
   case StreetType::Regular: return "Regular";
+  case StreetType::Square: return "Square";
   case StreetType::Motorway: return "Motorway";
   case StreetType::Count: return "Count";
   }

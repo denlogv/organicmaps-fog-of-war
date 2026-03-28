@@ -6,7 +6,6 @@
 #include "base/small_map.hpp"
 #include "base/stl_helpers.hpp"
 
-#include <functional>
 #include <string>
 #include <vector>
 
@@ -17,8 +16,22 @@
     return inst;                              \
   }
 
+/* If fancy post-initialization needed.
+#define DECLARE_CHECKER_INSTANCE(CheckerType) \
+  static CheckerType const & Instance()       \
+  {                                           \
+    struct Initializer : public CheckerType   \
+    {                                         \
+      Initializer() { PostInitialize(); }     \
+    };                                        \
+    static Initializer const inst;            \
+    return inst;                              \
+  }
+*/
+
 namespace ftypes
 {
+/// Use only for non-trivial matching logic. @see BaseCheckerEx otherwise.
 class BaseChecker
 {
 protected:
@@ -29,20 +42,72 @@ protected:
   virtual ~BaseChecker() = default;
 
 public:
+  void PostInitialize();
+
   virtual bool IsMatched(uint32_t type) const;
-  virtual void ForEachType(std::function<void(uint32_t)> const & fn) const;
+
+  template <class FnT>
+  void ForEachType(FnT && fn) const
+  {
+    for (auto const & t : m_types)
+      fn(t);
+  }
 
   std::vector<uint32_t> const & GetTypes() const { return m_types; }
 
-  bool operator()(feature::TypesHolder const & types) const;
   bool operator()(FeatureType & ft) const;
-  bool operator()(std::vector<uint32_t> const & types) const;
   bool operator()(uint32_t type) const { return IsMatched(type); }
+  template <class T>
+  bool operator()(T && types) const
+  {
+    for (uint32_t t : types)
+      if (IsMatched(t))
+        return true;
+    return false;
+  }
 
   static uint32_t PrepareToMatch(uint32_t type, uint8_t level);
 };
 
-class IsPeakChecker : public BaseChecker
+/// @brief Simple base checker class for matching with subclasses.
+/// Consider using it first when adding new checker.
+class BaseCheckerEx
+{
+protected:
+  std::vector<std::pair<uint32_t, uint8_t>> m_types;
+
+public:
+  BaseCheckerEx(std::initializer_list<base::StringIL> const & lst);
+  void PostInitialize() {}
+
+  template <class FnT>
+  void ForEachType(FnT && fn) const
+  {
+    for (auto const & t : m_types)
+      fn(t.first);
+  }
+
+  bool operator()(uint32_t type) const
+  {
+    for (auto const & e : m_types)
+      if (e.first == ftype::Trunc(type, e.second))
+        return true;
+    return false;
+  }
+
+  template <class T>
+  bool operator()(T && types) const
+  {
+    for (uint32_t t : types)
+      if (this->operator()(t))
+        return true;
+    return false;
+  }
+
+  bool operator()(FeatureType & ft) const;
+};
+
+class IsPeakChecker : public BaseCheckerEx
 {
   IsPeakChecker();
 
@@ -50,7 +115,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsPeakChecker);
 };
 
-class IsATMChecker : public BaseChecker
+class IsATMChecker : public BaseCheckerEx
 {
   IsATMChecker();
 
@@ -58,7 +123,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsATMChecker);
 };
 
-class IsSpeedCamChecker : public BaseChecker
+class IsSpeedCamChecker : public BaseCheckerEx
 {
   IsSpeedCamChecker();
 
@@ -66,7 +131,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsSpeedCamChecker);
 };
 
-class IsPostBoxChecker : public BaseChecker
+class IsPostBoxChecker : public BaseCheckerEx
 {
   IsPostBoxChecker();
 
@@ -90,14 +155,14 @@ public:
   DECLARE_CHECKER_INSTANCE(IsOperatorOthersPoiChecker);
 };
 
-class IsRecyclingCentreChecker : public BaseChecker
+class IsRecyclingCentreChecker : public BaseCheckerEx
 {
   IsRecyclingCentreChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsRecyclingCentreChecker);
 
-  uint32_t GetType() const;
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
 class IsRecyclingContainerChecker : public BaseChecker
@@ -107,7 +172,7 @@ class IsRecyclingContainerChecker : public BaseChecker
 public:
   DECLARE_CHECKER_INSTANCE(IsRecyclingContainerChecker);
 
-  uint32_t GetType() const;
+  uint32_t GetType() const { return m_types[0]; }
 };
 
 class IsRailwayStationChecker : public BaseChecker
@@ -118,7 +183,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsRailwayStationChecker);
 };
 
-class IsSubwayStationChecker : public BaseChecker
+class IsSubwayStationChecker : public BaseCheckerEx
 {
   IsSubwayStationChecker();
 
@@ -126,7 +191,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsSubwayStationChecker);
 };
 
-class IsAirportChecker : public BaseChecker
+class IsAirportChecker : public BaseCheckerEx
 {
   IsAirportChecker();
 
@@ -134,11 +199,9 @@ public:
   DECLARE_CHECKER_INSTANCE(IsAirportChecker);
 };
 
-class IsSquareChecker : public BaseChecker
+struct IsSquareChecker : public BaseCheckerEx
 {
   IsSquareChecker();
-
-public:
   DECLARE_CHECKER_INSTANCE(IsSquareChecker);
 };
 
@@ -169,9 +232,8 @@ public:
 /// @todo Better to rename like IsStreetChecker, as it is used in search context only?
 class IsWayChecker : public BaseChecker
 {
-  IsWayChecker();
-
 public:
+  IsWayChecker();
   DECLARE_CHECKER_INSTANCE(IsWayChecker);
 
   enum SearchRank : uint8_t
@@ -185,6 +247,7 @@ public:
     Minors,
     Residential,
     Regular,
+    Square,  /// @see IsStreetOrSquareChecker
     Motorway,
 
     Count
@@ -196,20 +259,39 @@ private:
   base::SmallMap<uint32_t, SearchRank> m_ranks;
 };
 
-class IsStreetOrSquareChecker : public BaseChecker
+class IsStreetOrSquareChecker
 {
-  IsStreetOrSquareChecker();
-
 public:
+  template <class T>
+  bool operator()(T && t) const
+  {
+    return m_street(t) || m_square(t);
+  }
+
+  // Additional checks for the appropriate geometry type.
+  bool operator()(FeatureType & ft) const;
+
+  template <class FnT>
+  void ForEachType(FnT && fn) const
+  {
+    m_street.ForEachType(fn);
+    m_square.ForEachType(fn);
+  }
+
   DECLARE_CHECKER_INSTANCE(IsStreetOrSquareChecker);
+
+  IsWayChecker::SearchRank GetSearchRank(uint32_t type) const;
+
+private:
+  IsWayChecker m_street;
+  IsSquareChecker m_square;
 };
 
 class IsAddressObjectChecker
 {
 public:
-  bool operator()(FeatureType & ft) const { return m_oneLevel(ft) || m_twoLevel(ft); }
   template <class T>
-  bool operator()(T const & t) const
+  bool operator()(T && t) const
   {
     return m_oneLevel(t) || m_twoLevel(t);
   }
@@ -243,14 +325,14 @@ public:
   DECLARE_CHECKER_INSTANCE(IsVillageChecker);
 };
 
-class IsOneWayChecker : public BaseChecker
+class IsOneWayChecker : public BaseCheckerEx
 {
   IsOneWayChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsOneWayChecker);
 
-  uint32_t GetType() const { return m_types[0]; }
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
 class IsRoundAboutChecker : public BaseChecker
@@ -269,15 +351,15 @@ public:
   DECLARE_CHECKER_INSTANCE(IsLinkChecker);
 };
 
-class IsBuildingChecker : public BaseChecker
+class IsBuildingChecker : public BaseCheckerEx
 {
+public:
   IsBuildingChecker();
 
-public:
   DECLARE_CHECKER_INSTANCE(IsBuildingChecker);
 };
 
-class IsBuildingPartChecker : public ftypes::BaseChecker
+class IsBuildingPartChecker : public BaseCheckerEx
 {
   IsBuildingPartChecker();
 
@@ -285,17 +367,17 @@ public:
   DECLARE_CHECKER_INSTANCE(IsBuildingPartChecker);
 };
 
-class IsBuildingHasPartsChecker : public ftypes::BaseChecker
+class IsBuildingHasPartsChecker : public BaseCheckerEx
 {
   IsBuildingHasPartsChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsBuildingHasPartsChecker);
 
-  uint32_t GetType() const { return m_types[0]; }
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
-class IsIsolineChecker : public BaseChecker
+class IsIsolineChecker : public BaseCheckerEx
 {
   IsIsolineChecker();
 
@@ -303,7 +385,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsIsolineChecker);
 };
 
-class IsPisteChecker : public BaseChecker
+class IsPisteChecker : public BaseCheckerEx
 {
   IsPisteChecker();
 
@@ -311,7 +393,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsPisteChecker);
 };
 
-class IsMwmBorderChecker : public ftypes::BaseChecker
+class IsMwmBorderChecker : public ftypes::BaseCheckerEx
 {
   IsMwmBorderChecker();
 
@@ -342,26 +424,25 @@ class IsPoiChecker
 public:
   DECLARE_CHECKER_INSTANCE(IsPoiChecker);
 
-  bool operator()(FeatureType & ft) const { return m_oneLevel(ft) || m_twoLevel(ft); }
   template <class T>
-  bool operator()(T const & t) const
+  bool operator()(T && t) const
   {
     return m_oneLevel(t) || m_twoLevel(t);
   }
 
 private:
-  OneLevelPOIChecker const m_oneLevel;
-  TwoLevelPOIChecker const m_twoLevel;
+  OneLevelPOIChecker m_oneLevel;
+  TwoLevelPOIChecker m_twoLevel;
 };
 
-class IsAmenityChecker : public BaseChecker
+class IsAmenityChecker : public BaseCheckerEx
 {
   IsAmenityChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsAmenityChecker);
 
-  uint32_t GetType() const { return m_types[0]; }
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
 class AttractionsChecker : public BaseChecker
@@ -377,7 +458,7 @@ public:
   uint32_t GetBestType(FeatureParams::Types const & types) const;
 };
 
-class IsPlaceChecker : public BaseChecker
+class IsPlaceChecker : public BaseCheckerEx
 {
   IsPlaceChecker();
 
@@ -389,10 +470,8 @@ class IsBridgeOrTunnelChecker : public BaseChecker
 {
   virtual bool IsMatched(uint32_t type) const override;
 
-  IsBridgeOrTunnelChecker();
-
 public:
-  DECLARE_CHECKER_INSTANCE(IsBridgeOrTunnelChecker);
+  IsBridgeOrTunnelChecker();
 };
 
 class IsIslandChecker : public BaseChecker
@@ -403,24 +482,24 @@ public:
   DECLARE_CHECKER_INSTANCE(IsIslandChecker);
 };
 
-class IsLandChecker : public BaseChecker
+class IsLandChecker : public BaseCheckerEx
 {
   IsLandChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsLandChecker);
 
-  uint32_t GetLandType() const;
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
-class IsCoastlineChecker : public BaseChecker
+class IsCoastlineChecker : public BaseCheckerEx
 {
   IsCoastlineChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsCoastlineChecker);
 
-  uint32_t GetCoastlineType() const;
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
 class IsHotelChecker : public BaseChecker
@@ -431,7 +510,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsHotelChecker);
 };
 
-class IsCampPitchChecker : public BaseChecker
+class IsCampPitchChecker : public BaseCheckerEx
 {
   IsCampPitchChecker();
 
@@ -441,14 +520,14 @@ public:
 
 // WiFi is a type in classificator.txt,
 // it should be checked for filling metadata in MapObject.
-class IsWifiChecker : public BaseChecker
+class IsWifiChecker : public BaseCheckerEx
 {
   IsWifiChecker();
 
 public:
   DECLARE_CHECKER_INSTANCE(IsWifiChecker);
 
-  uint32_t GetType() const { return m_types[0]; }
+  uint32_t GetType() const { return m_types[0].first; }
 };
 
 class IsEatChecker : public BaseChecker
@@ -476,7 +555,7 @@ private:
   //  std::array<uint32_t, base::Underlying(Type::Count)> m_eat2clType;
 };
 
-class IsCuisineChecker : public BaseChecker
+class IsCuisineChecker : public BaseCheckerEx
 {
   IsCuisineChecker();
 
@@ -484,7 +563,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsCuisineChecker);
 };
 
-class IsRecyclingTypeChecker : public BaseChecker
+class IsRecyclingTypeChecker : public BaseCheckerEx
 {
   IsRecyclingTypeChecker();
 
@@ -492,7 +571,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsRecyclingTypeChecker);
 };
 
-class IsFeeTypeChecker : public BaseChecker
+class IsFeeTypeChecker : public BaseCheckerEx
 {
   IsFeeTypeChecker();
 
@@ -508,7 +587,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsToiletsChecker);
 };
 
-class IsCapitalChecker : public BaseChecker
+class IsCapitalChecker : public BaseCheckerEx
 {
   IsCapitalChecker();
 
@@ -516,7 +595,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsCapitalChecker);
 };
 
-class IsParkingChecker : public BaseChecker
+class IsParkingChecker : public BaseCheckerEx
 {
   IsParkingChecker();
 
@@ -524,7 +603,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsParkingChecker);
 };
 
-class IsCarChargingChecker : public BaseChecker
+class IsCarChargingChecker : public BaseCheckerEx
 {
   IsCarChargingChecker();
 
@@ -540,7 +619,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsBicycleParkingChecker);
 };
 
-class IsBicycleChargingChecker : public BaseChecker
+class IsBicycleChargingChecker : public BaseCheckerEx
 {
   IsBicycleChargingChecker();
 
@@ -548,7 +627,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsBicycleChargingChecker);
 };
 
-class IsMotorcycleParkingChecker : public BaseChecker
+class IsMotorcycleParkingChecker : public BaseCheckerEx
 {
   IsMotorcycleParkingChecker();
 
@@ -564,7 +643,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsPublicTransportStopChecker);
 };
 
-class IsTaxiChecker : public BaseChecker
+class IsTaxiChecker : public BaseCheckerEx
 {
   IsTaxiChecker();
 
@@ -572,7 +651,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsTaxiChecker);
 };
 
-class IsMotorwayJunctionChecker : public BaseChecker
+class IsMotorwayJunctionChecker : public BaseCheckerEx
 {
   IsMotorwayJunctionChecker();
 
@@ -634,7 +713,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsLocalityChecker);
 };
 
-class IsCountryChecker : public BaseChecker
+class IsCountryChecker : public BaseCheckerEx
 {
   IsCountryChecker();
 
@@ -642,7 +721,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsCountryChecker);
 };
 
-class IsStateChecker : public BaseChecker
+class IsStateChecker : public BaseCheckerEx
 {
   IsStateChecker();
 
@@ -658,7 +737,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsCityTownOrVillageChecker);
 };
 
-class IsEntranceChecker : public BaseChecker
+class IsEntranceChecker : public BaseCheckerEx
 {
   IsEntranceChecker();
 
@@ -666,7 +745,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsEntranceChecker);
 };
 
-class IsAerowayGateChecker : public BaseChecker
+class IsAerowayGateChecker : public BaseCheckerEx
 {
   IsAerowayGateChecker();
 
@@ -674,7 +753,7 @@ public:
   DECLARE_CHECKER_INSTANCE(IsAerowayGateChecker);
 };
 
-class IsSubwayEntranceChecker : public BaseChecker
+class IsSubwayEntranceChecker : public BaseCheckerEx
 {
   IsSubwayEntranceChecker();
 
@@ -692,11 +771,11 @@ public:
 
 class IsAddressInterpolChecker : public BaseChecker
 {
-  IsAddressInterpolChecker();
-
   uint32_t m_odd, m_even;
 
 public:
+  IsAddressInterpolChecker();
+
   DECLARE_CHECKER_INSTANCE(IsAddressInterpolChecker);
 
   template <class Range>

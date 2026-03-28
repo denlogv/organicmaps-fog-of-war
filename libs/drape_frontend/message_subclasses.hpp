@@ -1488,8 +1488,7 @@ private:
 class EnableFogOfWarMessage : public Message
 {
 public:
-  explicit EnableFogOfWarMessage(bool enable)
-    : m_enable(enable) {}
+  explicit EnableFogOfWarMessage(bool enable) : m_enable(enable) {}
 
   Type GetType() const override { return Type::EnableFogOfWar; }
 

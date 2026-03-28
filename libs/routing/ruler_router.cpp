@@ -4,14 +4,6 @@
 
 namespace routing
 {
-using namespace std;
-
-void RulerRouter::ClearState() {}
-
-void RulerRouter::SetGuides(GuidesTracks && guides)
-{ /*m_guides = GuidesConnections(guides);*/
-}
-
 /* Ruler router doesn't read roads graph and uses only checkpoints to build a route.
 
       1-----------2
@@ -47,13 +39,13 @@ void RulerRouter::SetGuides(GuidesTracks && guides)
 RouterResultCode RulerRouter::CalculateRoute(Checkpoints const & checkpoints, m2::PointD const & startDirection,
                                              bool adjustToPrevRoute, RouterDelegate const & delegate, Route & route)
 {
-  vector<m2::PointD> const & points = checkpoints.GetPoints();
+  auto const & points = checkpoints.GetPoints();
   size_t const count = points.size();
   ASSERT(count > 0, ());
 
-  vector<RouteSegment> routeSegments;
+  std::vector<RouteSegment> routeSegments;
   routeSegments.reserve(count * 2 - 1);
-  vector<double> times;
+  std::vector<double> times;
   times.reserve(count * 2 - 1);
 
   Segment const segment(kFakeNumMwmId, 0, 0, false);
@@ -82,7 +74,7 @@ RouterResultCode RulerRouter::CalculateRoute(Checkpoints const & checkpoints, m2
   FillSegmentInfo(times, routeSegments);
   route.SetRouteSegments(std::move(routeSegments));
 
-  vector<Route::SubrouteAttrs> subroutes;
+  std::vector<Route::SubrouteAttrs> subroutes;
   for (size_t i = 1; i < count; ++i)
   {
     subroutes.emplace_back(ToPointWA(points[i - 1]), ToPointWA(points[i]), i * 2 - 2, i * 2);
@@ -92,7 +84,7 @@ RouterResultCode RulerRouter::CalculateRoute(Checkpoints const & checkpoints, m2
   route.SetCurrentSubrouteIdx(checkpoints.GetPassedIdx());
   route.SetSubroteAttrs(std::move(subroutes));
 
-  vector<m2::PointD> routeGeometry;
+  std::vector<m2::PointD> routeGeometry;
   for (auto p : points)
   {
     routeGeometry.push_back(p);

@@ -1,14 +1,15 @@
 package app.organicmaps.settings;
 
-import android.graphics.drawable.GradientDrawable;
-import android.widget.FrameLayout;
-import androidx.appcompat.app.AlertDialog;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
@@ -38,6 +39,8 @@ import app.organicmaps.sdk.util.log.LogsManager;
 import app.organicmaps.util.ThemeSwitcher;
 import app.organicmaps.util.Utils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements LanguagesFragment.Listener
@@ -51,8 +54,7 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
   private boolean isSubScreen()
   {
     final Bundle args = getArguments();
-    return args != null
-        && args.getString(androidx.preference.PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) != null;
+    return args != null && args.getString(androidx.preference.PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) != null;
   }
 
   @Override
@@ -413,21 +415,63 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
   private void initMapStylePrefsCallbacks()
   {
     final ListPreference pref = getPreference(getString(R.string.pref_map_appearance));
-    pref.setEntryValues(
-        new CharSequence[] {Config.UiTheme.SYSTEM.value, Config.UiTheme.LIGHT.value, Config.UiTheme.DARK.value});
-    pref.setValue(Config.UiTheme.getUiThemePreference().value);
-    pref.setSummary(pref.getEntry());
+    final List<Config.UiTheme> availableThemes = getAvailableUiThemes();
+    pref.setEntries(getThemeEntries(availableThemes));
+    pref.setEntryValues(getThemeEntryValues(availableThemes));
+
+    final Config.UiTheme currentTheme = Config.UiTheme.getUiThemePreference();
+    pref.setValue(currentTheme.value);
+    pref.setSummary(getString(getThemeTitle(currentTheme)));
     pref.setOnPreferenceChangeListener((preference, newValue) -> {
       final var newTheme = Config.UiTheme.ofValue((String) newValue);
       if (!Config.UiTheme.setUiThemePreference(newTheme))
         return true;
 
       ThemeSwitcher.INSTANCE.synchronizeApplicationTheme();
-
-      final CharSequence summary = pref.getEntries()[newTheme.ordinal()];
-      pref.setSummary(summary);
+      pref.setSummary(getString(getThemeTitle(newTheme)));
       return true;
     });
+  }
+
+  @NonNull
+  private List<Config.UiTheme> getAvailableUiThemes()
+  {
+    final List<Config.UiTheme> themes = new ArrayList<>(4);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+      themes.add(Config.UiTheme.SYSTEM);
+    themes.add(Config.UiTheme.LIGHT);
+    themes.add(Config.UiTheme.DARK);
+    themes.add(Config.UiTheme.SCHEDULED);
+    return themes;
+  }
+
+  @NonNull
+  private CharSequence[] getThemeEntries(@NonNull List<Config.UiTheme> themes)
+  {
+    final CharSequence[] entries = new CharSequence[themes.size()];
+    for (int i = 0; i < themes.size(); i++)
+      entries[i] = getString(getThemeTitle(themes.get(i)));
+    return entries;
+  }
+
+  @NonNull
+  private CharSequence[] getThemeEntryValues(@NonNull List<Config.UiTheme> themes)
+  {
+    final CharSequence[] entryValues = new CharSequence[themes.size()];
+    for (int i = 0; i < themes.size(); i++)
+      entryValues[i] = themes.get(i).value;
+    return entryValues;
+  }
+
+  private int getThemeTitle(@NonNull Config.UiTheme theme)
+  {
+    return switch (theme)
+    {
+      case SYSTEM -> R.string.follow_system;
+      case LIGHT -> R.string.pref_appearance_light;
+      case DARK -> R.string.pref_appearance_dark;
+      case SCHEDULED -> R.string.pref_appearance_scheduled;
+    };
   }
 
   private void initZoomPrefsCallbacks()
@@ -659,19 +703,19 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
     int padding = (int) (20 * density);
 
     FrameLayout container = new FrameLayout(requireContext());
-    container.addView(pickerView, new FrameLayout.LayoutParams(
-        FrameLayout.LayoutParams.MATCH_PARENT,
-        FrameLayout.LayoutParams.WRAP_CONTENT));
+    container.addView(pickerView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                                                               FrameLayout.LayoutParams.WRAP_CONTENT));
     container.setPadding(padding, padding, padding, 0);
 
     new AlertDialog.Builder(requireContext())
         .setTitle(R.string.pref_fog_of_war_color_title)
         .setView(container)
-        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-          int color = pickerView.getColor() & 0xFFFFFF;
-          Framework.nativeSetFogOfWarColor(color);
-          updateFogColorSwatch(colorPref, color);
-        })
+        .setPositiveButton(android.R.string.ok,
+                           (dialog, which) -> {
+                             int color = pickerView.getColor() & 0xFFFFFF;
+                             Framework.nativeSetFogOfWarColor(color);
+                             updateFogColorSwatch(colorPref, color);
+                           })
         .setNegativeButton(android.R.string.cancel, null)
         .show();
   }

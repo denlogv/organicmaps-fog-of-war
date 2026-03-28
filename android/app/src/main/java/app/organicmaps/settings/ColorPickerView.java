@@ -96,8 +96,7 @@ public class ColorPickerView extends View
     int width = MeasureSpec.getSize(widthMeasureSpec);
     float contentWidth = width - getPaddingLeft() - getPaddingRight();
     float svHeight = Math.max(SV_MIN_HEIGHT_DP * mDensity, contentWidth * 0.55f);
-    int height = (int) (getPaddingTop() + mHueBarHeight + mGap +
-                        svHeight + mGap + mPreviewSize + getPaddingBottom());
+    int height = (int) (getPaddingTop() + mHueBarHeight + mGap + svHeight + mGap + mPreviewSize + getPaddingBottom());
     setMeasuredDimension(width, height);
   }
 
@@ -126,8 +125,7 @@ public class ColorPickerView extends View
       hsv[0] = i * 60f;
       colors[i] = Color.HSVToColor(hsv);
     }
-    mHueShader = new LinearGradient(mHueBarRect.left, 0, mHueBarRect.right, 0,
-        colors, null, Shader.TileMode.CLAMP);
+    mHueShader = new LinearGradient(mHueBarRect.left, 0, mHueBarRect.right, 0, colors, null, Shader.TileMode.CLAMP);
   }
 
   @Override
@@ -159,15 +157,13 @@ public class ColorPickerView extends View
     float[] pureHsv = {mHsv[0], 1f, 1f};
     int pureHue = Color.HSVToColor(pureHsv);
 
-    LinearGradient satShader = new LinearGradient(
-        mSvPanelRect.left, 0, mSvPanelRect.right, 0,
-        Color.WHITE, pureHue, Shader.TileMode.CLAMP);
+    LinearGradient satShader =
+        new LinearGradient(mSvPanelRect.left, 0, mSvPanelRect.right, 0, Color.WHITE, pureHue, Shader.TileMode.CLAMP);
     mPaint.setShader(satShader);
     canvas.drawRoundRect(mSvPanelRect, mCornerRadius, mCornerRadius, mPaint);
 
-    LinearGradient valShader = new LinearGradient(
-        0, mSvPanelRect.top, 0, mSvPanelRect.bottom,
-        0x00000000, 0xFF000000, Shader.TileMode.CLAMP);
+    LinearGradient valShader =
+        new LinearGradient(0, mSvPanelRect.top, 0, mSvPanelRect.bottom, 0x00000000, 0xFF000000, Shader.TileMode.CLAMP);
     mPaint.setShader(valShader);
     canvas.drawRoundRect(mSvPanelRect, mCornerRadius, mCornerRadius, mPaint);
     mPaint.setShader(null);
@@ -189,8 +185,8 @@ public class ColorPickerView extends View
     // Stroke — dark on light colors, white on dark colors
     if (adaptiveStroke)
     {
-      float lum = (0.299f * Color.red(fillColor) + 0.587f * Color.green(fillColor)
-                   + 0.114f * Color.blue(fillColor)) / 255f;
+      float lum =
+          (0.299f * Color.red(fillColor) + 0.587f * Color.green(fillColor) + 0.114f * Color.blue(fillColor)) / 255f;
       mThumbStrokePaint.setColor(lum > 0.5f ? 0xFF333333 : Color.WHITE);
     }
     else
@@ -269,8 +265,7 @@ public class ColorPickerView extends View
   private boolean hitTest(RectF rect, float x, float y)
   {
     float r = mThumbRadius;
-    return x >= rect.left - r && x <= rect.right + r &&
-           y >= rect.top - r && y <= rect.bottom + r;
+    return x >= rect.left - r && x <= rect.right + r && y >= rect.top - r && y <= rect.bottom + r;
   }
 
   private void updateHue(float x)

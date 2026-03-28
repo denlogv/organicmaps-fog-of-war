@@ -957,8 +957,7 @@ void DrapeEngine::SetTileBackgroundMode(dp::BackgroundMode mode)
 
 void DrapeEngine::EnableFogOfWar(bool enable)
 {
-  m_threadCommutator->PostMessage(ThreadsCommutator::RenderThread,
-                                  make_unique_dp<EnableFogOfWarMessage>(enable),
+  m_threadCommutator->PostMessage(ThreadsCommutator::RenderThread, make_unique_dp<EnableFogOfWarMessage>(enable),
                                   MessagePriority::Normal);
 }
 }  // namespace df

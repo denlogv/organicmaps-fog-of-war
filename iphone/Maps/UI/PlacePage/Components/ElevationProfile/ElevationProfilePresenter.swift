@@ -10,7 +10,7 @@ protocol ElevationProfilePresenterProtocol: UICollectionViewDataSource, UICollec
   func configure()
   func update(with trackData: PlacePageTrackData)
   func onDifficultyButtonPressed()
-  func onSelectedPointChanged(_ point: CGFloat)
+  func onSelectedPointChanged(_ distance: Double)
 }
 
 protocol ElevationProfileViewControllerDelegate: AnyObject {
@@ -111,11 +111,10 @@ extension ElevationProfilePresenter: ElevationProfilePresenterProtocol {
     delegate?.openDifficultyPopup()
   }
 
-  func onSelectedPointChanged(_ point: CGFloat) {
+  func onSelectedPointChanged(_ distance: Double) {
     guard let chartData else { return }
-    let distance: Double = floor(point) / CGFloat(chartData.points.count) * chartData.maxDistance
-    let point = chartData.points.first { $0.distance >= distance } ?? chartData.points[0]
-    delegate?.updateMapPoint(point.coordinates, distance: point.distance)
+    let point = chartData.interpolatedCoordinates(at: distance)
+    delegate?.updateMapPoint(point, distance: distance)
   }
 }
 
@@ -160,6 +159,7 @@ private struct ElevationProfileChartData {
   fileprivate let chartValues: [ChartValue]
   fileprivate let chartLines: [Line]
   fileprivate let distances: [Double]
+  fileprivate let segmentBoundaryDistances: [Double]
   fileprivate let maxDistance: Double
   fileprivate let points: [ElevationHeightPoint]
 
@@ -167,6 +167,7 @@ private struct ElevationProfileChartData {
     points = elevationData.points
     chartValues = points.map { ChartValue(xValues: $0.distance, y: $0.altitude) }
     distances = points.map(\.distance)
+    segmentBoundaryDistances = elevationData.segmentDistances.map(\.doubleValue)
     maxDistance = distances.last ?? 0
     let lineColor = StyleManager.shared.theme?.colors.chartLine ?? .blue
     let lineShadowColor = StyleManager.shared.theme?.colors.chartShadow ?? .lightGray
@@ -175,17 +176,35 @@ private struct ElevationProfileChartData {
     chartLines = [l1, l2]
   }
 
-  private static func altBetweenPoints(_ p1: ElevationHeightPoint,
-                                       _ p2: ElevationHeightPoint,
-                                       at distance: Double) -> Double {
-    assert(distance > p1.distance && distance < p2.distance, "distance must be between points")
-    let d = (distance - p1.distance) / (p2.distance - p1.distance)
-    return p1.altitude + round(Double(p2.altitude - p1.altitude) * d)
+  fileprivate func interpolatedCoordinates(at distance: Double) -> CLLocationCoordinate2D {
+    guard let first = points.first, let last = points.last else {
+      return .init()
+    }
+    if distance <= first.distance {
+      return first.coordinates
+    }
+    if distance >= last.distance {
+      return last.coordinates
+    }
+
+    guard let upperIndex = points.firstIndexAtOrAfter(distance, by: \.distance) else {
+      return last.coordinates
+    }
+    let upper = points[upperIndex]
+    if upper.distance == distance || upperIndex == 0 {
+      return upper.coordinates
+    }
+
+    let lower = points[upperIndex - 1]
+    let progress = (distance - lower.distance) / (upper.distance - lower.distance)
+    return CLLocationCoordinate2D(latitude: lower.coordinates.latitude + (upper.coordinates.latitude - lower.coordinates.latitude) * progress,
+                                  longitude: lower.coordinates.longitude + (upper.coordinates.longitude - lower.coordinates.longitude) * progress)
   }
 }
 
 extension ElevationProfileChartData: ChartData {
   public var xAxisValues: [Double] { distances }
   public var lines: [ChartLine] { chartLines }
+  public var segmentDistances: [Double] { segmentBoundaryDistances.filter { $0 > 0 && $0 < maxDistance } }
   public var type: ChartType { .regular }
 }

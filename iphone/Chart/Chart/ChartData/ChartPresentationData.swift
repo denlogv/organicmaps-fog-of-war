@@ -9,6 +9,7 @@ public class ChartPresentationData {
   var linesCount: Int { chartData.lines.count }
   var pointsCount: Int { chartData.xAxisValues.count }
   var xAxisValues: [Double] { chartData.xAxisValues }
+  var segmentDistances: [Double] { chartData.segmentDistances }
   var type: ChartType { chartData.type }
   var labels: [String]
   var lower = CGFloat(Int.max)
@@ -27,12 +28,19 @@ public class ChartPresentationData {
   }
 
   func xAxisValueAt(_ point: CGFloat) -> Double {
-    let distance = chartData.xAxisValues.last!
-    let p1 = floor(point)
-    let p2 = ceil(point)
-    let v1 = p1 / CGFloat(pointsCount) * distance
-    let v2 = p2 / CGFloat(pointsCount) * distance
-    return v1 + (v2 - v1) * Double(point.truncatingRemainder(dividingBy: 1))
+    distance(forChartX: point)
+  }
+
+  func chartX(forDistance distance: Double) -> CGFloat {
+    guard pointsCount > 1, let maxDistance = chartData.xAxisValues.last, maxDistance > 0 else { return 0 }
+    return CGFloat(distance / maxDistance) * CGFloat(pointsCount - 1)
+  }
+
+  func distance(forChartX point: CGFloat) -> Double {
+    guard pointsCount > 1, let maxDistance = chartData.xAxisValues.last else {
+      return chartData.xAxisValues.last ?? 0
+    }
+    return Double(point) / Double(pointsCount - 1) * maxDistance
   }
 
   func lineAt(_ index: Int) -> ChartPresentationLine {

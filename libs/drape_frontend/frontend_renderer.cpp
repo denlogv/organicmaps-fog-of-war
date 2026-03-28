@@ -148,10 +148,9 @@ FrontendRenderer::FrontendRenderer(Params && params)
         MapDataProvider::TTileBackgroundReadFn(params.m_tileBackgroundReadFn),
         MapDataProvider::TCancelTileBackgroundReadingFn(params.m_cancelTileBackgroundReadingFn),
         params.m_backgroundMode))
-  , m_fogOfWarRenderer(new TileBackgroundRenderer(
-        std::move(params.m_tileBackgroundReadFn),
-        std::move(params.m_cancelTileBackgroundReadingFn),
-        dp::BackgroundMode::Default))
+  , m_fogOfWarRenderer(new TileBackgroundRenderer(std::move(params.m_tileBackgroundReadFn),
+                                                  std::move(params.m_cancelTileBackgroundReadingFn),
+                                                  dp::BackgroundMode::Default))
   , m_trafficRenderer(new TrafficRenderer())
   , m_transitSchemeRenderer(new TransitSchemeRenderer())
   , m_drapeApiRenderer(new DrapeApiRenderer())
@@ -780,7 +779,7 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
           zoom = scales::GetAddNewPlaceScale();
         AddUserEvent(make_unique_dp<SetCenterEvent>(
             pt ? *pt : m_userEventStream.GetCurrentScreen().GlobalRect().Center(), zoom, true /* isAnim */,
-            true /* trackVisibleViewport */, nullptr /* parallelAnimCreator */));
+            !pt /* trackVisibleViewport */, nullptr /* parallelAnimCreator */));
       }
       else
       {
@@ -990,8 +989,8 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
     }
 
     auto & renderer = (msg->GetMode() == dp::BackgroundMode::FogOfWar) ? m_fogOfWarRenderer : m_tileBackgroundRenderer;
-    renderer->AssignTileBackgroundTexture(m_context, msg->GetTileKey(), msg->GetTexturePool(),
-                                          msg->GetTextureId(), msg->GetMode());
+    renderer->AssignTileBackgroundTexture(m_context, msg->GetTileKey(), msg->GetTexturePool(), msg->GetTextureId(),
+                                          msg->GetMode());
     msg->MarkProcessed();
     break;
   }
@@ -1504,10 +1503,7 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
 
     // Fog of War: render after all map content (including labels) but before UI.
     if (IsValidCurrentZoom())
-    {
-      m_fogOfWarRenderer->Render(m_context, make_ref(m_gpuProgramManager), modelView, GetCurrentZoom(),
-                                 m_frameValues);
-    }
+      m_fogOfWarRenderer->Render(m_context, make_ref(m_gpuProgramManager), modelView, GetCurrentZoom(), m_frameValues);
 
     m_drapeApiRenderer->Render(m_context, make_ref(m_gpuProgramManager), modelView, m_frameValues);
 
@@ -2447,7 +2443,7 @@ void FrontendRenderer::Routine::Do()
 
   m_renderer.CreateContext();
 
-#if 0 // Disabled for fog-of-war builds
+#if 0  // Disabled for fog-of-war builds
   gui::DrapeGui::Instance().GetScaleFpsHelper().SetVisible(true);
 #endif
 

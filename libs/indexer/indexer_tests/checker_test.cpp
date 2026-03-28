@@ -59,32 +59,38 @@ UNIT_TEST(IsBridgeOrTunnelChecker)
   classificator::Load();
   auto const & c = classif();
 
+  ftypes::IsBridgeOrTunnelChecker checker;
+
   base::StringIL arrYes[] = {
       {"highway", "trunk", "bridge"},
       {"highway", "motorway_link", "tunnel"},
   };
   for (auto const & e : arrYes)
-    TEST(ftypes::IsBridgeOrTunnelChecker::Instance()(c.GetTypeByPath(e)), ());
+    TEST(checker(c.GetTypeByPath(e)), ());
 
   base::StringIL arrNo[] = {
       {"highway", "motorway_junction"},
       {"highway", "service", "driveway"},
   };
   for (auto const & e : arrNo)
-    TEST(!ftypes::IsBridgeOrTunnelChecker::Instance()(c.GetTypeByPath(e)), ());
+    TEST(!checker(c.GetTypeByPath(e)), ());
 }
 
 UNIT_TEST(IsWayChecker)
 {
   classificator::Load();
+  auto const & c = classif();
+  auto const & checker = ftypes::IsWayChecker::Instance();
 
-  TEST(ftypes::IsWayChecker::Instance()(GetStreetTypes()), ());
-  TEST(ftypes::IsWayChecker::Instance()(GetStreetAndNotStreetTypes()), ());
-  // TODO (@y, @m, @vng): need to investigate - do we really need this
-  // TEST for absence of links, because IsWayChecker() is used for
-  // search only.
-  //
-  // TEST(!ftypes::IsWayChecker::Instance()(GetLinkTypes()), ());
+  TEST(checker(GetStreetTypes()), ());
+  TEST(checker(GetStreetAndNotStreetTypes()), ());
+
+  TEST_EQUAL(checker.GetSearchRank(c.GetTypeByPath({"highway", "cycleway", "bridge"})), ftypes::IsWayChecker::Cycleway,
+             ());
+  TEST_EQUAL(checker.GetSearchRank(c.GetTypeByPath({"highway", "unclassified", "tunnel"})),
+             ftypes::IsWayChecker::Minors, ());
+
+  checker.ForEachType([&checker](uint32_t t) { TEST(checker.GetSearchRank(t) != ftypes::IsWayChecker::Default, ()); });
 }
 
 UNIT_TEST(IsLinkChecker)
@@ -143,6 +149,34 @@ UNIT_TEST(IsMotorwayJunctionChecker)
 
   TEST(ftypes::IsMotorwayJunctionChecker::Instance()(GetMotorwayJunctionType()), ());
   TEST(!ftypes::IsMotorwayJunctionChecker::Instance()(GetStreetTypes()), ());
+}
+
+UNIT_TEST(IsRecyclingContainerChecker)
+{
+  classificator::Load();
+  auto const & c = classif();
+
+  auto const & checker = ftypes::IsRecyclingContainerChecker::Instance();
+  TEST(checker(c.GetTypeByPath({"amenity", "recycling", "container"})), ());
+  TEST(!checker(c.GetTypeByPath({"amenity", "recycling", "centre"})), ());
+}
+
+UNIT_TEST(BaseCheckerEx_Smoke)
+{
+  classificator::Load();
+  auto const & c = classif();
+
+  ftypes::BaseCheckerEx checker({{"shop"}, {"amenity", "parking"}, {"boundary", "protected_area", "1"}});
+  TEST(checker(c.GetTypeByPath({"shop"})), ());
+  TEST(checker(c.GetTypeByPath({"shop", "clothes"})), ());
+  TEST(checker(c.GetTypeByPath({"amenity", "parking"})), ());
+  TEST(checker(c.GetTypeByPath({"amenity", "parking", "fee"})), ());
+  TEST(checker(c.GetTypeByPath({"boundary", "protected_area", "1"})), ());
+
+  TEST(!checker(c.GetTypeByPath({"amenity"})), ());
+  TEST(!checker(c.GetTypeByPath({"amenity", "cafe"})), ());
+  TEST(!checker(c.GetTypeByPath({"boundary", "protected_area"})), ());
+  TEST(!checker(c.GetTypeByPath({"boundary", "protected_area", "2"})), ());
 }
 
 }  // namespace checker_test
