@@ -1630,16 +1630,6 @@ JNIEXPORT jint Java_app_organicmaps_sdk_Framework_nativeGetFogOfWarGradient(JNIE
   return static_cast<jint>(Framework::GetFogOfWarGradient());
 }
 
-JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogOfWarMinVisible(JNIEnv *, jclass, jboolean enabled)
-{
-  frm()->SetFogOfWarMinVisible(static_cast<bool>(enabled));
-}
-
-JNIEXPORT jboolean Java_app_organicmaps_sdk_Framework_nativeIsFogOfWarMinVisible(JNIEnv *, jclass)
-{
-  return static_cast<jboolean>(Framework::GetFogOfWarMinVisible());
-}
-
 JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetFogThrottleSpeed(JNIEnv *, jclass, jint tier, jint speed)
 {
   Framework::SetFogThrottleSpeed(static_cast<int>(tier), static_cast<int>(speed));
