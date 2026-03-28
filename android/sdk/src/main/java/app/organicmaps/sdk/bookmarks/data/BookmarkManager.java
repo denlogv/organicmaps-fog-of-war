@@ -255,6 +255,11 @@ public enum BookmarkManager {
     nativeDeleteTrack(trackId);
   }
 
+  public void deleteTrackSegment(long trackId, double startDistM, double endDistM)
+  {
+    nativeDeleteTrackSegment(trackId, startDistM, endDistM);
+  }
+
   public void deleteBookmark(long bmkId)
   {
     nativeDeleteBookmark(bmkId);
@@ -579,6 +584,8 @@ public enum BookmarkManager {
   private native boolean nativeDeleteCategory(long catId);
 
   private native void nativeDeleteTrack(long trackId);
+
+  private native void nativeDeleteTrackSegment(long trackId, double startDistM, double endDistM);
 
   private native void nativeDeleteBookmark(long bmkId);
 

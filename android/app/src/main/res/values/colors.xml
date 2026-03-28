@@ -12,6 +12,9 @@
   <color name="base_accent_pressed">#FF1C85D6</color>
   <color name="base_accent_transparent">#1E249CF2</color>
 
+  <!-- Track range editor: handles and selection fill. Intentionally not the blue accent used by the elevation marker. -->
+  <color name="track_edit_handle">#FFFF8F00</color>
+
   <color name="base_red">#FFF54137</color>
   <color name="dark_red">#F51E30</color>
   <color name="base_yellow">#FFFFC30A</color>
