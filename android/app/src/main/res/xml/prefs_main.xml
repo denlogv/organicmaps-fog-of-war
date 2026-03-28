@@ -211,13 +211,6 @@
         app:showSeekBarValue="true"
         app:updatesContinuously="true"
         android:order="1" />
-      <androidx.preference.SwitchPreferenceCompat
-        android:key="@string/pref_fog_of_war_min_visible"
-        android:title="@string/pref_fog_of_war_min_visible_title"
-        app:singleLineTitle="false"
-        android:summary="@string/pref_fog_of_war_min_visible_summary"
-        android:defaultValue="true"
-        android:order="2" />
       <androidx.preference.PreferenceCategory
         android:title="@string/prefs_fog_throttle_slow"
         android:order="3">

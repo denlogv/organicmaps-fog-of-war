@@ -1625,4 +1625,93 @@ UNIT_CLASS_TEST(Runner, Bookmarks_TestSaveRoute)
   TEST_EQUAL(line, expectedLine, ());
 }
 
+UNIT_CLASS_TEST(Runner, DeleteTrackSegment_MiddlePortion)
+{
+  // Create a track with 5 points along a known line.
+  // Points at (0,0), (0.001,0), (0.002,0), (0.003,0), (0.004,0).
+  BookmarkManager bmManager(BM_CALLBACKS);
+  bmManager.EnableTestMode(true);
+
+  auto const catId = bmManager.CreateBookmarkCategory("TestCat", false /* autoSave */);
+
+  kml::TrackData trackData;
+  trackData.m_name = kml::LocalizableString{{kml::kDefaultLangCode, "TestTrack"}};
+  trackData.m_geometry.AddLine({
+    {{0.0, 0.0}, 100}, {{0.001, 0.0}, 100}, {{0.002, 0.0}, 100},
+    {{0.003, 0.0}, 100}, {{0.004, 0.0}, 100}
+  });
+  trackData.m_geometry.AddTimestamps({});
+
+  kml::TrackId trackId;
+  {
+    auto es = bmManager.GetEditSession();
+    auto const * track = es.CreateTrack(std::move(trackData));
+    trackId = track->GetId();
+    es.AttachTrack(trackId, catId);
+  }
+
+  auto const * track = bmManager.GetTrack(trackId);
+  TEST(track != nullptr, ());
+  double const totalLen = track->GetLengthMeters();
+  TEST_GREATER(totalLen, 0.0, ());
+
+  // Delete the middle ~third of the track.
+  double const startDist = totalLen * 0.25;
+  double const endDist = totalLen * 0.75;
+  {
+    auto es = bmManager.GetEditSession();
+    es.DeleteTrackSegment(trackId, startDist, endDist);
+  }
+
+  // Track should still exist (not fully deleted).
+  auto const * editedTrack = bmManager.GetTrack(trackId);
+  TEST(editedTrack != nullptr, ());
+
+  auto const & geom = editedTrack->GetData().m_geometry;
+  // Should have 2 line segments: before and after the cut.
+  TEST_EQUAL(geom.m_lines.size(), 2, ());
+  // Timestamps vector must match lines vector size (serializer requirement).
+  TEST_EQUAL(geom.m_timestamps.size(), geom.m_lines.size(), ());
+  // Each segment should have at least 2 points.
+  TEST_GREATER_OR_EQUAL(geom.m_lines[0].size(), 2, ());
+  TEST_GREATER_OR_EQUAL(geom.m_lines[1].size(), 2, ());
+  // Edited track should be shorter than original.
+  TEST_LESS(editedTrack->GetLengthMeters(), totalLen, ());
+}
+
+UNIT_CLASS_TEST(Runner, DeleteTrackSegment_EntireTrack)
+{
+  // Deleting the full range should remove the track entirely.
+  BookmarkManager bmManager(BM_CALLBACKS);
+  bmManager.EnableTestMode(true);
+
+  auto const catId = bmManager.CreateBookmarkCategory("TestCat2", false /* autoSave */);
+
+  kml::TrackData trackData;
+  trackData.m_name = kml::LocalizableString{{kml::kDefaultLangCode, "ToDelete"}};
+  trackData.m_geometry.AddLine({{{0.0, 0.0}, 50}, {{0.001, 0.0}, 50}, {{0.002, 0.0}, 50}});
+  trackData.m_geometry.AddTimestamps({});
+
+  kml::TrackId trackId;
+  {
+    auto es = bmManager.GetEditSession();
+    auto const * track = es.CreateTrack(std::move(trackData));
+    trackId = track->GetId();
+    es.AttachTrack(trackId, catId);
+  }
+
+  auto const * track = bmManager.GetTrack(trackId);
+  TEST(track != nullptr, ());
+  double const totalLen = track->GetLengthMeters();
+
+  // Delete from start to end.
+  {
+    auto es = bmManager.GetEditSession();
+    es.DeleteTrackSegment(trackId, 0.0, totalLen);
+  }
+
+  // Track should be deleted.
+  TEST(bmManager.GetTrack(trackId) == nullptr, ());
+}
+
 }  // namespace bookmarks_test

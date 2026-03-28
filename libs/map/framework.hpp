@@ -748,6 +748,9 @@ public:
   static void SaveFogOfWarEnabled(bool enabled);
   void EnableFogOfWar(bool enable);
 
+  /// Refreshes fog-of-war data after a track has been modified (e.g. segment deletion).
+  void UpdateFogOfWarAfterTrackChange();
+
   static int GetFogOfWarRadius();
   void SetFogOfWarRadius(int meters);
   static int GetFogOfWarOpacity();
@@ -756,9 +759,6 @@ public:
   void SetFogOfWarColor(int colorIndex);
   static int GetFogOfWarGradient();
   void SetFogOfWarGradient(int percent);
-  static bool GetFogOfWarMinVisible();
-  void SetFogOfWarMinVisible(bool enabled);
-
   static int GetFogThrottleSpeed(int tier);
   static void SetFogThrottleSpeed(int tier, int speed);
   static int GetFogThrottleInterval(int tier);

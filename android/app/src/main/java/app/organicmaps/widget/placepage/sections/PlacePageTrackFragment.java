@@ -45,6 +45,7 @@ public class PlacePageTrackFragment extends Fragment
 
     mElevationProfileView = view.findViewById(R.id.elevation_profile);
     mElevationProfileViewRenderer = new ElevationProfileViewRenderer(mElevationProfileView);
+    mElevationProfileViewRenderer.setViewModel(mViewModel);
   }
 
   @Override
@@ -83,11 +84,8 @@ public class PlacePageTrackFragment extends Fragment
     Track track = (Track) mapObject;
     if (track.getElevationInfo() != null)
     {
-      if (mTrack == null || mTrack.getTrackId() != track.getTrackId())
-      {
-        mElevationProfileViewRenderer.render(track, track.getElevationInfo(), track.getTrackStatistics());
-        UiUtils.show(mElevationProfileView);
-      }
+      mElevationProfileViewRenderer.render(track, track.getElevationInfo(), track.getTrackStatistics());
+      UiUtils.show(mElevationProfileView);
     }
     else
       UiUtils.hide(mElevationProfileView);

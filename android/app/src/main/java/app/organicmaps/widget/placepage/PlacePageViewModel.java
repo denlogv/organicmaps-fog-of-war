@@ -17,6 +17,9 @@ public class PlacePageViewModel extends ViewModel
   private final MutableLiveData<Integer> mPlacePageDistanceToTop = new MutableLiveData<>();
   public boolean isAlertDialogShowing = false;
 
+  // Track range selection: [startDistM, endDistM] or null if no range selected.
+  private final MutableLiveData<double[]> mTrackSelectionRange = new MutableLiveData<>();
+
   public LiveData<List<PlacePageButtons.ButtonType>> getCurrentButtons()
   {
     return mCurrentButtons;
@@ -55,5 +58,26 @@ public class PlacePageViewModel extends ViewModel
   public void setPlacePageDistanceToTop(int top)
   {
     mPlacePageDistanceToTop.setValue(top);
+  }
+
+  public LiveData<double[]> getTrackSelectionRangeLiveData()
+  {
+    return mTrackSelectionRange;
+  }
+
+  public double[] getTrackSelectionRange()
+  {
+    return mTrackSelectionRange.getValue();
+  }
+
+  public void setTrackSelectionRange(double startDistM, double endDistM)
+  {
+    mTrackSelectionRange.setValue(new double[]{Math.min(startDistM, endDistM),
+                                               Math.max(startDistM, endDistM)});
+  }
+
+  public void clearTrackSelectionRange()
+  {
+    mTrackSelectionRange.setValue(null);
   }
 }

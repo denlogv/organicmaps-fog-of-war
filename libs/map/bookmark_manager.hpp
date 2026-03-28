@@ -153,6 +153,8 @@ public:
     void ChangeTrackColor(kml::TrackId trackId, dp::Color color);
     /// @todo Get data by value and make moves by call-chain.
     void UpdateTrack(kml::TrackId trackId, kml::TrackData const & trackData);
+    // Removes points between startDistM and endDistM (distances from track start in meters).
+    void DeleteTrackSegment(kml::TrackId trackId, double startDistM, double endDistM);
 
     void SetCategoryName(kml::MarkGroupId categoryId, std::string const & name);
     void SetCategoryDescription(kml::MarkGroupId categoryId, std::string const & desc);
@@ -581,6 +583,7 @@ private:
   void MoveTrack(kml::TrackId trackID, kml::MarkGroupId curGroupID, kml::MarkGroupId newGroupID);
   void ChangeTrackColor(kml::TrackId trackId, dp::Color color);
   void UpdateTrack(kml::TrackId trackId, kml::TrackData const & trackData);
+  void DeleteTrackSegment(kml::TrackId trackId, double startDistM, double endDistM);
 
   void ClearGroup(kml::MarkGroupId groupId);
   void SetIsVisible(kml::MarkGroupId groupId, bool visible);

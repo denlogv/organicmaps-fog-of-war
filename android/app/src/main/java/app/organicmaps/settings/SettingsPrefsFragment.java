@@ -632,16 +632,6 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment implements La
       });
     }
 
-    final SwitchPreferenceCompat minVisiblePref = findPreference(getString(R.string.pref_fog_of_war_min_visible));
-    if (minVisiblePref != null)
-    {
-      minVisiblePref.setChecked(Framework.nativeIsFogOfWarMinVisible());
-      minVisiblePref.setOnPreferenceChangeListener((preference, newValue) -> {
-        Framework.nativeSetFogOfWarMinVisible((Boolean) newValue);
-        return true;
-      });
-    }
-
     initFogThrottlePref(R.string.pref_fog_throttle_speed1, 0, true);
     initFogThrottlePref(R.string.pref_fog_throttle_speed2, 1, true);
     initFogThrottlePref(R.string.pref_fog_throttle_speed3, 2, true);

@@ -656,8 +656,6 @@
     <string name="pref_fog_of_war_advanced_title">Advanced settings</string>
     <string name="pref_fog_of_war_gradient_title">Gradient width</string>
     <string name="pref_fog_of_war_gradient_summary">Transition zone between clear and fogged area (%)</string>
-    <string name="pref_fog_of_war_min_visible_title">Minimum visible size</string>
-    <string name="pref_fog_of_war_min_visible_summary">Keep revealed trail visible when zoomed out, even if it exceeds its real-world area</string>
     <string name="prefs_fog_throttle_slow">Slow movement (e.g. walking)</string>
     <string name="prefs_fog_throttle_medium">Medium movement (e.g. cycling)</string>
     <string name="prefs_fog_throttle_fast">Fast movement (e.g. driving)</string>
@@ -921,6 +919,10 @@
     <string name="share_track">Share Track</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Delete %s?</string>
+    <!-- Button label for deleting a selected range of a track -->
+    <string name="delete_selection">Delete selection</string>
+    <!-- Title for the dialog when deleting a selected portion of a track -->
+    <string name="delete_track_selection_dialog_title">Delete selected part of the track?</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
