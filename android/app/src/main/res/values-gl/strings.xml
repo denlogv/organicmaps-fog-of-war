@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">Claro</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">Escuro</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Claro desde o amencer ata o solpor</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Regala mapas gratuítos e sen anuncios a millóns de usuarios!</string>
 
@@ -620,6 +622,7 @@
     <string name="layers_title">Estilos e capas do mapa</string>
     <string name="bookmarks_empty_list_title">Esta lista está baleira</string>
     <string name="bookmarks_empty_list_message">Para engadir un marcador, toque un lugar no mapa e despois toque a icona da estrela</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Cambiar a cor de todos os marcadores</string>
     <string name="category_desc_more">…máis</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -694,6 +697,7 @@
     <string name="moreyear_ago_sorttype">Fai máis dun ano</string>
     <string name="near_me_sorttype">Preto de min</string>
     <string name="others_sorttype">Outros</string>
+    <string name="editor_add_select_category_all_subtitle">Todas as categorías</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Comida</string>
@@ -849,4 +853,6 @@
     <string name="login_osm_credentials">Iniciar sesión con contrasinal</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Inicio de sesión usando o navegador</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Últimos empregados</string>
 </resources>

@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">Claire</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">Sombre</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Clair de l\'aube au crépuscule</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Offrez des cartes gratuites et sans pub à des millions d\'utilisateurs !</string>
 
@@ -626,6 +628,7 @@
     <string name="layers_title">Styles et couches de cartes</string>
     <string name="bookmarks_empty_list_title">Cette liste est vide</string>
     <string name="bookmarks_empty_list_message">Pour ajouter un signet, appuyez sur un lieu sur la carte, puis appuyez sur l\'icône étoile</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Changer la couleur de tous les signets</string>
     <string name="category_desc_more">…plus</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -705,6 +708,7 @@
     <string name="moreyear_ago_sorttype">Il y a plus d\'un an</string>
     <string name="near_me_sorttype">Près de moi</string>
     <string name="others_sorttype">Autres</string>
+    <string name="editor_add_select_category_all_subtitle">Toutes les catégories</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Aliments</string>
@@ -866,4 +870,6 @@
     <string name="login_osm_credentials">Connexion avec mot de passe</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Se connecter à l\'aide d\'un navigateur</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Récemment utilisées</string>
 </resources>

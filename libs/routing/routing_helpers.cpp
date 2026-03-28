@@ -14,13 +14,12 @@
 
 namespace routing
 {
-using namespace std;
 using namespace traffic;
 
-void FillSegmentInfo(vector<double> const & times, vector<RouteSegment> & routeSegments)
+void FillSegmentInfo(std::vector<double> const & times, std::vector<RouteSegment> & routeSegments)
 {
   CHECK_EQUAL(times.size(), routeSegments.size(), ());
-  ASSERT(is_sorted(times.cbegin(), times.cend()), ());
+  ASSERT(std::is_sorted(times.cbegin(), times.cend()), ());
 
   if (routeSegments.empty())
     return;
@@ -42,7 +41,7 @@ void FillSegmentInfo(vector<double> const & times, vector<RouteSegment> & routeS
 }
 
 void ReconstructRoute(DirectionsEngine & engine, IndexRoadGraph const & graph, base::Cancellable const & cancellable,
-                      vector<geometry::PointWithAltitude> const & path, vector<double> const & times, Route & route)
+                      RouteJunctions const & path, std::vector<double> const & times, Route & route)
 {
   if (path.empty())
   {
@@ -52,7 +51,7 @@ void ReconstructRoute(DirectionsEngine & engine, IndexRoadGraph const & graph, b
 
   CHECK_EQUAL(path.size(), times.size() + 1, ());
 
-  vector<RouteSegment> routeSegments;
+  std::vector<RouteSegment> routeSegments;
   if (!engine.Generate(graph, path, cancellable, routeSegments))
     return;
 
@@ -62,7 +61,7 @@ void ReconstructRoute(DirectionsEngine & engine, IndexRoadGraph const & graph, b
   FillSegmentInfo(times, routeSegments);
   route.SetRouteSegments(std::move(routeSegments));
 
-  vector<m2::PointD> routeGeometry;
+  std::vector<m2::PointD> routeGeometry;
   JunctionsToPoints(path, routeGeometry);
 
   route.SetGeometry(routeGeometry.begin(), routeGeometry.end());

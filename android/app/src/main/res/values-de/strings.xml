@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">Hell</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">Dunkel</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Hell von der Morgendämmerung bis zur Abenddämmerung</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Schenke Millionen von Nutzern kostenlose und werbefreie Karten!</string>
 
@@ -624,6 +626,7 @@
     <string name="layers_title">Kartenstile und Ebenen</string>
     <string name="bookmarks_empty_list_title">Die Liste ist leer</string>
     <string name="bookmarks_empty_list_message">Zum Hinzufügen eine Lesezeichens tippe in der Karte auf den Ort und dann unten auf das Sternchen</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Farbe aller Lesezeichen ändern</string>
     <string name="category_desc_more">…mehr</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -703,6 +706,7 @@
     <string name="moreyear_ago_sorttype">Vor über einem Jahr</string>
     <string name="near_me_sorttype">In meiner Nähe</string>
     <string name="others_sorttype">Sonstiges</string>
+    <string name="editor_add_select_category_all_subtitle">Alle Kategorien</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Essen</string>
@@ -864,4 +868,6 @@
     <string name="login_osm_credentials">Anmeldung mit Passwort</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Anmeldung über den Browser</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Zuletzt verwendet</string>
 </resources>

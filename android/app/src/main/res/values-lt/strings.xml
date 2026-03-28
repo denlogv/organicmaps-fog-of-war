@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">Šviesi</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">Tamsi</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Šviesi nuo aušros iki sutemų</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Padovanokite nemokamus žemėlapius be skelbimų milijonams vartotojų!</string>
 
@@ -625,6 +627,7 @@
     <string name="layers_title">Žemėlapio stiliai ir sluoksniai</string>
     <string name="bookmarks_empty_list_title">Sąrašas tuščias</string>
     <string name="bookmarks_empty_list_message">Jeigu norite pridėti žymę, bakstelėkite vietą žemėlapyje, o tada – žvaigždutės piktogramą</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Keisti visų žymų spalvą</string>
     <string name="category_desc_more">…daugiau</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -704,6 +707,7 @@
     <string name="moreyear_ago_sorttype">Virš metų senumo</string>
     <string name="near_me_sorttype">Netoliese</string>
     <string name="others_sorttype">Kitkas</string>
+    <string name="editor_add_select_category_all_subtitle">Visos kategorijos</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Maistas</string>
@@ -865,4 +869,6 @@
     <string name="login_osm_credentials">Prisijungimas su slaptažodžiu</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Prisijungimas naudojant naršyklę</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Neseniai naudotas</string>
 </resources>

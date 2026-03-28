@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">浅色</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">深色</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">从黎明到黄昏使用浅色</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">向数百万用户赠送无广告的免费地图！</string>
 
@@ -623,6 +625,7 @@
     <string name="layers_title">地图样式和图层</string>
     <string name="bookmarks_empty_list_title">该列表为空</string>
     <string name="bookmarks_empty_list_message">要添加新书签，请点击对象卡片中的星形图标</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">更改所有书签颜色</string>
     <string name="category_desc_more">…更多</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -702,6 +705,7 @@
     <string name="moreyear_ago_sorttype">一年多以前</string>
     <string name="near_me_sorttype">在我附近</string>
     <string name="others_sorttype">其他</string>
+    <string name="editor_add_select_category_all_subtitle">所有类别</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">美食</string>
@@ -863,4 +867,6 @@
     <string name="login_osm_credentials">使用密码登录</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">使用浏览器登录</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">最近使用</string>
 </resources>

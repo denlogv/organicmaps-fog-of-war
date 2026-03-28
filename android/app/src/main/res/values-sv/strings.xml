@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">Ljust</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">Mörkt</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Ljus från gryning till skymning</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Ge bort gratis kartor utan annonser till miljontals användare!</string>
 
@@ -622,6 +624,7 @@
     <string name="layers_title">Kartstilar och lager</string>
     <string name="bookmarks_empty_list_title">Listan är tom</string>
     <string name="bookmarks_empty_list_message">För att lägga till bokmärken, tryck på kartan och sedan på stjärnikonen</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Ändra färg på alla bokmärken</string>
     <string name="category_desc_more">…mer</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -701,6 +704,7 @@
     <string name="moreyear_ago_sorttype">Över ett år sedan</string>
     <string name="near_me_sorttype">Nära mig</string>
     <string name="others_sorttype">Andra</string>
+    <string name="editor_add_select_category_all_subtitle">Alla kategorier</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Mat</string>
@@ -862,4 +866,6 @@
     <string name="login_osm_credentials">Logga in med lösenord</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Logga in med hjälp av webbläsare</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Senast använda</string>
 </resources>

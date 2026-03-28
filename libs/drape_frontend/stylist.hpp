@@ -13,7 +13,7 @@ class FeatureType;
 namespace df
 {
 
-class IsHatchingTerritoryChecker : public ftypes::BaseChecker
+class IsHatchingTerritoryChecker
 {
   IsHatchingTerritoryChecker();
 
@@ -23,13 +23,21 @@ public:
   std::string_view GetHatch(uint32_t type) const;
   std::string_view GetHatch(feature::TypesHolder const & types) const;
 
-protected:
-  bool IsMatched(uint32_t type) const override { return !GetHatch(type).empty(); }
+  template <class T>
+  bool operator()(T && t) const
+  {
+    return !GetHatch(t).empty();
+  }
 
 private:
-  // BaseChecker::m_types for 45d hatch.
-  std::vector<uint32_t> m_dashTypes;  // for dash hatch
-  size_t m_type3end;
+  // 45d hatch.
+  struct TwoLevel45 : ftypes::BaseCheckerEx
+  {
+    TwoLevel45();
+  } m_2level45;
+  uint32_t m_3level45;
+
+  uint32_t m_2levelDash;  // dash hatch
 };
 
 struct CaptionDescription

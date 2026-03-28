@@ -157,11 +157,76 @@ struct RankingInfo : public StoredRankingInfo
   bool m_nearbyMatch : 1;
 };
 
-PoiType GetPoiType(feature::TypesHolder const & th);
-
 std::string DebugPrint(StoredRankingInfo const & info);
 std::string DebugPrint(RankingInfo const & info);
 
 std::string DebugPrint(PoiType type);
 std::string DebugPrint(StreetType type);
+
+class ResultTypeResolver
+{
+  ftypes::IsEatChecker const & m_isEat = ftypes::IsEatChecker::Instance();
+  ftypes::IsRailwayStationChecker const & m_isRwStation = ftypes::IsRailwayStationChecker::Instance();
+  ftypes::IsSubwayStationChecker const & m_isSbStation = ftypes::IsSubwayStationChecker::Instance();
+  ftypes::IsPublicTransportStopChecker const & m_isPtStop = ftypes::IsPublicTransportStopChecker::Instance();
+  ftypes::IsTaxiChecker const & m_isTaxi = ftypes::IsTaxiChecker::Instance();
+
+  class IsAttractionChecker
+  {
+    std::vector<uint32_t> m_types;
+    IsAttractionChecker();
+
+  public:
+    DECLARE_CHECKER_INSTANCE(IsAttractionChecker);
+
+    bool operator()(feature::TypesHolder const & th) const
+    {
+      // Strict check (unlike in ftypes::BaseCheckerEx) to avoid matching:
+      // - historic-memorial-plaque
+      // - leisure-garden-residential
+      return base::AnyOf(m_types, [&th](uint32_t t) { return th.Has(t); });
+    }
+  };
+  IsAttractionChecker const & m_isAttraction = IsAttractionChecker::Instance();
+
+  struct IsShopOrAmenityChecker : public ftypes::BaseCheckerEx
+  {
+    IsShopOrAmenityChecker();
+    DECLARE_CHECKER_INSTANCE(IsShopOrAmenityChecker);
+  };
+  IsShopOrAmenityChecker const & m_isShopOrAmenity = IsShopOrAmenityChecker::Instance();
+
+  struct IsCarInfraChecker : public ftypes::BaseCheckerEx
+  {
+    IsCarInfraChecker();
+    DECLARE_CHECKER_INSTANCE(IsCarInfraChecker);
+  };
+  IsCarInfraChecker const & m_isCarInfra = IsCarInfraChecker::Instance();
+
+  struct IsServiceTypeChecker : public ftypes::BaseCheckerEx
+  {
+    IsServiceTypeChecker();
+    DECLARE_CHECKER_INSTANCE(IsServiceTypeChecker);
+  };
+  IsServiceTypeChecker const & m_isServiceType = IsServiceTypeChecker::Instance();
+
+  struct IsSkipRegionInfo : public ftypes::BaseCheckerEx
+  {
+    IsSkipRegionInfo();
+    DECLARE_CHECKER_INSTANCE(IsSkipRegionInfo);
+  };
+  IsSkipRegionInfo const & m_isSkipRegion = IsSkipRegionInfo::Instance();
+
+public:
+  PoiType GetPoiType(feature::TypesHolder const & th) const;
+  bool IsSkipRegionInfo(uint32_t t) const { return m_isSkipRegion(t); }
+
+  ftypes::IsAddressChecker const & m_isAddress = ftypes::IsAddressChecker::Instance();
+  ftypes::IsAddressObjectChecker const & m_isAddressObject = ftypes::IsAddressObjectChecker::Instance();
+  ftypes::IsCapitalChecker const & m_isCapital = ftypes::IsCapitalChecker::Instance();
+  ftypes::IsAirportChecker const & m_isAirport = ftypes::IsAirportChecker::Instance();
+  ftypes::IsHotelChecker const & m_isHotel = ftypes::IsHotelChecker::Instance();
+  ftypes::IsBuildingChecker const & m_isBuilding = ftypes::IsBuildingChecker::Instance();
+};
+
 }  // namespace search

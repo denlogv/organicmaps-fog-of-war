@@ -144,7 +144,6 @@ void TileBackgroundRenderer::AssignTileBackgroundTexture(ref_ptr<dp::GraphicsCon
     size_t removedCount = 0;
     auto tileIt = m_tileTextures.begin();
     while (tileIt != m_tileTextures.end())
-    {
       if (tileIt->first.m_zoomLevel != tileKey.m_zoomLevel)
       {
         tileIt->second.m_texturePool->ReleaseTexture(context, tileIt->second.m_textureId);
@@ -153,7 +152,6 @@ void TileBackgroundRenderer::AssignTileBackgroundTexture(ref_ptr<dp::GraphicsCon
       }
       else
         ++tileIt;
-    }
     if (removedCount > 0)
     {
       // Old-zoom tiles cleaned up after all new tiles arrived.
@@ -177,10 +175,8 @@ void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_pt
   sortedTiles.clear();
 
   for (auto const & [tileKey, textureInfo] : m_tileTextures)
-  {
     if (screen.ClipRect().IsIntersect(tileKey.GetGlobalRect()))
       sortedTiles.emplace_back(tileKey, textureInfo);
-  }
 
   if (sortedTiles.empty())
     return;
@@ -204,14 +200,12 @@ void TileBackgroundRenderer::Render(ref_ptr<dp::GraphicsContext> context, ref_pt
     auto const minR = (m2::PointD(r.minX(), r.minY()) - pivot);
     auto const maxR = (m2::PointD(r.maxX(), r.maxY()) - pivot);
     m_programParams.m_tileCoordsMinMax[instanceIndex] = glsl::vec4(
-        static_cast<float>(minR.x), static_cast<float>(minR.y),
-        static_cast<float>(maxR.x), static_cast<float>(maxR.y));
+        static_cast<float>(minR.x), static_cast<float>(minR.y), static_cast<float>(maxR.x), static_cast<float>(maxR.y));
     m_programParams.m_textureIndex[instanceIndex] = static_cast<int>(textureInfo.m_textureId);
 
     auto const tex = textureInfo.m_texturePool->GetTexture(textureInfo.m_textureId);
-    bool const nextTexDiff =
-        (i + 1 < sortedTiles.size() &&
-         tex != sortedTiles[i + 1].second.m_texturePool->GetTexture(sortedTiles[i + 1].second.m_textureId));
+    bool const nextTexDiff = (i + 1 < sortedTiles.size() && tex != sortedTiles[i + 1].second.m_texturePool->GetTexture(
+                                                                       sortedTiles[i + 1].second.m_textureId));
     if ((instanceIndex + 1) == gpu::kTileBackgroundMaxCount || (i + 1 == sortedTiles.size()) || nextTexDiff)
     {
       auto & state = textureInfo.m_texturePool->IsHardwareTexture2dArrayUsed() ? m_stateArray : m_state;

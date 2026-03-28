@@ -125,40 +125,10 @@ android {
     universalApk = true
   }
 
-  def securityPropertiesFile = file('secure.properties')
-  def securityPropertiesFileExists = securityPropertiesFile.exists()
-  def securityProperties = new Properties()
+  def securityPropertiesFileExists = file('secure.properties').exists()
   if (securityPropertiesFileExists) {
-    securityPropertiesFile.withInputStream { securityProperties.load(it) }
+    apply from: 'secure.properties'
   }
-  def loadSecurityProperty = { String name ->
-    def value = securityProperties.getProperty(name)
-    if (value == null) {
-      value = securityProperties.getProperty("ext.${name}")
-    }
-    if (value == null && project.ext.has(name)) {
-      value = project.ext.get(name)
-    }
-    if (value == null && binding.hasVariable(name)) {
-      value = binding.getVariable(name)
-    }
-    if (value == null && project.hasProperty(name)) {
-      value = project.property(name)
-    }
-    if (value != null) {
-      def stringValue = value.toString().trim()
-      if (stringValue.length() >= 2 &&
-          ((stringValue.startsWith('"') && stringValue.endsWith('"')) ||
-           (stringValue.startsWith("'") && stringValue.endsWith("'")))) {
-        return stringValue.substring(1, stringValue.length() - 1)
-      }
-      return stringValue
-    }
-    throw new GradleException("Missing signing property '$name' in secure.properties")
-  }
-  def releaseStorePassword = securityPropertiesFileExists ? loadSecurityProperty('spropStorePassword') : null
-  def releaseKeyAlias = securityPropertiesFileExists ? loadSecurityProperty('spropKeyAlias') : null
-  def releaseKeyPassword = securityPropertiesFileExists ? loadSecurityProperty('spropKeyPassword') : null
 
   signingConfigs {
     debug {
@@ -172,9 +142,9 @@ android {
       if (securityPropertiesFileExists) {
         println('The release signing keys are available')
         storeFile file('release.keystore')
-        storePassword releaseStorePassword
-        keyAlias releaseKeyAlias
-        keyPassword releaseKeyPassword
+        storePassword spropStorePassword
+        keyAlias spropKeyAlias
+        keyPassword spropKeyPassword
       } else {
         println('The release signing keys are unavailable')
       }

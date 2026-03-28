@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">فاتح</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">داكن</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">فاتح من الفجر حتى الغسق</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">اهْدِ خرائط مجانية بدون إعلانات لملايين المستخدمين!</string>
 
@@ -634,6 +636,7 @@
     <string name="layers_title">أنماط الخريطة وطبقاتها</string>
     <string name="bookmarks_empty_list_title">هذه اللائحة فارغة</string>
     <string name="bookmarks_empty_list_message">لإضافة إشارة مرجعية ، اضغط على مكان على الخريطة ثم انقر على رمز النجمة</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">تغيير لون جميع الإشارات المرجعية</string>
     <string name="category_desc_more">…المزيد</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -713,6 +716,7 @@
     <string name="moreyear_ago_sorttype">منذ أكثر من سنة</string>
     <string name="near_me_sorttype">قريب مني</string>
     <string name="others_sorttype">أخرى</string>
+    <string name="editor_add_select_category_all_subtitle">جميع الفئات</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">طعام</string>
@@ -874,4 +878,6 @@
     <string name="login_osm_credentials">تسجيل الدخول باستخدام كلمة المرور</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">تسجيل الدخول باستخدام المتصفح</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">مستخدمة مؤخراً</string>
 </resources>

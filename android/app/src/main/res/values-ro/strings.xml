@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">Luminos</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">Întunecat</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Deschis de la răsărit până la apus</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Oferiți hărți gratuite fără reclame pentru milioane de utilizatori!</string>
 
@@ -619,6 +621,7 @@
     <string name="layers_title">Stiluri și straturi de hartă</string>
     <string name="bookmarks_empty_list_title">Lista este goală</string>
     <string name="bookmarks_empty_list_message">Pentru a adăuga un loc preferat, ține apăsat un loc pe hartă și după aceea atinge simbolul în formă de stea</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Schimbă culoarea tuturor marcajelor</string>
     <string name="category_desc_more">…mai mult</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -698,6 +701,7 @@
     <string name="moreyear_ago_sorttype">Cu mai mult de un an în urmă</string>
     <string name="near_me_sorttype">Lângă mine</string>
     <string name="others_sorttype">Altele</string>
+    <string name="editor_add_select_category_all_subtitle">Toate categoriile</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Mâncare</string>
@@ -845,4 +849,6 @@
     <string name="login_osm_credentials">Autentificare cu parolă</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Conectare folosind browserul</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Folosite recent</string>
 </resources>

@@ -332,6 +332,8 @@
     <string name="pref_appearance_light">בהיר</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">כהה</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">בהיר משחר עד שקיעה</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">העניקו במתנה מפות חינמיות וללא פרסומות למיליוני משתמשים!</string>
 
@@ -604,6 +606,7 @@
     <string name="layers_title">סגנונות ושכבות מפה</string>
     <string name="bookmarks_empty_list_title">רשימה זו ריקה</string>
     <string name="bookmarks_empty_list_message">כדי להוסיף סימניה, לחץ על מקום במפה ואז לחץ על סימן הכוכב</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">שנה צבע של כל הסימניות</string>
     <string name="category_desc_more">…עוד</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -678,6 +681,7 @@
     <string name="moreyear_ago_sorttype">לפני יותר משנה</string>
     <string name="near_me_sorttype">קרוב אלי</string>
     <string name="others_sorttype">אחרים</string>
+    <string name="editor_add_select_category_all_subtitle">כל הקטגוריות</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">אוכל</string>
@@ -823,4 +827,6 @@
     <string name="login_osm_credentials">התחבר עם סיסמה</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">כניסה באמצעות דפדפן</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">בשימוש לאחרונה</string>
 </resources>

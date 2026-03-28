@@ -320,6 +320,8 @@
     <string name="gray">Grys</string>
     <!-- blue gray color -->
     <string name="blue_gray">Blougrys</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">Lig van dagbreek tot skemer</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">Skenk gratis kaarte sonder advertensies aan miljoene gebrui</string>
 
@@ -591,6 +593,7 @@
     <string name="layers_title">Kaartstyle en -lae</string>
     <string name="bookmarks_empty_list_title">Hierdie lys is leeg</string>
     <string name="bookmarks_empty_list_message">Tik op ’n plek op die kaart en dan op die sterikoon om ’n boekmerk toe te voeg</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">Verander kleur van alle boekmerke</string>
     <string name="category_desc_more">…nog</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -662,6 +665,7 @@
     <string name="moreyear_ago_sorttype">Meer as ’n jaar gelede</string>
     <string name="near_me_sorttype">Naby my</string>
     <string name="others_sorttype">Ander</string>
+    <string name="editor_add_select_category_all_subtitle">Kategorieë</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Kos</string>
@@ -774,4 +778,6 @@
     <string name="login_osm_credentials">Aanmelding met wagwoord</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">Teken aan met blaaier</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">Onlangs gebruik</string>
 </resources>

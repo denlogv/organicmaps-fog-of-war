@@ -338,6 +338,8 @@
     <string name="pref_appearance_light">روشن</string>
     <!-- Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. -->
     <string name="pref_appearance_dark">تیره</string>
+    <!-- Settings "Appearance" category: "Scheduled" title, should be consistent with the pref_appearance_title translation. -->
+    <string name="pref_appearance_scheduled">روشن از سپیده‌دم تا غروب</string>
     <!-- Tex label above the Donate button -->
     <string name="donate_description">نقشه‌های رایگان و بدون تبلیغات را به میلیون‌ها کاربر هدیه دهید!</string>
 
@@ -620,6 +622,7 @@
     <string name="layers_title">سبک ها و لایه های نقشه</string>
     <string name="bookmarks_empty_list_title">این فهرست خالی است</string>
     <string name="bookmarks_empty_list_message">برای افزودن یک نشانک، روی یک مکان روی نقشه ضربه بزنید و سپس روی نماد ستاره ضربه بزنید</string>
+    <!-- Button to change the color of all bookmarks in the current list -->
     <string name="change_all_bookmarks_color">تغییر رنگ همه نشانک‌ها</string>
     <string name="category_desc_more">…بیشتر</string>
     <!-- Menu title for exporting a file in the default KMZ format -->
@@ -696,6 +699,7 @@
     <string name="moreyear_ago_sorttype">بیش از یک سال قبل</string>
     <string name="near_me_sorttype">نزدیک من</string>
     <string name="others_sorttype">دیگران</string>
+    <string name="editor_add_select_category_all_subtitle">همه دسته‌بندی‌ها</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">غذا</string>
@@ -853,4 +857,6 @@
     <string name="login_osm_credentials">ورود با رمز عبور</string>
     <!-- Login to OSM button text -->
     <string name="login_osm_browser">ورود با استفاده از مرورگر</string>
+    <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
+    <string name="editor_add_select_category_recent_subtitle">به‌تازگی استفاده شده</string>
 </resources>

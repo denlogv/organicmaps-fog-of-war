@@ -22,25 +22,9 @@
 
 namespace search
 {
-using namespace std;
-
-namespace
-{
-class SkipRegionInfo : public ftypes::BaseChecker
-{
-public:
-  SkipRegionInfo() : ftypes::BaseChecker(2)
-  {
-    Classificator const & c = classif();
-    m_types.push_back(c.GetTypeByPath({"place", "continent"}));
-    m_types.push_back(c.GetTypeByPath({"place", "country"}));
-  }
-};
-}  // namespace
-
 // PreRankerResult ---------------------------------------------------------------------------------
 PreRankerResult::PreRankerResult(FeatureID const & id, PreRankingInfo const & info,
-                                 vector<ResultTracer::Branch> const & provenance)
+                                 std::vector<ResultTracer::Branch> const & provenance)
   : m_id(id)
   , m_info(info)
   , m_isRelaxed(base::IsExist(provenance, ResultTracer::Branch::Relaxed))
@@ -124,7 +108,7 @@ bool PreRankerResult::CategoriesComparator::operator()(PreRankerResult const & l
 
 std::string DebugPrint(PreRankerResult const & r)
 {
-  ostringstream os;
+  std::ostringstream os;
   os << "PreRankerResult "
      << "{ FID: " << r.GetId().m_index  // index is enough here for debug purpose
      << "; m_matchedTokensNumber: " << r.m_matchedTokensNumber << "; m_isRelaxed: " << r.m_isRelaxed << "; "
@@ -133,11 +117,12 @@ std::string DebugPrint(PreRankerResult const & r)
 }
 
 // RankerResult ------------------------------------------------------------------------------------
-RankerResult::RankerResult(FeatureType & ft, m2::PointD const & center, string displayName, string const & fileName)
+RankerResult::RankerResult(FeatureType & ft, m2::PointD const & center, std::string displayName,
+                           std::string const & fileName)
   : m_types(ft)
   , m_str(std::move(displayName))
   , m_id(ft.GetID())
-  , m_resultType(ftypes::IsBuildingChecker::Instance()(m_types) ? Type::Building : Type::Feature)
+  , m_resultType(Type::Feature)
   , m_geomType(ft.GetGeomType())
 {
   ASSERT(m_id.IsValid(), ());
@@ -146,8 +131,6 @@ RankerResult::RankerResult(FeatureType & ft, m2::PointD const & center, string d
   m_types.SortBySpec();
 
   m_region.SetParams(fileName, center);
-
-  FillDetails(ft, m_str, m_details);
 }
 
 RankerResult::RankerResult(FeatureType & ft, std::string const & fileName)
@@ -161,7 +144,7 @@ RankerResult::RankerResult(double lat, double lon)
   m_region.SetParams({}, mercator::FromLatLon(lat, lon));
 }
 
-RankerResult::RankerResult(m2::PointD const & coord, string_view postcode)
+RankerResult::RankerResult(m2::PointD const & coord, std::string_view postcode)
   : m_str(postcode)
   , m_resultType(Type::Postcode)
 {
@@ -171,9 +154,6 @@ RankerResult::RankerResult(m2::PointD const & coord, string_view postcode)
 
 bool RankerResult::GetCountryId(storage::CountryInfoGetter const & infoGetter, storage::CountryId & countryId) const
 {
-  static SkipRegionInfo checker;
-  if (checker(GetBestType()))
-    return false;
   return m_region.GetCountryId(infoGetter, countryId);
 }
 
@@ -187,18 +167,13 @@ bool RankerResult::IsEqualCommon(RankerResult const & r) const
   return (IsEqualBasic(r) && GetBestType() == r.GetBestType());
 }
 
-bool RankerResult::IsStreet() const
-{
-  return ftypes::IsStreetOrSquareChecker::Instance()(m_types);
-}
-
-uint32_t RankerResult::GetBestType(vector<uint32_t> const * preferredTypes /* = nullptr */) const
+uint32_t RankerResult::GetBestType(std::vector<uint32_t> const * preferredTypes /* = nullptr */) const
 {
   if (preferredTypes)
   {
-    ASSERT(is_sorted(preferredTypes->begin(), preferredTypes->end()), ());
+    ASSERT(std::is_sorted(preferredTypes->begin(), preferredTypes->end()), ());
     for (uint32_t type : m_types)
-      if (binary_search(preferredTypes->begin(), preferredTypes->end(), type))
+      if (std::binary_search(preferredTypes->begin(), preferredTypes->end(), type))
         return type;
   }
 
@@ -225,11 +200,10 @@ bool RankerResult::RegionInfo::GetCountryId(storage::CountryInfoGetter const & i
   return false;
 }
 
-// Functions ---------------------------------------------------------------------------------------
-void FillDetails(FeatureType & ft, std::string const & name, Result::Details & details)
+void RankerResult::FillDetails(FeatureType & ft, bool isBuilding, bool isHotel)
 {
-  if (details.m_isInitialized)
-    return;
+  if (isBuilding)
+    m_resultType = Type::Building;
 
   std::string_view airportIata = ft.GetMetadata(feature::Metadata::FMD_AIRPORT_IATA);
 
@@ -237,7 +211,7 @@ void FillDetails(FeatureType & ft, std::string const & name, Result::Details & d
   if (!brand.empty())
     brand = platform::GetLocalizedBrandName(brand);
 
-  if (name == brand)
+  if (m_str == brand)
     brand.clear();
 
   /// @todo Avoid temporary string when OpeningHours (boost::spirit) will allow string_view.
@@ -253,10 +227,10 @@ void FillDetails(FeatureType & ft, std::string const & name, Result::Details & d
       if (info.state != RuleState::Unknown)
       {
         // In else case value is osm::Unknown, it's set in preview's constructor.
-        details.m_isOpenNow = (info.state == RuleState::Open) ? osm::Yes : osm::No;
+        m_details.m_isOpenNow = (info.state == RuleState::Open) ? osm::Yes : osm::No;
 
-        details.m_minutesUntilOpen = (info.nextTimeOpen - now) / 60;
-        details.m_minutesUntilClosed = (info.nextTimeClosed - now) / 60;
+        m_details.m_minutesUntilOpen = (info.nextTimeOpen - now) / 60;
+        m_details.m_minutesUntilClosed = (info.nextTimeClosed - now) / 60;
       }
     }
   }
@@ -265,7 +239,6 @@ void FillDetails(FeatureType & ft, std::string const & name, Result::Details & d
 
   std::string stars;
   uint8_t starsCount = 0;
-  bool const isHotel = ftypes::IsHotelChecker::Instance()(typesHolder);
   if (isHotel && strings::to_uint(ft.GetMetadata(feature::Metadata::FMD_STARS), starsCount))
     stars = feature::FormatStars(starsCount);
 
@@ -308,14 +281,12 @@ void FillDetails(FeatureType & ft, std::string const & name, Result::Details & d
   append(capacity);
   append(level);
 
-  details.m_description = std::move(description);
-
-  details.m_isInitialized = true;
+  m_details.m_description = std::move(description);
 }
 
-string DebugPrint(RankerResult const & r)
+std::string DebugPrint(RankerResult const & r)
 {
-  stringstream ss;
+  std::stringstream ss;
   ss << "RankerResult "
      << "{ FID: " << r.GetID().m_index  // index is enough here for debug purpose
      << "; Name: " << r.GetName() << "; Type: " << classif().GetReadableObjectName(r.GetBestType())
