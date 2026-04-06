@@ -159,7 +159,9 @@ public:
     void SetCategoryTags(kml::MarkGroupId categoryId, std::vector<std::string> const & tags);
     void SetCategoryAccessRules(kml::MarkGroupId categoryId, kml::AccessRules accessRules);
     void SetCategoryCustomProperty(kml::MarkGroupId categoryId, std::string const & key, std::string const & value);
-    void SetCategoryBookmarksColor(kml::MarkGroupId groupId, size_t colorIndex);
+    void SetCategoryBookmarksColor(kml::MarkGroupId groupId, kml::PredefinedColor color);
+    /// @todo(KK) Update to the dp::Color color when custom colors for tracks will be implemented on android.
+    void SetCategoryTracksColor(kml::MarkGroupId groupId, kml::PredefinedColor color);
 
     /// Removes the category from the list of categories and deletes the related file.
     /// @param permanently If true, the file will be removed from the disk. If false, the file will be marked as deleted
@@ -433,6 +435,13 @@ public:
   dp::Color GenerateTrackRecordingColor() const;
 
   kml::TrackId SaveRoute(kml::TrackGeometry points, std::string const & from, std::string const & to);
+
+  static kml::TrackId constexpr kTempRelationTrackId = kml::kInvalidTrackId - 1;
+
+  /// Creates a temporary track from relation data. Replaces any previous temp track.
+  kml::TrackId SetTempRelationTrack(kml::TrackData && trackData);
+  /// Removes the current temporary relation track, if any.
+  void ClearTempRelationTrack();
 
   void UpdateBookmarksTextPlacement();
 
@@ -762,6 +771,7 @@ private:
   MarksCollection m_userMarks;
   BookmarksCollection m_bookmarks;
   TracksCollection m_tracks;
+  std::unique_ptr<Track> m_tempRelationTrack;
 
   StaticMarkPoint * m_selectionMark = nullptr;
   MyPositionMarkPoint * m_myPositionMark = nullptr;

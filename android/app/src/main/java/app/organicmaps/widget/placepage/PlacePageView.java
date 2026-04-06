@@ -155,6 +155,9 @@ public class PlacePageView extends Fragment
   private MaterialButton mShareButton;
   private MaterialButton closeButton;
 
+  @Nullable
+  private Observer<String> mTrackRecordingObserver;
+
   // Data
   private CoordinatesFormat mCoordsFormat = CoordinatesFormat.LatLonDecimal;
   // Downloader`s stuff
@@ -508,9 +511,11 @@ public class PlacePageView extends Fragment
     else if (mMapObject.isTrackRecording())
     {
       TrackRecording trackRecording = (TrackRecording) mMapObject;
-      trackRecording.getTrackRecordingPPDescription().observe(requireActivity(), s -> {
-        UiUtils.setTextAndHideIfEmpty(mTvTitle, trackRecording.getTrackRecordingPPDescription().getValue());
-      });
+      final var liveData = trackRecording.getTrackRecordingPPDescription();
+      if (mTrackRecordingObserver != null)
+        liveData.removeObserver(mTrackRecordingObserver);
+      mTrackRecordingObserver = s -> UiUtils.setTextAndHideIfEmpty(mTvTitle, s);
+      liveData.observe(getViewLifecycleOwner(), mTrackRecordingObserver);
       UiUtils.hide(mAvDirection, mTvDistance);
     }
   }
@@ -518,13 +523,16 @@ public class PlacePageView extends Fragment
   void refreshCategoryPreview()
   {
     View categoryContainer = mFrame.findViewById(R.id.category_container);
+    boolean showCategory;
     if (mMapObject.isTrack())
     {
       Track track = (Track) mMapObject;
       Drawable circle = Graphics.drawCircle(track.getColor(), R.dimen.place_page_icon_background_size,
                                             requireContext().getResources());
       mColorIcon.setImageDrawable(circle);
-      mTvCategory.setText(BookmarkManager.INSTANCE.getCategoryById(track.getCategoryId()).getName());
+      showCategory = !track.isTempRelationTrack();
+      if (showCategory)
+        mTvCategory.setText(BookmarkManager.INSTANCE.getCategoryById(track.getCategoryId()).getName());
     }
     else if (mMapObject.isBookmark())
     {
@@ -537,8 +545,11 @@ public class PlacePageView extends Fragment
         mColorIcon.setImageDrawable(circle);
         mTvCategory.setText(BookmarkManager.INSTANCE.getCategoryById(bookmark.getCategoryId()).getName());
       }
+      showCategory = true;
     }
-    UiUtils.showIf(mMapObject.isTrack() || mMapObject.isBookmark(), categoryContainer);
+    else
+      showCategory = false;
+    UiUtils.showIf(showCategory, categoryContainer);
   }
 
   void showColorDialog()

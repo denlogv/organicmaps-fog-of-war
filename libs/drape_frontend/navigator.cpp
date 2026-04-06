@@ -19,7 +19,9 @@ void Navigator::SetFromScreen(ScreenBase const & screen)
 
 void Navigator::SetFromScreen(ScreenBase const & screen, uint32_t tileSize, double visualScale)
 {
-  ScreenBase tmp = ScaleInto(screen, df::GetWorldRect());
+  ScreenBase tmp = screen;
+  if (!CheckBorders(tmp))
+    ScaleInto(tmp, df::GetWorldRect());
 
   if (!CheckMaxScale(tmp, tileSize, visualScale))
   {
@@ -71,10 +73,10 @@ void Navigator::OnSize(int w, int h)
   m2::RectD const & worldR = df::GetWorldRect();
 
   m_Screen.OnSize(0, 0, w, h);
-  m_Screen = ShrinkAndScaleInto(m_Screen, worldR);
+  ShrinkAndScaleInto(m_Screen, worldR);
 
   m_StartScreen.OnSize(0, 0, w, h);
-  m_StartScreen = ShrinkAndScaleInto(m_StartScreen, worldR);
+  ShrinkAndScaleInto(m_StartScreen, worldR);
 }
 
 m2::PointD Navigator::GtoP(m2::PointD const & pt) const
@@ -104,31 +106,27 @@ void Navigator::DoDrag(m2::PointD const & pt)
   if (m_LastPt1 == pt)
     return;
 
-  ScreenBase const s = ShrinkInto(m_StartScreen, df::GetWorldRect());
+  ShrinkInto(m_StartScreen, df::GetWorldRect());
 
   double dx = pt.x - m_StartPt1.x;
   double dy = pt.y - m_StartPt1.y;
 
-  ScreenBase tmp = s;
-  tmp.Move(dx, 0);
-  if (!CheckBorders(tmp))
-    dx = 0;
-
-  tmp = s;
-  tmp.Move(0, dy);
-  if (!CheckBorders(tmp))
-    dy = 0;
-
-  tmp = s;
-  tmp.Move(dx, dy);
-
-  if (CheckBorders(tmp))
+  // X is unconstrained (world wraps horizontally) — only test Y drag against pole boundaries.
   {
-    m_StartScreen = tmp;
-    m_StartPt1 = pt;
-    m_LastPt1 = pt;
-    m_Screen = tmp;
+    ScreenBase tmp = m_StartScreen;
+    tmp.Move(0, dy);
+    if (!CheckBorders(tmp))
+      dy = 0;
   }
+
+  m_StartScreen.Move(dx, dy);
+  // Clamp Y back within pole boundaries. Move() can introduce tiny floating-point drift in Y
+  // even for horizontal-only drags, which would make CheckBorders fail at the exact Y boundary.
+  ShrinkInto(m_StartScreen, df::GetWorldRect());
+
+  m_StartPt1 = pt;
+  m_LastPt1 = pt;
+  m_Screen = m_StartScreen;
 }
 
 void Navigator::StopDrag(m2::PointD const & pt)
@@ -198,14 +196,14 @@ bool Navigator::ScaleImpl(m2::PointD const & newPt1, m2::PointD const & newPt2, 
   if (!skipMinScaleAndBordersCheck && !CheckBorders(tmp))
   {
     if (CanShrinkInto(tmp, worldR))
-      tmp = ShrinkInto(tmp, worldR);
+      ShrinkInto(tmp, worldR);
     else
       return false;
   }
 
-  // re-checking the borders, as we might violate them a bit (don't know why).
+  // ShrinkInto may slightly overshoot Y bounds due to floating-point rounding.
   if (!CheckBorders(tmp))
-    tmp = ScaleInto(tmp, worldR);
+    ScaleInto(tmp, worldR);
 
   screen = tmp;
   return true;

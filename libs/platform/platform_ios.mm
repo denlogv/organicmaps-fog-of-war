@@ -11,6 +11,7 @@
 
 #include <utility>
 
+#include <fcntl.h>
 #include <ifaddrs.h>
 
 #include <mach/mach.h>
@@ -155,9 +156,7 @@ std::string Platform::DeviceModel() const
   utsname systemInfo;
   uname(&systemInfo);
   NSString * deviceModel = @(systemInfo.machine);
-  if (auto m = platform::kDeviceModelsBeforeMetalDriver[deviceModel])
-    deviceModel = m;
-  else if (auto m = platform::kDeviceModelsWithiOS10MetalDriver[deviceModel])
+  if (auto m = platform::kDeviceModelsWithiOS10MetalDriver[deviceModel])
     deviceModel = m;
   else if (auto m = platform::kDeviceModelsWithMetalDriver[deviceModel])
     deviceModel = m;
@@ -268,6 +267,15 @@ time_t Platform::GetFileModificationTime(std::string const & path)
   if (0 == stat(path.c_str(), &st))
     return st.st_mtimespec.tv_sec;
   return 0;
+}
+
+// static
+bool Platform::SetFileModificationTime(std::string const & path, time_t modTime)
+{
+  struct timespec times[2] = {};
+  times[0].tv_nsec = UTIME_OMIT;  // access time: unchanged
+  times[1].tv_sec = modTime;      // modification time
+  return utimensat(AT_FDCWD, path.c_str(), times, 0) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////

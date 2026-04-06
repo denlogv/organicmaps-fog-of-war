@@ -651,6 +651,12 @@
 "button_layer_subway" = "지하철";
 "layers_title" = "맵 스타일 및 레이어";
 
+/* Button to change the color of all bookmarks in the current list */
+"change_all_bookmarks_color" = "모든 북마크 색상 변경";
+
+/* Button to change the color of all tracks in the current list */
+"change_all_tracks_color" = "모든 트랙 색상 변경";
+
 /* Menu title for exporting a file in the default KMZ format */
 "export_file" = "KMZ 내보내기";
 
@@ -745,9 +751,9 @@
 /* Place Page opening hours text */
 "closed_now" = "지금 닫힘";
 "opens_tomorrow_at" = "내일 %@에 오픈";
-"opens_dayoftheweek_at" = "2$@에서 %1$@을(를) 엽니다.";
-"opens_at" = "에서 열림 %@";
-"closes_at" = "에서 닫힘";
+"opens_dayoftheweek_at" = "%2$@에서 %1$@을(를) 엽니다.";
+"opens_at" = "%@에 열림";
+"closes_at" = "%@에 닫힘";
 "add_opening_hours" = "영업일 추가";
 "password_8_chars_min" = "암호(최소 8자)";
 "invalid_username_or_password" = "잘못된 사용자 이름 또는 암호.";
@@ -1119,3 +1125,9 @@
 
 /* Editor section title that shows recently used categories (types of objects) when adding a place on the map */
 "editor_add_select_category_recent_subtitle" = "최근 사용";
+
+/* Toast message shown when bookmark colors are changed in category settings */
+"toast_bookmarks_color_changed" = "북마크 색상이 변경됨";
+
+/* Toast message shown when track colors are changed in category settings */
+"toast_tracks_color_changed" = "트랙 색상이 변경됨";

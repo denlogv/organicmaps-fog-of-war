@@ -86,7 +86,7 @@ NSString * const kSettingsSegue = @"Map2Settings";
 @property(nonatomic) BOOL disableStandbyOnLocationStateMode;
 
 @property(nonatomic) UserTouchesAction userTouchesAction;
-@property(nonatomic) CGPoint pointerLocation API_AVAILABLE(ios(14.0));
+@property(nonatomic) CGPoint pointerLocation;
 @property(nonatomic) CGFloat currentScale;
 @property(nonatomic) CGFloat currentRotation;
 @property(nonatomic) NSMapTable<NSObject *, NSValue *> * availableAreaInsetsMap;
@@ -467,14 +467,12 @@ NSString * const kSettingsSegue = @"Map2Settings";
   [self setupPlacePageContainer];
   [self setupSearchContainer];
 
-  if (@available(iOS 14.0, *))
-    [self setupTrackPadGestureRecognizers];
+  [self setupTrackPadGestureRecognizers];
 
   self.title = L(@"map");
 
-  // On iOS 10 (it was reproduced, it may be also on others), mapView can be uninitialized
-  // when onGetFocus is called, it can lead to missing of onGetFocus call and a deadlock on the start.
-  // As soon as mapView must exist before onGetFocus, so we have to defer onGetFocus call.
+  // mapView can be uninitialized when onGetFocus is called, which can lead to missing
+  // the onGetFocus call and a deadlock on start. Defer the call until mapView exists.
   if (self.needDeferFocusNotification)
     [self onGetFocus:self.deferredFocusValue];
 
@@ -546,7 +544,7 @@ NSString * const kSettingsSegue = @"Map2Settings";
   [MapsAppDelegate customizeAppearance];
 }
 
-- (void)setupTrackPadGestureRecognizers API_AVAILABLE(ios(14.0))
+- (void)setupTrackPadGestureRecognizers
 {
   if (!NSProcessInfo.processInfo.isiOSAppOnMac)
     return;
@@ -1034,9 +1032,8 @@ NSString * const kSettingsSegue = @"Map2Settings";
                  discoverabilityTitle:@"Switch position mode"]
   ];
 
-  if (@available(iOS 15, *))
-    for (UIKeyCommand * command in commands)
-      command.wantsPriorityOverSystemBehavior = YES;
+  for (UIKeyCommand * command in commands)
+    command.wantsPriorityOverSystemBehavior = YES;
 
   return commands;
 }
@@ -1129,7 +1126,7 @@ NSString * const kSettingsSegue = @"Map2Settings";
 
 // MARK: - Handle macOS trackpad gestures
 
-- (void)handlePan:(UIPanGestureRecognizer *)recognizer API_AVAILABLE(ios(14.0))
+- (void)handlePan:(UIPanGestureRecognizer *)recognizer
 {
   switch (recognizer.state)
   {
@@ -1151,7 +1148,7 @@ NSString * const kSettingsSegue = @"Map2Settings";
   }
 }
 
-- (void)handlePinch:(UIPinchGestureRecognizer *)recognizer API_AVAILABLE(ios(14.0))
+- (void)handlePinch:(UIPinchGestureRecognizer *)recognizer
 {
   switch (recognizer.state)
   {
@@ -1171,7 +1168,7 @@ NSString * const kSettingsSegue = @"Map2Settings";
   }
 }
 
-- (void)handleRotation:(UIRotationGestureRecognizer *)recognizer API_AVAILABLE(ios(14.0))
+- (void)handleRotation:(UIRotationGestureRecognizer *)recognizer
 {
   switch (recognizer.state)
   {
@@ -1191,12 +1188,12 @@ NSString * const kSettingsSegue = @"Map2Settings";
   }
 }
 
-- (void)handlePointerHover:(UIHoverGestureRecognizer *)recognizer API_AVAILABLE(ios(14.0))
+- (void)handlePointerHover:(UIHoverGestureRecognizer *)recognizer
 {
   self.pointerLocation = [recognizer locationInView:self.view];
 }
 
-- (m2::PointD)getZoomPoint API_AVAILABLE(ios(14.0))
+- (m2::PointD)getZoomPoint
 {
   CGFloat const scale = [UIScreen mainScreen].scale;
   return m2::PointD(self.pointerLocation.x * scale, self.pointerLocation.y * scale);
