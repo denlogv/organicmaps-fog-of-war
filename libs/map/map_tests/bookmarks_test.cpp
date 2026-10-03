@@ -2559,6 +2559,7 @@ UNIT_CLASS_TEST(Runner, Bookmarks_GroupAndIndividualVisibilityIndependent)
   bmManager.GetEditSession().SetIsVisible(groupId, true);
   TEST(!bmManager.GetTrack(trackId)->IsVisible(),
        ("Individually hidden track must stay hidden after group show/hide cycle"));
+}
 
 UNIT_CLASS_TEST(Runner, DeleteTrackSegment_MiddlePortion)
 {
