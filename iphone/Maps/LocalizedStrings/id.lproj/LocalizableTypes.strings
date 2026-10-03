@@ -21,7 +21,7 @@
 "type.aeroway.runway" = "Runway";
 "type.aeroway.taxiway" = "Taxiway";
 "type.aeroway.terminal" = "Terminal";
-"type.amenity" = "Ruang berfasilitas";
+"type.amenity" = "Fasilitas";
 "type.amenity.arts_centre" = "Pusat kesenian";
 "type.amenity.atm" = "ATM";
 "type.amenity.bank" = "Bank";
@@ -33,7 +33,7 @@
 "type.amenity.bicycle_rental" = "Penyewaan Sepeda";
 "type.amenity.bicycle_repair_station" = "Bicycle Repair Station";
 "type.amenity.biergarten" = "Biergarten";
-"type.amenity.brothel" = "Hiburan";
+"type.amenity.brothel" = "Bordil";
 "type.amenity.love_hotel" = "Love Hotel";
 "type.amenity.bureau_de_change" = "Pertukaran valuta";
 "type.amenity.bus_station" = "Stasiun bus";
@@ -42,7 +42,7 @@
 "type.amenity.motorcycle_rental" = "Penyewaan Sepeda Motor";
 "type.amenity.car_sharing" = "Berbagi mobil";
 "type.amenity.car_wash" = "Cuci Mobil";
-"type.amenity.casino" = "Hiburan";
+"type.amenity.casino" = "Kasino";
 "type.amenity.gambling" = "Berjudi";
 "type.leisure.adult_gaming_centre" = "Pusat Permainan Dewasa";
 "type.leisure.amusement_arcade" = "Arkade";
@@ -54,7 +54,7 @@
 "type.amenity.studio" = "Studio";
 "type.leisure.bowling_alley" = "Arena Bowling";
 "type.amenity.clinic" = "Klinik";
-"type.amenity.college" = "Kampus";
+"type.amenity.college" = "Perguruan tinggi";
 "type.amenity.community_centre" = "Pusat komunitas";
 "type.amenity.compressed_air" = "Udara terkompresi";
 "type.amenity.conference_centre" = "Pusat konferensi";
@@ -82,7 +82,7 @@
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
 "type.amenity.grave_yard.christian" = "Pemakaman";
 "type.amenity.hospital" = "Rumahsakit";
-"type.amenity.hunting_stand" = "Lokasi berburu";
+"type.amenity.hunting_stand" = "Pos berburu";
 "type.amenity.ice_cream" = "Kios Es Krim";
 "type.amenity.internet_cafe" = "Kafe Internet";
 "type.amenity.kindergarten" = "Taman kanak-kanak";
@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Alamat";
+"type.building.construction" = "Bangunan dalam pembangunan";
 "type.building.has_parts" = "Gedung";
 "type.building_part" = "Gedung";
 "type.building.garage" = "Garasi";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Masakan mediterania";
 "type.cuisine.mexican" = "Masakan meksiko";
 "type.cuisine.moroccan" = "Masakan maroko";
-"type.cuisine.noodles" = "Bakmi";
+"type.cuisine.noodle" = "Bakmi";
 "type.cuisine.oriental" = "Masakan oriental";
 "type.cuisine.pancake" = "Panekuk";
 "type.cuisine.pasta" = "Pasta";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Sosis";
 "type.cuisine.savory_pancakes" = "Panekuk gurih";
 "type.cuisine.seafood" = "Hidangan laut";
+"type.cuisine.shawarma" = "Syawarma";
 "type.cuisine.soba" = "Soba";
 "type.cuisine.spanish" = "Masakan spanyol";
 "type.cuisine.steak_house" = "Restoran_steik";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Istana Jepang";
 "type.historic.castle.stately" = "Kastel";
 "type.historic.city_gate" = "Gerbang kota";
+"type.man_made.ceremonial_gate" = "Gerbang Upacara";
 "type.historic.citywalls" = "Tembok Kota";
 "type.historic.fort" = "Benteng";
 "type.historic.gallows" = "Tiang gantungan";
@@ -715,7 +718,8 @@
 "type.junction.roundabout" = "Roundabout";
 "type.landuse" = "Landuse";
 "type.landuse.allotments" = "Allotments";
-"type.landuse.basin" = "Sebuah baskom air";
+"type.landuse.basin" = "Kolam tampungan";
+"type.landuse.basin.intermittent" = "Kolam tampungan sementara";
 "type.landuse.brownfield" = "Brownfield";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Quarry";
 "type.landuse.railway" = "Stasiun kereta api";
 "type.landuse.recreation_ground" = "Recreation Ground";
-"type.landuse.reservoir" = "Air";
 "type.landuse.residential" = "Residential Area";
 "type.landuse.retail" = "Retail Area";
 "type.landuse.salt_pond" = "Salt Pond";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Ice Rink";
 "type.leisure.marina" = "Marina";
 "type.leisure.nature_reserve" = "Cagar Alam";
+"type.leisure.bird_hide" = "Tempat pengamatan burung";
 "type.leisure.outdoor_seating" = "Tempat duduk di luar ruangan";
 "type.leisure.firepit" = "Firepit";
 "type.leisure.park" = "Taman";
@@ -788,8 +792,8 @@
 "type.leisure.stadium" = "Stadion";
 "type.leisure.swimming_pool" = "Kolam renang";
 "type.leisure.swimming_pool.private" = "Kolam renang";
-"type.leisure.track" = "Track";
-"type.leisure.track.area" = "Track";
+"type.leisure.track" = "Lintasan olahraga";
+"type.leisure.track.area" = "Lintasan olahraga";
 "type.leisure.water_park" = "Taman air";
 "type.leisure.beach_resort" = "Beach Resort";
 "type.man_made" = "Man Made";
@@ -867,12 +871,15 @@
 "type.natural.water.lock" = "Ruang Kunci";
 "type.natural.water.pond" = "Kolam";
 "type.natural.water.reservoir" = "Waduk";
-"type.natural.water.basin" = "Sebuah baskom air";
+"type.natural.water.basin" = "Kolam tampungan";
 "type.natural.water.river" = "Sungai";
+"type.natural.water.intermittent" = "Perairan sementara";
 "type.natural.land" = "Daratan";
 "type.natural.meadow" = "Padang rumput";
 "type.natural.orchard" = "Kebun";
 "type.natural.peak" = "Puncak";
+"type.natural.hill" = "Bukit";
+"type.natural.arch" = "Lengkungan Batu";
 "type.natural.saddle" = "Pelana Gunung";
 "type.natural.rock" = "Batu";
 "type.natural.scrub" = "Semak";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Baris pohon";
 "type.natural.vineyard" = "Kebun anggur";
 "type.natural.volcano" = "Gunung berapi";
+"type.natural.volcano.active" = "Gunung Berapi Aktif";
 "type.natural.water" = "Perairan";
 "type.natural.wetland" = "Area lahan basah";
 "type.natural.wetland.bog" = "Rawa gambut";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Hoki Lapangan";
 "type.sport.badminton" = "Bulu tangkis";
 "type.sport.pelota" = "Basque pelota";
+"type.sport.boules" = "Pétanque";
+"type.sport.cycling" = "Bersepeda";
+"type.sport.four_square" = "Empat kotak";
+"type.sport.horse_racing" = "Pacuan kuda";
+"type.sport.karting" = "Karting";
+"type.sport.motocross" = "Motokros";
+"type.sport.motor" = "Olahraga otomotif";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Rugbi";
+"type.sport.running" = "Lari";
+"type.sport.softball" = "Sofbol";
 "type.tourism" = "Tourism";
 "type.tourism.aquarium" = "Akuarium";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Atraksi bersejarah";
 "type.attraction.maze" = "Labirin";
 "type.attraction.roller_coaster" = "Roller Coaster";
+"type.roller_coaster.track" = "Roller Coaster";
 "type.attraction.water_slide" = "Seluncuran Air";
 "type.tourism.attraction.specified" = "Atraksi";
 "type.tourism.camp_site" = "Perkemahan";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Traffic Bump";
 "type.traffic_calming.hump" = "Traffic Hump";
 "type.waterway" = "Waterway";
+"type.waterway.access_point" = "Titik Akses Jalur Air";
 "type.waterway.canal" = "Kanal";
 "type.waterway.canal.tunnel" = "Kanal";
 "type.waterway.fish_pass" = "Tangga ikan";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Fasilitas Sosial";
+"type.amenity.stage" = "Panggung";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Pintu Masuk Bangsal Darurat";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Pembuat jam tangan";
 "type.xmas_feature.market" = "Pasar Natal";
 "type.xmas_feature.tree" = "Pohon Natal";
+"type.amenity.hookah_lounge" = "Kafe Shisha";

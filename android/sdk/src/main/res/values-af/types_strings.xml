@@ -134,7 +134,7 @@
     <string name="type.recycling.shoes">Skoene</string>
     <string name="type.recycling.green_waste">Groen-/organiese afval</string>
     <string name="type.recycling.cartons">Drankverpakking</string>
-    <string name="type.amenity.restaurant">Restourant</string>
+    <string name="type.amenity.restaurant">Restaurant</string>
     <string name="type.amenity.sanitary_dump_station">Opgaartenkstortstasie</string>
     <string name="type.amenity.school">Skool</string>
     <!-- Weather shelter (including sun shelters and natural rock shelters). -->
@@ -210,6 +210,7 @@
     <string name="type.building">Gebou</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Adres</string>
+    <string name="type.building.construction">Gebou in aanbou</string>
     <string name="type.building.has_parts">Gebou</string>
     <string name="type.building_part">Gebou</string>
     <string name="type.building.garage">Motorhawe</string>
@@ -298,7 +299,7 @@
     <string name="type.cuisine.mediterranean">Mediterreens</string>
     <string name="type.cuisine.mexican">Meksikaans</string>
     <string name="type.cuisine.moroccan">Marokkaans</string>
-    <string name="type.cuisine.noodles">Noedels</string>
+    <string name="type.cuisine.noodle">Noedels</string>
     <string name="type.cuisine.oriental">Oosters</string>
     <string name="type.cuisine.pancake">Pannekoek</string>
     <string name="type.cuisine.pasta">Pasta</string>
@@ -534,6 +535,7 @@
     <string name="type.historic.castle.shiro">Japanse kasteel</string>
     <string name="type.historic.castle.stately">Landhuis</string>
     <string name="type.historic.city_gate">Stadspoort</string>
+    <string name="type.man_made.ceremonial_gate">Seremoniepoort</string>
     <string name="type.historic.citywalls">Stadsmuur</string>
     <string name="type.historic.fort">Fort</string>
     <string name="type.historic.gallows">Galg</string>
@@ -562,6 +564,7 @@
     <string name="type.landuse">Grondgebruik</string>
     <string name="type.landuse.allotments">Tuinplotte</string>
     <string name="type.landuse.basin">Vanggebied</string>
+    <string name="type.landuse.basin.intermittent">Tydelike vanggebied</string>
     <string name="type.landuse.brownfield">Natuurlike bruin</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Begraafplaas</string>
@@ -591,7 +594,6 @@
     <string name="type.landuse.quarry">Steengroef</string>
     <string name="type.landuse.railway">Spoorwegfasiliteite</string>
     <string name="type.landuse.recreation_ground">Ontspanningsone</string>
-    <string name="type.landuse.reservoir">Reservoir</string>
     <string name="type.landuse.residential">Woongebied</string>
     <string name="type.landuse.retail">Handelsgebied</string>
     <string name="type.landuse.salt_pond">Soutpoel</string>
@@ -610,6 +612,7 @@
     <string name="type.leisure.ice_rink">Ysskaatsbaan</string>
     <string name="type.leisure.marina">Jaghawe</string>
     <string name="type.leisure.nature_reserve">Natuurreservaat</string>
+    <string name="type.leisure.bird_hide">Voëlskuiling</string>
     <string name="type.leisure.park">Park</string>
     <string name="type.leisure.park.no.access">Park</string>
     <string name="type.leisure.park.permissive">Park</string>
@@ -691,10 +694,13 @@
     <string name="type.natural.water.reservoir">Reservoir</string>
     <string name="type.natural.water.basin">Vanggebied</string>
     <string name="type.natural.water.river">Rivier</string>
+    <string name="type.natural.water.intermittent">Tydelike water</string>
     <string name="type.natural.land">Land</string>
     <string name="type.natural.meadow">Weiland</string>
     <string name="type.natural.orchard">Boord</string>
     <string name="type.natural.peak">Piek</string>
+    <string name="type.natural.hill">Heuwel</string>
+    <string name="type.natural.arch">Rotsboog</string>
     <string name="type.natural.saddle">Bergsaal</string>
     <string name="type.natural.rock">Klip</string>
     <string name="type.natural.scrub">Ruigte</string>
@@ -704,6 +710,7 @@
     <string name="type.natural.tree_row">Boomry</string>
     <string name="type.natural.vineyard">Wingerd</string>
     <string name="type.natural.volcano">Vulkaan</string>
+    <string name="type.natural.volcano.active">Aktiewe vulkaan</string>
     <string name="type.natural.water">Water</string>
     <string name="type.natural.wetland">Moerasland</string>
     <string name="type.natural.wetland.bog">Vlei</string>
@@ -1234,6 +1241,18 @@
     <string name="type.sport.field_hockey">Hokkie</string>
     <string name="type.sport.badminton">Pluimbal</string>
     <string name="type.sport.pelota">Baskiese peloton</string>
+    <string name="type.sport.boules">Boule</string>
+    <string name="type.sport.cycling">Fietsry</string>
+    <string name="type.sport.four_square">Vierkantbal</string>
+    <string name="type.sport.horse_racing">Perdewedrenne</string>
+    <string name="type.sport.karting">Karting</string>
+    <string name="type.sport.motocross">Motocross</string>
+    <string name="type.sport.motor">Motorsport</string>
+    <string name="type.sport.netball">Netbal</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Rugbyunie</string>
+    <string name="type.sport.running">Hardloop</string>
+    <string name="type.sport.softball">Sagtebal</string>
     <string name="type.tourism">Toerisme</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
     <string name="type.tourism.alpine_hut">Berg lodge</string>
@@ -1250,6 +1269,7 @@
     <string name="type.attraction.historic">Historiese aantrekkingskrag</string>
     <string name="type.attraction.maze">Doolhof</string>
     <string name="type.attraction.roller_coaster">Roller Coaster</string>
+    <string name="type.roller_coaster.track">Roller Coaster</string>
     <string name="type.attraction.water_slide">Waterglybaan</string>
     <string name="type.tourism.attraction.specified">Attraksie</string>
     <string name="type.tourism.camp_site">Kampeerterrein</string>
@@ -1279,6 +1299,7 @@
     <string name="type.traffic_calming.bump">Verkeersdrempel</string>
     <string name="type.traffic_calming.hump">Verkeersheuwel</string>
     <string name="type.waterway">Waterweg</string>
+    <string name="type.waterway.access_point">Toegangspunt tot waterweg</string>
     <string name="type.waterway.canal">Kanaal</string>
     <string name="type.waterway.canal.tunnel">Kanaal</string>
     <string name="type.waterway.fish_pass">Vistrap</string>
@@ -1334,6 +1355,7 @@
     <string name="type.self_service.no">Geen selfbediening nie</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Sosiale fasiliteit</string>
+    <string name="type.amenity.stage">Toneel</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Noodsaal-ingang</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->

@@ -51,13 +51,12 @@ void InitRoutingSession(ms::LatLon const & from, ms::LatLon const & to, RoutingS
       integration::CalculateRoute(integration::GetVehicleComponents(VehicleType::Car), mercator::FromLatLon(from),
                                   m2::PointD::Zero(), mercator::FromLatLon(to));
 
-  Route & route = *routeResult.first;
   RouterResultCode const result = routeResult.second;
   TEST_EQUAL(result, RouterResultCode::NoError, ());
 
   routingSession.Init(nullptr /* PointCheckCallback */);
   routingSession.SetRoutingSettings(routing::GetRoutingSettings(routing::VehicleType::Car));
-  routingSession.AssignRouteForTesting(make_shared<Route>(route), result);
+  routingSession.AssignRouteForTesting(std::move(*routeResult.first), result);
   routingSession.SetTurnNotificationsUnits(measurement_utils::Units::Metric);
   routingSession.GetSpeedCamManager().SetMode(mode);
   string const engShortJson = R"(
@@ -87,7 +86,7 @@ SpeedCameraManager::Interval CheckZone(RoutingSession const & routingSession, do
   TEST(closestCamera.IsValid(), ("No speed camera found."));
 
   double const speedMpS = measurement_utils::KmphToMps(speedKmPH);
-  double const passedDist = routingSession.GetRouteForTests()->GetCurrentDistanceFromBeginMeters();
+  double const passedDist = routingSession.GetRoute()->GetCurrentDistanceFromBeginMeters();
   double const distToCamera = closestCamera.m_distFromBeginMeters - passedDist;
 
   return SpeedCameraManager::GetIntervalByDistToCam(distToCamera, speedMpS);

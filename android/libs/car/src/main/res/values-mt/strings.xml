@@ -47,6 +47,8 @@
     <string name="auto">Auto</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">Bini 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Mhux disponibbli</string>
     <!-- Text in menu -->
     <string name="help">Għajnuna</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,9 +68,12 @@
     <string name="editor_time_open">Miftuħ</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">Magħluq illum</string>
+    <string name="midnight">Nofsillejl</string>
+    <string name="noon">Nofsinhar</string>
     <string name="opens_in">Jiftaħ f’ %s</string>
     <string name="closes_in">Jagħlaq f’ %s</string>
     <string name="closed">Magħluq</string>
+    <string name="minute">min</string>
     <string name="big_font">Żid id-daqs għat-tikketti tal-mapep</string>
     <string name="transliteration_title">Jittraduċi ruħu fl-alfabett Latin</string>
     <!-- this text will be shown in application notification preferences opposite checkbox which enable/disable downloader notifications. Devices on Android 8+ are affected. -->
@@ -82,6 +87,7 @@
     <string name="avoid_ferry">Evita l-laneċ</string>
     <string name="avoid_motorways">Evita l-passaġġi ħielsa</string>
     <string name="unable_to_calc_alert_title">Ir-rotta ma\' tistax tiġi kalkulata</string>
+    <string name="trip_finished">Wasalt!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Issortja l-bookmarks</string>
     <!-- Android -->
@@ -99,7 +105,7 @@
     <string name="downloader_loading_ios">Tniżżil</string>
     <string name="download_map_title">Niżżel il-mappa ġenerali tad-dinja</string>
     <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">organic Maps ġo\' Android Auto jeħtieġ permessi tal-post biex jaħdem b ’mod effettiv</string>
+    <string name="aa_request_permission_activity_text">Organic Maps ġo’ Android Auto jeħtieġ permessi tal-post biex jaħdem b ‘mod effettiv</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Għati Permess</string>
 </resources>

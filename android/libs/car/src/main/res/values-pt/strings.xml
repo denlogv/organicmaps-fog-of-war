@@ -47,6 +47,8 @@
     <string name="auto">Automático</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">Edifícios em 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Não disponível</string>
     <!-- Text in menu -->
     <string name="help">Ajuda</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Aberto</string>
     <string name="twentyfour_seven">24 horas por dia</string>
     <string name="day_off_today">Fechado hoje</string>
+    <string name="midnight">Meia-noite</string>
+    <string name="noon">Meio-dia</string>
     <string name="opens_in">Abre em %s</string>
     <string name="closes_in">Fecha em %s</string>
     <string name="closed">Fechado</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Evitar ferribotes</string>
     <string name="avoid_motorways">Evitar autoestradas</string>
     <string name="unable_to_calc_alert_title">Não foi possível calcular a rota</string>
+    <string name="trip_finished">Chegou ao destino!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Ordenar favoritos</string>
     <!-- Android -->

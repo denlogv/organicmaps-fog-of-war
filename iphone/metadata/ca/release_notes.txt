@@ -1,23 +1,50 @@
-• Dades del mapa OSM a data de 10 de març
-• Dades de la Viquipèdia a data de 1 de març
-• S'ha afegit suport per a límits de velocitat condicionals
-• Isòlines d'altitud més detallades per a les províncies xineses
-• S'han afegit botigues de cuir i botigues que venen articles religiosos
-• S'han afegit fileres d'arbres
-• S'han afegit plataformes d'aturada de transport públic sense aturades d'autobús a prop
-• S'ha corregit el càlcul del progrés de la descàrrega de països
-• S'ha dividit Tanzània en regions més petites
-• S'ha afegit un historial de les categories utilitzades recentment a l'Editor
-• Millorada la gestió de l'esllavetada cap amunt a la pantalla de planificació d'itineraris
-• Corregida la posició de la regla per a CarPlay
-• Corregits diversos bloquejos, i millorada l'estabilitat i el rendiment
+## Mapa i llocs
 
-### Traduccions
+• Dades d’OpenStreetMap actualitzades a 26 d’agost de 2026
+• Articles de la Viquipèdia actualitzats en àrab, bengalí, xinès, anglès, francès, alemany, hindi, italià, japonès, coreà, marati, polonès, portuguès, rus, espanyol, tàmil, telugu, turc i urdú
+• S’han afegit al mapa aguaits d’ocells, escenaris, turons i arcs rocosos, a més d’una nova icona per a les roques
+• S’ha canviat la mida de les icones de cims, coves i colls de muntanya
+• Les àrees protegides, els parcs nacionals i les zones humides ara es mostren en tons més clars
+• S’han solucionat molts problemes que feien que els horaris d’obertura es mostressin incorrectament
+• S’ha reorganitzat la configuració en les seccions «General», «Mapa», «Navegació», «Xarxa» i «Privadesa»
+• S’ha eliminat la configuració de calibratge de la brúixola perquè ara el calibratge es gestiona automàticament
+• S’han solucionat problemes amb la brúixola que podien fer que la fletxa de la posició actual apuntés en la direcció incorrecta o es congelés
+• El punt corresponent es mostra ara al mapa mentre arrossegues el dit pel perfil d’altitud en la previsualització d’una ruta de senderisme o ciclisme
+• S’han solucionat un bloqueig de l’aplicació i un problema que ocasionalment feia que s’ignoressin els tocs i els gestos
 
-• Millorades les descripcions dels països
-• Aplicades les correccions romaneses d'Eugen Dedu
-• Actualitzats els noms dels països
-• Actualitzades les traduccions dels col·laboradors de Weblate
-• Corregida la traducció a l'ucraïnès
+## Compartició, marcadors i recorreguts
 
-Gràcies a tothom qui col·labora, fa donacions i dona suport a Organic Maps! Creem junts els millors mapes!
+• NOU: s’ha afegit la selecció múltiple a les llistes de Marcadors i Recorreguts, amb accions agrupades per eliminar, moure i canviar el color dels elements seleccionats, a més de «Selecciona-ho tot» i «Desselecciona-ho tot»
+• S’ha afegit suport per a AirDrop per compartir llocs
+• Compartir un lloc, un marcador o la posició actual ara envia un enllaç llegible amb informació útil
+• Els marcadors exportats ara conserven els noms i les descripcions originals
+• Les llistes de marcadors compartides ara utilitzen el nom visible en lloc del nom de fitxer intern
+• S’ha corregit un problema de visualització del gràfic d’elevació que podia aparèixer immediatament després de començar a gravar un recorregut
+• S’ha restablert el selector de color personalitzat a la finestra emergent de la paleta de colors
+• S’ha corregit la representació de les descripcions HTML quan se selecciona un marcador al mapa
+
+## Rutes i navegació
+
+• NOU: s’ha afegit un tauler de control de CarPlay i s’han solucionat diversos problemes de CarPlay
+• S’ha corregit l’activació de l’estil de mapa de navegació per a cotxe
+• Tocar una parada o una marca de la ruta ara l’obre correctament en lloc de canviar entre les rutes planificades
+• Les rutes de transport públic ara es calculen més ràpidament
+• S’han corregit instruccions de gir incorrectes
+• S’ha corregit un punt d’inici incorrecte després de recalcular una ruta
+• Durant la planificació de rutes, les carreteres de laterita ara es consideren carreteres amb una superfície no pavimentada de baixa qualitat
+• Les carreteres etiquetades com a access=unknown ara es tracten com a carreteres amb accés privat o només de destinació
+
+## Editor d’OpenStreetMap
+
+• S’ha corregit una fallada quan una pujada a OpenStreetMap s’acabava en segon pla
+• Buidar el camp d’horari d’obertura ja no deixa desactivats els botons «Desa» i «Fet»
+• Les pujades que fallen parcialment ara es tornen a provar en lloc de ser reportades com a completament reeixides
+
+## Traduccions
+
+• S’han afegit les instruccions de veu en armeni i laosià
+• S’ha actualitzat Ajuda/Preguntes freqüents (FAQ) i s’ha afegit la traducció al japonès
+• S’ha corregit la traducció al japonès d’«Ara és tancat»
+• S’han millorat les traduccions al xinès de «recorregut» i «desactiva»
+
+Consulteu les notes de la versió detallades a https://omaps.org/ca/news/

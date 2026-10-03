@@ -3,6 +3,7 @@ project(coding_tests)
 set(SRC
   base64_test.cpp
   bit_streams_test.cpp
+  blake3_test.cpp
   bwt_coder_tests.cpp
   bwt_tests.cpp
   compressed_bit_vector_test.cpp
@@ -30,7 +31,6 @@ set(SRC
   reader_writer_ops_test.cpp
   serdes_json_test.cpp
   simple_dense_coding_test.cpp
-  sha1_test.cpp
   sparse_vector_tests.cpp
   string_utf8_multilang_tests.cpp
   succinct_ef_test.cpp

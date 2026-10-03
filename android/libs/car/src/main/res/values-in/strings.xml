@@ -47,6 +47,8 @@
     <string name="auto">Otomatis</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">Bangunan 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Tidak Tersedia</string>
     <!-- Text in menu -->
     <string name="help">Bantuan</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Buka</string>
     <string name="twentyfour_seven">siang dan malam</string>
     <string name="day_off_today">Tutup hari ini</string>
+    <string name="midnight">Tengah malam</string>
+    <string name="noon">Tengah hari</string>
     <string name="opens_in">Dibuka dalam %s</string>
     <string name="closes_in">Ditutup dalam %s</string>
     <string name="closed">Tutup</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Hindari feri</string>
     <string name="avoid_motorways">Hindari jalan raya</string>
     <string name="unable_to_calc_alert_title">Tidak dapat menghitung rute</string>
+    <string name="trip_finished">Anda telah tiba!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Urutkan bookmark</string>
     <!-- Android -->

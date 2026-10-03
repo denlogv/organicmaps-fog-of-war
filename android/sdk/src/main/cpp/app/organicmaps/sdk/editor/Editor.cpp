@@ -10,6 +10,8 @@
 #include "indexer/feature_utils.hpp"
 #include "indexer/validate_and_format_contacts.hpp"
 
+#include "geometry/mercator.hpp"
+
 #include "coding/string_utf8_multilang.hpp"
 
 #include "base/assert.hpp"
@@ -19,14 +21,12 @@
 #include "std/target_os.hpp"
 
 #include <algorithm>
-#include <chrono>
-#include <future>
+#include <memory>
 #include <set>
 #include <vector>
 
 namespace
 {
-using TCuisine = std::pair<std::string, std::string>;
 osm::EditableMapObject g_editableMapObject;
 
 jclass g_localNameClazz;
@@ -65,8 +65,6 @@ osm::NewFeatureCategories & GetFeatureCategories()
 
 extern "C"
 {
-using osm::Editor;
-
 JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeInit(JNIEnv * env, jclass)
 {
   g_localNameClazz = jni::GetGlobalClassRef(env, "app/organicmaps/sdk/editor/data/LocalizedName");
@@ -292,31 +290,40 @@ JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeSetHouseNumber(JNIEn
 
 JNIEXPORT jboolean Java_app_organicmaps_sdk_editor_Editor_nativeHasSomethingToUpload(JNIEnv * env, jclass clazz)
 {
-  return Editor::Instance().HaveMapEditsOrNotesToUpload();
+  return osm::Editor::Instance().HaveMapEditsOrNotesToUpload();
 }
 
-JNIEXPORT jint Java_app_organicmaps_sdk_editor_Editor_nativeUploadChanges(JNIEnv * env, jclass clazz, jstring token,
-                                                                          jstring appVersion, jstring appId)
+JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeUploadChanges(JNIEnv * env, jclass clazz, jstring token,
+                                                                          jstring appVersion, jstring appId,
+                                                                          jobject listener)
 {
-  std::promise<Editor::UploadResult> promise;
-  auto future = promise.get_future();
+  using osm::Editor;
 
-  if (!Editor::Instance().UploadChanges(
-          jni::ToNativeString(env, token),
-          {{"created_by", "Organic Maps " OMIM_OS_NAME " " + jni::ToNativeString(env, appVersion)},
-           {"bundle_id", jni::ToNativeString(env, appId)}},
-          [&promise](Editor::UploadResult result) { promise.set_value(result); }))
-    promise.set_value(Editor::UploadResult::NothingToUpload);
+  auto const notify = [jListener = jni::make_global_ref(listener)](Editor::UploadResult result)
+  {
+    JNIEnv * env = jni::GetEnv();
+    env->CallVoidMethod(*jListener, jni::GetMethodID(env, *jListener, "onUploadComplete", "(I)V"),
+                        static_cast<jint>(result));
+    jni::HandleJavaException(env);
+  };
 
-  auto status = future.wait_for(std::chrono::minutes(5));
-  if (status == std::future_status::timeout)
-    return static_cast<jint>(Editor::UploadResult::Error);
-  return static_cast<jint>(future.get());
+  switch (Editor::Instance().UploadChanges(
+      jni::ToNativeString(env, token),
+      {{"created_by", "Organic Maps " OMIM_OS_NAME " " + jni::ToNativeString(env, appVersion)},
+       {"bundle_id", jni::ToNativeString(env, appId)}},
+      notify))
+  {
+  case Editor::UploadStart::Started: break;
+  // The outcome of the upload already in flight is unknown here, so report an error to make the
+  // worker retry rather than finish successfully.
+  case Editor::UploadStart::AlreadyUploading: notify(Editor::UploadResult::Error); break;
+  case Editor::UploadStart::NothingToUpload: notify(Editor::UploadResult::NothingToUpload); break;
+  }
 }
 
 JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeClearLocalEdits(JNIEnv * env, jclass clazz)
 {
-  Editor::Instance().ClearAllLocalEdits();
+  osm::Editor::Instance().ClearAllLocalEdits();
 }
 
 JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeStartEdit(JNIEnv *, jclass)
@@ -333,12 +340,12 @@ JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeStartEdit(JNIEnv *, 
   CHECK(fr->GetEditableMapObject(info.GetID(), g_editableMapObject), ("Invalid feature in the place page."));
 }
 
-JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeCreateMapObject(JNIEnv * env, jclass, jstring featureType)
+JNIEXPORT jboolean Java_app_organicmaps_sdk_editor_Editor_nativeCreateMapObject(JNIEnv * env, jclass,
+                                                                                jstring featureType, jdouble lat,
+                                                                                jdouble lon)
 {
-  ::Framework * fr = frm();
   auto const type = classif().GetTypeByReadableObjectName(jni::ToNativeString(env, featureType));
-  CHECK(fr->CreateMapObject(fr->GetViewportCenter(), type, g_editableMapObject),
-        ("Couldn't create mapobject, wrong coordinates of missing mwm"));
+  return frm()->CreateMapObject(mercator::FromLatLon(lat, lon), type, g_editableMapObject);
 }
 
 // static void nativeCreateNote(String text);
@@ -402,10 +409,10 @@ JNIEXPORT void Java_app_organicmaps_sdk_editor_Editor_nativeAddToRecentCategorie
 
 JNIEXPORT jobjectArray Java_app_organicmaps_sdk_editor_Editor_nativeGetCuisines(JNIEnv * env, jclass clazz)
 {
-  osm::AllCuisines const & cuisines = osm::Cuisines::Instance().AllSupportedCuisines();
+  auto const & cuisines = osm::Cuisines::Instance().AllSupportedCuisines();
   std::vector<std::string> keys;
   keys.reserve(cuisines.size());
-  for (TCuisine const & cuisine : cuisines)
+  for (auto const & cuisine : cuisines)
     keys.push_back(cuisine.first);
   return jni::ToJavaStringArray(env, keys);
 }
@@ -420,17 +427,13 @@ JNIEXPORT jobjectArray Java_app_organicmaps_sdk_editor_Editor_nativeFilterCuisin
 {
   std::string const substr = jni::ToNativeString(env, jSubstr);
   bool const noFilter = substr.length() == 0;
-  osm::AllCuisines const & cuisines = osm::Cuisines::Instance().AllSupportedCuisines();
+  auto const & cuisines = osm::Cuisines::Instance().AllSupportedCuisines();
   std::vector<std::string> keys;
   keys.reserve(cuisines.size());
 
-  for (TCuisine const & cuisine : cuisines)
-  {
-    std::string const & key = cuisine.first;
-    std::string const & label = cuisine.second;
+  for (auto const & [key, label] : cuisines)
     if (noFilter || search::ContainsNormalized(key, substr) || search::ContainsNormalized(label, substr))
       keys.push_back(key);
-  }
 
   return jni::ToJavaStringArray(env, keys);
 }

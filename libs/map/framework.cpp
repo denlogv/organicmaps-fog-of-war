@@ -3,11 +3,10 @@
 #include "map/benchmark_tools.hpp"
 #include "map/gps_tracker.hpp"
 #include "map/place_page_info.hpp"
+#include "map/raster_tile_provider.hpp"
 #include "map/relation_track.hpp"
 #include "map/track_mark.hpp"
 #include "map/user_mark.hpp"
-
-#include "ge0/url_generator.hpp"
 
 #include "routing/route.hpp"
 #include "routing/speed_camera_prohibition.hpp"
@@ -33,6 +32,7 @@
 
 #include "indexer/categories_holder.hpp"
 #include "indexer/classificator.hpp"
+#include "indexer/classificator_loader.hpp"
 #include "indexer/drawing_rules.hpp"
 #include "indexer/editable_map_object.hpp"
 #include "indexer/feature.hpp"
@@ -85,13 +85,15 @@ Framework::FixedPosition::FixedPosition()
 }
 #endif
 
-#ifdef DEBUG
-#define DEBUG_BACKGROUND_TILE 1
-#endif
-
 namespace
 {
 std::string_view constexpr kMapStyleKey = "MapStyleKeyV1";
+std::string_view constexpr kBgTilesEnabledKey = "BgTilesEnabled";          // custom raster tiles layer on/off
+std::string_view constexpr kBgTilesUrlKey = "BgTilesUrl";                  // custom raster tiles URL template
+std::string_view constexpr kBgTilesCacheSizeMBKey = "BgTilesCacheMB";      // custom raster tiles disk cache cap
+std::string_view constexpr kBgTilesAreaOpacityKey = "BgTilesAreaOpacity";  // area-fill opacity over satellite tiles, %
+uint32_t constexpr kDefaultBgTilesCacheSizeMB = 50;
+uint32_t constexpr kDefaultBgTilesAreaOpacityPct = 50;  // half-transparent area fills by default in Satellite mode
 std::string_view constexpr kAllow3dKey = "Allow3d";
 std::string_view constexpr kAllow3dBuildingsKey = "Buildings3d";
 std::string_view constexpr kAllowAutoZoom = "AutoZoom";
@@ -132,6 +134,9 @@ std::string_view constexpr kLastAskedForRateUsTimeKey = "LastAskedForRateUsTime"
 std::string_view constexpr kDonationTapTimeKey = "DonationTapTime";
 std::string_view constexpr kDonationTapCountKey = "DonationTapCount";
 
+// The gift box is shown from 00:00 UTC of the start date until 00:00 UTC of the end date,
+// i.e. the end date is the first day without it. Update both dates to run the next campaign.
+auto const kCrowdfundingStartTime = base::YYMMDDToSecondsSinceEpoch(251220);
 auto const kCrowdfundingEndTime = base::YYMMDDToSecondsSinceEpoch(260120);
 
 auto constexpr kLargeFontsScaleFactor = 1.6;
@@ -158,6 +163,38 @@ bool ParseSetGpsTrackMinAccuracyCommand(std::string const & query)
 
   GpsTrackFilter::StoreMinHorizontalAccuracy(value);
   return true;
+}
+
+void EmitDebugCommandResult(search::SearchParams const & params, std::string const & message)
+{
+  if (!params.m_onResults)
+    return;
+
+  search::Results results;
+  results.AddResultNoChecks(search::Result(message, std::string(params.m_query)));
+  params.m_onResults(results);
+
+  results.SetEndMarker(false /* isCancelled */);
+  params.m_onResults(results);
+}
+
+void UpdateTrackSelectionColor(dp::Color & color)
+{
+  if (color == feature::RouteRelationBase::kEmptyColor)
+    color = dp::Color::Purple();  // Default purple.
+
+  // Adjust colors to the current theme for readability.
+  bool const isLightTheme = !MapStyleIsDark(GetStyleReader().GetCurrentStyle());
+  dp::HSL hsl = dp::Color2HSL(color);
+  if (hsl.AdjustLightness(isLightTheme))
+    color = dp::HSL2Color(hsl);
+}
+
+bool HasHigherTrackSelectionPriority(Track::TrackSelectionInfo const & lhs, Track::TrackSelectionInfo const & rhs)
+{
+  if (lhs.IsRelation() != rhs.IsRelation())
+    return !lhs.IsRelation();  // non-relation tracks has higher priority
+  return lhs.m_squareDist < rhs.m_squareDist;
 }
 }  // namespace
 
@@ -388,7 +425,12 @@ Framework::Framework(FrameworkParams const & params, bool loadMaps)
   m_stringsBundle.SetDefaultString("core_placepage_unknown_place", "Map Point");
   m_stringsBundle.SetDefaultString("core_my_places", "My Places");
   m_stringsBundle.SetDefaultString("core_my_position", "My Position");
+  m_stringsBundle.SetDefaultString("open_in_app", "Open in Another App");
   m_stringsBundle.SetDefaultString("postal_code", "Postal Code");
+  // Placeholder-free labels used by GetShareData; platforms override with localized values.
+  m_stringsBundle.SetDefaultString("share_my_position", "I am here on Organic Maps");
+  m_stringsBundle.SetDefaultString("share_open_in_om_or_browser", "Open in Organic Maps or in a browser");
+  m_stringsBundle.SetDefaultString("share_get_om", "Get Organic Maps");
 
   m_featuresFetcher.InitClassificator();
   m_featuresFetcher.SetOnMapDeregisteredCallback(std::bind(&Framework::OnMapDeregistered, this, _1));
@@ -423,7 +465,12 @@ Framework::Framework(FrameworkParams const & params, bool loadMaps)
                  std::bind(&Framework::OnCountryFileDelete, this, _1, _2));
 
   m_storage.SetDownloadingPolicy(&m_storageDownloadingPolicy);
-  m_storage.SetStartDownloadingCallback([this]() { UpdatePlacePageInfoForCurrentSelection(); });
+  m_storage.SetStartDownloadingCallback([this]()
+  {
+    // Don't call UpdatePlacePageInfoForCurrentSelection -> BuildPlacePageInfo, just need to update UI.
+    if (m_currentPlacePageInfo && m_onPlacePageUpdate)
+      m_onPlacePageUpdate();
+  });
 
   UpdateMinBuildingsTapZoom();
 
@@ -656,26 +703,24 @@ kml::MarkGroupId Framework::AddCategory(std::string const & categoryName)
 
 void Framework::FillPointInfoForBookmark(Bookmark const & bmk, place_page::Info & info) const
 {
-  // Convert indices to sorted classifier types.
-  Classificator const & cl = classif();
-  buffer_vector<uint32_t, 8> types;
-  for (uint32_t i : bmk.GetData().m_featureTypes)
-    types.push_back(cl.GetTypeForIndex(i));
-  std::sort(types.begin(), types.end());
+  feature::TypesHolder bmTypes;
+  auto const & srcTypes = bmk.GetData().m_featureTypes;
+  for (size_t i = 0; i < std::min(feature::kMaxTypesCount, srcTypes.size()); ++i)
+    bmTypes.Add(srcTypes[i]);
+  bmTypes.SortToCompare();
 
-  GetSelectionProcessor().FillPointInfo(info, bmk.GetPivot(), {} /* customTitle */, [&types](FeatureType & ft)
+  GetSelectionProcessor().FillPointInfo(info, bmk.GetPivot(), {} /* customTitle */, [&bmTypes](FeatureType & ft)
   {
-    if (types.empty() || ft.GetTypesCount() != types.size())
+    if (bmTypes.Empty())
       return false;
 
-    // Strict equal types.
     feature::TypesHolder fTypes(ft);
-    std::sort(fTypes.begin(), fTypes.end());
-    return std::equal(types.begin(), types.end(), fTypes.begin(), fTypes.end());
+    fTypes.SortToCompare();
+    return bmTypes.EqualUsefulSorted(fTypes);
   });
 }
 
-void Framework::FillUserMarkInfo(UserMark const * mark, place_page::Info & outInfo)
+bool Framework::FillUserMarkInfo(UserMark const * mark, place_page::Info & outInfo)
 {
   outInfo.SetSelectedObject(df::SelectionShape::OBJECT_USER_MARK);
 
@@ -689,14 +734,12 @@ void Framework::FillUserMarkInfo(UserMark const * mark, place_page::Info & outIn
   case UserMark::Type::TRACK_INFO:
   {
     auto const & infoMark = *static_cast<TrackInfoMark const *>(mark);
-    BuildTrackPlacePage(GetBookmarkManager().GetTrackSelectionInfo(infoMark.GetTrackId()), outInfo);
-    return;
+    return BuildTrackPlacePage(GetBookmarkManager().GetTrackSelectionInfo(infoMark.GetTrackId()), outInfo);
   }
   case UserMark::Type::TRACK_SELECTION:
   {
     auto const & selMark = *static_cast<TrackSelectionMark const *>(mark);
-    BuildTrackPlacePage(GetBookmarkManager().GetTrackSelectionInfo(selMark.GetTrackId()), outInfo);
-    return;
+    return BuildTrackPlacePage(GetBookmarkManager().GetTrackSelectionInfo(selMark.GetTrackId()), outInfo);
   }
   case UserMark::Type::TRANSIT:
   {
@@ -712,6 +755,7 @@ void Framework::FillUserMarkInfo(UserMark const * mark, place_page::Info & outIn
   }
 
   GetSelectionProcessor().SetPlacePageLocation(outInfo);
+  return true;
 }
 
 void Framework::FillBookmarkInfo(Bookmark const & bmk, place_page::Info & info) const
@@ -738,14 +782,16 @@ void Framework::FillBookmarkInfo(Bookmark const & bmk, place_page::Info & info) 
   }
 }
 
-void Framework::FillTrackInfo(Track const & track, m2::PointD const & trackPoint, place_page::Info & info) const
+void Framework::FillTrackInfo(Track const & track, Track::TrackSelectionInfo const & trackSelectionInfo,
+                              place_page::Info & info) const
 {
   info.SetTrackId(track.GetId());
+  info.SetTrackRelationId(trackSelectionInfo.m_relationId);
   auto const groupId = track.GetGroupId();
   info.SetBookmarkCategoryId(groupId);
   if (groupId != kml::kInvalidMarkGroupId)
     info.SetBookmarkCategoryName(GetBookmarkManager().GetCategoryName(groupId));
-  info.SetMercator(trackPoint);
+  info.SetMercator(trackSelectionInfo.m_trackPoint);
   info.SetTitlesForTrack(track);
 }
 
@@ -753,52 +799,142 @@ search::ReverseGeocoder::Address Framework::GetAddressAtPoint(m2::PointD const &
 {
   search::ReverseGeocoder const coder(m_featuresFetcher.GetDataSource());
   search::ReverseGeocoder::Address addr;
-  /// @todo Call exact address manually here?
   coder.GetNearbyAddress(pt, 0.5 /* maxDistanceM */, addr, true /* placeAsStreet */);
   return addr;
 }
 
-bool Framework::TryBuildRelationTrack(FeatureID const & fid, m2::PointD const & mercator, place_page::Info & outInfo)
+namespace
 {
-  auto & bm = GetBookmarkManager();
-  bm.ClearTempRelationTrack();
+share::Strings GetShareStrings(StringsBundle const & bundle)
+{
+  return {.m_myPosition = bundle.GetString("share_my_position"),
+          .m_openInOmOrBrowser = bundle.GetString("share_open_in_om_or_browser"),
+          .m_openInMapsApp = bundle.GetString("open_in_app"),
+          .m_getApp = bundle.GetString("share_get_om")};
+}
+}  // namespace
 
-  if (!fid.IsValid())
-    return false;
+share::Result Framework::GetShareData(place_page::Info const & info) const
+{
+  share::Place place;
+  place.m_isMyPosition = info.IsMyPosition();
+  place.m_ll = info.GetLatLon();
 
-  RelationTrackBuilder builder(m_featuresFetcher.GetDataSource(), fid);
-  auto trackData = builder.Build();
+  // Share the sender's viewport zoom, or the bookmark's stored zoom when sharing a bookmark.
+  place.m_zoom = GetDrawScale();
+  if (info.IsBookmark())
+  {
+    if (auto const scale = info.GetBookmarkData().m_viewportScale; scale != 0)
+      place.m_zoom = scale;
+  }
+
+  if (!place.m_isMyPosition)
+  {
+    std::string name = info.GetTitle();
+    // An unmatched map point has no name - the place page shows a "Map Point" placeholder instead.
+    if (name == m_stringsBundle.GetString("core_placepage_unknown_place"))
+      name.clear();
+    place.m_name = std::move(name);
+    place.m_typeLabel = info.GetSubtitle();
+  }
+
+  place.m_address = info.GetAddress();
+  if (place.m_address.empty())
+    place.m_address = GetAddressAtPoint(info.GetMercator()).FormatAddress();
+
+  share::FillMetadata(place, info);
+
+  return share::Build(place, GetShareStrings(m_stringsBundle));
+}
+
+share::Result Framework::GetShareDataForMyPosition(ms::LatLon const & ll) const
+{
+  share::Place place;
+  place.m_isMyPosition = true;
+  place.m_ll = ll;
+  place.m_zoom = GetDrawScale();
+  place.m_address = GetAddressAtPoint(mercator::FromLatLon(ll)).FormatAddress();
+  return share::Build(place, GetShareStrings(m_stringsBundle));
+}
+
+share::Result Framework::GetShareDataForBookmark(kml::MarkId id) const
+{
+  auto const * bmk = m_bmManager->GetBookmark(id);
+  CHECK(bmk, ("Invalid bookmark id", id));
+
+  place_page::Info info;
+  FillBookmarkInfo(*bmk, info);
+  return GetShareData(info);
+}
+
+std::vector<Track::TrackSelectionInfo> Framework::FindRelationTracksInTapPosition(
+    std::vector<std::pair<double, FeatureID>> const & lineCandidates, m2::PointD const & mercator)
+{
+  std::vector<Track::TrackSelectionInfo> candidates;
+
+  df::RelationsDrawSettings sett;
+  sett.Load();
+  if (sett.IsEmpty())
+    return candidates;
+
+  for (auto const & [_, fid] : lineCandidates)
+  {
+    if (!fid.IsValid())
+      continue;
+
+    // No problem with multiple instances here - ctor is fast.
+    auto const currSize = candidates.size();
+    RelationTrackBuilder builder(m_featuresFetcher.GetDataSource(), fid, m_infoGetter.get());
+    builder.ForEachMetadata([&](RelationTrackBuilder::Metadata && metadata)
+    {
+      // Filter duplicates from previous lineCandidates Features.
+      for (size_t i = 0; i < currSize; ++i)
+        if (metadata.m_relationId == candidates[i].m_relationId)
+          return;
+
+      Track::TrackSelectionInfo trackSelInfo;
+      trackSelInfo.m_trackId = kml::kTempRelationTrackId;
+      trackSelInfo.m_trackPoint = mercator;
+      trackSelInfo.m_relationId = std::move(metadata.m_relationId);
+      trackSelInfo.m_title = std::move(metadata.m_name);
+      trackSelInfo.m_color = metadata.m_color;
+      UpdateTrackSelectionColor(trackSelInfo.m_color);
+      ASSERT(trackSelInfo.IsValid(), ());
+      candidates.push_back(std::move(trackSelInfo));
+    }, sett);
+  }
+
+  return candidates;
+}
+
+std::optional<kml::TrackData> Framework::TryBuildRelationTrack(Track::TrackSelectionInfo const & trackSelectionInfo)
+{
+  auto const relationId = trackSelectionInfo.m_relationId;
+  CHECK(trackSelectionInfo.IsRelation(), ());
+
+  RelationTrackBuilder builder(m_featuresFetcher.GetDataSource(), trackSelectionInfo.m_relationId, m_infoGetter.get());
+  auto trackData = builder.Build(relationId);
   if (!trackData)
-    return false;
+  {
+    LOG(LERROR, ("Failed to build relation track data for relationId", relationId));
+    return std::nullopt;
+  }
 
   kml::TrackData kmlTrack;
   for (auto & line : trackData->m_lines)
   {
-    kmlTrack.m_geometry.m_lines.push_back(std::move(line));
+    kmlTrack.m_geometry.m_lines.push_back(std::move(line.m_points));
     kmlTrack.m_geometry.m_timestamps.emplace_back();
   }
   kml::SetDefaultStr(kmlTrack.m_name, std::move(trackData->m_name));
 
   kml::TrackLayer layer;
-  auto color = trackData->m_color;
-  if (color == dp::Color::Transparent())
-    color = dp::Color(128, 0, 128, 255);  // Default purple.
-  layer.m_color.m_rgba = color.GetRGBA();
+  UpdateTrackSelectionColor(trackData->m_color);
+  layer.m_color.m_rgba = trackData->m_color.GetRGBA();
   kmlTrack.m_layers.push_back(layer);
+  kmlTrack.m_id = kml::kTempRelationTrackId;
 
-  auto const trackId = bm.SetTempRelationTrack(std::move(kmlTrack));
-  auto const * track = bm.GetTrack(trackId);
-  CHECK(track, ());
-
-  // Snap to the nearest point on the track, same as BuildTrackPlacePage.
-  Track::TrackSelectionInfo selInfo(trackId, mercator, 0.0 /* distFromBegM */);
-  auto const touchRect = df::TapInfo::GetDefaultTapRect(mercator, m_currentModelView).GetGlobalRect();
-  track->UpdateSelectionInfo(touchRect, selInfo);
-
-  outInfo.SetSelectedObject(df::SelectionShape::OBJECT_TRACK);
-  FillTrackInfo(*track, selInfo.m_trackPoint, outInfo);
-  bm.SetTrackSelectionInfo(selInfo, true /* notifyListeners */);
-  return true;
+  return kmlTrack;
 }
 
 void Framework::FillApiMarkInfo(ApiMarkPoint const & api, place_page::Info & info) const
@@ -917,8 +1053,7 @@ void Framework::ShowBookmark(Bookmark const * mark)
   auto es = GetBookmarkManager().GetEditSession();
   es.SetIsVisible(mark->GetGroupId(), true /* visible */);
 
-  if (m_drapeEngine)
-    m_drapeEngine->SetModelViewCenter(mark->GetPivot(), scale, true /* isAnim */, true /* trackVisibleViewport */);
+  SetViewportCenter(mark->GetPivot(), scale, true /* isAnim */, true /* trackVisibleViewport */);
 
   ActivateMapSelection();
 }
@@ -941,11 +1076,67 @@ void Framework::ShowTrack(kml::TrackId trackId)
 
   auto es = bm.GetEditSession();
   es.SetIsVisible(track->GetGroupId(), true /* visible */);
+  // Also unhide the individual track so imported tracks with m_visible=false
+  // become visible when navigated to from the bookmark list.
+  es.SetTrackVisibility(trackId, true /* visible */);
 
-  if (m_drapeEngine)
-    m_drapeEngine->SetModelViewRect(rect, true, scales::GetScaleLevel(rect), true /* isAnim */,
-                                    true /* trackVisibleViewport */);
+  ShowRect(rect, true /* isAnim */, true /* useVisibleViewport */);
 
+  ActivateMapSelection();
+}
+
+void Framework::SetTrackVisibility(kml::TrackId trackId, bool visible)
+{
+  {
+    auto es = GetBookmarkManager().GetEditSession();
+    es.SetTrackVisibility(trackId, visible);
+  }
+
+  // Hiding the track shown in the Place Page must reset the selection so nothing
+  // stays selected on an invisible track.
+  if (!visible && m_currentPlacePageInfo && m_currentPlacePageInfo->GetTrackId() == trackId)
+    DeactivateMapSelection();
+}
+
+void Framework::DeleteTrack(kml::TrackId trackId)
+{
+  // Close the Place Page first (while the track still exists) so nothing stays selected on a
+  // deleted track; otherwise the selection would be rebuilt for a track that is already gone.
+  if (m_currentPlacePageInfo && m_currentPlacePageInfo->GetTrackId() == trackId)
+    DeactivateMapSelection();
+
+  GetBookmarkManager().GetEditSession().DeleteTrack(trackId);
+}
+
+void Framework::DeleteBookmarksAndTracks(kml::MarkIdCollection const & bookmarkIds,
+                                         kml::TrackIdCollection const & trackIds)
+{
+  // Same reason as in DeleteTrack(), extended to bookmarks: a batch deletion has no undo, so a Place Page left
+  // on one of its items could not be restored. The invalid ids a non-bookmark/non-track selection reports are
+  // never in the collections.
+  if (m_currentPlacePageInfo && (base::IsExist(bookmarkIds, m_currentPlacePageInfo->GetBookmarkId()) ||
+                                 base::IsExist(trackIds, m_currentPlacePageInfo->GetTrackId())))
+    DeactivateMapSelection();
+
+  GetBookmarkManager().GetEditSession().DeleteBookmarksAndTracks(bookmarkIds, trackIds);
+}
+
+void Framework::SelectTrackCandidate(kml::TrackId trackId, RelationID const & relationId)
+{
+  CHECK(m_currentPlacePageInfo, ());
+  auto const & candidates = m_currentPlacePageInfo->GetTrackCandidates();
+  auto const isRelationTrack = trackId == kml::kTempRelationTrackId;
+  auto const candidate = std::find_if(candidates.begin(), candidates.end(),
+                                      [&trackId, &relationId, isRelationTrack](auto const & candidate)
+  { return isRelationTrack ? candidate.m_relationId == relationId : candidate.m_trackId == trackId; });
+
+  CHECK(candidate != candidates.end(), ());
+  CHECK(candidate->IsValid(), ());
+
+  if (!BuildTrackPlacePage(*candidate, m_currentPlacePageInfo.value()))
+    return;
+
+  GetBookmarkManager().UpdateElevationMyPosition(trackId, true /* ignoreLocationCache */);
   ActivateMapSelection();
 }
 
@@ -959,7 +1150,7 @@ void Framework::ShowBookmarkCategory(kml::MarkGroupId categoryId, bool animation
   ExpandRectForPreview(rect);
 
   StopLocationFollow();
-  ShowRect(rect, -1 /* maxScale */, animation);
+  ShowRect(rect, animation);
 
   auto es = bm.GetEditSession();
   es.SetIsVisible(categoryId, true /* visible */);
@@ -1036,15 +1227,16 @@ m2::PointD Framework::GetVisiblePixelCenter() const
   return m_visibleViewport.Center();
 }
 
-m2::PointD const & Framework::GetViewportCenter() const
+m2::PointD Framework::GetViewportCenter() const
 {
-  return m_currentModelView.GetOrg();
+  ASSERT(m_visibleViewport.IsValid(), ("Set by OnSize() from CreateDrapeEngine()"));
+  return P3dtoG(GetVisiblePixelCenter());
 }
 
 void Framework::SetViewportCenter(m2::PointD const & pt, int zoomLevel /* = -1 */, bool isAnim /* = true */,
                                   bool trackVisibleViewport /* = false */)
 {
-  if (m_drapeEngine != nullptr)
+  if (m_drapeEngine)
     m_drapeEngine->SetModelViewCenter(pt, zoomLevel, isAnim, trackVisibleViewport);
 }
 
@@ -1070,23 +1262,16 @@ void Framework::SetVisibleViewport(m2::RectD const & rect)
   m_drapeEngine->SetVisibleViewport(rect);
 }
 
-void Framework::ShowRect(m2::RectD const & rect, int maxScale, bool animation, bool useVisibleViewport)
+void Framework::ShowRect(m2::RectD const & rect, bool animation, bool useVisibleViewport)
 {
-  if (m_drapeEngine == nullptr)
-    return;
-
-  m_drapeEngine->SetModelViewRect(rect, true /* applyRotation */, maxScale /* zoom */, animation, useVisibleViewport);
+  if (m_drapeEngine)
+    m_drapeEngine->SetModelViewRect(rect, true /* applyRotation */, -1 /* zoom */, animation, useVisibleViewport);
 }
 
 void Framework::ShowRect(m2::AnyRectD const & rect, bool animation, bool useVisibleViewport)
 {
-  if (m_drapeEngine != nullptr)
+  if (m_drapeEngine)
     m_drapeEngine->SetModelViewAnyRect(rect, animation, useVisibleViewport);
-}
-
-void Framework::GetTouchRect(m2::PointD const & center, uint32_t pxRadius, m2::AnyRectD & rect)
-{
-  m_currentModelView.GetTouchRect(center, static_cast<double>(pxRadius), rect);
 }
 
 void Framework::SetViewportListener(TViewportChangedFn const & fn)
@@ -1402,6 +1587,8 @@ void Framework::SelectSearchResult(search::Result const & result, bool animation
     return;
   }
 
+  StopLocationFollow();
+  DeactivateHotelSearchMark();
   m_currentPlacePageInfo = BuildPlacePageInfo(info);
 
   if (result.GetResultType() == Result::Type::Postcode)
@@ -1421,43 +1608,120 @@ void Framework::SelectSearchResult(search::Result const & result, bool animation
 void Framework::ShowSearchResult(search::Result const & res, bool animation)
 {
   GetSearchAPI().CancelAllSearches();
-  StopLocationFollow();
   SelectSearchResult(res, animation);
+}
+
+void Framework::SelectRoute(uint32_t relID)
+{
+  if (!m_drapeEngine || !HasPlacePageInfo())
+    return;
+
+  auto const & fid = m_currentPlacePageInfo->GetID();
+  if (!fid.IsValid())
+    return;
+
+  RelationTrackBuilder builder(m_featuresFetcher.GetDataSource(), fid);
+  auto info = builder.BuildSelectionInfo(relID);
+  if (!info)
+    return;
+
+  UpdateTrackSelectionColor(info->m_color);
+
+  m_drapeEngine->SetSelectionLines(std::move(*info));
+}
+
+void Framework::ShowRouteTransit(uint32_t relID)
+{
+  if (!m_drapeEngine || !HasPlacePageInfo())
+    return;
+
+  auto const & fid = m_currentPlacePageInfo->GetID();
+  if (!fid.IsValid())
+    return;
+
+  RelationTrackBuilder builder(m_featuresFetcher.GetDataSource(), fid, m_infoGetter.get());
+  auto info = builder.BuildTransitInfo(relID);
+  if (!info)
+    return;
+
+  if (!m_routeTransitSelection || m_routeTransitSelection->m_featureId != fid)
+  {
+    if (m_currentModelView.isPerspective())
+      m_currentModelView.ResetPerspective();
+
+    m_routeTransitSelection.emplace(fid, relID);
+  }
+  else
+    m_routeTransitSelection->m_relID = relID;
+
+  // Fit the viewport to the route before pushing data — same UX as the old selection-line path.
+  m2::RectD bbox;
+  for (auto const & route : info->m_routes)
+    for (auto const & p : route.m_polyline)
+      bbox.Add(p);
+  for (auto const & stop : info->m_stops)
+    bbox.Add(stop.m_pos);
+
+  if (bbox.IsValid())
+  {
+    bbox.Scale(1.2);
+
+    /// @todo Set for RouteRelationBase::Type::Train only, keep default otherwise?
+    int const zoom = df::GetDrawTileScale(bbox);
+    if (zoom < df::kTransitSchemeMinZoomLevel)
+      info->m_minZoomLevel = std::max(df::kTransitSchemeMinZoomFloor, zoom);
+
+    ShowRect(bbox, true /* animation */, true /* useVisibleViewport */);
+  }
+
+  UpdateTrackSelectionColor(info->m_color);
+
+  m_drapeEngine->EnableTransitScheme(true);
+  m_drapeEngine->ShowRouteTransit(std::move(*info));
+}
+
+std::string Framework::GetActiveTransitRouteRef() const
+{
+  if (!m_routeTransitSelection || !HasPlacePageInfo())
+    return {};
+  uint32_t const relID = m_routeTransitSelection->m_relID;
+  for (auto const & r : GetCurrentPlacePageInfo().GetRoutes())
+    if (r.m_relID == relID)
+      return r.m_ref;
+  return {};
+}
+
+void Framework::HideRouteTransitIfNeeded()
+{
+  if (!m_routeTransitSelection)
+    return;
+  m_routeTransitSelection = {};
+
+  if (!m_drapeEngine)
+    return;
+
+  m_drapeEngine->HideRouteTransit();
+
+  // Keep the user's subway/transit-scheme layer visible after previewing a route. The layer
+  // returns on its own: the render gate stays enabled and the real-MwmId scheme data was never
+  // wiped (the route lives under the sentinel MwmId{}), so the frontend re-collects the scheme
+  // overlays once the route data is gone. Disabling here would clear the builder instead;
+  // Invalidate() is only a safety refresh in case the viewport's MWMs changed during the preview.
+  if (m_transitManager.IsSchemeMode())
+    m_transitManager.Invalidate();
+  else
+    m_drapeEngine->EnableTransitScheme(false);
 }
 
 void Framework::UpdateViewport(search::Results const & results)
 {
-  // Setup viewport according to results.
-  m2::AnyRectD viewport = m_currentModelView.GlobalRect();
-  m2::PointD const center = viewport.Center();
-
-  double minDistance = std::numeric_limits<double>::max();
-  search::Result const * res = nullptr;
-  for (auto const & r : results)
+  // Fit into the part of the screen that is not covered by UI (e.g. the search bottom sheet).
+  auto viewport = m_currentModelView.GetTouchRect(m_visibleViewport.Center(), m_visibleViewport.SizeX() / 2,
+                                                  m_visibleViewport.SizeY() / 2);
+  if (search::AdjustViewportToSearchResults(results, viewport))
   {
-    if (r.HasPoint())
-    {
-      double const dist = center.SquaredLength(r.GetFeatureCenter());
-      if (dist < minDistance)
-      {
-        minDistance = dist;
-        res = &r;
-      }
-    }
-  }
-
-  if (res)
-  {
-    m2::PointD const pt = res->GetFeatureCenter();
-    if (!viewport.IsPointInside(pt))
-    {
-      viewport.SetSizesToIncludePoint(pt);
-      double constexpr factor = 0.05;
-      viewport.Inflate(viewport.GetLocalRect().SizeX() * factor, viewport.GetLocalRect().SizeY() * factor);
-
-      StopLocationFollow();
-      ShowRect(viewport);
-    }
+    StopLocationFollow();
+    ShowRect(viewport, true /* animation */, true /* useVisibleViewport */);
   }
 }
 
@@ -1488,7 +1752,6 @@ void Framework::FillSearchResultsMarks(SearchResultsIterT beg, SearchResultsIter
       mark->SetFoundFeature(fID);
       mark->SetFromType(r.GetFeatureType());
       mark->SetVisited(m_searchMarks.IsVisited(fID));
-      mark->SetSelected(m_searchMarks.IsSelected(fID));
     }
   }
 }
@@ -1522,6 +1785,20 @@ bool Framework::GetDistanceAndAzimut(m2::PointD const & point, double lat, doubl
   return (d < 25000.0);
 }
 
+m2::PointD Framework::PtoG(m2::PointD const & p) const
+{
+  auto pt = m_currentModelView.PtoG(p);
+  pt.x = mercator::WrapX(pt.x);
+  return pt;
+}
+
+m2::PointD Framework::P3dtoG(m2::PointD const & p) const
+{
+  auto pt = m_currentModelView.PtoG(m_currentModelView.P3dtoP(p));
+  pt.x = mercator::WrapX(pt.x);
+  return pt;
+}
+
 void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFactory, DrapeCreationParams && params)
 {
   auto idReadFn = [this](auto const & fn, m2::RectD const & r, int scale)
@@ -1552,324 +1829,32 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
         break;
   };
 
-  auto tileBackgroundReadFn = [this](df::TileKey const & tileKey, dp::BackgroundMode mode) -> void
+  // Custom raster background tiles come from a user-configured XYZ source (Settings -> Map tiles),
+  // persisted via kBgTilesEnabledKey / kBgTilesUrlKey / kBgTilesCacheSizeMBKey. The layer is active
+  // only when enabled AND a URL is set.
+  std::string bgTilesUrl;
+  settings::TryGet(kBgTilesUrlKey, bgTilesUrl);
+  bool bgTilesEnabled = false;
+  settings::TryGet(kBgTilesEnabledKey, bgTilesEnabled);
+  bool const bgTilesActive = bgTilesEnabled && !bgTilesUrl.empty();
+
+  if (bgTilesActive && !m_rasterTileProvider)
+    CreateBackgroundTilesProvider(bgTilesUrl, GetBackgroundTilesCacheSize());
+
+  auto tileBackgroundReadFn = [this](df::TileKey const & tileKey, dp::BackgroundMode mode) -> bool
   {
     if (mode == dp::BackgroundMode::FogOfWar)
-    {
-      // Use reduced resolution for fog tiles — fog is a smooth overlay with
-      // no sharp features, so 128×128 bilinear-filtered by the GPU looks
-      // identical to 256×256 while being 4× faster to compute and upload.
-      constexpr uint32_t kTileSize = 128;
-      constexpr uint32_t kBytesPerPixel = 4;
-
-      int const fogOpacityPct = GetFogOfWarOpacity();
-      uint8_t const fogAlpha = static_cast<uint8_t>(std::clamp(fogOpacityPct * 255 / 100, 0, 255));
-
-      int const revealRadiusMeters = GetFogOfWarRadius();
-      double const revealRadiusMercator = revealRadiusMeters / 111320.0;
-
-      int const fogColor = GetFogOfWarColor();
-      uint8_t const fogR = static_cast<uint8_t>((fogColor >> 16) & 0xFF);
-      uint8_t const fogG = static_cast<uint8_t>((fogColor >> 8) & 0xFF);
-      uint8_t const fogB = static_cast<uint8_t>(fogColor & 0xFF);
-
-      auto const tileRect = tileKey.GetGlobalRect();
-      double const tileWidth = tileRect.SizeX();
-      double const tileHeight = tileRect.SizeY();
-
-      // Enforce an absolute floor so the trail doesn't vanish when
-      // the natural radius is sub-pixel at far zoom.
-      constexpr double kMinRadiusPx = 1.5;
-      double const naturalRadiusPx = revealRadiusMercator / tileWidth * kTileSize;
-      double const radiusPx = std::max(kMinRadiusPx, naturalRadiusPx);
-
-      // Use the effective pixel-space radius (back-converted to Mercator)
-      // for the expanded rect so that the kMinRadiusPx boost is respected
-      // when culling points near tile boundaries at far zoom.
-      double const effectiveRadiusMerc = radiusPx / kTileSize * tileWidth;
-      auto expandedRect = tileRect;
-      expandedRect.Inflate(effectiveRadiusMerc, effectiveRadiusMerc);
-
-      // Fast path: check if this tile has any GPS data nearby using bounding rect.
-      // Do this BEFORE pixel allocation to skip work for tiles far from any data.
-      bool hasNearbyGpsData = false;
-      {
-        std::lock_guard lock(m_fogTrackPointsMutex);
-        if (m_fogCurrentPosition.has_value() && expandedRect.IsPointInside(*m_fogCurrentPosition))
-          hasNearbyGpsData = true;
-        if (!hasNearbyGpsData && m_fogDataBoundingRect.IsValid())
-        {
-          auto dataBounds = m_fogDataBoundingRect;
-          dataBounds.Inflate(revealRadiusMercator, revealRadiusMercator);
-          hasNearbyGpsData = expandedRect.IsIntersect(dataBounds);
-        }
-      }
-
-      constexpr uint32_t kPixelCount = kTileSize * kTileSize;
-      std::vector<uint8_t> pixels(kPixelCount * kBytesPerPixel);
-
-      // Fill with fog color and opacity using 32-bit writes.
-      uint32_t const fogPixel = static_cast<uint32_t>(fogR) | (static_cast<uint32_t>(fogG) << 8) |
-                                (static_cast<uint32_t>(fogB) << 16) | (static_cast<uint32_t>(fogAlpha) << 24);
-      auto * pixelData = reinterpret_cast<uint32_t *>(pixels.data());
-      for (uint32_t i = 0; i < kPixelCount; ++i)
-        pixelData[i] = fogPixel;
-
-      if (!hasNearbyGpsData)
-      {
-        // Pure solid fog — skip all reveal pixel processing.
-        if (m_drapeEngine)
-          m_drapeEngine->SetTileBackgroundData(tileKey, kTileSize, kTileSize, dp::TextureFormat::RGBA8, mode,
-                                               std::move(pixels));
-        return;
-      }
-
-      double const radiusSq = radiusPx * radiusPx;
-      // Configurable gradient: gradient width % of radius is transition zone.
-      int const gradientPercent = GetFogOfWarGradient();
-      double const innerFraction = 1.0 - gradientPercent / 100.0;
-      double const innerRadiusSq = radiusSq * innerFraction * innerFraction;
-
-      // Pre-compute sqrt values to avoid per-pixel sqrt calls in the gradient ring.
-      float const innerRadius = std::sqrt(static_cast<float>(innerRadiusSq));
-      float const outerRadius = std::sqrt(static_cast<float>(radiusSq));
-      float const invRadiusDiff = (outerRadius > innerRadius) ? 1.0f / (outerRadius - innerRadius) : 0.0f;
-      float const radiusSqF = static_cast<float>(radiusSq);
-      float const innerRadiusSqF = static_cast<float>(innerRadiusSq);
-
-      // Clear alpha for a pixel given distance squared from center.
-      auto const clearPixel = [&](int x, int y, float distSq)
-      {
-        uint8_t & alpha = pixels[(y * kTileSize + x) * kBytesPerPixel + 3];
-        if (alpha == 0)
-          return;  // Already fully revealed — skip.
-        if (distSq <= innerRadiusSqF)
-        {
-          alpha = 0;
-        }
-        else if (distSq <= radiusSqF)
-        {
-          // Smooth cubic ease-in for a gentler gradient.
-          float const t = (std::sqrt(distSq) - innerRadius) * invRadiusDiff;
-          float const smooth = t * t * (3.0f - 2.0f * t);  // smoothstep
-          alpha = std::min(alpha, static_cast<uint8_t>(smooth * fogAlpha));
-        }
-      };
-
-      // Convert Mercator point to tile pixel coordinates (float for faster per-pixel math).
-      auto const toPixel = [&](m2::PointD const & mercPt) -> std::pair<float, float>
-      {
-        return {static_cast<float>((mercPt.x - tileRect.minX()) / tileWidth * kTileSize),
-                static_cast<float>((mercPt.y - tileRect.minY()) / tileHeight * kTileSize)};
-      };
-
-      float const radiusPxF = static_cast<float>(radiusPx);
-
-      // Reveal a thick line segment between two pixel-space points (stroked path).
-      auto const revealSegment = [&](float x0, float y0, float x1, float y1)
-      {
-        // Bounding box of the segment + radius.
-        int const minPx = std::max(0, static_cast<int>(std::min(x0, x1) - radiusPxF));
-        int const maxPx = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(std::max(x0, x1) + radiusPxF));
-        int const minPy = std::max(0, static_cast<int>(std::min(y0, y1) - radiusPxF));
-        int const maxPy = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(std::max(y0, y1) + radiusPxF));
-
-        float const segDx = x1 - x0;
-        float const segDy = y1 - y0;
-        float const segLenSq = segDx * segDx + segDy * segDy;
-
-        for (int y = minPy; y <= maxPy; ++y)
-          for (int x = minPx; x <= maxPx; ++x)
-          {
-            // Distance from pixel to line segment.
-            float distSq;
-            if (segLenSq < 1e-6f)
-            {
-              float const dx = x - x0;
-              float const dy = y - y0;
-              distSq = dx * dx + dy * dy;
-            }
-            else
-            {
-              float t = ((x - x0) * segDx + (y - y0) * segDy) / segLenSq;
-              t = std::max(0.0f, std::min(1.0f, t));
-              float const projX = x0 + t * segDx;
-              float const projY = y0 + t * segDy;
-              float const dx = x - projX;
-              float const dy = y - projY;
-              distSq = dx * dx + dy * dy;
-            }
-            if (distSq <= radiusSqF)
-              clearPixel(x, y, distSq);
-          }
-      };
-
-      // Reveal from cached GPS positions and track segments.
-      // All data is protected by m_fogTrackPointsMutex — no direct
-      // GpsTracker iteration (which is not thread-safe).
-      {
-        std::lock_guard lock(m_fogTrackPointsMutex);
-
-        // Reveal from accumulated live GPS positions as connected segments.
-        for (size_t gi = 0; gi < m_fogGpsPositions.size(); ++gi)
-        {
-          auto const & gpsPos = m_fogGpsPositions[gi];
-
-          if (gi == 0)
-          {
-            // First point: reveal circle if within reach of this tile.
-            if (!expandedRect.IsPointInside(gpsPos))
-              continue;
-            auto const [px, py] = toPixel(gpsPos);
-            int const minX = std::max(0, static_cast<int>(px - radiusPxF));
-            int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
-            int const minY = std::max(0, static_cast<int>(py - radiusPxF));
-            int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
-            for (int y = minY; y <= maxY; ++y)
-              for (int x = minX; x <= maxX; ++x)
-                clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
-            continue;
-          }
-
-          // For segments: skip only if the segment bbox can't reach this tile.
-          // A long segment may cross the tile even when both endpoints are outside.
-          auto const & prevPos = m_fogGpsPositions[gi - 1];
-          bool const curInside = expandedRect.IsPointInside(gpsPos);
-          bool const prevInside = expandedRect.IsPointInside(prevPos);
-          if (!curInside && !prevInside)
-          {
-            m2::RectD segBox(gpsPos, prevPos);
-            if (!expandedRect.IsIntersect(segBox))
-              continue;
-          }
-
-          auto const [px, py] = toPixel(gpsPos);
-          auto const [prevPx, prevPy] = toPixel(prevPos);
-          revealSegment(prevPx, prevPy, px, py);
-        }
-
-        // Reveal circle around current GPS position.
-        if (m_fogCurrentPosition.has_value())
-        {
-          auto const & pos = *m_fogCurrentPosition;
-          if (expandedRect.IsPointInside(pos))
-          {
-            auto const [px, py] = toPixel(pos);
-            int const minX = std::max(0, static_cast<int>(px - radiusPxF));
-            int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
-            int const minY = std::max(0, static_cast<int>(py - radiusPxF));
-            int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
-            for (int y = minY; y <= maxY; ++y)
-              for (int x = minX; x <= maxX; ++x)
-                clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
-          }
-        }
-
-        for (size_t si = 0; si < m_fogTrackSegments.size(); ++si)
-        {
-          // Skip entire segment if its bounding box doesn't overlap the tile.
-          if (si < m_fogSegmentBounds.size())
-          {
-            auto segBounds = m_fogSegmentBounds[si];
-            segBounds.Inflate(revealRadiusMercator, revealRadiusMercator);
-            if (!expandedRect.IsIntersect(segBounds))
-              continue;
-          }
-
-          auto const & seg = m_fogTrackSegments[si];
-          for (size_t i = 0; i < seg.size(); ++i)
-          {
-            if (i == 0)
-            {
-              if (!expandedRect.IsPointInside(seg[i]))
-                continue;
-              auto const [px, py] = toPixel(seg[i]);
-              int const minX = std::max(0, static_cast<int>(px - radiusPxF));
-              int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
-              int const minY = std::max(0, static_cast<int>(py - radiusPxF));
-              int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
-              for (int y = minY; y <= maxY; ++y)
-                for (int x = minX; x <= maxX; ++x)
-                  clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
-              continue;
-            }
-
-            // Skip only if segment bbox can't reach this tile.
-            bool const curInside = expandedRect.IsPointInside(seg[i]);
-            bool const prevInside = expandedRect.IsPointInside(seg[i - 1]);
-            if (!curInside && !prevInside)
-            {
-              m2::RectD segBox(seg[i], seg[i - 1]);
-              if (!expandedRect.IsIntersect(segBox))
-                continue;
-            }
-
-            auto const [px, py] = toPixel(seg[i]);
-            auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
-            revealSegment(prevPx, prevPy, px, py);
-          }
-        }
-      }
-
-      if (m_drapeEngine)
-      {
-        m_drapeEngine->SetTileBackgroundData(tileKey, kTileSize, kTileSize, dp::TextureFormat::RGBA8, mode,
-                                             std::move(pixels));
-      }
-      return;
-    }
-#if DEBUG_BACKGROUND_TILE
-    constexpr uint32_t kTileSize = 64;
-    constexpr uint32_t kBlockSize = 8;
-    constexpr uint32_t kBytesPerPixel = 4;
-    static std::vector<uint8_t> kPixels;
-    if (kPixels.empty())
-    {
-      kPixels.resize(kTileSize * kTileSize * kBytesPerPixel);
-      for (uint32_t y = 0; y < kTileSize; ++y)
-      {
-        for (uint32_t x = 0; x < kTileSize; ++x)
-        {
-          uint32_t const blockX = x / kBlockSize;
-          uint32_t const blockY = y / kBlockSize;
-          bool const isWhiteBlock = (blockX + blockY) % 2 == 0;
-          uint32_t const pixelIndex = (y * kTileSize + x) * kBytesPerPixel;
-
-          if (isWhiteBlock)
-          {
-            // White block
-            kPixels[pixelIndex] = 255;      // R
-            kPixels[pixelIndex + 1] = 255;  // G
-            kPixels[pixelIndex + 2] = 255;  // B
-            kPixels[pixelIndex + 3] = 255;  // A
-          }
-          else
-          {
-            // Dark gray block
-            kPixels[pixelIndex] = 64;       // R
-            kPixels[pixelIndex + 1] = 64;   // G
-            kPixels[pixelIndex + 2] = 64;   // B
-            kPixels[pixelIndex + 3] = 255;  // A
-          }
-        }
-      }
-    }
-
-    if (m_drapeEngine)
-    {
-      m_drapeEngine->SetTileBackgroundData(tileKey, kTileSize, kTileSize, dp::TextureFormat::RGBA8, mode,
-                                           std::vector<uint8_t>(kPixels));
-    }
-#else
-    // Handle cancellation of tile background reading for the specified tile and mode.
-    // This is a placeholder implementation; actual logic will depend on application requirements.
-#endif
+      return RequestFogTile(tileKey);
+    if (m_rasterTileProvider)
+      return m_rasterTileProvider->RequestTile(tileKey, mode);
+    return false;
   };
 
-  auto cancelTileBackgroundReadingFn = [](df::TileKey const & tileKey, dp::BackgroundMode mode) -> void
+  auto cancelTileBackgroundReadingFn = [this](df::TileKey const & tileKey, dp::BackgroundMode mode) -> void
   {
-    // Handle cancellation of tile background reading for the specified tile and mode.
-    // This is a placeholder implementation; actual logic will depend on application requirements.
+    // Fog tiles are generated synchronously, there is nothing to cancel.
+    if (mode != dp::BackgroundMode::FogOfWar && m_rasterTileProvider)
+      m_rasterTileProvider->CancelTile(tileKey, mode);
   };
 
   auto myPositionModeChangedFn = [this](location::EMyPositionMode mode, bool routingActive)
@@ -1909,9 +1894,11 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
   auto const isolinesEnabled = m_isolinesManager.IsEnabled();
 
   auto const simplifiedTrafficColors = m_trafficManager.HasSimplifiedColorScheme();
-  auto const fontsScaleFactor = LoadLargeFontsSize() ? kLargeFontsScaleFactor : 1.0;
+  auto const fontsScaleFactor = (LoadLargeFontsSize() ? kLargeFontsScaleFactor : 1.0) * m_fontScaleFactor;
 
-  auto const tileBackgroundMode = dp::BackgroundMode::Default;  // Load from config here if needed.
+  // Enable the raster background layer iff the custom tile source is enabled and configured.
+  auto const tileBackgroundMode = bgTilesActive ? dp::BackgroundMode::Satellite : dp::BackgroundMode::Default;
+  float const satelliteAreaOpacity = GetBackgroundTilesAreaOpacity() / 100.0f;
 
   df::DrapeEngine::Params p(
       params.m_apiVersion, contextFactory, dp::Viewport(0, 0, params.m_surfaceWidth, params.m_surfaceHeight),
@@ -1922,8 +1909,9 @@ void Framework::CreateDrapeEngine(ref_ptr<dp::GraphicsContextFactory> contextFac
       std::move(myPositionModeChangedFn), allow3dBuildings, trafficEnabled, isolinesEnabled,
       params.m_isChoosePositionMode, params.m_isChoosePositionMode, GetSelectedFeatureTriangles(),
       m_routingManager.IsRoutingActive() && m_routingManager.IsRoutingFollowing(), isAutozoomEnabled,
-      simplifiedTrafficColors, tileBackgroundMode, std::nullopt /* arrow3dCustomDecl */, std::move(overlaysShowStatsFn),
-      std::move(onGraphicsContextInitialized), std::move(params.m_renderInjectionHandler));
+      simplifiedTrafficColors, tileBackgroundMode, satelliteAreaOpacity, std::nullopt /* arrow3dCustomDecl */,
+      std::move(overlaysShowStatsFn), std::move(onGraphicsContextInitialized),
+      std::move(params.m_renderInjectionHandler));
 
   m_drapeEngine = make_unique_dp<df::DrapeEngine>(std::move(p));
   m_drapeEngine->SetModelViewListener([this](ScreenBase const & screen)
@@ -2174,6 +2162,9 @@ void Framework::MarkMapStyle(MapStyle mapStyle)
     mapStyleStr = MapStyleToString(mapStyle);
   }
   settings::Set(kMapStyleKey, mapStyleStr);
+  // Make sure the new style's family is resident before switching (a no-op once it is loaded, so
+  // light<->dark stays zero-IO); drape worker threads observe the switch only via UpdateMapStyle.
+  classificator::EnsureStyleLoaded(mapStyle);
   GetStyleReader().SetCurrentStyle(mapStyle);
 }
 
@@ -2322,8 +2313,6 @@ void Framework::ActivateMapSelection()
 
   auto const & featureId = m_currentPlacePageInfo->GetID();
 
-  m_searchMarks.SetSelected(featureId);
-
   auto const selObj = m_currentPlacePageInfo->GetSelectedObject();
   CHECK_NOT_EQUAL(selObj, df::SelectionShape::OBJECT_EMPTY, ("Empty selections are impossible."));
   if (m_drapeEngine)
@@ -2339,13 +2328,37 @@ void Framework::ActivateMapSelection()
     m_onPlacePageOpen();
 }
 
-void Framework::DeactivateMapSelection()
+bool Framework::DeactivateMapSelection()
 {
+  if (m_routingManager.IsRoutingActive() || m_routingManager.GetRoutePointsCount() > 0)
+    HideRouteTransitIfNeeded();
+
+  bool const recoverRouteTransitSession = m_currentPlacePageInfo && m_routeTransitSelection &&
+                                          m_currentPlacePageInfo->GetID() != m_routeTransitSelection->m_featureId;
+  if (recoverRouteTransitSession)
+  {
+    DeactivateHotelSearchMark();
+
+    auto & bm = GetBookmarkManager();
+    bm.OnTrackDeselected();
+    bm.ClearTempRelationTrack();
+    bm.ResetRecentlyDeletedBookmark();
+
+    place_page::BuildInfo info;
+    info.m_featureId = m_routeTransitSelection->m_featureId;
+    info.m_match = place_page::BuildInfo::Match::FeatureOnly;
+    m_currentPlacePageInfo = BuildPlacePageInfo(info);
+    ActivateMapSelection();
+    return true;
+  }
+
   if (m_onPlacePageClose)
     m_onPlacePageClose();
 
   if (m_currentPlacePageInfo)
   {
+    HideRouteTransitIfNeeded();
+
     DeactivateHotelSearchMark();
 
     auto & bm = GetBookmarkManager();
@@ -2358,6 +2371,8 @@ void Framework::DeactivateMapSelection()
     if (m_drapeEngine != nullptr)
       m_drapeEngine->DeselectObject(false /* restoreViewport */);
   }
+
+  return false;
 }
 
 void Framework::DeactivateMapSelectionCircle(bool restoreViewport)
@@ -2380,33 +2395,45 @@ void Framework::InvalidateUserMarks()
 
 void Framework::DeactivateHotelSearchMark()
 {
-  if (!m_currentPlacePageInfo)
-    return;
-
-  m_searchMarks.SetSelected({});
-  if (m_currentPlacePageInfo->IsHotel())
-  {
-    auto const & featureId = m_currentPlacePageInfo->GetID();
-    if (m_searchMarks.IsThereSearchMarkForFeature(featureId))
-    {
-      m_searchMarks.SetVisited(featureId);
-      m_searchMarks.OnDeactivate(featureId);
-    }
-
-    if (!GetSearchAPI().IsViewportSearchActive())
-      GetBookmarkManager().GetEditSession().ClearGroup(UserMark::Type::SEARCH);
-  }
+  if (m_currentPlacePageInfo && m_currentPlacePageInfo->IsHotel())
+    m_searchMarks.OnDeactivate(m_currentPlacePageInfo->GetID());
 }
 
 void Framework::OnTapEvent(place_page::BuildInfo const & buildInfo)
 {
+  if (buildInfo.m_isLongTap)
+  {
+    SwitchFullScreen();
+    return;
+  }
+
+  // Taps on an alternative route's ETA balloon (ROUTE_ALT mark) or on its polyline,
+  // swap the active variant instead of PP opening.
+  auto const umID = buildInfo.m_userMarkId;
+  if (umID != kml::kInvalidMarkId)
+  {
+    if (UserMark::GetMarkType(umID) == UserMark::Type::ROUTE_ALT)
+    {
+      if (auto const * mark = static_cast<RouteAltMark const *>(GetBookmarkManager().GetUserMark(umID)))
+        m_routingManager.SwapActiveAlternative(mark->GetRouteIdx());
+
+      // Always return because FillUserMarkInfo has no ROUTE_ALT handler and would CHECK-fail.
+      return;
+    }
+  }
+  else if (m_routingManager.TryTapOnAlternativeRoute(buildInfo.m_mercator, m_currentModelView.GetScale()))
+    return;
+
   auto placePageInfo = BuildPlacePageInfo(buildInfo);
-  bool isRoutePoint = placePageInfo.IsRoutePoint();
 
   if (m_routingManager.IsRoutingActive() && m_routingManager.GetCurrentRouterType() == routing::RouterType::Ruler &&
-      !buildInfo.m_isLongTap && !isRoutePoint)
+      !placePageInfo.IsRoutePoint())
   {
     DeactivateMapSelection();
+
+    // This re-check guards against any synchronous callback that tears down routing mid-handler.
+    if (!m_routingManager.IsRoutingActive())
+      return;
 
     // Continue route to the point
     RouteMarkData data;
@@ -2422,46 +2449,40 @@ void Framework::OnTapEvent(place_page::BuildInfo const & buildInfo)
     else
       data.m_position = buildInfo.m_mercator;
 
-    m_routingManager.ContinueRouteToPoint(std::move(data));
-
-    // Refresh route
-    m_routingManager.RemoveRoute(false /* deactivateFollowing */);
-    m_routingManager.BuildRoute();
+    if (m_routingManager.ContinueRouteToPoint(std::move(data)))
+    {
+      // Refresh route
+      m_routingManager.RemoveRoute(false /* deactivateFollowing */);
+      m_routingManager.BuildRoute();
+    }
 
     return;
   }
 
-  if (buildInfo.m_isLongTap)
-  {
-    SwitchFullScreen();
-  }
-  else
-  {
-    auto const prevTrackId = m_currentPlacePageInfo ? m_currentPlacePageInfo->GetTrackId() : kml::kInvalidTrackId;
-    DeactivateHotelSearchMark();
+  auto const prevTrackId = m_currentPlacePageInfo ? m_currentPlacePageInfo->GetTrackId() : kml::kInvalidTrackId;
+  DeactivateHotelSearchMark();
 
-    m_currentPlacePageInfo = placePageInfo;
+  m_currentPlacePageInfo = placePageInfo;
 
-    auto const newTrackId = m_currentPlacePageInfo->GetTrackId();
-    if (newTrackId != kml::kInvalidTrackId)
+  auto const newTrackId = m_currentPlacePageInfo->GetTrackId();
+  if (newTrackId != kml::kInvalidTrackId)
+  {
+    // For user tracks: tapping the same track at a different point just moves the selection circle.
+    // Temp relation tracks always reuse the same ID, so always update the PlacePage for them.
+    if (newTrackId == prevTrackId && newTrackId != kml::kTempRelationTrackId)
     {
-      // For user tracks: tapping the same track at a different point just moves the selection circle.
-      // Temp relation tracks always reuse the same ID, so always update the PlacePage for them.
-      if (newTrackId == prevTrackId && newTrackId != BookmarkManager::kTempRelationTrackId)
+      if (m_drapeEngine)
       {
-        if (m_drapeEngine)
-        {
-          m_drapeEngine->SelectObject(df::SelectionShape::ESelectedObject::OBJECT_TRACK,
-                                      m_currentPlacePageInfo->GetMercator(), FeatureID(), false /* isAnim */,
-                                      false /* isGeometrySelectionAllowed */, true /* isSelectionShapeVisible */);
-        }
-        return;
+        m_drapeEngine->SelectObject(df::SelectionShape::ESelectedObject::OBJECT_TRACK,
+                                    m_currentPlacePageInfo->GetMercator(), FeatureID(), false /* isAnim */,
+                                    false /* isGeometrySelectionAllowed */, true /* isSelectionShapeVisible */);
       }
-      GetBookmarkManager().UpdateElevationMyPosition(newTrackId);
+      return;
     }
-
-    ActivateMapSelection();
+    GetBookmarkManager().UpdateElevationMyPosition(newTrackId, true /* ignoreLocationCache */);
   }
+
+  ActivateMapSelection();
 }
 
 void Framework::InvalidateRendering()
@@ -2498,12 +2519,37 @@ FeatureID Framework::FindBuildingAtPoint(m2::PointD const & mercator) const
   return featureId;
 }
 
-void Framework::BuildTrackPlacePage(Track::TrackSelectionInfo const & trackSelectionInfo, place_page::Info & info)
+bool Framework::BuildTrackPlacePage(Track::TrackSelectionInfo const & trackSelectionInfo, place_page::Info & info)
 {
+  auto & bm = GetBookmarkManager();
+  Track::TrackSelectionInfo selectedInfo = trackSelectionInfo;
+
+  if (selectedInfo.IsRelation())
+  {
+    auto trackData = TryBuildRelationTrack(selectedInfo);
+    if (!trackData)
+      return false;
+
+    bm.SetTempRelationTrack(std::move(trackData.value()));
+    auto const tapPoint = selectedInfo.m_trackPoint;  // Copy tap point before mutation.
+    bm.GetTrack(kml::kTempRelationTrackId)->UpdateSelectionInfo(tapPoint, selectedInfo);
+  }
+  else if (selectedInfo.m_trackId != kml::kTempRelationTrackId)
+  {
+    // Never drop the temporary track when it is the selected one: it can't be rebuilt without the
+    // relation metadata that this selection is missing.
+    bm.ClearTempRelationTrack();
+  }
+
+  // Can be null for a stale selection mark, left over from an already deleted track.
+  auto const * track = bm.GetTrack(selectedInfo.m_trackId);
+  if (track == nullptr)
+    return false;
+
   info.SetSelectedObject(df::SelectionShape::OBJECT_TRACK);
-  auto const & track = *GetBookmarkManager().GetTrack(trackSelectionInfo.m_trackId);
-  FillTrackInfo(track, trackSelectionInfo.m_trackPoint, info);
-  GetBookmarkManager().SetTrackSelectionInfo(trackSelectionInfo, true /* notifyListeners */);
+  FillTrackInfo(*track, selectedInfo, info);
+  bm.SetTrackSelectionInfo(selectedInfo, true /* notifyListeners */);
+  return true;
 }
 
 place_page::Info Framework::BuildPlacePageInfo(place_page::BuildInfo const & buildInfo)
@@ -2528,8 +2574,12 @@ place_page::Info Framework::BuildPlacePageInfo(place_page::BuildInfo const & bui
 
     if (mark)
     {
-      FillUserMarkInfo(mark, outInfo);
-      return outInfo;
+      if (FillUserMarkInfo(mark, outInfo))
+        return outInfo;
+
+      // Stale track mark: drop the partially filled info and continue with the regular matching.
+      outInfo = {};
+      outInfo.SetBuildInfo(buildInfo);
     }
   }
 
@@ -2557,9 +2607,9 @@ place_page::Info Framework::BuildPlacePageInfo(place_page::BuildInfo const & bui
       auto const rect = df::TapInfo::GetPreciseTapRect(outInfo.GetMercator(), kEps);
       UserMark const * mark = GetBookmarkManager().FindNearestUserMark([&rect](UserMark::Type) { return rect; },
                                                                        [](UserMark::Type) { return true; });
-      if (mark)
+      // On a stale track mark keep the feature info filled above and fall back to the POI selection.
+      if (mark && FillUserMarkInfo(mark, outInfo))
       {
-        FillUserMarkInfo(mark, outInfo);
         sp.SetPlacePageLocation(outInfo);
         return outInfo;
       }
@@ -2571,20 +2621,42 @@ place_page::Info Framework::BuildPlacePageInfo(place_page::BuildInfo const & bui
     return outInfo;
   }
 
-  // 4. User Tracks. Using VisualParams inside FindTrackInTapPosition/GetDefaultTapRect requires drapeEngine.
+  // 4. User Tracks. Using VisualParams inside FindTracksInTapPosition/GetDefaultTapRect requires drapeEngine.
   if (m_drapeEngine != nullptr && buildInfo.IsTrackMatchingEnabled())
   {
-    Track::TrackSelectionInfo trackSelectionInfo;
+    Track::TrackSelectionInfo trackToSelect;
+    std::vector<Track::TrackSelectionInfo> trackSelectionCandidates;
+
     if (buildInfo.m_trackId != kml::kInvalidTrackId)
     {
-      auto const & track = *GetBookmarkManager().GetTrack(buildInfo.m_trackId);
-      track.UpdateSelectionInfo(track.GetLimitRect(), trackSelectionInfo);
+      // Known track: find the closest point to the track's bounding-rect center, no distance limit.
+      auto const * track = GetBookmarkManager().GetTrack(buildInfo.m_trackId);
+      if (track == nullptr)
+        return outInfo;
+      track->UpdateSelectionInfo(track->GetLimitRect().Center(), trackToSelect);
+      ASSERT(trackToSelect.IsValid(), ());
+      trackSelectionCandidates.push_back(trackToSelect);
     }
     else
-      trackSelectionInfo = FindTrackInTapPosition(buildInfo);
-    if (trackSelectionInfo.m_trackId != kml::kInvalidTrackId)
     {
-      BuildTrackPlacePage(trackSelectionInfo, outInfo);
+      trackSelectionCandidates = FindTracksInTapPosition(buildInfo);
+      if (!trackSelectionCandidates.empty() && isFeatureMatchingEnabled)
+      {
+        auto const searchRect =
+            df::TapInfo::GetDefaultTapRect(buildInfo.m_mercator, m_currentModelView).GetGlobalRect();
+        auto relationTrackCandidates = FindRelationTracksInTapPosition(
+            sp.FindFeaturesInRect(buildInfo.m_mercator, searchRect).m_lineCandidates, buildInfo.m_mercator);
+        trackSelectionCandidates.insert(trackSelectionCandidates.end(), relationTrackCandidates.begin(),
+                                        relationTrackCandidates.end());
+        std::sort(trackSelectionCandidates.begin(), trackSelectionCandidates.end(), HasHigherTrackSelectionPriority);
+      }
+      if (!trackSelectionCandidates.empty())
+        trackToSelect = trackSelectionCandidates.front();
+    }
+
+    if (trackToSelect.IsValid() && BuildTrackPlacePage(trackToSelect, outInfo))
+    {
+      outInfo.SetTrackCandidates(std::move(trackSelectionCandidates));
       return outInfo;
     }
   }
@@ -2593,23 +2665,19 @@ place_page::Info Framework::BuildPlacePageInfo(place_page::BuildInfo const & bui
   if (isFeatureMatchingEnabled)
   {
     m2::RectD searchRect;
-    double lineDistThresholdM;
     if (m_drapeEngine != nullptr)
     {
-      auto const tapRect = df::TapInfo::GetDefaultTapRect(buildInfo.m_mercator, m_currentModelView);
-      searchRect = tapRect.GetGlobalRect();
-      lineDistThresholdM =
-          mercator::DistanceOnEarth(searchRect.Center(), {searchRect.RightTop().x, searchRect.Center().y});
+      // No problem if it is bigger with rotation.
+      searchRect = df::TapInfo::GetDefaultTapRect(buildInfo.m_mercator, m_currentModelView).GetGlobalRect();
     }
     else
     {
       // Fallback when drape engine is not available (e.g. search result selection).
       constexpr double kFallbackRadiusM = 20.0;
       searchRect = mercator::RectByCenterXYAndSizeInMeters(buildInfo.m_mercator, kFallbackRadiusM);
-      lineDistThresholdM = kFallbackRadiusM;
     }
 
-    auto const tap = sp.FindFeaturesInRect(buildInfo.m_mercator, searchRect, lineDistThresholdM);
+    auto const tap = sp.FindFeaturesInRect(buildInfo.m_mercator, searchRect);
 
     // POIs (tap.m_poi) are intentionally not used here — visible POIs are always
     // selected through drape's OverlayTree (step 3). We must not select displaced or
@@ -2622,17 +2690,26 @@ place_page::Info Framework::BuildPlacePageInfo(place_page::BuildInfo const & bui
     }
     else
     {
-      // Try building a route relation track from line candidates (closest first).
-      for (auto const & [dist, fid] : tap.m_lineCandidates)
+      Track::TrackSelectionInfo trackToSelect;
+      auto trackSelectionCandidates = FindRelationTracksInTapPosition(tap.m_lineCandidates, buildInfo.m_mercator);
+      std::sort(trackSelectionCandidates.begin(), trackSelectionCandidates.end(), HasHigherTrackSelectionPriority);
+
+      if (!trackSelectionCandidates.empty())
+        trackToSelect = trackSelectionCandidates.front();
+
+      // Set first track as selected to display.
+      if (trackToSelect.IsValid())
       {
-        if (TryBuildRelationTrack(fid, buildInfo.m_mercator, outInfo))
+        outInfo.SetSelectedObject(df::SelectionShape::OBJECT_TRACK);
+        sp.SetPlacePageLocation(outInfo);
+        if (BuildTrackPlacePage(trackToSelect, outInfo))
         {
-          sp.SetPlacePageLocation(outInfo);
+          outInfo.SetTrackCandidates(std::move(trackSelectionCandidates));
           return outInfo;
         }
       }
 
-      auto const bestFeature = tap.m_bestLine.IsValid() ? tap.m_bestLine : tap.m_bestArea;
+      auto const bestFeature = tap.m_line.IsValid() ? tap.m_line : tap.m_area;
       if (bestFeature.IsValid())
       {
         sp.FillFeatureInfo(bestFeature, outInfo);
@@ -2661,14 +2738,13 @@ void Framework::UpdatePlacePageInfoForCurrentSelection(std::optional<place_page:
   if (!m_currentPlacePageInfo)
     return;
 
-  m_currentPlacePageInfo =
-      BuildPlacePageInfo(overrideInfo.has_value() ? *overrideInfo : m_currentPlacePageInfo->GetBuildInfo());
+  m_currentPlacePageInfo = BuildPlacePageInfo(overrideInfo ? *overrideInfo : m_currentPlacePageInfo->GetBuildInfo());
 
   if (m_onPlacePageUpdate)
     m_onPlacePageUpdate();
 }
 
-Track::TrackSelectionInfo Framework::FindTrackInTapPosition(place_page::BuildInfo const & buildInfo) const
+std::vector<Track::TrackSelectionInfo> Framework::FindTracksInTapPosition(place_page::BuildInfo const & buildInfo) const
 {
   auto const & bm = GetBookmarkManager();
   if (buildInfo.m_trackId != kml::kInvalidTrackId)
@@ -2676,11 +2752,11 @@ Track::TrackSelectionInfo Framework::FindTrackInTapPosition(place_page::BuildInf
     if (bm.GetTrack(buildInfo.m_trackId) == nullptr)
       return {};
     auto const selection = bm.GetTrackSelectionInfo(buildInfo.m_trackId);
-    CHECK_NOT_EQUAL(selection.m_trackId, kml::kInvalidTrackId, ());
-    return selection;
+    CHECK(selection.IsValid(), ());
+    return {selection};
   }
   auto const touchRect = df::TapInfo::GetDefaultTapRect(buildInfo.m_mercator, m_currentModelView).GetGlobalRect();
-  return bm.FindNearestTrack(touchRect);
+  return bm.FindTracksInRect(touchRect);
 }
 
 UserMark const * Framework::FindUserMarkInTapPosition(place_page::BuildInfo const & buildInfo) const
@@ -2719,20 +2795,6 @@ void Framework::PredictLocation(double & lat, double & lon, double accuracy, dou
 StringsBundle const & Framework::GetStringsBundle()
 {
   return m_stringsBundle;
-}
-
-// static
-std::string Framework::CodeGe0url(Bookmark const * bmk, bool addName)
-{
-  double lat = mercator::YToLat(bmk->GetPivot().y);
-  double lon = mercator::XToLon(bmk->GetPivot().x);
-  return ge0::GenerateShortShowMapUrl(lat, lon, bmk->GetScale(), addName ? bmk->GetPreferredName() : "");
-}
-
-// static
-std::string Framework::CodeGe0url(double lat, double lon, double zoomLevel, std::string const & name)
-{
-  return ge0::GenerateShortShowMapUrl(lat, lon, zoomLevel, name);
 }
 
 std::string Framework::GenerateApiBackUrl(ApiMarkPoint const & point) const
@@ -2820,6 +2882,135 @@ void Framework::SetMapLanguageCode(std::string const & langCode)
     m_searchAPI->SetLocale(langCode);
 }
 
+void Framework::CreateBackgroundTilesProvider(std::string const & url, uint32_t cacheSizeMB)
+{
+  RasterTileProvider::Params rp;
+  rp.m_urlTemplate = url;
+  rp.m_cacheSubdir = "bg_tiles";
+  rp.m_maxZoom = 19;  // standard web-mercator detail; deeper OM tiles reuse the ancestor sub-rect.
+  rp.m_maxCacheBytes = static_cast<uint64_t>(cacheSizeMB) * 1024 * 1024;
+  // Global coverage (whole world) — min zoom and the lat/lon box keep their defaults.
+
+  m_rasterTileProvider = std::make_unique<RasterTileProvider>(
+      std::move(rp), [this](df::TileKey const & tileKey, dp::BackgroundMode mode, std::string const & imageUid,
+                            uint32_t width, uint32_t height, m2::RectF const & rect, std::vector<uint8_t> && rgba)
+  {
+    // Invoked on a background thread; AddTileBackgroundImage/SetTileBackgroundData only post
+    // messages, so they are safe to call from any thread.
+    if (m_drapeEngine)
+    {
+      m_drapeEngine->AddTileBackgroundImage(imageUid, width, height, dp::TextureFormat::RGBA8, mode, std::move(rgba));
+      m_drapeEngine->SetTileBackgroundData(tileKey, imageUid, rect);
+    }
+  });
+}
+
+void Framework::SetBackgroundTiles(bool enabled, std::string url, uint32_t cacheSizeMB, uint32_t areaOpacityPct)
+{
+  // Single entry point for the settings UI: persist all values and apply them at once. We only persist
+  // the URL/cache/opacity when enabling — when disabled, keep the previously stored values untouched and
+  // just flip the off-flag. Otherwise editing the URL while the layer is off would persist it and then
+  // resurface as a stale RasterTileProvider on the next enable (enable -> edit -> disable -> close).
+  if (!enabled)
+  {
+    SetBackgroundTilesEnabled(false);
+    return;
+  }
+
+  cacheSizeMB = math::Clamp(cacheSizeMB, kBackgroundTilesMinCacheSizeMB, kBackgroundTilesMaxCacheSizeMB);
+  areaOpacityPct = math::Clamp(areaOpacityPct, kBackgroundTilesMinAreaOpacityPct, kBackgroundTilesMaxAreaOpacityPct);
+  settings::Set(kBgTilesEnabledKey, enabled);
+  settings::Set(kBgTilesUrlKey, url);
+  settings::Set(kBgTilesCacheSizeMBKey, cacheSizeMB);
+  settings::Set(kBgTilesAreaOpacityKey, areaOpacityPct);
+
+  bool const active = !url.empty();
+  if (active)
+  {
+    auto const cacheBytes = static_cast<uint64_t>(cacheSizeMB) * 1024 * 1024;
+    if (m_rasterTileProvider)
+      m_rasterTileProvider->Reconfigure(url, cacheBytes);  // clears the cache if the URL changed
+    else
+      CreateBackgroundTilesProvider(url, cacheSizeMB);
+  }
+
+  if (m_drapeEngine)
+    m_drapeEngine->SetTileBackgroundMode(active ? dp::BackgroundMode::Satellite : dp::BackgroundMode::Default,
+                                         areaOpacityPct / 100.0f);
+}
+
+uint32_t Framework::GetBackgroundTilesCacheSize()
+{
+  uint32_t res;
+  if (!settings::Get(kBgTilesCacheSizeMBKey, res) || res < kBackgroundTilesMinCacheSizeMB ||
+      res > kBackgroundTilesMaxCacheSizeMB)
+    res = kDefaultBgTilesCacheSizeMB;
+  return res;
+}
+
+void Framework::SetBackgroundTilesEnabled(bool enabled)
+{
+  // Toggle the layer on/off without touching the persisted URL / cache size / area opacity.
+  settings::Set(kBgTilesEnabledKey, enabled);
+
+  std::string url;
+  settings::TryGet(kBgTilesUrlKey, url);
+  bool const active = enabled && !url.empty();
+
+  // The provider is created lazily at startup only when the layer was already on; create it here on
+  // the first enable so SetTileBackgroundMode(Satellite) has tiles to render.
+  if (active && !m_rasterTileProvider)
+    CreateBackgroundTilesProvider(url, GetBackgroundTilesCacheSize());
+
+  if (m_drapeEngine)
+    m_drapeEngine->SetTileBackgroundMode(active ? dp::BackgroundMode::Satellite : dp::BackgroundMode::Default,
+                                         GetBackgroundTilesAreaOpacity() / 100.0f);
+}
+
+std::string Framework::GetBackgroundTilesURL()
+{
+  std::string url;
+  settings::TryGet(kBgTilesUrlKey, url);
+  return url;
+}
+
+bool Framework::IsBackgroundTilesEnabled()
+{
+  bool enabled = false;
+  settings::TryGet(kBgTilesEnabledKey, enabled);
+  return enabled;
+}
+
+uint32_t Framework::GetBackgroundTilesAreaOpacity()
+{
+  uint32_t opacityPct;
+  if (!settings::Get(kBgTilesAreaOpacityKey, opacityPct) || opacityPct > kBackgroundTilesMaxAreaOpacityPct)
+    opacityPct = kDefaultBgTilesAreaOpacityPct;
+  return opacityPct;
+}
+
+bool Framework::IsWellFormedBackgroundTilesURL(std::string const & url)
+{
+  // Require an http(s):// scheme.
+  size_t hostStart;
+  if (url.starts_with("https://"))
+    hostStart = 8;
+  else if (url.starts_with("http://"))
+    hostStart = 7;
+  else
+    return false;
+
+  // Require a non-empty host (everything up to the first '/' after the scheme).
+  size_t const slash = url.find('/', hostStart);
+  size_t const hostLen = (slash == std::string::npos ? url.size() : slash) - hostStart;
+  if (hostLen == 0)
+    return false;
+
+  // Require all three placeholders present literally (braces must not be percent-encoded).
+  return url.find("{z}") != std::string::npos && url.find("{x}") != std::string::npos &&
+         url.find("{y}") != std::string::npos;
+}
+
 void Framework::ApplyMapLanguageCode(std::string const & langCode)
 {
   int8_t langIndex = StringUtf8Multilang::GetLangIndex(langCode);
@@ -2861,7 +3052,7 @@ void Framework::Load3dMode(bool & allow3d, bool & allow3dBuildings)
 
 bool Framework::LoadLargeFontsSize()
 {
-  bool isLargeSize;
+  bool isLargeSize = false;
   return settings::Get(kLargeFontsSize, isLargeSize) && isLargeSize;
 }
 
@@ -2869,11 +3060,30 @@ void Framework::SetLargeFontsSize(bool isLargeSize)
 {
   settings::Set(kLargeFontsSize, isLargeSize);
 
-  double const scaleFactor = isLargeSize ? kLargeFontsScaleFactor : 1.0;
+  double const resultScaleFactor = (isLargeSize ? kLargeFontsScaleFactor : 1.0) * m_fontScaleFactor;
 
-  ASSERT(m_drapeEngine, ());
-  m_drapeEngine->SetFontScaleFactor(scaleFactor);
+  if (!m_drapeEngine)
+    return;
 
+  m_drapeEngine->SetFontScaleFactor(resultScaleFactor);
+  Invalidate();
+}
+
+void Framework::SetFontScaleFactor(double scaleFactor)
+{
+  if (m_fontScaleFactor == scaleFactor)
+    return;
+  m_fontScaleFactor = scaleFactor;
+
+  if (!m_drapeEngine)
+    return;
+
+  bool isLargeSize = false;
+  UNUSED_VALUE(settings::Get(kLargeFontsSize, isLargeSize));
+
+  auto const resultScaleFactor = (isLargeSize ? kLargeFontsScaleFactor : 1.0) * m_fontScaleFactor;
+
+  m_drapeEngine->SetFontScaleFactor(resultScaleFactor);
   Invalidate();
 }
 
@@ -3164,6 +3374,277 @@ void Framework::InvalidateFogTiles()
   }
 }
 
+bool Framework::RequestFogTile(df::TileKey const & tileKey)
+{
+  if (!m_drapeEngine)
+    return false;
+
+  // Use reduced resolution for fog tiles — fog is a smooth overlay with
+  // no sharp features, so 128×128 bilinear-filtered by the GPU looks
+  // identical to 256×256 while being 4× faster to compute and upload.
+  constexpr uint32_t kTileSize = 128;
+  constexpr uint32_t kBytesPerPixel = 4;
+
+  auto const submitTile = [&](std::vector<uint8_t> && pixels)
+  {
+    // Every request gets a unique uid, so fog tiles are never served from the renderer's image cache.
+    std::string const uid = "fog/" + std::to_string(++m_fogTileUidCounter);
+    m_drapeEngine->AddTileBackgroundImage(uid, kTileSize, kTileSize, dp::TextureFormat::RGBA8,
+                                          dp::BackgroundMode::FogOfWar, std::move(pixels));
+    m_drapeEngine->SetTileBackgroundData(tileKey, uid, m2::RectF(0.0f, 0.0f, 1.0f, 1.0f));
+  };
+
+  int const fogOpacityPct = GetFogOfWarOpacity();
+  uint8_t const fogAlpha = static_cast<uint8_t>(std::clamp(fogOpacityPct * 255 / 100, 0, 255));
+
+  int const revealRadiusMeters = GetFogOfWarRadius();
+  double const revealRadiusMercator = revealRadiusMeters / 111320.0;
+
+  int const fogColor = GetFogOfWarColor();
+  uint8_t const fogR = static_cast<uint8_t>((fogColor >> 16) & 0xFF);
+  uint8_t const fogG = static_cast<uint8_t>((fogColor >> 8) & 0xFF);
+  uint8_t const fogB = static_cast<uint8_t>(fogColor & 0xFF);
+
+  auto const tileRect = tileKey.GetGlobalRect();
+  double const tileWidth = tileRect.SizeX();
+  double const tileHeight = tileRect.SizeY();
+
+  // Enforce an absolute floor so the trail doesn't vanish when
+  // the natural radius is sub-pixel at far zoom.
+  constexpr double kMinRadiusPx = 1.5;
+  double const naturalRadiusPx = revealRadiusMercator / tileWidth * kTileSize;
+  double const radiusPx = std::max(kMinRadiusPx, naturalRadiusPx);
+
+  // Use the effective pixel-space radius (back-converted to Mercator)
+  // for the expanded rect so that the kMinRadiusPx boost is respected
+  // when culling points near tile boundaries at far zoom.
+  double const effectiveRadiusMerc = radiusPx / kTileSize * tileWidth;
+  auto expandedRect = tileRect;
+  expandedRect.Inflate(effectiveRadiusMerc, effectiveRadiusMerc);
+
+  // Fast path: check if this tile has any GPS data nearby using bounding rect.
+  // Do this BEFORE pixel allocation to skip work for tiles far from any data.
+  bool hasNearbyGpsData = false;
+  {
+    std::lock_guard lock(m_fogTrackPointsMutex);
+    if (m_fogCurrentPosition.has_value() && expandedRect.IsPointInside(*m_fogCurrentPosition))
+      hasNearbyGpsData = true;
+    if (!hasNearbyGpsData && m_fogDataBoundingRect.IsValid())
+    {
+      auto dataBounds = m_fogDataBoundingRect;
+      dataBounds.Inflate(revealRadiusMercator, revealRadiusMercator);
+      hasNearbyGpsData = expandedRect.IsIntersect(dataBounds);
+    }
+  }
+
+  constexpr uint32_t kPixelCount = kTileSize * kTileSize;
+  std::vector<uint8_t> pixels(kPixelCount * kBytesPerPixel);
+
+  // Fill with fog color and opacity using 32-bit writes.
+  uint32_t const fogPixel = static_cast<uint32_t>(fogR) | (static_cast<uint32_t>(fogG) << 8) |
+                            (static_cast<uint32_t>(fogB) << 16) | (static_cast<uint32_t>(fogAlpha) << 24);
+  auto * pixelData = reinterpret_cast<uint32_t *>(pixels.data());
+  for (uint32_t i = 0; i < kPixelCount; ++i)
+    pixelData[i] = fogPixel;
+
+  if (!hasNearbyGpsData)
+  {
+    // Pure solid fog — skip all reveal pixel processing.
+    submitTile(std::move(pixels));
+    return true;
+  }
+
+  double const radiusSq = radiusPx * radiusPx;
+  // Configurable gradient: gradient width % of radius is transition zone.
+  int const gradientPercent = GetFogOfWarGradient();
+  double const innerFraction = 1.0 - gradientPercent / 100.0;
+  double const innerRadiusSq = radiusSq * innerFraction * innerFraction;
+
+  // Pre-compute sqrt values to avoid per-pixel sqrt calls in the gradient ring.
+  float const innerRadius = std::sqrt(static_cast<float>(innerRadiusSq));
+  float const outerRadius = std::sqrt(static_cast<float>(radiusSq));
+  float const invRadiusDiff = (outerRadius > innerRadius) ? 1.0f / (outerRadius - innerRadius) : 0.0f;
+  float const radiusSqF = static_cast<float>(radiusSq);
+  float const innerRadiusSqF = static_cast<float>(innerRadiusSq);
+
+  // Clear alpha for a pixel given distance squared from center.
+  auto const clearPixel = [&](int x, int y, float distSq)
+  {
+    uint8_t & alpha = pixels[(y * kTileSize + x) * kBytesPerPixel + 3];
+    if (alpha == 0)
+      return;  // Already fully revealed — skip.
+    if (distSq <= innerRadiusSqF)
+    {
+      alpha = 0;
+    }
+    else if (distSq <= radiusSqF)
+    {
+      // Smooth cubic ease-in for a gentler gradient.
+      float const t = (std::sqrt(distSq) - innerRadius) * invRadiusDiff;
+      float const smooth = t * t * (3.0f - 2.0f * t);  // smoothstep
+      alpha = std::min(alpha, static_cast<uint8_t>(smooth * fogAlpha));
+    }
+  };
+
+  // Convert Mercator point to tile pixel coordinates (float for faster per-pixel math).
+  auto const toPixel = [&](m2::PointD const & mercPt) -> std::pair<float, float>
+  {
+    return {static_cast<float>((mercPt.x - tileRect.minX()) / tileWidth * kTileSize),
+            static_cast<float>((mercPt.y - tileRect.minY()) / tileHeight * kTileSize)};
+  };
+
+  float const radiusPxF = static_cast<float>(radiusPx);
+
+  // Reveal a thick line segment between two pixel-space points (stroked path).
+  auto const revealSegment = [&](float x0, float y0, float x1, float y1)
+  {
+    // Bounding box of the segment + radius.
+    int const minPx = std::max(0, static_cast<int>(std::min(x0, x1) - radiusPxF));
+    int const maxPx = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(std::max(x0, x1) + radiusPxF));
+    int const minPy = std::max(0, static_cast<int>(std::min(y0, y1) - radiusPxF));
+    int const maxPy = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(std::max(y0, y1) + radiusPxF));
+
+    float const segDx = x1 - x0;
+    float const segDy = y1 - y0;
+    float const segLenSq = segDx * segDx + segDy * segDy;
+
+    for (int y = minPy; y <= maxPy; ++y)
+      for (int x = minPx; x <= maxPx; ++x)
+      {
+        // Distance from pixel to line segment.
+        float distSq;
+        if (segLenSq < 1e-6f)
+        {
+          float const dx = x - x0;
+          float const dy = y - y0;
+          distSq = dx * dx + dy * dy;
+        }
+        else
+        {
+          float t = ((x - x0) * segDx + (y - y0) * segDy) / segLenSq;
+          t = std::max(0.0f, std::min(1.0f, t));
+          float const projX = x0 + t * segDx;
+          float const projY = y0 + t * segDy;
+          float const dx = x - projX;
+          float const dy = y - projY;
+          distSq = dx * dx + dy * dy;
+        }
+        if (distSq <= radiusSqF)
+          clearPixel(x, y, distSq);
+      }
+  };
+
+  // Reveal from cached GPS positions and track segments.
+  // All data is protected by m_fogTrackPointsMutex — no direct
+  // GpsTracker iteration (which is not thread-safe).
+  {
+    std::lock_guard lock(m_fogTrackPointsMutex);
+
+    // Reveal from accumulated live GPS positions as connected segments.
+    for (size_t gi = 0; gi < m_fogGpsPositions.size(); ++gi)
+    {
+      auto const & gpsPos = m_fogGpsPositions[gi];
+
+      if (gi == 0)
+      {
+        // First point: reveal circle if within reach of this tile.
+        if (!expandedRect.IsPointInside(gpsPos))
+          continue;
+        auto const [px, py] = toPixel(gpsPos);
+        int const minX = std::max(0, static_cast<int>(px - radiusPxF));
+        int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
+        int const minY = std::max(0, static_cast<int>(py - radiusPxF));
+        int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
+        for (int y = minY; y <= maxY; ++y)
+          for (int x = minX; x <= maxX; ++x)
+            clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+        continue;
+      }
+
+      // For segments: skip only if the segment bbox can't reach this tile.
+      // A long segment may cross the tile even when both endpoints are outside.
+      auto const & prevPos = m_fogGpsPositions[gi - 1];
+      bool const curInside = expandedRect.IsPointInside(gpsPos);
+      bool const prevInside = expandedRect.IsPointInside(prevPos);
+      if (!curInside && !prevInside)
+      {
+        m2::RectD segBox(gpsPos, prevPos);
+        if (!expandedRect.IsIntersect(segBox))
+          continue;
+      }
+
+      auto const [px, py] = toPixel(gpsPos);
+      auto const [prevPx, prevPy] = toPixel(prevPos);
+      revealSegment(prevPx, prevPy, px, py);
+    }
+
+    // Reveal circle around current GPS position.
+    if (m_fogCurrentPosition.has_value())
+    {
+      auto const & pos = *m_fogCurrentPosition;
+      if (expandedRect.IsPointInside(pos))
+      {
+        auto const [px, py] = toPixel(pos);
+        int const minX = std::max(0, static_cast<int>(px - radiusPxF));
+        int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
+        int const minY = std::max(0, static_cast<int>(py - radiusPxF));
+        int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
+        for (int y = minY; y <= maxY; ++y)
+          for (int x = minX; x <= maxX; ++x)
+            clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+      }
+    }
+
+    for (size_t si = 0; si < m_fogTrackSegments.size(); ++si)
+    {
+      // Skip entire segment if its bounding box doesn't overlap the tile.
+      if (si < m_fogSegmentBounds.size())
+      {
+        auto segBounds = m_fogSegmentBounds[si];
+        segBounds.Inflate(revealRadiusMercator, revealRadiusMercator);
+        if (!expandedRect.IsIntersect(segBounds))
+          continue;
+      }
+
+      auto const & seg = m_fogTrackSegments[si];
+      for (size_t i = 0; i < seg.size(); ++i)
+      {
+        if (i == 0)
+        {
+          if (!expandedRect.IsPointInside(seg[i]))
+            continue;
+          auto const [px, py] = toPixel(seg[i]);
+          int const minX = std::max(0, static_cast<int>(px - radiusPxF));
+          int const maxX = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(px + radiusPxF));
+          int const minY = std::max(0, static_cast<int>(py - radiusPxF));
+          int const maxY = std::min(static_cast<int>(kTileSize) - 1, static_cast<int>(py + radiusPxF));
+          for (int y = minY; y <= maxY; ++y)
+            for (int x = minX; x <= maxX; ++x)
+              clearPixel(x, y, (x - px) * (x - px) + (y - py) * (y - py));
+          continue;
+        }
+
+        // Skip only if segment bbox can't reach this tile.
+        bool const curInside = expandedRect.IsPointInside(seg[i]);
+        bool const prevInside = expandedRect.IsPointInside(seg[i - 1]);
+        if (!curInside && !prevInside)
+        {
+          m2::RectD segBox(seg[i], seg[i - 1]);
+          if (!expandedRect.IsIntersect(segBox))
+            continue;
+        }
+
+        auto const [px, py] = toPixel(seg[i]);
+        auto const [prevPx, prevPy] = toPixel(seg[i - 1]);
+        revealSegment(prevPx, prevPy, px, py);
+      }
+    }
+  }
+
+  submitTile(std::move(pixels));
+  return true;
+}
+
 int Framework::GetFogOfWarRadius()
 {
   int radius;
@@ -3269,12 +3750,14 @@ void Framework::SetFogThrottleInterval(int tier, int interval)
   settings::Set(kFogThrottleIntervalKeys[tier], interval);
 }
 
-void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition)
+void Framework::EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition,
+                                         bool shouldChangeViewport)
 {
   if (m_drapeEngine != nullptr)
   {
-    m_drapeEngine->EnableChoosePositionMode(
-        enable, enableBounds ? GetSelectedFeatureTriangles() : std::vector<m2::TriangleD>(), optionalPosition);
+    m_drapeEngine->EnableChoosePositionMode(enable,
+                                            enableBounds ? GetSelectedFeatureTriangles() : std::vector<m2::TriangleD>(),
+                                            optionalPosition, shouldChangeViewport);
   }
 }
 
@@ -3405,13 +3888,17 @@ bool Framework::ParseDrapeDebugCommand(std::string const & query)
     return true;
   }
 
-#if DEBUG_BACKGROUND_TILE
   if (query == "?satellite")
   {
-    m_drapeEngine->SetTileBackgroundMode(dp::BackgroundMode::Satellite);
+    m_drapeEngine->SetTileBackgroundMode(dp::BackgroundMode::Satellite, GetBackgroundTilesAreaOpacity() / 100.0f);
     return true;
   }
-#endif
+  if (query == "?no-satellite")
+  {
+    m_drapeEngine->SetTileBackgroundMode(dp::BackgroundMode::Default, GetBackgroundTilesAreaOpacity() / 100.0f);
+    return true;
+  }
+
 #if defined(OMIM_METAL_AVAILABLE)
   if (query == "?metal")
   {
@@ -3488,6 +3975,49 @@ bool Framework::ParseRoutingDebugCommand(search::SearchParams const & params)
     return true;
   }
   return false;
+}
+
+bool Framework::ParseDownloaderDebugCommand(search::SearchParams const & params)
+{
+  char const kSetCommand[] = "?map-download-server:";
+  char const kStatusCommand[] = "?map-download-server";
+  char const kResetCommand[] = "?no-map-download-server";
+
+  if (params.m_query == kStatusCommand)
+  {
+    std::string serverUrl;
+    if (m_storage.GetDebugMapDownloadServer(serverUrl))
+      EmitDebugCommandResult(params, "Map download server: " + serverUrl);
+    else
+      EmitDebugCommandResult(params, "Map download server: default");
+    return true;
+  }
+
+  bool const reset = params.m_query == kResetCommand;
+  if (!reset && !params.m_query.starts_with(kSetCommand))
+    return false;
+
+  // Both setting and resetting the server affect ongoing downloads.
+  if (m_storage.IsDownloadInProgress())
+  {
+    EmitDebugCommandResult(params, "Cancel active map downloads before changing the map download server.");
+    return true;
+  }
+
+  if (reset)
+  {
+    m_storage.ResetDebugMapDownloadServer();
+    EmitDebugCommandResult(params, "Map download server reset to default.");
+  }
+  else
+  {
+    std::string normalizedUrl;
+    if (m_storage.SetDebugMapDownloadServer(params.m_query.substr(sizeof(kSetCommand) - 1), normalizedUrl))
+      EmitDebugCommandResult(params, "Map download server: " + normalizedUrl);
+    else
+      EmitDebugCommandResult(params, "Invalid map download server URL. Use http:// or https:// without query.");
+  }
+  return true;
 }
 
 bool Framework::ParseAllTypesDebugCommand(search::SearchParams const & params)
@@ -3626,6 +4156,10 @@ bool Framework::CanEditMapForPosition(m2::PointD const & position) const
 bool Framework::CreateMapObject(m2::PointD const & mercator, uint32_t const featureType,
                                 osm::EditableMapObject & emo) const
 {
+  // GetRegionCountryId() below wraps internally, but Editor::CreatePoint() tests the MWM's bounding
+  // box as is, so an unwrapped point would silently fail there instead of here.
+  ASSERT(mercator::ValidX(mercator.x), (mercator));
+
   emo = {};
   auto const & dataSource = m_featuresFetcher.GetDataSource();
   MwmSet::MwmId const mwmId =
@@ -3655,6 +4189,20 @@ bool Framework::GetEditableMapObject(FeatureID const & fid, osm::EditableMapObje
 
   emo = {};
   emo.SetFromFeatureType(*ft);
+
+  if (HasPlacePageInfo())
+  {
+    auto const & info = GetCurrentPlacePageInfo();
+    auto const & buildInfo = info.GetBuildInfo();
+    // In explicit feature selections (for example, tapping a road label), the place page keeps the
+    // feature center. The original user tap is still the location that the note should report.
+    if (info.GetID() == fid && buildInfo.m_source == place_page::BuildInfo::Source::User &&
+        info.GetGeomType() != feature::GeomType::Point)
+    {
+      emo.SetSelectionPoint(buildInfo.m_mercator);
+    }
+  }
+
   auto const & editor = osm::Editor::Instance();
   emo.SetEditableProperties(editor.GetEditableProperties(*ft));
 
@@ -3841,11 +4389,14 @@ bool Framework::RollBackChanges(FeatureID const & fid)
   return rolledBack;
 }
 
-void Framework::CreateNote(osm::MapObject const & mapObject, osm::Editor::NoteProblemType const type,
+void Framework::CreateNote(osm::EditableMapObject const & mapObject, osm::Editor::NoteProblemType const type,
                            std::string const & note)
 {
-  osm::Editor::Instance().CreateNote(mapObject.GetLatLon(), mapObject.GetID(), mapObject.GetTypes(),
-                                     mapObject.GetDefaultName(), type, note);
+  auto const & selection = mapObject.GetSelectionPoint();
+  auto const noteLatLon = selection ? mercator::ToLatLon(*selection) : mapObject.GetLatLon();
+
+  osm::Editor::Instance().CreateNote(noteLatLon, mapObject.GetID(), mapObject.GetTypes(), mapObject.GetDefaultName(),
+                                     type, note);
   if (type == osm::Editor::NoteProblemType::PlaceDoesNotExist)
     DeactivateMapSelection();
 }
@@ -3862,7 +4413,6 @@ void Framework::ShowViewportSearchResults(SearchResultsIterT begin, SearchResult
 
 void Framework::ClearViewportSearchResults()
 {
-  m_searchMarks.ClearTrackedProperties();
   GetBookmarkManager().GetEditSession().ClearGroup(UserMark::Type::SEARCH);
 }
 
@@ -3883,6 +4433,8 @@ bool Framework::ParseSearchQueryCommand(search::SearchParams const & params)
   if (ParseEditorDebugCommand(params))
     return true;
   if (ParseRoutingDebugCommand(params))
+    return true;
+  if (ParseDownloaderDebugCommand(params))
     return true;
   if (ParseAllTypesDebugCommand(params))
     return true;
@@ -4017,13 +4569,19 @@ std::optional<products::ProductsConfig> Framework::GetProductsConfiguration() co
 
 void Framework::DidCloseProductsPopup(ProductsPopupCloseReason reason) const
 {
-  settings::Set(kPlacePageProductsPopupCloseTime, base::SecondsSinceEpoch());
+  auto const now = base::SecondsSinceEpoch();
+  settings::Set(kPlacePageProductsPopupCloseTime, now);
   settings::Set(kPlacePageProductsPopupCloseReason, ToString(reason));
+  // Users who say they have already donated shouldn't see the crowdfunding promo either.
+  if (reason == ProductsPopupCloseReason::AlreadyDonated)
+    settings::Set(kDonationTapTimeKey, now);
 }
 
 void Framework::DidSelectProduct(products::ProductsConfig::Product const & product) const
 {
   settings::Set(kPlacePageSelectedProduct, product.title);
+  // Selecting a product opens the donation page, update the stats used by the crowdfunding promo.
+  DidShowDonationPage();
 }
 
 uint32_t Framework::GetTimeoutForReason(ProductsPopupCloseReason reason)
@@ -4125,16 +4683,14 @@ std::string Framework::GetDonateUrl() const
 
 bool Framework::CanShowCrowdfundingPromo() const
 {
-  if (GetDonateUrl().empty())
+  auto const now = base::SecondsSinceEpoch();
+  if (now < kCrowdfundingStartTime || now > kCrowdfundingEndTime)
     return false;
 
+  // Don't nag users who have already opened the donation page during this campaign.
   uint64_t lastDonationTapTime = 0;
-  bool const donationWasTapped = settings::Get(kDonationTapTimeKey, lastDonationTapTime) && lastDonationTapTime > 0;
-  bool const crowdfundingHasEnded = base::SecondsSinceEpoch() > kCrowdfundingEndTime;
-  if (donationWasTapped && crowdfundingHasEnded)
-    return false;
-
-  return true;
+  settings::TryGet(kDonationTapTimeKey, lastDonationTapTime);
+  return lastDonationTapTime < kCrowdfundingStartTime;
 }
 
 void Framework::DidShowDonationPage() const

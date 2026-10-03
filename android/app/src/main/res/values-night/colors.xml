@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <color name="cursor_edit_field">@color/text_light</color>
+
   <color name="base_accent">#FF4BB9E6</color>
   <color name="base_accent_pressed">#FF3C9BBE</color>
 
@@ -14,6 +16,7 @@
   <color name="bg_primary">#1E2226</color>
   <color name="bg_cards">#FF3C4044</color>
   <color name="bg_panel">@color/bg_window</color>
+  <color name="notes_fade_start">#003C4044</color>
   <color name="bg_primary_dark">#14181C</color>
 
   <color name="bg_menu">#CC2D3237</color>
@@ -37,4 +40,20 @@
 
   <color name="elevation_profile_dot_enabled">#FF9600</color>
   <color name="elevation_profile">#4BB9E6</color>
+  <!-- Shimmer -->
+  <color name="shimmer_bar">#29FFFFFF</color>
+  <color name="shimmer_highlight">#33FFFFFF</color>
+  <!-- Search sheet -->
+  <color name="bg_search">#0AFFFFFF</color>
+  <color name="ripple_search_action">#33FFFFFF</color>
+
+  <!--  Routing-->
+  <color name="routing_bottom_button_tint">@color/bg_menu</color>
+  <color name="routing_bottom_manage_route_background">@color/bg_menu</color>
+  <color name="routing_button_activated_tint">@color/base_accent</color>
+  <color name="routing_tab_active_bg">@color/bg_cards</color>
+  <color name="routing_button_tint">#FFFFFFFF</color>
+  <color name="routing_bottom_button_activated_bg">#FFFFFFFF</color>
+  <color name="routing_bottom_button_bg">@color/bg_menu</color>
+
 </resources>

@@ -18,7 +18,7 @@ import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
 import app.organicmaps.downloader.MapManagerHelper;
 import app.organicmaps.sdk.downloader.CountryItem;
-import app.organicmaps.sdk.downloader.MapManager;
+import app.organicmaps.sdk.util.Utils;
 import app.organicmaps.util.UiUtils;
 
 public class RoutingErrorDialogFragment extends BaseRoutingErrorDialogFragment
@@ -34,13 +34,16 @@ public class RoutingErrorDialogFragment extends BaseRoutingErrorDialogFragment
   {
     super.beforeDialogCreated(builder);
 
+    final Context context = requireContext();
     ResultCodesHelper.ResourcesHolder resHolder = ResultCodesHelper.getDialogTitleSubtitle(
-        requireContext(), MwmApplication.from(requireContext()).getLocationHelper(), mResultCode, mMissingMaps.size());
+        context, MwmApplication.from(context).getLocationHelper(), mResultCode, mMissingMaps.size());
     Pair<String, String> titleMessage = resHolder.getTitleMessage();
 
-    TextView titleView = new TextView(requireContext());
+    TextView titleView = new TextView(context);
     titleView.setText(titleMessage.first);
-    titleView.setPadding(65, 32, 32, 16);
+    titleView.setPaddingRelative(Utils.dimen(context, R.dimen.margin_base_plus),
+                                 Utils.dimen(context, R.dimen.margin_base), Utils.dimen(context, R.dimen.margin_base),
+                                 Utils.dimen(context, R.dimen.margin_half));
     titleView.setTextSize(18);
     titleView.setMaxLines(4);
     titleView.setEllipsize(TextUtils.TruncateAt.END);
@@ -66,15 +69,9 @@ public class RoutingErrorDialogFragment extends BaseRoutingErrorDialogFragment
   @Override
   public void onDismiss(DialogInterface dialog)
   {
+    // Dismissing a missing-maps prompt keeps planning; only a found route can be started.
     if (mNeedMoreMaps && mCancelled)
-    {
       mCancelled = false;
-
-      /// @todo Actually, should cancel if there is no valid route only.
-      // I didn't realize how to distinguish NEED_MORE_MAPS but valid route is present.
-      // Should refactor RoutingController states.
-      // RoutingController.get().cancel();
-    }
 
     super.onDismiss(dialog);
   }
@@ -109,7 +106,14 @@ public class RoutingErrorDialogFragment extends BaseRoutingErrorDialogFragment
     }
 
     MapManagerHelper.warnOn3g(requireActivity(), size, () -> {
-      final FragmentManager manager = requireActivity().getSupportFragmentManager();
+      // The mobile-data confirmation may outlive this dialog fragment.
+      if (!isAdded())
+        return;
+
+      final FragmentManager manager = getParentFragmentManager();
+      if (manager.isStateSaved() || manager.isDestroyed())
+        return;
+
       RoutingMapsDownloadFragment downloader =
           RoutingMapsDownloadFragment.create(manager.getFragmentFactory(), getAppContextOrThrow(), mMapsArray);
       downloader.show(manager, downloader.getClass().getSimpleName());

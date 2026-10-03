@@ -1,23 +1,18 @@
 package app.organicmaps.car;
 
-import android.content.ComponentName;
-import android.content.Intent;
-import android.net.Uri;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.car.app.CarContext;
 import androidx.car.app.Session;
 import androidx.car.app.SessionInfo;
-import androidx.car.app.notification.CarAppExtender;
-import androidx.car.app.notification.CarPendingIntent;
 import androidx.core.app.NotificationChannelCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import app.organicmaps.BuildConfig;
 import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
-import app.organicmaps.api.Const;
 import app.organicmaps.sdk.OrganicMaps;
+import app.organicmaps.sdk.car.CarType;
+import app.organicmaps.sdk.car.CarTypeHelper;
+import app.organicmaps.sdk.display.DisplayManager;
+import app.organicmaps.sdk.display.DisplayType;
 import app.organicmaps.sdk.util.Config;
 import app.organicmaps.sdk.util.log.Logger;
 import java.io.IOException;
@@ -30,12 +25,12 @@ public final class AndroidAutoService extends CarAppServiceBase
   @NonNull
   public static final String ANDROID_AUTO_NOTIFICATION_CHANNEL_ID = "ANDROID_AUTO";
 
-  @Nullable
-  private static NotificationCompat.Extender mCarNotificationExtender;
-
   @SuppressWarnings("NotNullFieldNotInitialized")
   @NonNull
   private OrganicMaps mOrganicMapsContext;
+  @SuppressWarnings("NotNullFieldNotInitialized")
+  @NonNull
+  private DisplayManager mDisplayManager;
   private boolean mInitFailed = false;
 
   public AndroidAutoService()
@@ -45,24 +40,24 @@ public final class AndroidAutoService extends CarAppServiceBase
 
   @NonNull
   @Override
-  public Session onCreateSession(@Nullable SessionInfo sessionInfo)
+  public Session onCreateSession(@NonNull SessionInfo sessionInfo)
   {
-    createNotificationChannel();
-    return new AndroidAutoSession(mOrganicMapsContext, sessionInfo, mInitFailed);
-  }
-
-  @NonNull
-  @Override
-  public Session onCreateSession()
-  {
-    return onCreateSession(null);
+    mDisplayManager.init(DisplayType.Car);
+    return new AndroidAutoSession(mOrganicMapsContext, mDisplayManager, sessionInfo, /* isDebug */ BuildConfig.DEBUG,
+                                  mInitFailed);
   }
 
   @Override
   public void onCreate()
   {
+    super.onCreate();
+    createNotificationChannel();
+    CarTypeHelper.setCarType(CarType.AndroidAuto);
+
     final MwmApplication app = MwmApplication.from(getApplicationContext());
     mOrganicMapsContext = app.getOrganicMaps();
+    mDisplayManager = app.getDisplayManager();
+
     if (!mOrganicMapsContext.arePlatformAndCoreInitialized())
     {
       try
@@ -78,24 +73,6 @@ public final class AndroidAutoService extends CarAppServiceBase
 
     // TODO: Show dialog to the user
     Config.setFirstStartDialogSeen(getApplicationContext());
-  }
-
-  @NonNull
-  public static NotificationCompat.Extender getCarNotificationExtender(@NonNull CarContext context)
-  {
-    if (mCarNotificationExtender != null)
-      return mCarNotificationExtender;
-
-    final Intent intent = new Intent(Intent.ACTION_VIEW)
-                              .setComponent(new ComponentName(context, AndroidAutoService.class))
-                              .setData(Uri.fromParts(Const.API_SCHEME, CarAppServiceBase.API_CAR_HOST,
-                                                     CarAppServiceBase.ACTION_SHOW_NAVIGATION_SCREEN));
-    mCarNotificationExtender = new CarAppExtender.Builder()
-                                   .setImportance(NotificationManagerCompat.IMPORTANCE_MIN)
-                                   .setContentIntent(CarPendingIntent.getCarApp(context, intent.hashCode(), intent, 0))
-                                   .build();
-
-    return mCarNotificationExtender;
   }
 
   private void createNotificationChannel()

@@ -256,6 +256,30 @@ UNIT_TEST(Gpx_Altitude_Issues)
   TEST_EQUAL(line[5], geometry::PointWithAltitude(mercator::FromLatLon(6, 6), 3), ());
 }
 
+UNIT_TEST(Gpx_Export_MixedAltitudes)
+{
+  // A track whose first point has no <ele> but later points do must still export elevation
+  // (TrackHasAltitudes scans every point, not just the first), and points without altitude
+  // must be skipped instead of being written as the kInvalidAltitude sentinel (-32768).
+  std::string_view constexpr input = R"(<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.0">
+<trk>
+    <name>mixed</name>
+    <trkseg>
+      <trkpt lat="1" lon="1"></trkpt>
+      <trkpt lat="2" lon="2"><ele>100</ele></trkpt>
+      <trkpt lat="3" lon="3"><ele>200</ele></trkpt>
+    </trkseg>
+</trk>
+</gpx>
+)";
+
+  std::string const exported = Serialize(LoadGpxFromString(input));
+  TEST(exported.find("<ele>100</ele>") != std::string::npos, (exported));
+  TEST(exported.find("<ele>200</ele>") != std::string::npos, (exported));
+  TEST(exported.find("-32768") == std::string::npos, (exported));
+}
+
 UNIT_TEST(Gpx_Timestamp_Issues)
 {
   std::string_view constexpr input = R"(<?xml version="1.0" encoding="UTF-8"?>
@@ -356,8 +380,9 @@ UNIT_TEST(Color)
 UNIT_TEST(ParseExportedGpxColor)
 {
   kml::FileData const dataFromFile = LoadGpxFromFile("test_data/gpx/point_with_predefined_color_2.gpx");
+  // An imported colored waypoint is an explicit custom color: rgba preserved, predefined cleared.
   TEST_EQUAL(0x0066CCFF, dataFromFile.m_bookmarksData[0].m_color.m_rgba, ());
-  TEST_EQUAL(kml::PredefinedColor::Blue, dataFromFile.m_bookmarksData[0].m_color.m_predefinedColor, ());
+  TEST_EQUAL(kml::PredefinedColor::None, dataFromFile.m_bookmarksData[0].m_color.m_predefinedColor, ());
 }
 
 UNIT_TEST(MultiTrackNames)
@@ -468,6 +493,40 @@ UNIT_TEST(MapGarminColor)
   TEST_EQUAL("DarkYellow", kml::MapGarminColor(0xb4b820ff), ());
   TEST_EQUAL("DarkYellow", kml::MapGarminColor(0xb6b820ff), ());
   TEST_EQUAL("DarkYellow", kml::MapGarminColor(0xb5b721ff), ());
+}
+
+UNIT_TEST(Gpx_Export_Names)
+{
+  auto const exportBookmark = [](kml::BookmarkData bookmark)
+  {
+    bookmark.m_point = mercator::FromLatLon(52.48982, 13.39712);
+    kml::FileData fileData;
+    fileData.m_bookmarksData.push_back(std::move(bookmark));
+    return Serialize(fileData);
+  };
+
+  // A name typed by the user (m_customName) wins over the one the bookmark was created with.
+  kml::BookmarkData renamed;
+  renamed.m_name[kml::kDefaultLang] = "28 July 2026 at 20:14";
+  renamed.m_customName[kml::kDefaultLang] = "Скважина 12";
+  TEST(exportBookmark(renamed).find("<name>Скважина 12</name>") != std::string::npos, ());
+
+  // A POI tagged with name:ru/name:en only has no default-language name, but must not be
+  // exported nameless.
+  kml::BookmarkData localized;
+  localized.m_name[StringUtf8Multilang::GetLangIndex("ru")] = "Эрмитаж";
+  localized.m_name[StringUtf8Multilang::kEnglishCode] = "Hermitage";
+  TEST(exportBookmark(localized).find("<name>Hermitage</name>") != std::string::npos, ());
+
+  // Several non-preferred translations still produce a name. "de" has a lower stable language
+  // code than "ru", so it is the deterministic last resort.
+  kml::BookmarkData multipleLocalized;
+  multipleLocalized.m_name[StringUtf8Multilang::GetLangIndex("ru")] = "Эрмитаж";
+  multipleLocalized.m_name[StringUtf8Multilang::GetLangIndex("de")] = "Eremitage";
+  TEST(exportBookmark(multipleLocalized).find("<name>Eremitage</name>") != std::string::npos, ());
+
+  // A bookmark with no name at all has no <name> element.
+  TEST(exportBookmark({}).find("<name>") == std::string::npos, ());
 }
 
 }  // namespace gpx_tests

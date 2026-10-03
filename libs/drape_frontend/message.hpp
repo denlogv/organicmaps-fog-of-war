@@ -39,8 +39,11 @@ public:
     SelectObject,
     CheckSelectionGeometry,
     FlushSelectionGeometry,
+    SetSelectionLines,
+    BuildSelectionLines,
     AddSubroute,
     RemoveSubroute,
+    RemoveAlternativeSubroutes,
     PrepareSubrouteArrows,
     CacheSubrouteArrows,
     FlushSubroute,
@@ -98,6 +101,9 @@ public:
     ClearAllTransitSchemeData,
     RegenerateTransitScheme,
     FlushTransitScheme,
+    ShowRouteTransit,
+    HideRouteTransit,
+    SetTransitSchemeMinZoom,
     ShowDebugInfo,
     NotifyRenderThread,
     NotifyGraphicsReady,
@@ -105,9 +111,10 @@ public:
     OnEnterBackground,
     Arrow3dRecache,
     VisualScaleChanged,
+    AddTileBackgroundImage,
     SetTileBackgroundData,
     SetTileBackgroundMode,
-    AssignTileBackgroundTexture,
+    AssignTileBackgroundImage,
     EnableFogOfWar
   };
 

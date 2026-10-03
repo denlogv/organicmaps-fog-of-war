@@ -187,7 +187,6 @@ place-village                                       # caption z11-
 railway-station                                     # icon z12- (also has caption(optional) z13-)
 === 3000
 
-landuse-reservoir                                   # caption z10- (also has area z12-)
 natural-water-lake                                  # caption z10- (also has area z1-)
 natural-water-reservoir                             # caption z10- (also has area z1-)
 === 2950
@@ -415,6 +414,7 @@ railway-station-subway-shiraz                       # icon z13- (also has captio
 railway-station-subway-singapore                    # icon z13- (also has caption(optional) z15-)
 railway-station-subway-sofia                        # icon z13- (also has caption(optional) z15-)
 railway-station-subway-stockholm                    # icon z12- (also has caption(optional) z15-)
+railway-station-subway-suzhou                       # icon z13- (also has caption(optional) z15-)
 railway-station-subway-tabriz                       # icon z13- (also has caption(optional) z15-)
 railway-station-subway-taipei                       # icon z13- (also has caption(optional) z15-)
 railway-station-subway-taoyuan                      # icon z13- (also has caption(optional) z15-)
@@ -465,6 +465,9 @@ natural-water-lock                                  # caption z10- (also has are
 natural-water-pond                                  # caption z10- (also has area z1-)
 shop-mall                                           # icon z14- (also has caption(optional) z14-)
 === 1500
+
+natural-water-intermittent                          # caption z10- (also has area z1-)
+=== 1490
 
 natural-desert                                      # caption z14- (also has area z1-)
 === 1450
@@ -663,6 +666,7 @@ railway-subway_entrance-singapore                   # icon z16- (also has captio
 railway-subway_entrance-sofia                       # icon z16- (also has caption(optional) z17-)
 railway-subway_entrance-spb                         # icon z15- (also has caption(optional) z16-)
 railway-subway_entrance-stockholm                   # icon z16- (also has caption(optional) z17-)
+railway-subway_entrance-suzhou                      # icon z16- (also has caption(optional) z17-)
 railway-subway_entrance-tabriz                      # icon z16- (also has caption(optional) z17-)
 railway-subway_entrance-taipei                      # icon z16- (also has caption(optional) z17-)
 railway-subway_entrance-taoyuan                     # icon z16- (also has caption(optional) z17-)
@@ -746,11 +750,12 @@ leisure-park-private                                # icon z14- (also has captio
 === 100
 
 building                                            # caption z18- (also has area z15-)
+building-construction                               # caption z18- (also has area z15-)
 building-has_parts                                  # caption z18- (also has area z15-)
 === 50
 
 building-garage                                     # caption z18- (also has area z15-)
-building-guardhouse                                 # icon z17- (also has caption(optional) z18-, area z15-)
+building-guardhouse                                 # icon z17- (also has area z15-)
 === 30
 
 entrance-main                                       # icon z18- (also has caption(optional) z18-)
@@ -959,6 +964,7 @@ entrance-main                                       # icon z18- (also has captio
 # railway-station-subway-singapore                  # caption(optional) z15- (also has icon z13-)
 # railway-station-subway-sofia                      # caption(optional) z15- (also has icon z13-)
 # railway-station-subway-stockholm                  # caption(optional) z15- (also has icon z12-)
+# railway-station-subway-suzhou                     # caption(optional) z15- (also has icon z13-)
 # railway-station-subway-tabriz                     # caption(optional) z15- (also has icon z13-)
 # railway-station-subway-taipei                     # caption(optional) z15- (also has icon z13-)
 # railway-station-subway-taoyuan                    # caption(optional) z15- (also has icon z13-)
@@ -1164,6 +1170,7 @@ entrance-main                                       # icon z18- (also has captio
 # railway-subway_entrance-sofia                     # caption(optional) z17- (also has icon z16-)
 # railway-subway_entrance-spb                       # caption(optional) z16- (also has icon z15-)
 # railway-subway_entrance-stockholm                 # caption(optional) z17- (also has icon z16-)
+# railway-subway_entrance-suzhou                    # caption(optional) z17- (also has icon z16-)
 # railway-subway_entrance-tabriz                    # caption(optional) z17- (also has icon z16-)
 # railway-subway_entrance-taipei                    # caption(optional) z17- (also has icon z16-)
 # railway-subway_entrance-taoyuan                   # caption(optional) z17- (also has icon z16-)
@@ -1229,9 +1236,6 @@ entrance-main                                       # icon z18- (also has captio
 # leisure-park-no-access                            # caption(optional) z14- (also has icon z14-, area z10-)
 # leisure-park-private                              # caption(optional) z14- (also has icon z14-, area z10-)
 # === -9900
-
-# building-guardhouse                               # caption(optional) z18- (also has icon z17-, area z15-)
-# === -9970
 
 # entrance-main                                     # caption(optional) z18- (also has icon z18-)
 # === -9980

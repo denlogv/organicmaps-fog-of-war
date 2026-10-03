@@ -120,7 +120,7 @@
     <string name="category_hotel">호텔</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">관광</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">엔터테인먼트</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">ATM</string>
@@ -139,10 +139,10 @@
     <!-- Search category for post offices; any changes should be duplicated in categories.txt @category_post! -->
     <string name="category_post">우편</string>
     <!-- Search category for police; any changes should be duplicated in categories.txt @category_police! -->
-    <string name="category_police">치안대</string>
+    <string name="category_police">경찰</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">재활용</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">물</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">RV용</string>
@@ -152,7 +152,7 @@
     <string name="description">메모</string>
     <!-- Email Subject when sharing bookmark list -->
     <string name="share_bookmarks_email_subject">귀하와 공유된 Organic Maps 즐겨찾기</string>
-    <string name="share_bookmarks_email_body">안녕하세요!\n\n북마크가 첨부되어 있으니 오가닉 맵에서 열어주세요. 아직 설치하지 않았다면 여기에서 다운로드하세요: https://omaps.app/get?kmz\n\n오가닉 맵으로 여행을 즐겨보세요!</string>
+    <string name="share_bookmarks_email_body">안녕하세요!\n\n제 북마크를 첨부했습니다. Organic Maps에서 열어주세요. 설치되어 있지 않다면 여기에서 다운로드할 수 있습니다: https://omaps.app/get?kmz\n\nOrganic Maps와 함께 즐거운 여행 되세요!</string>
     <!-- message title of loading file -->
     <string name="load_kmz_title">즐겨찾기 로드</string>
     <!-- Kmz file successful loading -->
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">죄송합니다, 지도 스토리지 설정이 비활성화되어 있습니다.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">국가 다운로드가 지금 진행 중입니다.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">현재 위치를 알아 보십시오. %1$s 또는 %2$s 열기</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Organic Maps 지도에서 내 핀 보기</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Organic Maps 지도에서 제 현재 위치를 살펴 보시기 바랍니다</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">안녕하세요.\n\n지금 다음 위치에 있습니다: %1$s. %2$s 또는 %3$s 링크를 클릭하여 지도상에서 해당 장소를 살펴보시기 바랍니다.\n\n감사합니다.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">공유</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s - Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Organic Maps의 장소</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">이메일</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">주변 건물 3D</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">3D 빌딩은 절전 모드에서 꺼집니다.</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">위성 이미지</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">서버 URL</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">{z}/{x}/{y}가 포함된 유효한 URL을 입력하세요</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">캐시 크기 (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">면 객체 불투명도</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">사용자 지정 타일 소스는 사용자가 제공합니다. 접근 권한이 있는 서비스만 사용하세요. 출처 표시, 라이선스 약관, API 키, 할당량 및 사용 한도는 사용자 책임입니다.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">음성 지침</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">음성 길 안내 테스트(TTS, 텍스트 음성 변환)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">지금 음성이 들리지 않으면 볼륨 또는 시스템 텍스트 음성 변환 설정을 확인하세요.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">사용할 수 없음</string>
     <string name="pref_map_auto_zoom">자동 줌</string>
     <string name="placepage_distance">거리</string>
@@ -369,6 +377,12 @@
     <string name="search_history_title">검색 기록</string>
     <string name="search_history_text">최근 검색 쿼리에 신속하게 액세스할 수 있습니다.</string>
     <string name="clear_search">이력 검색 지우기</string>
+    <!-- Place Page link to Wikipedia article (if map object has it). -->
+    <string name="read_in_wikipedia">위키백과</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">wikipedia.org의 문서</string>
+    <!-- Place Page link to Wikimedia Commons. -->
+    <string name="wikimedia_commons">위키미디어 공용</string>
     <string name="p2p_your_location">위치</string>
     <string name="p2p_start">시작</string>
     <string name="p2p_from_here">출발지</string>
@@ -395,19 +409,15 @@
     <string name="editor_example_values">예제</string>
     <string name="editor_correct_mistake">입력 수정</string>
     <string name="editor_add_select_location">위치 선택</string>
-    <string name="editor_report_problem_desription_1">OpenStreetMap 커뮤니티가 오류를 수정할 수 있도록 상세하게 문제를 설명하십시오.</string>
-    <string name="editor_report_problem_desription_2">아니면, 다음에서 스스로 가능: https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">전송</string>
-    <string name="editor_report_problem_title">문제</string>
-    <string name="editor_report_problem_no_place_title">장소가 존재하지 않음</string>
-    <string name="editor_report_problem_under_construction_title">유지 보수를 위해 닫음</string>
-    <string name="editor_report_problem_duplicate_place_title">중복된 장소</string>
     <string name="autodownload">자동 다운로드</string>
     <!-- Place Page opening hours text -->
     <string name="daily">일별</string>
     <string name="twentyfour_seven">24 시간</string>
     <string name="day_off_today">오늘 영업 종료됨</string>
     <string name="day_off">종료됨</string>
+    <string name="midnight">자정</string>
+    <string name="noon">정오</string>
     <string name="today">오늘</string>
     <string name="opens_in">%s에서 열립니다</string>
     <string name="closes_in">%s로 마감</string>
@@ -460,14 +470,12 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">현지 언어</string>
     <string name="editor_edit_place_category_title">범주</string>
-    <string name="detailed_problem_description">문제에 대한 자세한 설명</string>
-    <string name="editor_report_problem_other_title">다른 문제</string>
     <string name="placepage_add_business_button">조직 추가</string>
     <string name="message_invalid_feature_position">목적지를 이곳에서 찾을 수 없습니다</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
     <string name="osm_presentation">커뮤니티에서 만든 오픈스트리트맵 데이터(%s 기준). 지도를 편집하고 업데이트하는 방법에 대한 자세한 내용은 OpenStreetMap.org에서 확인하세요.</string>
     <!-- OSM explanation on Android login screen -->
-    <string name="login_osm_presentation">오픈스트리트맵(OSM)은 무료 오픈스트리트맵을 구축하기 위한 커뮤니티 프로젝트입니다. 오가닉 맵의 지도 데이터의 주요 소스이며 위키백과와 유사하게 작동합니다. 장소를 추가하거나 편집하면 전 세계 수백만 명의 사용자가 사용할 수 있습니다.\n커뮤니티에 참여하여 모두를 위한 더 나은 지도를 만드는 데 도움을 주세요!</string>
+    <string name="login_osm_presentation">OpenStreetMap.org(OSM)는 무료 개방형 지도를 구축하기 위한 커뮤니티 프로젝트입니다. 이 프로젝트는 Organic Maps의 주요 지도 데이터 소스이며, 위키백과와 유사한 방식으로 운영됩니다. 사용자는 장소를 추가하거나 편집할 수 있으며, 이러한 정보는 전 세계 수백만 명의 사용자가 이용할 수 있게 됩니다.\n커뮤니티에 참여하여 모두를 위한 더 나은 지도를 만드는 데 힘을 보태주세요!</string>
     <string name="login_to_make_edits_visible">오픈스트리트맵 계정을 만들거나 로그인하여 지도 편집 내용을 전 세계에 공개하세요.</string>
     <!-- Downloaded 10 **of** 20 <- it is that "of" -->
     <string name="downloader_of">%2$d중의 %1$d</string>
@@ -482,7 +490,7 @@
     <!-- Title for OSM note section in the editor -->
     <string name="editor_other_info">오픈스트리트맵 자원 봉사자 참고 사항(선택 사항)</string>
     <!-- Hint of the input field in the OSM note section of the editor -->
-    <string name="editor_note_hint">지도의 오류 또는 오가닉 맵으로 편집할 수 없는 항목에 대해 설명합니다.</string>
+    <string name="editor_note_hint">Organic Maps를 사용하여 지도상의 오류나 편집할 수 없는 항목을 설명하십시오</string>
     <!-- Information about OSM at the top of the editing page -->
     <string name="editor_about_osm">수정한 내용은 공개 <a href="https://wiki.openstreetmap.org/wiki/Ko:OpenStreetMap_소개">OpenStreetMap</a> 데이터베이스에 업로드됩니다. 개인 정보나 저작권이 있는 정보는 추가하지 마세요.</string>
     <string name="editor_more_about_osm">OpenStreetMap 정보</string>
@@ -492,7 +500,7 @@
     <!-- To indicate the operator of ATMs, bicycle rentals, electric vehicle charging stations… -->
     <string name="operator">연산자: %s</string>
     <string name="editor_category_unsuitable_title">적합한 카테고리를 찾을 수 없나요?</string>
-    <string name="editor_category_unsuitable_text">오가닉 지도에서는 단순한 포인트 카테고리만 추가할 수 있으므로 도시, 도로, 호수, 건물 윤곽선 등은 추가할 수 없습니다. 이러한 카테고리는 <a href="https://www.openstreetmap.org">OpenStreetMap.org</a> 에 직접 추가하세요. 자세한 단계별 지침은 <a href="https://organicmaps.app/faq/editing/advanced-map-editing">가이드</a>를 참조하세요.</string>
+    <string name="editor_category_unsuitable_text">Organic Maps 단순한 지점 카테고리만 추가할 수 있습니다. 즉, 도시, 도로, 호수, 건물 윤곽선 등은 추가할 수 없습니다. 이러한 카테고리는 <a href="https://www.openstreetmap.org">OpenStreetMap.org</a>에 직접 추가해 주십시오. 자세한 단계별 안내는 <a href="https://organicmaps.app/faq/editing/advanced-map-editing">가이드를</a> 확인해 주세요.</string>
     <string name="downloader_no_downloaded_maps_title">지도를 다운로드하지 않았습니다</string>
     <string name="downloader_no_downloaded_maps_message">오프라인으로 위치를 검색하려면 지도를 다운로드하세요.</string>
     <string name="current_location_unknown_error_title">현재 위치를 알 수 없습니다.</string>
@@ -504,7 +512,7 @@
     <string name="day">일</string>
     <string name="second">초</string>
     <string name="placepage_more_button">자세히</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">즐겨찾기 편집</string>
     <string name="placepage_personal_notes_hint">개인 메모 (글자 혹은 html)</string>
     <string name="editor_comment_hint">설명…</string>
@@ -548,11 +556,7 @@
     <string name="mobile_data_description">모바일 인터넷은 사진, 가격, 리뷰 등 장소에 대한 자세한 정보를 표시하는 데 필요합니다.</string>
     <string name="mobile_data_option_never">전혀 사용 안 함</string>
     <string name="mobile_data_option_ask">항상 표시</string>
-    <string name="traffic_update_maps_text">교통 데이터를 표시하려면 지도를 업데이트해야 합니다.</string>
     <string name="big_font">지도에서 글꼴 크기 늘리기</string>
-    <string name="traffic_update_app">Organic Maps를 업데이트하세요.</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">교통 데이터를 사용할 수 없습니다</string>
     <string name="enable_logging">로깅 사용</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">일반 피드백</string>
@@ -561,14 +565,12 @@
     <string name="prefs_languages_information_off_link">자세한 내용을 보려면 이 가이드를 확인하세요.</string>
     <string name="transliteration_title">라틴어로 음역</string>
     <string name="learn_more">자세히 알아보기</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">검색을 사용하거나 지도를 탭하여 경로 시작점을 추가합니다</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">검색을 사용하거나 지도를 탭하여 목적지 지점을 추가합니다</string>
     <string name="planning_route_manage_route">경로 관리</string>
     <string name="button_plan">계획</string>
     <string name="placepage_remove_stop">정류장 제거</string>
-    <string name="placepage_add_stop">스톱 추가</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
+    <string name="placepage_add_stop">경유지 추가</string>
+    <string name="drag_to_reorder">순서 변경</string>
     <string name="saved">저장됨</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">모든 지도 편집 내용을 자동으로 업로드하려면 오픈스트리트맵에 로그인하세요. 자세히 알아보기 <a href="https://github.com/organicmaps/organicmaps/issues/6144">여기</a>.</string>
@@ -614,6 +616,8 @@
     <string name="button_layer_hiking">하이킹</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">사이클링</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">위성</string>
     <string name="button_layer_subway">지하철</string>
     <string name="layers_title">맵 스타일 및 레이어</string>
     <string name="bookmarks_empty_list_title">이 목록은 비어있습니다.</string>
@@ -652,6 +656,10 @@
     <string name="show_at_the_bottom">하단에 표시</string>
     <string name="enable_logging_warning_message">이 옵션은 진단을 목적으로 로그를 엽니다 이를 통해 앱에 대한 문제를 분석하는 우리의 스탭을 도울 수 있습니다 이 옵션은 오직 Organic Maps 지원 요청에서만 가능합니다.</string>
     <string name="driving_options_title">운전 옵션</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">경로 최적화</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">더 효율적인 경로를 만들도록 중간 경유지를 자동으로 재정렬합니다.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">유료 도로 피하기</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -666,6 +674,12 @@
     <string name="toll_road">유료 도로</string>
     <string name="unpaved_road">비포장 도로</string>
     <string name="ferry_crossing">여객선 횡단길</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">계단</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">게이트</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">차량차단기</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">네</string>
     <!-- A generic "No" button in dialogs -->
@@ -700,7 +714,14 @@
     <string name="moreyear_ago_sorttype">1년 그 이상 전</string>
     <string name="near_me_sorttype">나와 가까운 곳</string>
     <string name="others_sorttype">기타</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">지금 닫힘</string>
+    <string name="opens_tomorrow_at">내일 %s에 오픈</string>
+    <string name="opens_dayoftheweek_at">%2$s에서 %1$s을(를) 엽니다.</string>
+    <string name="opens_at">%s에 열림</string>
+    <string name="closes_at">%s에서 닫힘</string>
     <string name="editor_add_select_category_all_subtitle">모든 카테고리</string>
+    <string name="placepage_replace_stop">교체 중지</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">음식</string>
@@ -719,6 +740,12 @@
     <string name="medicine">의료</string>
     <string name="search_in_the_list">리스트에서 검색</string>
     <string name="religious_places">종교적 장소</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">선택</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">모두 선택</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">선택 해제</string>
     <string name="select_list">목록 선택</string>
     <string name="button_layer_isolines">지형</string>
     <string name="isolines_activation_error_dialog">지형 레이어를 활성화하고 사용하려면 해당 지역의 지도를 업데이트하거나 다운로드하십시오</string>
@@ -754,6 +781,8 @@
     <string name="splash_subtitle">OpenStreetMap의 지도 데이터</string>
     <!-- Link to OSM wiki for Editor, Profile and About pages -->
     <string name="osm_wiki_about_url">https://wiki.openstreetmap.org/wiki/Ko:OpenStreetMap_소개</string>
+    <!-- A number of bookmarks and a number of tracks, separated by comma, like: 1 bookmark, 5 tracks -->
+    <string name="comma_separated_pair">%1$s, %2$s</string>
     <!-- App Tip #00 -->
     <string name="app_tip_00">커뮤니티에서 제작한 지도를 이용해 주셔서 감사합니다!</string>
     <!-- App tip #01 -->
@@ -775,9 +804,9 @@
     <!-- App tip #09 -->
     <string name="app_tip_09">우리의 주요 목표는 귀하가 좋아할 빠르고 개인 정보 보호에 중점을 두고 사용하기 쉬운 지도를 구축하는 것입니다.</string>
     <!-- Text on the Android Auto or CarPlay placeholder screen that maps are displayed on the phone screen -->
-    <string name="car_used_on_the_phone_screen">이제 휴대폰 화면에서 유기적 지도를 사용하고 있습니다</string>
+    <string name="car_used_on_the_phone_screen">현재 휴대폰 화면에서 Organic Maps을 이용 중입니다</string>
     <!-- Text on the phone placeholder screen that maps are displayed on the car screen -->
-    <string name="car_used_on_the_car_screen">이제 자동차 화면에서 유기적 지도를 사용하고 있습니다</string>
+    <string name="car_used_on_the_car_screen">현재 차량 화면에서 Organic Maps을 이용 중입니다</string>
     <!-- Displayed on the phone screen. Android Auto connected -->
     <string name="aa_connected_title">Android Auto에 연결되어 있습니다.</string>
     <!-- Displayed on the phone screen. Button to display maps on the phone screen instead of a car -->
@@ -785,7 +814,7 @@
     <!-- Displayed on the Android Auto or CarPlay screen. Button to display maps on the car screen instead of a phone. Must be no more than 18 symbols! -->
     <string name="car_continue_in_the_car">차량 화면으로 이동</string>
     <!-- Ask user to grant location permissions -->
-    <string name="aa_location_permissions_request">오가닉 지도에는 위치 액세스 권한이 필요합니다. 안전해지면 휴대폰에서 알림을 확인합니다.</string>
+    <string name="aa_location_permissions_request">Organic Maps 위치 정보 접근 권한이 필요합니다. 안전한 환경에서 휴대폰의 알림을 확인해 주세요.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">이 앱은 사용자의 승인이 필요합니다.</string>
     <!-- Grant Permissions button. -->
@@ -803,15 +832,14 @@
     <string name="pref_tts_no_system_tts">음성 합성 설정을 찾을 수 없었는데, 기기에서 이를 지원하는 것이 맞나요?</string>
     <string name="drive_through">드라이브 스루</string>
     <string name="clear_the_search">검색 지우기</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">확대</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">축소</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">메뉴 링크</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">메뉴 보기</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">다른 앱에서 열기</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">셀프 서비스</string>
     <string name="select_option">옵션 선택</string>
@@ -828,7 +856,7 @@
     <!-- Title for the "Stop Without Saving" action for the alert when saving a track recording. -->
     <string name="stop_without_saving">저장하지 않고 중지</string>
     <!-- Title for the "Stop Without Saving" action for the alert when saving a track recording. -->
-    <string name="continue_recording">녹화 계속하기</string>
+    <string name="continue_recording">기록 계속하기</string>
     <!-- Title for the alert when saving a track recording. -->
     <string name="track_recording_alert_title">북마크 및 트랙에 저장하시겠습니까?</string>
     <!-- Message for the toast when saving the track recording is finished but nothing to save. -->
@@ -839,13 +867,33 @@
     <string name="edit_track">경로 편집</string>
     <string name="uri_open_location_failed">위치를 열 수 있는 앱이 설치되어 있지 않습니다.</string>
     <!-- preference string for using auto theme only in navigation mode -->
-    <string name="nav_auto">내비게이션에서 자동</string>
+    <string name="nav_auto">내비게이션 중 자동</string>
     <!-- Setting option to sync the app's theme with the operating system's dark/light mode -->
     <string name="follow_system">시스템 설정 따름</string>
     <!-- Title of the bottom sheet when sharing the track -->
     <string name="share_track">트랙 공유</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">삭제 %s?</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="other">%d개 선택됨</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="other">%d개 항목을 삭제할까요?</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">이동</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">색상 변경</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">경로 숨기기</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">경로 표시</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">나의 위치</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -858,4 +906,38 @@
     <string name="toast_bookmarks_color_changed">북마크 색상이 변경됨</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">트랙 색상이 변경됨</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">스펙트럼</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">슬라이더</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">빨강</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">초록</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">BLUE</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB 16진수 색상 #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">그리드</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">음성 검색</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">지도에서 선택</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">출발지</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">목적지</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">출발지 변경</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">목적지 변경</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">경유지 변경</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">경유지 최대 개수에 도달했습니다</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">지도를 이동하고 확대/축소하여 십자선을 원하는 위치에 배치하세요</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">중지 및 저장</string>
 </resources>

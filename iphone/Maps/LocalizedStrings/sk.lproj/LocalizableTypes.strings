@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Adresa";
+"type.building.construction" = "Budova vo výstavbe";
 "type.building.has_parts" = "Budova";
 "type.building_part" = "Budova";
 "type.building.garage" = "Garáž";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Stredomorská kuchyňa";
 "type.cuisine.mexican" = "Mexická kuchyňa";
 "type.cuisine.moroccan" = "Marocká kuchyňa";
-"type.cuisine.noodles" = "Rezance";
+"type.cuisine.noodle" = "Rezance";
 "type.cuisine.oriental" = "Orientálna kuchyňa";
 "type.cuisine.pancake" = "Lievance";
 "type.cuisine.pasta" = "Cestoviny";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Klobása";
 "type.cuisine.savory_pancakes" = "Palacinky na slano";
 "type.cuisine.seafood" = "Morské plody";
+"type.cuisine.shawarma" = "Šawarma";
 "type.cuisine.soba" = "Soba";
 "type.cuisine.spanish" = "Španielska kuchyňa";
 "type.cuisine.steak_house" = "Steak house";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Japonský hrad";
 "type.historic.castle.stately" = "Zámok";
 "type.historic.city_gate" = "Mestská brána";
+"type.man_made.ceremonial_gate" = "Slávnostná brána";
 "type.historic.citywalls" = "Mestský múr";
 "type.historic.fort" = "Pevnosť";
 "type.historic.gallows" = "Šibenica";
@@ -716,6 +719,7 @@
 "type.landuse" = "Využitie pôdy";
 "type.landuse.allotments" = "Záhradky";
 "type.landuse.basin" = "Vodná nádrž";
+"type.landuse.basin.intermittent" = "Občasná vodná nádrž";
 "type.landuse.brownfield" = "Brownfield";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Lom";
 "type.landuse.railway" = "Priestory železnice";
 "type.landuse.recreation_ground" = "Priestranstvo na rekreáciu";
-"type.landuse.reservoir" = "Voda";
 "type.landuse.residential" = "Obytná zóna";
 "type.landuse.retail" = "Obchodná zóna";
 "type.landuse.salt_pond" = "Salina";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Klzisko";
 "type.leisure.marina" = "Marína";
 "type.leisure.nature_reserve" = "Prírodná rezervácia";
+"type.leisure.bird_hide" = "Pozorovateľňa vtákov";
 "type.leisure.outdoor_seating" = "Posedenie vonku";
 "type.leisure.firepit" = "Firepit";
 "type.leisure.park" = "Park";
@@ -866,13 +870,16 @@
 "type.natural.water.lake" = "Jazero";
 "type.natural.water.lock" = "Plavebná komora";
 "type.natural.water.pond" = "Rybník";
-"type.natural.water.reservoir" = "Nádrž";
+"type.natural.water.reservoir" = "Priehradná nádrž";
 "type.natural.water.basin" = "Vodná nádrž";
 "type.natural.water.river" = "Rieka";
+"type.natural.water.intermittent" = "Občasná vodná plocha";
 "type.natural.land" = "Pôda";
 "type.natural.meadow" = "Lúka";
 "type.natural.orchard" = "Sad";
 "type.natural.peak" = "Hora";
+"type.natural.hill" = "Kopec";
+"type.natural.arch" = "Skalný oblúk";
 "type.natural.saddle" = "Sedlo";
 "type.natural.rock" = "Kameň";
 "type.natural.scrub" = "Krovie";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Stromoradie";
 "type.natural.vineyard" = "Vinohrad";
 "type.natural.volcano" = "Sopka";
+"type.natural.volcano.active" = "Aktívna sopka";
 "type.natural.water" = "Voda";
 "type.natural.wetland" = "Oblasť mokradí";
 "type.natural.wetland.bog" = "Rašelinisko";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Pozemný hokej";
 "type.sport.badminton" = "Bedminton";
 "type.sport.pelota" = "Baskická pelota";
+"type.sport.boules" = "Pétanque";
+"type.sport.cycling" = "Cyklistika";
+"type.sport.four_square" = "Štyri štvorce";
+"type.sport.horse_racing" = "Dostihy";
+"type.sport.karting" = "Motokáry";
+"type.sport.motocross" = "Motokros";
+"type.sport.motor" = "Motoristický šport";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Rugby";
+"type.sport.running" = "Beh";
+"type.sport.softball" = "Softbal";
 "type.tourism" = "Turistika";
 "type.tourism.aquarium" = "Akvárium";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Historická atrakcia";
 "type.attraction.maze" = "Bludisko";
 "type.attraction.roller_coaster" = "Horská dráha";
+"type.roller_coaster.track" = "Horská dráha";
 "type.attraction.water_slide" = "Vodná šmýkačka";
 "type.tourism.attraction.specified" = "Atrakcia";
 "type.tourism.camp_site" = "Kemp";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Spomaľovací prah";
 "type.traffic_calming.hump" = "Spomaľovací prah";
 "type.waterway" = "Vodný tok";
+"type.waterway.access_point" = "Prístupový bod k vodnej ceste";
 "type.waterway.canal" = "Kanál";
 "type.waterway.canal.tunnel" = "Tunel v kanáli";
 "type.waterway.fish_pass" = "Rybovod";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Sociálne zariadenie";
+"type.amenity.stage" = "Javisko";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Vchod do pohotovostného oddelenia";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Hodinár";
 "type.xmas_feature.market" = "Vianočný trh";
 "type.xmas_feature.tree" = "Vianočný stromček";
+"type.amenity.hookah_lounge" = "Shisha bar";

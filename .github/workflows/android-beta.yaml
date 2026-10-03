@@ -5,15 +5,18 @@ on:
     branches:
       - master
     paths-ignore:
+      - .agents/**
+      - .claude/**
+      - .gemini/**
       - .gitignore
       - .github/**
       - '!.github/workflows/android-beta.yaml'  # Run check on self change
+      - '**/*.md'
       - '**/*_tests/**'
       - '**/CMakeLists.txt'
       - CONTRIBUTORS
       - LICENSE
       - NOTICE
-      - README.md
       - iphone/**
       - data/strings/**
       - docs/**
@@ -25,7 +28,6 @@ on:
       - platform/*_mac*
       - platform/*qt*
       - platform/*_win*
-      - pyhelpers/**
       - qt*/**
       - skin_generator/**
       - tools/**
@@ -52,14 +54,6 @@ jobs:
         with:
           fetch-depth: 100 # enough to get all commits for the current day
 
-      - name: Restore Boost submodule from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            3party/boost
-            .git/modules/3party/boost
-          key: boost-submodule
-
       - name: Parallel submodules checkout
         shell: bash
         run: git submodule update --depth 1 --init --recursive --jobs=$(($(nproc) * 20))
@@ -78,10 +72,6 @@ jobs:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
           SECURE_PROPERTIES: ${{ secrets.SECURE_PROPERTIES }}
           RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
-
-      - name: Configure repository
-        shell: bash
-        run: ./configure.sh
 
       - name: Compile
         shell: bash

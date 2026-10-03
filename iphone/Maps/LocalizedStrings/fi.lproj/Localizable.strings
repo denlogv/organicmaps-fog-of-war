@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Nähtävyydet";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Viihde";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Jätteiden kierrätys";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Vesi";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Sijaintiasi ei ole vielä määritetty";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Hei, katso merkintäni Organic Maps-kartalla!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Olen täällä Organic Mapsissa";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Hei, kurkkaa tämänhetkinen sijaintini Organic Maps:n kartalla!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ Organic Mapsissa";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Paikka Organic Mapsissa";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Avaa Organic Mapsissa tai selaimessa";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Hanki Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Avaa toisessa sovelluksessa";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "Sähköposti";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Pituus";
 "share_my_location" = "Jaa sijaintini";
+"prefs_group_network" = "Verkko";
 "prefs_group_route" = "Navigointi";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D-rakennukset ovat poissa päältä virransäästötilassa";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Satelliittikuvat";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "Palvelimen URL-osoite";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Anna kelvollinen URL-osoite, jossa on {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Välimuistin koko (Mt)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Aluekohteiden peittävyys";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Mukautetut ruutulähteet tarjoat sinä. Käytä vain palveluita, joihin sinulla on käyttöoikeus. Vastaat itse lähdemerkinnästä, lisenssiehdoista, API-avaimista, kiintiöistä ja käyttörajoituksista.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Ääniohjeistukset";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Äänen kieli";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Testaa puheohjeita (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Voit ladata laadukkaamman äänen avaamalla Asetukset-apin ja siirtymällä kohtaan Käyttöapu → VoiceOver → Puhe → Ääni.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Automaattinen zoomaus";
 "placepage_distance" = "Etäisyys";
 "search_show_on_map" = "Näytä kartalla";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Tumma";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Muu";
-
 /* Tex label above the Donate button */
 "donate_description" = "Lahjoita ilmaiset ja mainoksettomat kartat miljoonille käyttäjille!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Virhe lähetettäessä viestiä";
-
-/* Settings item title */
-"pref_calibration_title" = "Kompassin kalibrointi";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Saatavilla";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "Päivin ja öin";
 "day_off_today" = "Suljettu tänään";
 "day_off" = "Suljettu";
+"midnight" = "Keskiyö";
+"noon" = "Keskipäivä";
 "today" = "Tänään";
 "opens_in" = "Avautuu %@ kuluttua";
 "closes_in" = "Sulkeutuu %@ kuluttua";
@@ -571,9 +607,6 @@
 "day" = "pv";
 "second" = "s";
 "placepage_more_button" = "Lisää";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Muokkaa kirjanmerkkiä";
 "placepage_personal_notes_hint" = "Henkilökohtaiset merkinnät (teksti tai html)";
 "editor_comment_hint" = "Kommentti…";
 "editor_reset_edits_message" = "Nollataanko kaikki paikalliset muutokset?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Hallitse reittiä";
 "button_plan" = "Suunnittele";
 "placepage_remove_stop" = "Poista pysähdys";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Lisää pysähdys";
 "saved" = "Tallennettu";
 "error_enter_correct_name" = "Anna oikea nimi";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Nimi on jo käytössä";
 "profile" = "OpenStreetMap-profiili";
 "restore" = "Palauta";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Yksityisyys";
 "privacy_policy" = "Yksityisyyskäytäntö";
 "terms_of_use" = "Käyttöehdot";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Pyöräily";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satelliitti";
 "button_layer_subway" = "Metro";
 "layers_title" = "Karttatyylit ja tasot";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "Valinta ottaa käyttöön lokikirjaukset diagnostiikkaa varten. Se voi auttaa tukihenkilöstöämme, kun he korjaavat sovelluksen ongelmia. Ota tämä ominaisuus käyttöön vain, jos Organic Maps:n tuki pyytää.";
 "driving_options_title" = "Reititysvalinnat";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Reitin optimointi";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Järjestää välipysähdykset automaattisesti uudelleen tehokkaamman reitin luomiseksi.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Vältä maksullisia teitä";
 
@@ -707,6 +754,15 @@
 "toll_road" = "Maksullinen tie";
 "unpaved_road" = "Päällystämätön tie";
 "ferry_crossing" = "Lauttaliikenne";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Portaat";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Portti";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Nostopuomi";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Kyllä";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Valitse Sijaintipalvelut";
 "location_services_disabled_on_device_4" = "4. Ota Sijaintipalvelut käyttöön";
 "location_services_disabled_on_device_additional_message" = "Tai jatka Organic Maps käyttöä ilman sijaintia";
-"book_button" = "Varaa";
 "placepage_call_button" = "Soita";
 "placepage_bookmark_name_hint" = "Kirjanmerkin nimi";
 "placepage_delete_bookmark_button" = "Poista kirjanmerkki";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Poistetaanko viimeisen matkareitin tallennus?";
 "off_recent_track_background_button" = "Poista";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Tarkastele";
 "recent_track_background_dialog_message" = "Organic Maps käyttää sijaintipalveluita taustalla viimeisimmän reittisi tallentamiseksi.";
 "general_settings" = "Yleiset asetukset";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Suosittu";
 "hide_from_map" = "Piilota kartalta";
 "tags_loading_error_subtitle" = "Tunnisteiden lataamisen aikana tapahtui virhe, yritä uudelleen";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Oikea";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Pohja";
 "trip_start" = "Mennään";
 "pick_destination" = "Määränpää";
 "follow_my_position" = "Kohdista";
@@ -885,6 +931,15 @@
 "medicine" = "Apteekki";
 "search_in_the_list" = "Etsi luettelosta";
 "religious_places" = "Uskonnolliset paikat";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Valitse";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Valitse kaikki";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Poista valinnat";
 "transit_not_found" = "Metron reittiohjeet eivät ole vielä saatavilla tällä alueella";
 "dialog_pedestrian_route_is_long_header" = "Metroreittiä ei löytynyt";
 "dialog_pedestrian_route_is_long_message" = "Valitse reitin aloitus- tai loppupiste lähemmäksi metroasemaa";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Laskua";
 "elevation_profile_min_elevation" = "Min. korkeus";
 "elevation_profile_max_elevation" = "Max. korkeus";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Aloita liikkuminen nähdäksesi korkeusprofiilin";
 "isolines_toast_zooms_1_10" = "Suurenna kartta nähdäksesi korkeuskäyrät";
 "downloader_loading_ios" = "Ladataan";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Vie kaikki kirjanmerkit ja kappaleet";
 "drive_through" = "Ajaa läpi";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Suurenna";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Pienennä";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Valikkolinkki";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Avaa toisessa sovelluksessa";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Itsepalvelu";
@@ -1002,7 +1063,7 @@
 "placepage_delete_track_button" = "Poista reitti";
 
 /* The track deletion confirmaion alert message. */
-"placepage_delete_track_confirmation_alert_message" = "Haluatko varmasti poistaa tämän kappaleen?";
+"placepage_delete_track_confirmation_alert_message" = "Haluatko varmasti poistaa tämän reitin?";
 
 /* Placeholder for track name input on track edit screen */
 "placepage_track_name_hint" = "Reitin nimi";
@@ -1015,6 +1076,12 @@
 
 /* Text for the editing the Track's color button. */
 "change_color" = "Vaihda väri";
+
+/* Text for the hiding track. */
+"hide_track" = "Piilota reitti";
+
+/* Text for the showing track. */
+"show_track" = "Näytä reitti";
 
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Kartta";
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Ota iCloud käyttöön laitteesi asetuksissa, jotta voit käyttää tätä ominaisuutta.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Ota käyttöön";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1081,7 +1148,7 @@
 "core_my_position" = "Sijaintini";
 
 /* Default bookmark list name */
-"core_my_places" = "Paikkani";
+"core_my_places" = "Omat paikat";
 
 /* Search category for WiFi access; any changes should be duplicated in categories.txt @category_wifi! */
 "category_wifi" = "WiFi";
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Reittien väri vaihdettu";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Valitse kartalta";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Lähtöpaikka";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Määränpää";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Vaihda lähtöpaikka";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Vaihda määränpää";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Vaihda pysähdys";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Pysähdysten enimmäismäärä on saavutettu";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Siirrä ja zoomaa karttaa ristin sijoittamiseksi";

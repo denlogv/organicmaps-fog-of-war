@@ -30,7 +30,7 @@ AsyncRouter::RouterDelegateProxy::RouterDelegateProxy(ReadyCallbackOwnership con
   m_delegate.SetTimeout(timeoutSec);
 }
 
-void AsyncRouter::RouterDelegateProxy::OnReady(std::shared_ptr<Route> route, RouterResultCode resultCode)
+void AsyncRouter::RouterDelegateProxy::OnReady(std::shared_ptr<RoutesResult> result, RouterResultCode resultCode)
 {
   if (!m_onReadyOwnership)
     return;
@@ -39,7 +39,7 @@ void AsyncRouter::RouterDelegateProxy::OnReady(std::shared_ptr<Route> route, Rou
     if (m_delegate.IsCancelled())
       return;
   }
-  m_onReadyOwnership(std::move(route), resultCode);
+  m_onReadyOwnership(std::move(result), resultCode);
 }
 
 void AsyncRouter::RouterDelegateProxy::OnNeedMoreMaps(uint64_t routeId, std::set<std::string> const & absentCounties)
@@ -134,6 +134,9 @@ AsyncRouter::~AsyncRouter()
   {
     lock_guard ul(m_guard);
 
+    // Delete AbsentRegionsFinder _before_ the delegate.
+    m_absentRegionsFinder.reset();
+
     ResetDelegate();
 
     m_threadExit = true;
@@ -154,7 +157,7 @@ void AsyncRouter::SetRouter(std::unique_ptr<IRouter> && router, std::unique_ptr<
 }
 
 void AsyncRouter::CalculateRoute(Checkpoints const & checkpoints, m2::PointD const & direction, bool adjustToPrevRoute,
-                                 ReadyCallbackOwnership const & readyCallback,
+                                 bool needAlternatives, ReadyCallbackOwnership const & readyCallback,
                                  NeedMoreMapsCallback const & needMoreMapsCallback,
                                  RemoveRouteCallback const & removeRouteCallback,
                                  ProgressCallback const & progressCallback, uint32_t timeoutSec)
@@ -164,6 +167,7 @@ void AsyncRouter::CalculateRoute(Checkpoints const & checkpoints, m2::PointD con
   m_checkpoints = checkpoints;
   m_startDirection = direction;
   m_adjustToPrevRoute = adjustToPrevRoute;
+  m_needAlternatives = needAlternatives;
 
   ResetDelegate();
 
@@ -190,6 +194,13 @@ void AsyncRouter::ClearState()
   ResetDelegate();
 }
 
+void AsyncRouter::SwapAltRouteToActive()
+{
+  lock_guard ul(m_guard);
+  if (m_router)
+    m_router->SwapAltRouteToActive();
+}
+
 // static
 void AsyncRouter::LogCode(RouterResultCode code, double const elapsedSec)
 {
@@ -199,14 +210,12 @@ void AsyncRouter::LogCode(RouterResultCode code, double const elapsedSec)
   case RouterResultCode::EndPointNotFound: LOG(LWARNING, ("Can't find end point node")); break;
   case RouterResultCode::PointsInDifferentMWM: LOG(LWARNING, ("Points are in different MWMs")); break;
   case RouterResultCode::RouteNotFound: LOG(LWARNING, ("Route not found")); break;
-  case RouterResultCode::RouteFileNotExist: LOG(LWARNING, ("There is no routing file")); break;
   case RouterResultCode::NeedMoreMaps:
     LOG(LINFO, ("Routing can find a better way with additional maps, elapsed seconds:", elapsedSec));
     break;
   case RouterResultCode::Cancelled: LOG(LINFO, ("Route calculation cancelled, elapsed seconds:", elapsedSec)); break;
   case RouterResultCode::NoError: LOG(LINFO, ("Route found, elapsed seconds:", elapsedSec)); break;
   case RouterResultCode::NoCurrentPosition: LOG(LINFO, ("No current position")); break;
-  case RouterResultCode::InconsistentMWMandRoute: LOG(LINFO, ("Inconsistent mwm and route")); break;
   case RouterResultCode::InternalError: LOG(LINFO, ("Internal error")); break;
   case RouterResultCode::FileTooOld: LOG(LINFO, ("File too old")); break;
   case RouterResultCode::IntermediatePointNotFound: LOG(LWARNING, ("Can't find intermediate point node")); break;
@@ -264,6 +273,7 @@ void AsyncRouter::CalculateRoute()
   std::shared_ptr<RouterDelegateProxy> delegateProxy;
   m2::PointD startDirection;
   bool adjustToPrevRoute = false;
+  bool needAlternatives = true;
   std::shared_ptr<AbsentRegionsFinder> absentRegionsFinder;
   std::shared_ptr<IRouter> router;
   uint64_t routeId = 0;
@@ -291,9 +301,10 @@ void AsyncRouter::CalculateRoute()
     routerName = router->GetName();
     router->SetGuides(std::move(m_guides));
     m_guides.clear();
+    needAlternatives = m_needAlternatives;
   }
 
-  auto route = std::make_shared<Route>(router->GetName(), routeId);
+  auto result = std::make_shared<RoutesResult>(router->GetName(), routeId);
   RouterResultCode code = RouterResultCode::NoError;
 
   base::Timer timer;
@@ -309,32 +320,35 @@ void AsyncRouter::CalculateRoute()
       code = absentRegionsFinder->GenerateAbsentRegions(checkpoints, delegateProxy->GetDelegate());
 
     if (code == RouterResultCode::NoError)
-      code =
-          router->CalculateRoute(checkpoints, startDirection, adjustToPrevRoute, delegateProxy->GetDelegate(), *route);
+    {
+      code = router->CalculateRoute(checkpoints, startDirection, adjustToPrevRoute, needAlternatives,
+                                    delegateProxy->GetDelegate(), *result);
+    }
 
     router->SetGuides({});
     elapsedSec = timer.ElapsedSeconds();  // routing build time
     LogCode(code, elapsedSec);
-    LOG(LINFO, ("ETA:", route->GetTotalTimeSec(), "sec."));
+    if (result->IsValid())
+      LOG(LINFO, ("ETA:", result->GetActive().GetTotalTimeSec(), "sec."));
   }
   catch (RootException const & e)
   {
     code = RouterResultCode::InternalError;
     LOG(LERROR, ("Exception happened while calculating route:", e.Msg()));
-    // Note. After call of this method |route| should be used only on ui thread.
-    // And |route| should stop using on routing background thread, in this method.
+    // Note. After call of this method |result| should be used only on ui thread.
+    // And |result| should stop using on routing background thread, in this method.
     GetPlatform().RunTask(Platform::Thread::Gui,
-                          [delegateProxy, route, code]() { delegateProxy->OnReady(route, code); });
+                          [delegateProxy, result, code]() { delegateProxy->OnReady(result, code); });
     return;
   }
 
   // Draw route without waiting network latency.
   if (code == RouterResultCode::NoError)
   {
-    // Note. After call of this method |route| should be used only on ui thread.
-    // And |route| should stop using on routing background thread, in this method.
+    // Note. After call of this method |result| should be used only on ui thread.
+    // And |result| should stop using on routing background thread, in this method.
     GetPlatform().RunTask(Platform::Thread::Gui,
-                          [delegateProxy, route, code]() { delegateProxy->OnReady(route, code); });
+                          [delegateProxy, result, code]() { delegateProxy->OnReady(result, code); });
   }
 
   AbsentRegionsFinder::RegionsSetT absent;

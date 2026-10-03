@@ -15,6 +15,7 @@
 - (void)addBusiness;
 - (void)addPlace:(CLLocationCoordinate2D)coordinate;
 - (void)openWebsite:(PlacePageData *)data;
+- (void)openHeritageWebsite:(PlacePageData *)data;
 - (void)openWebsiteMenu:(PlacePageData *)data;
 - (void)openWikipedia:(PlacePageData *)data;
 - (void)openWikimediaCommons:(PlacePageData *)data;
@@ -35,7 +36,7 @@
 - (void)addBookmark:(PlacePageData *)data;
 - (void)updateBookmark:(PlacePageData *)data
                  title:(NSString *)title
-                 color:(MWMBookmarkColor)color
+                 color:(UIColor *)color
               category:(MWMMarkGroupID)category;
 - (void)removeBookmark:(PlacePageData *)data;
 - (void)updateTrack:(PlacePageData *)data
@@ -45,8 +46,6 @@
 - (void)removeTrack:(PlacePageData *)data;
 - (void)editBookmark:(PlacePageData *)data;
 - (void)editTrack:(PlacePageData *)data;
-- (void)searchBookingHotels:(PlacePageData *)data;
-- (void)book:(PlacePageData *)data;
 - (void)routeFrom:(PlacePageData *)data;
 - (void)routeTo:(PlacePageData *)data;
 - (void)routeAddStop:(PlacePageData *)data;
@@ -54,7 +53,6 @@
 - (void)avoidDirty;
 - (void)avoidFerry;
 - (void)avoidToll;
-- (void)openElevationDifficultPopup:(PlacePageData *)data;
 
 @end
 
@@ -83,6 +81,11 @@
 + (void)openWebsite:(PlacePageData *)data
 {
   [[MWMMapViewControlsManager manager].placePageManager openWebsite:data];
+}
+
++ (void)openHeritageWebsite:(PlacePageData *)data
+{
+  [[MWMMapViewControlsManager manager].placePageManager openHeritageWebsite:data];
 }
 
 + (void)openWebsiteMenu:(PlacePageData *)data
@@ -177,7 +180,7 @@
 
 + (void)updateBookmark:(PlacePageData *)data
                  title:(NSString *)title
-                 color:(MWMBookmarkColor)color
+                 color:(UIColor *)color
               category:(MWMMarkGroupID)category
 {
   [[MWMMapViewControlsManager manager].placePageManager updateBookmark:data title:title color:color category:category];
@@ -209,16 +212,6 @@
 + (void)editTrack:(PlacePageData *)data
 {
   [[MWMMapViewControlsManager manager].placePageManager editTrack:data];
-}
-
-+ (void)searchBookingHotels:(PlacePageData *)data
-{
-  [[MWMMapViewControlsManager manager].placePageManager searchBookingHotels:data];
-}
-
-+ (void)book:(PlacePageData *)data
-{
-  [[MWMMapViewControlsManager manager].placePageManager book:data];
 }
 
 + (void)routeFrom:(PlacePageData *)data
@@ -254,11 +247,6 @@
 + (void)avoidToll
 {
   [[MWMMapViewControlsManager manager].placePageManager avoidToll];
-}
-
-+ (void)openElevationDifficultPopup:(PlacePageData *)data
-{
-  [[MWMMapViewControlsManager manager].placePageManager openElevationDifficultPopup:data];
 }
 
 @end

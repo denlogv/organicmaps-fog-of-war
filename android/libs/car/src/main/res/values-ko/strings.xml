@@ -47,6 +47,8 @@
     <string name="auto">자동</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">주변 건물 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">사용할 수 없음</string>
     <!-- Text in menu -->
     <string name="help">도움말</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">개점</string>
     <string name="twentyfour_seven">24 시간</string>
     <string name="day_off_today">오늘 영업 종료됨</string>
+    <string name="midnight">자정</string>
+    <string name="noon">정오</string>
     <string name="opens_in">%s에서 열립니다</string>
     <string name="closes_in">%s로 마감</string>
     <string name="closed">닫음</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">여객선 횡단길 피하기</string>
     <string name="avoid_motorways">고속도로 피하기</string>
     <string name="unable_to_calc_alert_title">루트를 계산할 수 없습니다</string>
+    <string name="trip_finished">도착했습니다!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">북마크 분류하기</string>
     <!-- Android -->
@@ -100,7 +105,7 @@
     <string name="downloader_loading_ios">다운로드 중</string>
     <string name="download_map_title">세계 개요 지도 다운로드</string>
     <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">안드로이드 오토의 오가닉 맵이 효과적으로 작동하려면 위치 권한이 필요합니다.</string>
+    <string name="aa_request_permission_activity_text">Organic Maps Android Auto에서 이 앱이 제대로 작동하려면 위치 권한이 필요합니다</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">권한 부여</string>
 </resources>

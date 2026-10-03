@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "観光";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "エンターテイメント";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "リサイクル";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "水";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "現在の座標が未確定です";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Organic Mapsでピン情報を確認";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Organic Mapsでここにいます";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Organic Mapsで現在地を確認";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ - Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Organic Mapsの場所";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Organic Mapsまたはブラウザーで開く";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Organic Mapsを入手";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "別のアプリで開く";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "Eメール";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "距離";
 "share_my_location" = "現在地を共有する";
+"prefs_group_network" = "ネットワーク";
 "prefs_group_route" = "ナビゲーション";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "省電力モードで建物の 3D 表示がオフになっている";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "衛星画像";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "サーバーのURL";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "{z}/{x}/{y} を含む有効なURLを入力してください";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "キャッシュサイズ (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "面オブジェクトの不透明度";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "カスタムタイルのソースはご自身で用意するものです。アクセスが許可されているサービスのみを使用してください。帰属表示、ライセンス条件、APIキー、クォータ、利用制限についてはご自身の責任となります。";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "音声指示";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "音声言語";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "音声案内をテストする（TTS、Text-To-Speech）";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "高品質の音声をダウンロードするには、「設定」アプリを開き、アクセシビリティ → VoiceOver → 読み上げ → 声 に移動します。";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "自動ズーム";
 "placepage_distance" = "距離";
 "search_show_on_map" = "地図に表示";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "ダーク";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "その他";
-
 /* Tex label above the Donate button */
 "donate_description" = "何百万人ものユーザーに広告なしの無料地図を贈ろう！";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "メール送信エラー";
-
-/* Settings item title */
-"pref_calibration_title" = "コンパスの調整";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "利用可能";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "昼と夜";
 "day_off_today" = "本日終業";
 "day_off" = "終業";
+"midnight" = "午前0時";
+"noon" = "正午";
 "today" = "今日は";
 "opens_in" = "あと %@ に営業";
 "closes_in" = "あと %@ に閉店";
@@ -558,7 +594,7 @@
 /* To indicate the operator of ATMs, bicycle rentals, electric vehicle charging stations… */
 "operator" = "運営者: %@";
 "editor_category_unsuitable_title" = "適切なカテゴリーが見つからない？";
-"editor_category_unsuitable_text" = "つまり、町、道路、湖、建物の輪郭などは追加できない。そのようなカテゴリーは<a href=\"https://www.openstreetmap.org\">OpenStreetMap.org</a>に直接追加してほしい。私たちの<a href=\"https://organicmaps.app/faq/editing/advanced-map-editing\">ガイド</a>のステップバイステップの詳細な手順をチェックする。";
+"editor_category_unsuitable_text" = "Organic Maps このアプリでは、シンプルな地点カテゴリのみを追加できます。つまり、町、道路、湖、建物の輪郭などは追加できません。そのようなカテゴリは、<a href=\"https://www.openstreetmap.org\">OpenStreetMap.org</a>に直接追加してください。詳細な手順については、<a href=\"https://organicmaps.app/faq/editing/advanced-map-editing\">ガイド</a>をご確認ください。";
 "downloader_no_downloaded_maps_title" = "マップをダウンロードしていません";
 "downloader_no_downloaded_maps_message" = "ロケーションの検索とオフラインナビゲートのためにマップをダウンロードしてください。";
 "current_location_unknown_error_title" = "現在地は不明です。";
@@ -571,9 +607,6 @@
 "day" = "日";
 "second" = "秒";
 "placepage_more_button" = "さらに詳しく";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "ブックマークを編集";
 "placepage_personal_notes_hint" = "パーソナルメモ（テキストまたはHTML）";
 "editor_comment_hint" = "コメント…";
 "editor_reset_edits_message" = "ローカル編集をすべてリセットしますか?";
@@ -621,7 +654,9 @@
 "planning_route_manage_route" = "ルートを編集";
 "button_plan" = "プラン";
 "placepage_remove_stop" = "停留所を削除";
-"placepage_add_stop" = "中間地点を追加";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "経由地を追加";
 "saved" = "保存";
 "error_enter_correct_name" = "正しい名前を入力してください";
 "bookmark_lists" = "リスト";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "この名前はすでに使用されています";
 "profile" = "OpenStreetMap プロフィール";
 "restore" = "復元";
+
+/* Settings privacy group in settings screen */
+"privacy" = "プライバシー";
 "privacy_policy" = "プライバシーポリシー";
 "terms_of_use" = "利用規約";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "サイクリング";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "衛星";
 "button_layer_subway" = "地下鉄";
 "layers_title" = "マップのスタイルとレイヤー";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "このオプションは診断目的でのデータ記録を有効にします。これはこのアプリケーションのトラブルシューティングを担当する当社のサポートスタッフの助けになります。このオプションはOrganic Mapsにリクエストされた場合にのみ有効にしてください。";
 "driving_options_title" = "経路オプション";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "経路の最適化";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "より効率的な経路になるよう、中間地点を自動的に並べ替えます。";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "有料道路を避ける";
 
@@ -707,6 +754,15 @@
 "toll_road" = "有料道路";
 "unpaved_road" = "未舗装道路";
 "ferry_crossing" = "フェリー";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "階段";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "ゲート";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "ブームバリア";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "はい";
@@ -749,7 +805,7 @@
 "share_with_friends" = "友達にシェア";
 
 /* Place Page opening hours text */
-"closed_now" = "現在閉店";
+"closed_now" = "営業時間外";
 "opens_tomorrow_at" = "明日の %@ から営業";
 "opens_dayoftheweek_at" = "%1$@ の %2$@ から営業";
 "opens_at" = "%@ から営業";
@@ -788,8 +844,7 @@
 "location_services_disabled_on_device_2" = "2.プライバシーを選択する";
 "location_services_disabled_on_device_3" = "3.位置情報サービスを選択する";
 "location_services_disabled_on_device_4" = "4.位置情報サービスをオンにする";
-"location_services_disabled_on_device_additional_message" = "または、位置情報なしでオーガニック・マップを使い続ける";
-"book_button" = "予約";
+"location_services_disabled_on_device_additional_message" = "または、位置情報を使用せずにOrganic Mapsを引き続きご利用ください";
 "placepage_call_button" = "電話をかける";
 "placepage_bookmark_name_hint" = "ブックマーク名";
 "placepage_delete_bookmark_button" = "ブックマークを削除";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "最近の走行ルートの記録を無効にしますか？";
 "off_recent_track_background_button" = "無効にする";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "ご覧ください";
 "recent_track_background_dialog_message" = "Organic Mapsは、あなたの位置情報をバックグラウンドで使用して最近の走行ルートを記録します。";
 "general_settings" = "一般設定";
 
@@ -831,12 +883,6 @@
 "popular_place" = "人気";
 "hide_from_map" = "マップから隠す";
 "tags_loading_error_subtitle" = "タグのロード中にエラーが起きました発生しました。もう一度やり直してください";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "右";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "ボトム";
 "trip_start" = "出発";
 "pick_destination" = "目的地";
 "follow_my_position" = "リセンター";
@@ -885,6 +931,15 @@
 "medicine" = "医薬品";
 "search_in_the_list" = "リスト内で検索";
 "religious_places" = "礼拝所";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "選択";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "すべて選択";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "選択を解除";
 "transit_not_found" = "この地域の地下鉄ナビはまだ利用できません";
 "dialog_pedestrian_route_is_long_header" = "地下鉄ルートが見つかりませんでした";
 "dialog_pedestrian_route_is_long_message" = "もっと地下鉄駅に近い出発地または目的地を選択してください";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "下降";
 "elevation_profile_min_elevation" = "最小標高";
 "elevation_profile_max_elevation" = "最大標高";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "移動を開始すると標高プロファイルが表示されます";
 "isolines_toast_zooms_1_10" = "等高線を調べるようにズームインしてください";
 "downloader_loading_ios" = "ダウンロード中";
 
@@ -944,7 +1002,7 @@
 "car_used_on_the_phone_screen" = "端末の画面でOrganic Mapsを使用している";
 
 /* Text on the phone placeholder screen that maps are displayed on the car screen */
-"car_used_on_the_car_screen" = "あなたは今、車の画面でオーガニック・マップを使用している";
+"car_used_on_the_car_screen" = "現在、車の画面でOrganic Mapsをご利用中です";
 
 /* Displayed on the phone screen. Button to display maps on the phone screen instead of a car */
 "car_continue_on_the_phone" = "電話で続ける";
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "すべてのブックマークとトラックをエクスポートする";
 "drive_through" = "ドライブスルー";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "ズームイン";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "ズームアウト";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "メニューリンク";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "別のアプリで開く";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "セルフサービス";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "色を変える";
 
+/* Text for the hiding track. */
+"hide_track" = "ルートを非表示";
+
+/* Text for the showing track. */
+"show_track" = "ルートを表示";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "地図";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "この機能を使うには、デバイスの設定でiCloudを有効にしてほしい。";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "有効にする";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1081,7 +1148,7 @@
 "core_my_position" = "現在地";
 
 /* Default bookmark list name */
-"core_my_places" = "マイロケーション";
+"core_my_places" = "マイプレイス";
 
 /* Search category for WiFi access; any changes should be duplicated in categories.txt @category_wifi! */
 "category_wifi" = "無線LAN";
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "トラックの色が変更されました";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "地図上で選択";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "出発地";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "目的地";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "出発地を変更";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "目的地を変更";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "経由地を変更";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "経由地の最大数に達しました";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "地図を移動・拡大縮小して、十字を配置してください";

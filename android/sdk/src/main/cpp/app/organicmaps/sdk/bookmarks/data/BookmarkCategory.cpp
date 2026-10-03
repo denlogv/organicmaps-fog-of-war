@@ -3,7 +3,11 @@
 #include "app/organicmaps/sdk/Framework.hpp"
 #include "app/organicmaps/sdk/core/jni_helper.hpp"
 
+#include "drape/color.hpp"
+
 #include "kml/types.hpp"
+
+#include <vector>
 
 namespace
 {
@@ -60,7 +64,7 @@ jobject ToJavaBookmarkCategory(JNIEnv * env, kml::MarkGroupId id)
 
 jobjectArray ToJavaBookmarkCategories(JNIEnv * env, kml::GroupIdCollection const & ids)
 {
-  return jni::ToJavaArray(env, getBookmarkCategoryClass(env), ids, std::bind(&ToJavaBookmarkCategory, _1, _2));
+  return jni::ToJavaArray(env, getBookmarkCategoryClass(env), ids, &ToJavaBookmarkCategory);
 }
 
 extern "C"
@@ -151,6 +155,20 @@ JNIEXPORT jlong Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeG
   return static_cast<jlong>(*it);
 }
 
+// The by-position getters advance a set iterator from begin(), so reading a whole category one id at a time
+// is quadratic.
+JNIEXPORT jlongArray Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeGetBookmarkIds(JNIEnv * env, jclass,
+                                                                                                   jlong catId)
+{
+  return jni::ToJavaLongArray(env, frm()->GetBookmarkManager().GetUserMarkIds(static_cast<kml::MarkGroupId>(catId)));
+}
+
+JNIEXPORT jlongArray Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeGetTrackIds(JNIEnv * env, jclass,
+                                                                                                jlong catId)
+{
+  return jni::ToJavaLongArray(env, frm()->GetBookmarkManager().GetTrackIds(static_cast<kml::MarkGroupId>(catId)));
+}
+
 JNIEXPORT jboolean JNICALL
 Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeHasLastSortingType(JNIEnv *, jclass, jlong catId)
 {
@@ -203,19 +221,18 @@ JNIEXPORT jintArray Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nat
 JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeSetCategoryBookmarksColor(JNIEnv *,
                                                                                                         jclass,
                                                                                                         jlong catId,
-                                                                                                        jint colorIndex)
+                                                                                                        jint color)
 {
-  CHECK_LESS(static_cast<size_t>(colorIndex), kml::kOrderedPredefinedColors.size(), ());
-  frm()->GetBookmarkManager().GetEditSession().SetCategoryBookmarksColor(static_cast<kml::MarkGroupId>(catId),
-                                                                         kml::kOrderedPredefinedColors[colorIndex]);
+  frm()->GetBookmarkManager().GetEditSession().SetCategoryBookmarksColor(
+      static_cast<kml::MarkGroupId>(catId), dp::Color::FromARGB(static_cast<uint32_t>(color)));
 }
 
-JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeSetCategoryTracksColor(JNIEnv *, jclass,
-                                                                                                     jlong catId,
-                                                                                                     jint colorIndex)
+JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_BookmarkCategory_nativeSetCategoryTracksCustomColor(JNIEnv *,
+                                                                                                           jclass,
+                                                                                                           jlong catId,
+                                                                                                           jint color)
 {
-  CHECK_LESS(static_cast<size_t>(colorIndex), kml::kOrderedPredefinedColors.size(), ());
-  frm()->GetBookmarkManager().GetEditSession().SetCategoryTracksColor(static_cast<kml::MarkGroupId>(catId),
-                                                                      kml::kOrderedPredefinedColors[colorIndex]);
+  frm()->GetBookmarkManager().GetEditSession().SetCategoryTracksColor(
+      static_cast<kml::MarkGroupId>(catId), dp::Color::FromARGB(static_cast<uint32_t>(color)));
 }
 }  // extern "C"

@@ -4,6 +4,8 @@ set(SRC
   base64.cpp
   base64.hpp
   bit_streams.hpp
+  blake3.cpp
+  blake3.hpp
   buffer_reader.hpp
   buffered_file_writer.cpp
   buffered_file_writer.hpp
@@ -58,8 +60,6 @@ set(SRC
   reader_writer_ops.hpp
   serdes_binary_header.hpp
   serdes_json.hpp
-  sha1.cpp
-  sha1.hpp
   simple_dense_coding.cpp
   simple_dense_coding.hpp
   sparse_vector.hpp
@@ -93,13 +93,15 @@ omim_add_library(${PROJECT_NAME} ${SRC})
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
     base
-    cppjansson
+    glaze::glaze
     succinct
     expat::expat
     ICU::uc
     ICU::i18n # For transliteration.
     minizip
     ZLIB::ZLIB
+  PRIVATE
+    BLAKE3::blake3
 )
 
 omim_add_test_subdirectory(coding_tests)

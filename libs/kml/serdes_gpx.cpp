@@ -8,6 +8,7 @@
 #include "geometry/mercator.hpp"
 
 #include "base/assert.hpp"
+#include "base/stl_helpers.hpp"
 #include "base/string_utils.hpp"
 
 namespace kml
@@ -45,10 +46,7 @@ std::string_view constexpr kGpxFooter = "</gpx>";
 int constexpr kInvalidColor = 0;
 }  // namespace
 
-GpxParser::GpxParser(FileData & data)
-  : m_data{data}
-  , m_categoryData{&m_data.m_categoryData}
-  , m_globalColor{kInvalidColor}
+GpxParser::GpxParser(FileData & data) : m_data{data}, m_globalColor{kInvalidColor}
 {
   ResetPoint();
 }
@@ -59,9 +57,7 @@ void GpxParser::ResetPoint()
   m_description.clear();
   m_comment.clear();
   m_org = {};
-  m_predefinedColor = PredefinedColor::None;
   m_color = kInvalidColor;
-  m_customName.clear();
   m_geometry.Clear();
   m_geometryType = GEOMETRY_TYPE_UNKNOWN;
   m_lat = 0.;
@@ -80,10 +76,6 @@ bool GpxParser::MakeValid()
       // Set default name.
       if (m_name.empty())
         m_name = kml::PointToLineString(m_org);
-      if (m_color != kInvalidColor)
-        m_predefinedColor = MapPredefinedColor(m_color);
-      else
-        m_predefinedColor = PredefinedColor::Red;
       return true;
     }
     return false;
@@ -291,16 +283,16 @@ void GpxParser::Pop(std::string_view tag)
           data.m_name[kDefaultLang] = std::move(m_name);
         if (!m_description.empty() || !m_comment.empty())
           data.m_description[kDefaultLang] = BuildDescription();
-        data.m_color.m_predefinedColor = m_predefinedColor;
-        data.m_color.m_rgba = m_color;
+        // A colored waypoint imports as an explicit custom color (forced opaque); a colorless
+        // one gets the default preset. See NormalizeBookmarkColorData.
+        data.m_color = NormalizeBookmarkColorData({PredefinedColor::None, m_color});
         data.m_point = m_org;
-        if (!m_customName.empty())
-          data.m_customName[kDefaultLang] = std::move(m_customName);
-        else if (!data.m_name.empty())
-        {
-          // Here we set custom name from 'name' field for KML-files exported from 3rd-party services.
-          data.m_customName = data.m_name;
-        }
+        // A GPX file carries no OM extended data, so its <name> is the only name it has. Store it
+        // in m_customName as well: that is the field the place page, search and every exporter
+        // treat as the user's own name, and a later rename replaces it instead of leaving two
+        // competing names behind. The KML parser copies the name for the same reason, but only for
+        // a plain single-language one - which is all this parser ever produces.
+        data.m_customName = data.m_name;
 
         m_data.m_bookmarksData.push_back(std::move(data));
       }
@@ -386,12 +378,12 @@ void GpxParser::ParseDescription(std::string const & value, std::string const & 
   else if (prevTag == kTrk || prevTag == kRte)
   {
     m_description = value;
-    if (m_categoryData->m_description[kDefaultLang].empty())
-      m_categoryData->m_description[kDefaultLang] = value;
+    if (m_data.m_categoryData.m_description[kDefaultLang].empty())
+      m_data.m_categoryData.m_description[kDefaultLang] = value;
   }
   else if (prevTag == kMetadata)
   {
-    m_categoryData->m_description[kDefaultLang] = value;
+    m_data.m_categoryData.m_description[kDefaultLang] = value;
   }
 }
 
@@ -404,12 +396,12 @@ void GpxParser::ParseName(std::string const & value, std::string const & prevTag
   else if (prevTag == kTrk || prevTag == kRte)
   {
     m_name = value;
-    if (m_categoryData->m_name[kDefaultLang].empty())
-      m_categoryData->m_name[kDefaultLang] = value;
+    if (m_data.m_categoryData.m_name[kDefaultLang].empty())
+      m_data.m_categoryData.m_name[kDefaultLang] = value;
   }
   else if (prevTag == kMetadata)
   {
-    m_categoryData->m_name[kDefaultLang] = value;
+    m_data.m_categoryData.m_name[kDefaultLang] = value;
   }
 }
 
@@ -462,16 +454,16 @@ void SaveColorToARGB(Writer & writer, uint32_t rgba)
 void SaveCategoryData(Writer & writer, CategoryData const & categoryData)
 {
   writer << "<metadata>\n";
-  if (auto const name = GetDefaultLanguage(categoryData.m_name))
+  if (auto const name = GetStringForExport(categoryData.m_name); !name.empty())
   {
     writer << kIndent2 << "<name>";
-    SaveStringWithCDATA(writer, *name);
+    SaveStringWithCDATA(writer, name);
     writer << "</name>\n";
   }
-  if (auto const description = GetDefaultLanguage(categoryData.m_description))
+  if (auto const description = GetStringForExport(categoryData.m_description); !description.empty())
   {
     writer << kIndent2 << "<desc>";
-    SaveStringWithCDATA(writer, *description);
+    SaveStringWithCDATA(writer, description);
     writer << "</desc>\n";
   }
   writer << "</metadata>\n";
@@ -491,20 +483,16 @@ void SaveBookmarkData(Writer & writer, BookmarkData const & bookmarkData)
 {
   auto const [lat, lon] = mercator::ToLatLon(bookmarkData.m_point);
   writer << "<wpt lat=\"" << CoordToString(lat) << "\" lon=\"" << CoordToString(lon) << "\">\n";
-  // If user customized the default bookmark name, it's saved in m_customName.
-  auto name = GetDefaultLanguage(bookmarkData.m_customName);
-  if (!name)
-    name = GetDefaultLanguage(bookmarkData.m_name);  // Original POI name stored when bookmark was created.
-  if (name)
+  if (auto const name = GetPreferredBookmarkName(bookmarkData, "default"); !name.empty())
   {
     writer << kIndent2 << "<name>";
-    SaveStringWithCDATA(writer, *name);
+    SaveStringWithCDATA(writer, name);
     writer << "</name>\n";
   }
-  if (auto const description = GetDefaultLanguage(bookmarkData.m_description))
+  if (auto const description = GetStringForExport(bookmarkData.m_description); !description.empty())
   {
     writer << kIndent2 << "<desc>";
-    SaveStringWithCDATA(writer, *description);
+    SaveStringWithCDATA(writer, description);
     writer << "</desc>\n";
   }
   if (auto const color = BookmarkColor(bookmarkData); color != kInvalidColor)
@@ -518,13 +506,12 @@ void SaveBookmarkData(Writer & writer, BookmarkData const & bookmarkData)
   writer << "</wpt>\n";
 }
 
+// True if any line in the track carries real elevation (see LineHasAltitude). Scanning every
+// point (not just the first) keeps GPX export consistent with the elevation chart
+// (Track::HasAltitudes) for mixed tracks whose first point lacks altitude.
 bool TrackHasAltitudes(TrackData const & trackData)
 {
-  auto const & lines = trackData.m_geometry.m_lines;
-  if (lines.empty() || lines.front().empty())
-    return false;
-  auto const altitude = lines.front().front().GetAltitude();
-  return altitude != geometry::kDefaultAltitudeMeters && altitude != geometry::kInvalidAltitude;
+  return base::AnyOf(trackData.m_geometry.m_lines, LineHasAltitude);
 }
 
 uint32_t TrackColor(TrackData const & trackData)
@@ -537,17 +524,16 @@ uint32_t TrackColor(TrackData const & trackData)
 void SaveTrackData(Writer & writer, TrackData const & trackData)
 {
   writer << "<trk>\n";
-  auto name = GetDefaultLanguage(trackData.m_name);
-  if (name)
+  if (auto const name = GetStringForExport(trackData.m_name); !name.empty())
   {
     writer << kIndent2 << "<name>";
-    SaveStringWithCDATA(writer, *name);
+    SaveStringWithCDATA(writer, name);
     writer << "</name>\n";
   }
-  if (auto const description = GetDefaultLanguage(trackData.m_description))
+  if (auto const description = GetStringForExport(trackData.m_description); !description.empty())
   {
     writer << kIndent2 << "<desc>";
-    SaveStringWithCDATA(writer, *description);
+    SaveStringWithCDATA(writer, description);
     writer << "</desc>\n";
   }
   if (auto const color = TrackColor(trackData); color != kDefaultTrackColor)
@@ -584,10 +570,10 @@ void SaveTrackData(Writer & writer, TrackData const & trackData)
 
       writer << kIndent4 << "<trkpt lat=\"" << CoordToString(lat) << "\" lon=\"" << CoordToString(lon) << "\">\n";
 
-      if (trackHasAltitude)
+      if (trackHasAltitude && point.GetAltitude() != geometry::kInvalidAltitude)
         writer << kIndent6 << "<ele>" << CoordToString(point.GetAltitude()) << "</ele>\n";
 
-      if (lineHasTimestamps)
+      if (lineHasTimestamps && timestampsForLine[pointIndex] != base::INVALID_TIME_STAMP)
         writer << kIndent6 << "<time>" << base::SecondsSinceEpochToString(timestampsForLine[pointIndex]) << "</time>\n";
 
       writer << kIndent4 << "</trkpt>\n";

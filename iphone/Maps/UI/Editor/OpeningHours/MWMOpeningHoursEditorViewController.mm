@@ -19,6 +19,7 @@ extern NSDictionary * const kMWMOpeningHoursEditorTableCells = @{
   @(MWMOpeningHoursEditorDeleteScheduleCell): [MWMOpeningHoursDeleteScheduleTableViewCell class],
   @(MWMOpeningHoursEditorAddScheduleCell): [MWMOpeningHoursAddScheduleTableViewCell class],
 };
+static CGFloat const kEstimatedTableViewCellHeight = 100.0;
 
 @interface MWMOpeningHoursEditorViewController () <UITableViewDelegate,
                                                    UITableViewDataSource,
@@ -76,7 +77,6 @@ extern NSDictionary * const kMWMOpeningHoursEditorTableCells = @{
 - (void)configAdvancedEditor
 {
   [self.editorView setTextContainerInset:{.top = 12, .left = 10, .bottom = 12, .right = 10}];
-  self.editorView.keyboardAppearance = [UIColor isNightMode] ? UIKeyboardAppearanceDark : UIKeyboardAppearanceDefault;
   NSString * path = [NSBundle.mainBundle pathForResource:@"opening_hours_how_to_edit" ofType:@"html"];
   NSString * html = [[NSString alloc] initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
   NSURL * baseURL = [NSURL fileURLWithPath:path];
@@ -111,15 +111,6 @@ extern NSDictionary * const kMWMOpeningHoursEditorTableCells = @{
     return [self.model cellKeyForIndexPath:indexPath];
   else
     return MWMOpeningHoursEditorAddScheduleCell;
-}
-
-- (CGFloat)heightForRowAtIndexPath:(NSIndexPath * _Nonnull)indexPath
-{
-  CGFloat const width = self.view.width;
-  if (indexPath.section < self.model.count)
-    return [self.model heightForIndexPath:indexPath withWidth:width];
-  else
-    return [MWMOpeningHoursAddScheduleTableViewCell height];
 }
 
 #pragma mark - Fill cells with data
@@ -160,13 +151,13 @@ extern NSDictionary * const kMWMOpeningHoursEditorTableCells = @{
 
 - (CGFloat)tableView:(UITableView * _Nonnull)tableView heightForRowAtIndexPath:(NSIndexPath * _Nonnull)indexPath
 {
-  return [self heightForRowAtIndexPath:indexPath];
+  return UITableViewAutomaticDimension;
 }
 
 - (CGFloat)tableView:(UITableView * _Nonnull)tableView
     estimatedHeightForRowAtIndexPath:(NSIndexPath * _Nonnull)indexPath
 {
-  return [self heightForRowAtIndexPath:indexPath];
+  return kEstimatedTableViewCellHeight;
 }
 
 - (void)tableView:(UITableView * _Nonnull)tableView

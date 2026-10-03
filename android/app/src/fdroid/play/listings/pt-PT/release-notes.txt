@@ -1,9 +1,10 @@
-• Dados do mapa OSM a 10 de março, Wikipédia a 1 de março
-• Isolinhas de elevação mais detalhadas para as províncias chinesas
-• Adicionadas fileiras de árvores, lojas de couro e lojas que vendem produtos religiosos
-• Adicionado suporte para limites de velocidade condicionais
-• Tanzânia dividida em regiões mais pequenas
-• Melhor exibição do horário de funcionamento comercial
-• Várias falhas corrigidas
-• Traduções melhoradas de nomes de aplicações e países
-omaps.org/pt/news
+• Dados OSM de 26 de agosto
+• NOVIDADE: seleção múltipla de favoritos e trajetos
+• NOVIDADE: ocultar trajetos individuais com o ícone do olho
+• NOVIDADE: artigos da Wikipédia em bengali, hindi, marata, polaco, tâmil, télugo e urdu
+• Corrigidas falhas e bloqueios
+• Adicionados ao mapa abrigos de observação de aves, palcos, colinas e arcos de rocha
+• Melhor partilha de locais
+• Correções para o Android Auto
+• Corrigida a seleção de paragens do percurso
+…mais em omaps.org/pt/news

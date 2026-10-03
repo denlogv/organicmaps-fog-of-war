@@ -438,7 +438,7 @@
         android:launchMode="singleTask"
         android:configChanges="uiMode"
         android:screenOrientation="fullUser"
-        android:windowSoftInputMode="stateAlwaysHidden|adjustPan"/>
+        android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
 
     <activity-alias
         android:name="${applicationId}.ManageSpaceActivity"
@@ -453,15 +453,6 @@
         android:label="@string/download_maps"
         android:parentActivityName="app.organicmaps.MwmActivity"
         android:windowSoftInputMode="adjustResize" />
-
-    <activity
-        android:name="app.organicmaps.search.SearchActivity"
-        android:theme="@style/MwmTheme.CardBg"
-        android:configChanges="orientation|screenLayout|screenSize"
-        android:screenOrientation="fullUser"
-        android:label="@string/search_map"
-        android:parentActivityName="app.organicmaps.MwmActivity"
-        android:windowSoftInputMode="stateVisible|adjustResize" />
 
     <activity
         android:name="app.organicmaps.settings.SettingsActivity"
@@ -483,7 +474,7 @@
 
     <activity
         android:name="app.organicmaps.bookmarks.BookmarkCategoriesActivity"
-        android:theme="@style/MwmTheme.WindowBg"
+        android:theme="@style/MwmTheme.CardBg"
         android:configChanges="orientation|screenLayout|screenSize"
         android:screenOrientation="fullUser"
         android:label="@string/bookmarks_and_tracks"
@@ -517,17 +508,15 @@
         android:windowSoftInputMode="adjustResize" />
 
     <activity
-        android:name="app.organicmaps.editor.ReportActivity"
-        android:parentActivityName="app.organicmaps.MwmActivity" />
-
-    <activity
         android:name="app.organicmaps.editor.OsmLoginActivity"
         android:parentActivityName="app.organicmaps.MwmActivity" />
 
+    <!-- "adjustNothing" would leave WindowInsetsCompat reporting no Type.ime() below API 30, where
+         the platform has no IME inset type; BookmarkCategorySettingsActivity swaps it from API 30 -->
     <activity
       android:name="app.organicmaps.bookmarks.BookmarkCategorySettingsActivity"
       android:label="@string/edit"
-      android:windowSoftInputMode="stateVisible"/>
+      android:windowSoftInputMode="stateVisible|adjustResize"/>
     <activity
       android:name="app.organicmaps.widget.placepage.WikiArticleActivity"
       android:label="@string/place_description_title"/>
@@ -553,13 +542,6 @@
         <data android:scheme="geo.offline" />
       </intent-filter>
     </service>
-
-    <service
-        android:name=".routing.NavigationService"
-        android:foregroundServiceType="location|mediaPlayback"
-        android:exported="false"
-        android:enabled="true"
-        android:stopWithTask="false"/>
 
     <service android:name=".location.TrackRecordingService"
       android:foregroundServiceType="location"

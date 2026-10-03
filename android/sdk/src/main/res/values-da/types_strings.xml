@@ -237,6 +237,7 @@
     <string name="type.building">Bygning</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Adresse</string>
+    <string name="type.building.construction">Bygning under opførelse</string>
     <string name="type.building.has_parts">Bygning</string>
     <string name="type.building_part">Bygning</string>
     <string name="type.building.garage">Garage</string>
@@ -327,7 +328,7 @@
     <string name="type.cuisine.mediterranean">Middelhavskøkken</string>
     <string name="type.cuisine.mexican">Mexicansk</string>
     <string name="type.cuisine.moroccan">Marokkansk</string>
-    <string name="type.cuisine.noodles">Nudler</string>
+    <string name="type.cuisine.noodle">Nudler</string>
     <string name="type.cuisine.oriental">Orientalsk</string>
     <string name="type.cuisine.pancake">Pandekage</string>
     <string name="type.cuisine.pasta">Pasta</string>
@@ -343,6 +344,7 @@
     <string name="type.cuisine.sausage">Pølse</string>
     <string name="type.cuisine.savory_pancakes">Madpandekage</string>
     <string name="type.cuisine.seafood">Fisk og skaldyr</string>
+    <string name="type.cuisine.shawarma">Shawarma</string>
     <string name="type.cuisine.soba">Soba</string>
     <string name="type.cuisine.spanish">Spansk</string>
     <string name="type.cuisine.steak_house">Bøfhus</string>
@@ -570,6 +572,7 @@
     <string name="type.historic.castle.shiro">Japansk slot</string>
     <string name="type.historic.castle.stately">Slot</string>
     <string name="type.historic.city_gate">Byport</string>
+    <string name="type.man_made.ceremonial_gate">Ceremoniel port</string>
     <string name="type.historic.citywalls">Bymur</string>
     <string name="type.historic.fort">Fort</string>
     <string name="type.historic.gallows">Galge</string>
@@ -603,6 +606,7 @@
     <string name="type.landuse">Arealanvendelse</string>
     <string name="type.landuse.allotments">Kolonihaveområde</string>
     <string name="type.landuse.basin">Vandbassin</string>
+    <string name="type.landuse.basin.intermittent">Periodisk vandbassin</string>
     <string name="type.landuse.brownfield">Forladt område</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Kirkegård</string>
@@ -633,7 +637,6 @@
     <string name="type.landuse.quarry">Brud</string>
     <string name="type.landuse.railway">Jernbaneanlæg</string>
     <string name="type.landuse.recreation_ground">Fritidsområde</string>
-    <string name="type.landuse.reservoir">Vandreservoir</string>
     <string name="type.landuse.residential">Boligområde</string>
     <string name="type.landuse.retail">Detailhandelsområde</string>
     <string name="type.landuse.salt_pond">Saltfordampningsdam</string>
@@ -654,6 +657,7 @@
     <string name="type.leisure.ice_rink">Skøjtebane</string>
     <string name="type.leisure.marina">Lystbådehavn</string>
     <string name="type.leisure.nature_reserve">Naturreservat</string>
+    <string name="type.leisure.bird_hide">Fugleskjul</string>
     <string name="type.leisure.outdoor_seating">Udendørs siddepladser</string>
     <string name="type.leisure.firepit">Bålsted</string>
     <string name="type.leisure.park">Park</string>
@@ -740,10 +744,13 @@
     <string name="type.natural.water.reservoir">Reservoir</string>
     <string name="type.natural.water.basin">Vandbassin</string>
     <string name="type.natural.water.river">Flod</string>
+    <string name="type.natural.water.intermittent">Periodisk vandområde</string>
     <string name="type.natural.land">Land</string>
     <string name="type.natural.meadow">Eng</string>
     <string name="type.natural.orchard">Frugthave</string>
     <string name="type.natural.peak">Bjerg</string>
+    <string name="type.natural.hill">Bakke</string>
+    <string name="type.natural.arch">Klippebuen</string>
     <string name="type.natural.saddle">Bjergsadel</string>
     <string name="type.natural.rock">Sten</string>
     <string name="type.natural.scrub">Krat</string>
@@ -753,6 +760,7 @@
     <string name="type.natural.tree_row">Trærække</string>
     <string name="type.natural.vineyard">Vinmark</string>
     <string name="type.natural.volcano">Vulkan</string>
+    <string name="type.natural.volcano.active">Aktiv vulkan</string>
     <string name="type.natural.water">Vandmasse</string>
     <string name="type.natural.wetland">Vådområde</string>
     <string name="type.natural.wetland.bog">Mose</string>
@@ -839,7 +847,7 @@
     <string name="type.railway.disused">Ubenyttet jernbane</string>
     <string name="type.railway.disused.bridge">Ubenyttet jernbanebro</string>
     <string name="type.railway.disused.tunnel">Ubenyttet jernbanetunnel</string>
-    <string name="type.railway.funicular">Funicular</string>
+    <string name="type.railway.funicular">Funikular</string>
     <string name="type.railway.funicular.bridge">Kabelbanebro</string>
     <string name="type.railway.funicular.tunnel">Kabelbanetunnel</string>
     <string name="type.railway.halt">Togstation</string>
@@ -1174,7 +1182,7 @@
     <string name="type.shop.erotic">Erotikbutik</string>
     <string name="type.shop.fabric">Stofbutik</string>
     <string name="type.shop.farm">Foderhandel</string>
-    <string name="type.shop.fashion_accessories">Accessory-butik</string>
+    <string name="type.shop.fashion_accessories">Tilbehørsbutik</string>
     <string name="type.shop.florist">Blomsterbutik</string>
     <string name="type.shop.funeral_directors">Bedemand</string>
     <string name="type.shop.furniture">Møbelbutik</string>
@@ -1296,6 +1304,18 @@
     <string name="type.sport.field_hockey">Landhockey</string>
     <string name="type.sport.badminton">Badminton</string>
     <string name="type.sport.pelota">Baskisk pelota</string>
+    <string name="type.sport.boules">Boule</string>
+    <string name="type.sport.cycling">Cykling</string>
+    <string name="type.sport.four_square">Fire firkanter</string>
+    <string name="type.sport.horse_racing">Hestevæddeløb</string>
+    <string name="type.sport.karting">Gokart</string>
+    <string name="type.sport.motocross">Motocross</string>
+    <string name="type.sport.motor">Motorsport</string>
+    <string name="type.sport.netball">Netball</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Rugby union</string>
+    <string name="type.sport.running">Løb</string>
+    <string name="type.sport.softball">Softball</string>
     <string name="type.tourism">Turisme</string>
     <string name="type.tourism.aquarium">Akvarium</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1315,6 +1335,7 @@
     <string name="type.attraction.historic">Historisk attraktion</string>
     <string name="type.attraction.maze">Labyrint</string>
     <string name="type.attraction.roller_coaster">Rutsjebane</string>
+    <string name="type.roller_coaster.track">Rutsjebane</string>
     <string name="type.attraction.water_slide">Vandrutschebane</string>
     <string name="type.tourism.attraction.specified">Attraktioner</string>
     <string name="type.tourism.camp_site">Campingplads</string>
@@ -1340,11 +1361,12 @@
     <!-- Typically more basic, not staffed and free (compared to alpine_hut). -->
     <string name="type.tourism.wilderness_hut">Vildmarkshytte</string>
     <string name="type.tourism.zoo">Zoologisk have</string>
-    <string name="type.tourism.zoo.petting">Petting Zoo</string>
+    <string name="type.tourism.zoo.petting">Dyrepark med klappedyr</string>
     <string name="type.traffic_calming">Trafiksanering</string>
     <string name="type.traffic_calming.bump">Vejbump</string>
     <string name="type.traffic_calming.hump">Vejbump</string>
     <string name="type.waterway">Vandløb</string>
+    <string name="type.waterway.access_point">Adgangspunkt til vandvejen</string>
     <string name="type.waterway.canal">Kanal</string>
     <string name="type.waterway.canal.tunnel">Kanal</string>
     <string name="type.waterway.fish_pass">Fiskestige</string>
@@ -1403,6 +1425,7 @@
     <string name="type.self_service.no">Ingen selvbetjening</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Social facilitet</string>
+    <string name="type.amenity.stage">Scene</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Indgang til akutafdeling</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1432,4 +1455,5 @@
     <string name="type.craft.watchmaker">Urmager</string>
     <string name="type.xmas_feature.market">Julemarked</string>
     <string name="type.xmas_feature.tree">Juletræ</string>
+    <string name="type.amenity.hookah_lounge">Vandpibecafé</string>
 </resources>

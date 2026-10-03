@@ -18,8 +18,9 @@ public:
     Motorway = 1u << 2,
     Ferry = 1u << 3,
     Dirty = 1u << 4,
+    Steps = 1u << 5,
 
-    Max = (1u << 4) + 1
+    Max = (1u << 5) + 1
   };
 
   using RoadType = std::underlying_type_t<Road>;
@@ -29,6 +30,9 @@ public:
 
   static RoutingOptions LoadCarOptionsFromSettings();
   static void SaveCarOptionsToSettings(RoutingOptions options);
+
+  static bool LoadRouteOptimizationFromSettings();
+  static void SaveRouteOptimizationToSettings(bool enabled);
 
   void Add(Road type);
   void Remove(Road type);
@@ -51,8 +55,6 @@ public:
 private:
   base::SmallMap<uint32_t, RoutingOptions::Road> m_data;
 };
-
-RoutingOptions::Road ChooseMainRoutingOptionRoad(RoutingOptions options, bool isCarRouter);
 
 std::string DebugPrint(RoutingOptions const & routingOptions);
 std::string DebugPrint(RoutingOptions::Road type);

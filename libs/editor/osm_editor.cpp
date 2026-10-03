@@ -5,6 +5,8 @@
 #include "editor/osm_auth.hpp"
 #include "editor/xml_feature.hpp"
 
+#include "opening_hours/opening_hours.hpp"
+
 #include "indexer/fake_feature_ids.hpp"
 #include "indexer/feature_decl.hpp"
 #include "indexer/feature_meta.hpp"
@@ -24,8 +26,6 @@
 #include <sstream>
 
 #include <pugixml.hpp>
-
-#include "3party/opening_hours/opening_hours.hpp"
 
 namespace osm
 {
@@ -532,10 +532,11 @@ EditableProperties Editor::GetEditableProperties(FeatureType & feature) const
       return {};
     }
 
-    /// @todo Avoid temporary string when OpeningHours (boost::spirit) will allow string_view.
-    string const featureOpeningHours(originalObjectPtr->GetOpeningHours());
-    /// @note Empty string is parsed as a valid opening hours rule.
-    if (!osmoh::OpeningHours(featureOpeningHours).IsValid())
+    auto const featureOpeningHours = originalObjectPtr->GetOpeningHours();
+    // Keep the field editable when there is nothing to preserve (an empty
+    // value does not parse) or when the value parses -- the advanced editor
+    // then keeps the raw string. Drop it only for values we cannot read back.
+    if (!featureOpeningHours.empty() && !osmoh::OpeningHours(featureOpeningHours).IsValid())
     {
       auto & meta = editableProperties.m_metadata;
       meta.erase(remove(begin(meta), end(meta), feature::Metadata::FMD_OPEN_HOURS), end(meta));
@@ -582,22 +583,22 @@ bool Editor::HaveMapEditsToUpload(MwmId const & mwmId) const
   return false;
 }
 
-bool Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, FinishUploadCallback callback)
+Editor::UploadStart Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, FinishUploadCallback callback)
 {
   /// @todo Unite data and notes uploading in one thread with one callback.
   m_notes->Upload(OsmOAuth::ServerAuth(oauthToken));
 
   if (m_isUploadingNow)
-    return false;
+    return UploadStart::AlreadyUploading;
 
   if (!HaveMapEditsToUpload(*m_features.Get()))
-    return false;
+    return UploadStart::NothingToUpload;
 
   {
     // Not sure that this function isn't called in parallel. Put safe CAS.
     bool expected = false;
     if (!m_isUploadingNow.compare_exchange_strong(expected, true))
-      return false;
+      return UploadStart::AlreadyUploading;
   }
 
   GetPlatform().RunTask(Platform::Thread::Network,
@@ -605,7 +606,7 @@ bool Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, Finish
   {
     SCOPE_GUARD(resetUploadingFlag, [this]() { m_isUploadingNow = false; });
 
-    int uploadedFeaturesCount = 0, errorsCount = 0;
+    int uploadedFeaturesCount = 0, pendingFeaturesCount = 0;
     ChangesetWrapper changeset(oauthToken, std::move(tags));
 
     auto const features = m_features.Get();
@@ -744,7 +745,6 @@ bool Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, Finish
         {
           uploadInfo.m_uploadStatus = kDeletedFromOSMServer;
           uploadInfo.m_uploadError = ex.Msg();
-          ++errorsCount;
           LOG(LWARNING, (ex.what()));
           changeset.SetErrorDescription(ex.Msg());
         }
@@ -752,7 +752,6 @@ bool Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, Finish
         {
           uploadInfo.m_uploadStatus = kMatchedFeatureIsEmpty;
           uploadInfo.m_uploadError = ex.Msg();
-          ++errorsCount;
           LOG(LWARNING, (ex.what()));
           changeset.SetErrorDescription(ex.Msg());
         }
@@ -760,7 +759,7 @@ bool Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, Finish
         {
           uploadInfo.m_uploadStatus = kNeedsRetry;
           uploadInfo.m_uploadError = ex.Msg();
-          ++errorsCount;
+          ++pendingFeaturesCount;
           LOG(LWARNING, (ex.what()));
           changeset.SetErrorDescription(ex.Msg());
         }
@@ -782,15 +781,18 @@ bool Editor::UploadChanges(string const & oauthToken, ChangesetTags tags, Finish
     if (callback)
     {
       UploadResult result = UploadResult::NothingToUpload;
-      if (uploadedFeaturesCount)
-        result = UploadResult::Success;
-      else if (errorsCount)
+      // Report an error while any feature is still pending, so that callers retry the rest.
+      // Permanently failed ones (deleted from OSM, empty match) are excluded by NeedsUpload() from
+      // the next upload and must not trigger one.
+      if (pendingFeaturesCount)
         result = UploadResult::Error;
+      else if (uploadedFeaturesCount)
+        result = UploadResult::Success;
       callback(result);
     }
   });
 
-  return true;
+  return UploadStart::Started;
 }
 
 void Editor::SaveUploadedInformation(FeatureID const & fid, UploadInfo const & uploadInfo)
@@ -964,9 +966,9 @@ NewFeatureCategories Editor::GetNewFeatureCategories() const
   return NewFeatureCategories(*(m_config.Get()));
 }
 
-FeatureID Editor::GenerateNewFeatureId(FeaturesContainer const & features, MwmId const & id) const
+FeatureID Editor::GenerateNewFeatureId(FeaturesContainer const & features, MwmId const & id)
 {
-  CHECK_THREAD_CHECKER(MainThreadChecker, ());
+  // Can be called async (Android) during initialization but without races.
 
   uint32_t featureIndex = feature::FakeFeatureIds::kEditorCreatedFeaturesStart;
 
@@ -1127,7 +1129,7 @@ FeatureID Editor::GetFeatureIdByXmlFeature(FeaturesContainer const & features, X
     { return ForEachFeatureAtPoint(std::move(fn), point); };
 
     return editor::MigrateFeatureIndex(forEach, xml, status,
-                                       [this, &mwmId, &features] { return GenerateNewFeatureId(features, mwmId); });
+                                       [&mwmId, &features] { return GenerateNewFeatureId(features, mwmId); });
   }
 
   return {mwmId, xml.GetMWMFeatureIndex()};
@@ -1231,6 +1233,17 @@ void Editor::UpdateXMLFeatureTags(editor::XMLFeature & feature, std::vector<Jour
     case JournalEntryType::LegacyObject: ASSERT_FAIL(("Legacy Objects are not editable")); break;
     }
   }
+}
+
+string DebugPrint(Editor::UploadStart uploadStart)
+{
+  switch (uploadStart)
+  {
+  case Editor::UploadStart::Started: return "Started";
+  case Editor::UploadStart::AlreadyUploading: return "AlreadyUploading";
+  case Editor::UploadStart::NothingToUpload: return "NothingToUpload";
+  }
+  UNREACHABLE();
 }
 
 string DebugPrint(Editor::SaveResult saveResult)

@@ -34,6 +34,7 @@ SearchPanel::SearchPanel(DrawWidget * drawWidget, QWidget * parent)
 {
   m_pEditor = new QLineEdit(this);
   connect(m_pEditor, &QLineEdit::textChanged, this, &SearchPanel::OnSearchTextChanged);
+  connect(m_pEditor, &QLineEdit::returnPressed, this, &SearchPanel::OnReturnPressed);
 
   m_pTable = new QTableWidget(0, 4 /*columns*/, this);
   m_pTable->setFocusPolicy(Qt::NoFocus);
@@ -253,7 +254,7 @@ void SearchPanel::OnSearchTextChanged(QString const & str)
                                   {} /* timeout */,
                                   isCategory,
                                   // m_onResults
-                                  [this, timestamp](Results results, std::vector<ProductInfo> /* productInfo */)
+                                  [this, timestamp](Results results)
     { OnEverywhereSearchResults(timestamp, std::move(results)); }};
 
     if (GetFramework().GetSearchAPI().SearchEverywhere(std::move(params)))
@@ -282,6 +283,12 @@ void SearchPanel::OnSearchTextChanged(QString const & str)
 
     GetFramework().GetSearchAPI().SearchInViewport(std::move(params));
   }
+}
+
+void SearchPanel::OnReturnPressed()
+{
+  // The same as the search button on mobile: apply the search results viewport policy.
+  GetFramework().UpdateViewport(m_results);
 }
 
 void SearchPanel::OnSearchModeChanged(int mode)
@@ -320,8 +327,8 @@ void SearchPanel::OnSearchPanelItemClicked(int row, int)
   }
   else
   {
-    // center viewport on clicked item
-    GetFramework().ShowSearchResult(m_results[row]);
+    // Select the result without cancelling the search or clearing its marks.
+    GetFramework().SelectSearchResult(m_results[row], true /* animation */);
   }
 }
 

@@ -11,10 +11,9 @@
 namespace feature
 {
 class FeaturesOffsetsTable;
-}
+}  // namespace feature
 
-/// Note! This class is NOT Thread-Safe.
-/// You should have separate instance of Vector for every thread.
+/// @note This class is NOT Thread-Safe (like the RecordReader and a generic Reader).
 class FeaturesVector
 {
   DISALLOW_COPY(FeaturesVector);
@@ -25,6 +24,7 @@ public:
                  indexer::MetadataDeserializer * metaDeserializer);
 
   std::unique_ptr<FeatureType> GetByIndex(uint32_t index) const;
+  feature::RouteRelation GetRelation(uint32_t index) const;
 
   size_t GetNumFeatures() const;
 
@@ -64,7 +64,6 @@ private:
 
   void InitRecordsReader();
 
-  friend class FeaturesVectorTest;
   using RecordReader = VarRecordReader<FilesContainerR::TReader>;
 
   feature::SharedLoadInfo m_loadInfo;
@@ -80,6 +79,9 @@ class FeaturesVectorTest
 
   FilesContainerR m_cont;
   feature::DataHeader m_header;
+  std::unique_ptr<feature::FeaturesOffsetsTable> m_ftTable;
+  std::unique_ptr<feature::FeaturesOffsetsTable> m_relTable;
+  std::unique_ptr<indexer::MetadataDeserializer> m_metaDeserializer;
   FeaturesVector m_vector;
 
 public:

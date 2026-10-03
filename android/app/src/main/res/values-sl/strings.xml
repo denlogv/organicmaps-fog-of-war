@@ -120,7 +120,7 @@
     <string name="category_hotel">Hotel</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">Znamenitosti</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">Zabava</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">Bankomat</string>
@@ -142,7 +142,7 @@
     <string name="category_police">Policija</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">Recikliranje</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">Voda</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">Oprema za avtodome</string>
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">Žal so nastavitve shrambe zemljevidov trenutno onemogočene.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">Prenos zemljevida je v teku.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Oglejte si mojo trenutno lokacijo v Organic Maps! %1$s ali %2$s Nimate zemljevidov brez povezave? Prenesite jih tukaj: https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Hej, poglej moj žebljiček v Organic Maps!</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Hej, poglej mojo trenutno lokacijo na zemljevidu Organic Maps!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">Živjo,\n\nZdaj sem tukaj: %1$s. Kliknite to povezavo %2$s ali to %3$s, da vidite kraj na zemljevidu.\n\nHvala.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">Deli</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s v Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Kraj v Organic Maps</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">E-pošta</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">3D zgradbe</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">3D zgradbe so onemogočene v načinu varčevanja z energijo</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">Satelitske slike</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">URL strežnika</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">Vnesite veljaven URL z {z}/{x}/{y}</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">Velikost predpomnilnika (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">Neprosojnost ploskovnih objektov</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">Vire ploščic po meri zagotavljate sami. Uporabljajte samo storitve, do katerih imate dovoljen dostop. Sami ste odgovorni za navedbo avtorstva, licenčne pogoje, ključe API, kvote in omejitve uporabe.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">Glasovna navodila</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">Preizkusi glasovna navodila (TTS, pretvorba besedila v govor)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">Preverite glasnost ali sistemske nastavitve pretvorbe besedila v govor, če zdaj ne slišite glasu.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">Ni na voljo</string>
     <string name="pref_map_auto_zoom">Samodejna povečava</string>
     <string name="placepage_distance">Razdalja</string>
@@ -371,6 +379,8 @@
     <string name="clear_search">Počisti zgodovino iskanja</string>
     <!-- Place Page link to Wikipedia article (if map object has it). -->
     <string name="read_in_wikipedia">Wikipedija</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">Člen iz wikipedia.org</string>
     <!-- Place Page link to Wikimedia Commons. -->
     <string name="wikimedia_commons">Wikimedia Commons</string>
     <string name="p2p_your_location">Vaša lokacija</string>
@@ -399,19 +409,15 @@
     <string name="editor_example_values">Primeri vrednosti</string>
     <string name="editor_correct_mistake">Popravi napako</string>
     <string name="editor_add_select_location">Izberite lokacijo</string>
-    <string name="editor_report_problem_desription_1">Podrobno opišite težavo, da jo bo skupnost OpenStreetMap lahko odpravila.</string>
-    <string name="editor_report_problem_desription_2">Ali pa to storite sami na https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">Pošlji</string>
-    <string name="editor_report_problem_title">Težava</string>
-    <string name="editor_report_problem_no_place_title">To mesto ne obstaja</string>
-    <string name="editor_report_problem_under_construction_title">Zaprto zaradi vzdrževanja</string>
-    <string name="editor_report_problem_duplicate_place_title">Dvojnik mesta</string>
     <string name="autodownload">Samodejni prenos zemljevidov</string>
     <!-- Place Page opening hours text -->
     <string name="daily">Dnevno</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">Danes zaprto</string>
     <string name="day_off">Zaprto</string>
+    <string name="midnight">Polnoč</string>
+    <string name="noon">Poldne</string>
     <string name="today">Danes</string>
     <string name="opens_in">Odpira se čez %s</string>
     <string name="closes_in">Zapira se čez %s</string>
@@ -464,8 +470,6 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">Kot je napisano v lokalnem jeziku</string>
     <string name="editor_edit_place_category_title">Kategorija</string>
-    <string name="detailed_problem_description">Podroben opis težave</string>
-    <string name="editor_report_problem_other_title">Druga težava</string>
     <string name="placepage_add_business_button">Dodaj podjetje</string>
     <string name="message_invalid_feature_position">Tukaj ni mogoče locirati nobenega objekta</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
@@ -508,7 +512,7 @@
     <string name="day">d</string>
     <string name="second">s</string>
     <string name="placepage_more_button">Več</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Uredi zaznamek</string>
     <string name="placepage_personal_notes_hint">Osebne opombe (besedilo ali html)</string>
     <string name="editor_comment_hint">Komentar…</string>
@@ -552,11 +556,7 @@
     <string name="mobile_data_description">Mobilni internet je potreben za obvestila o posodobitvah zemljevidov in nalaganje urejanj.</string>
     <string name="mobile_data_option_never">Nikoli ne uporabi</string>
     <string name="mobile_data_option_ask">Vedno vprašaj</string>
-    <string name="traffic_update_maps_text">Za prikaz podatkov o prometu je treba posodobiti zemljevide.</string>
     <string name="big_font">Povečaj velikost oznak na zemljevidu</string>
-    <string name="traffic_update_app">Posodobite Organic Maps</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">Podatki o prometu niso na voljo</string>
     <string name="enable_logging">Omogoči beleženje</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">Splošne povratne informacije</string>
@@ -565,14 +565,12 @@
     <string name="prefs_languages_information_off_link">Za več informacij preverite ta vodnik.</string>
     <string name="transliteration_title">Transliteriraj v latinico</string>
     <string name="learn_more">Več o tem</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">Uporabite iskanje ali se dotaknite zemljevida, da dodate začetno točko poti</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">Uporabite iskanje ali se dotaknite zemljevida, da dodate ciljno točko</string>
     <string name="planning_route_manage_route">Upravljaj pot</string>
     <string name="button_plan">Načrtuj</string>
     <string name="placepage_remove_stop">Odstrani postanek</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
     <string name="placepage_add_stop">Dodaj postanek</string>
+    <string name="drag_to_reorder">Preuredi</string>
     <string name="saved">Shranjeno</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">Prijavite se v OpenStreetMap, da samodejno naložite vsa svoja urejanja zemljevida. Več o tem <a href="https://github.com/organicmaps/organicmaps/issues/6144">tukaj</a>.</string>
@@ -626,6 +624,8 @@
     <string name="button_layer_hiking">Pohodništvo</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">Kolesarjenje</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">Satelit</string>
     <string name="button_layer_subway">Podzemna železnica</string>
     <string name="layers_title">Slogi in plasti zemljevida</string>
     <string name="bookmarks_empty_list_title">Ta seznam je prazen</string>
@@ -664,6 +664,10 @@
     <string name="show_at_the_bottom">Prikaži na dnu</string>
     <string name="enable_logging_warning_message">To možnost omogočite začasno, da posnamete in nam ročno pošljete podrobne diagnostične dnevnike o vaši težavi z uporabo \"Prijavi napako\" v pogovornem oknu Pomoč. Dnevniki lahko vključujejo podatke o lokaciji.</string>
     <string name="driving_options_title">Možnosti načrtovanja poti</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Optimizacija poti</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Samodejno prerazporedi vmesne postanke za učinkovitejšo pot.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">Izogibaj se cestninam</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -678,6 +682,12 @@
     <string name="toll_road">Cestninska cesta</string>
     <string name="unpaved_road">Makadamska cesta</string>
     <string name="ferry_crossing">Prečkanje s trajektom</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">Stopnice</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">Vrata</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">Dvižna zapornica</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">Da</string>
     <!-- A generic "No" button in dialogs -->
@@ -712,7 +722,14 @@
     <string name="moreyear_ago_sorttype">Pred več kot letom dni</string>
     <string name="near_me_sorttype">V bližini</string>
     <string name="others_sorttype">Drugo</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">Trenutno zaprto</string>
+    <string name="opens_tomorrow_at">Odpira se jutri ob %s</string>
+    <string name="opens_dayoftheweek_at">Odpira se %1$s ob %2$s</string>
+    <string name="opens_at">Odpira se ob %s</string>
+    <string name="closes_at">Zapira se ob %s</string>
     <string name="editor_add_select_category_all_subtitle">Vse kategorije</string>
+    <string name="placepage_replace_stop">Zamenjaj postanek</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Hrana</string>
@@ -731,6 +748,12 @@
     <string name="medicine">Medicina</string>
     <string name="search_in_the_list">Išči na seznamu</string>
     <string name="religious_places">Verski kraji</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">Izberi</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">Izberi vse</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">Prekliči izbiro</string>
     <string name="select_list">Izberite seznam</string>
     <string name="button_layer_isolines">Plastnice</string>
     <string name="isolines_activation_error_dialog">Aktiviranje plastnic zahteva prenos podatkov zemljevida za to območje</string>
@@ -823,15 +846,14 @@
     <string name="pref_tts_no_system_tts">Nastavitve sinteze govora niso bile najdene, ste prepričani, da vaša naprava to podpira?</string>
     <string name="drive_through">Vožnja skozi</string>
     <string name="clear_the_search">Počisti iskanje</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">Povečaj</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">Pomanjšaj</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">Povezava do menija</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">Ogled menija</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Odpri v drugi aplikaciji</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Samopostrežba</string>
     <string name="select_option">Izberite možnost</string>
@@ -866,6 +888,28 @@
     <string name="share_track">Deli sled</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Izbrišem %s?</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="one">Izbrano: %d</item>
+        <item quantity="two">Izbrano: %d</item>
+        <item quantity="few">Izbrano: %d</item>
+        <item quantity="other">Izbrano: %d</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="one">Izbrišem %d element?</item>
+        <item quantity="two">Izbrišem %d elementa?</item>
+        <item quantity="few">Izbrišem %d elemente?</item>
+        <item quantity="other">Izbrišem %d elementov?</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">Premakni</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">Spremeni barvo</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">Vi</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -878,4 +922,38 @@
     <string name="toast_bookmarks_color_changed">Barva zaznamkov je spremenjena</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">Barva sledi je spremenjena</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">Spekter</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">Drsniki</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">RDEČA</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">ZELENA</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">BLUE</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB Hex Color #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">Mreža</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">Glasovno iskanje</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">Izberi na zemljevidu</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">Začetek</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">Cilj</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">Spremeni začetek</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">Spremeni cilj</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">Spremeni postanek</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">Doseženo največje število postankov</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">Premikajte in povečujte zemljevid, da namestite križec</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Ustavi in shrani</string>
 </resources>

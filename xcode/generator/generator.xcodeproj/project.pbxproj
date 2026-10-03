@@ -28,10 +28,8 @@
 		FACB776D26B90CA800810C9C /* libicu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB776C26B90CA800810C9C /* libicu.a */; };
 		FACB776F26B90CAD00810C9C /* libgflags.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB776E26B90CAD00810C9C /* libgflags.a */; };
 		FACB777126B90CC300810C9C /* libexpat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777026B90CC300810C9C /* libexpat.a */; };
-		FACB777326B90CCF00810C9C /* libcppjansson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777226B90CCF00810C9C /* libcppjansson.a */; };
 		FACB777526B90CEE00810C9C /* libdescriptions.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777426B90CEE00810C9C /* libdescriptions.a */; };
 		FACB777726B90CF200810C9C /* minizip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777626B90CF200810C9C /* minizip.framework */; };
-		FACB777926B90CFB00810C9C /* libprotobuf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777826B90CFB00810C9C /* libprotobuf.a */; };
 		FACB777B26B90D0700810C9C /* librouting_common.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777A26B90D0700810C9C /* librouting_common.a */; };
 		FACB777F26B90E7C00810C9C /* libmap.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB777E26B90E7C00810C9C /* libmap.a */; };
 		FACB778126B90E9800810C9C /* libtransit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB778026B90E9800810C9C /* libtransit.a */; };
@@ -56,7 +54,6 @@
 		FACB7ADA26B913F400810C9C /* translator_interface.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB798426B913F300810C9C /* translator_interface.hpp */; };
 		FACB7ADB26B913F400810C9C /* routing_index_generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB798526B913F300810C9C /* routing_index_generator.cpp */; };
 		FACB7ADC26B913F400810C9C /* translator_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB798626B913F300810C9C /* translator_world.cpp */; };
-		FACB7ADD26B913F400810C9C /* transit_generator_experimental.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB798726B913F300810C9C /* transit_generator_experimental.hpp */; };
 		FACB7ADE26B913F400810C9C /* wiki_url_dumper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB798826B913F300810C9C /* wiki_url_dumper.cpp */; };
 		FACB7ADF26B913F400810C9C /* cluster_finder.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB798926B913F300810C9C /* cluster_finder.hpp */; };
 		FACB7AE026B913F400810C9C /* filter_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB798A26B913F300810C9C /* filter_world.cpp */; };
@@ -104,7 +101,6 @@
 		FACB7B0C26B913F400810C9C /* filter_collection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB79BC26B913F300810C9C /* filter_collection.cpp */; };
 		FACB7B0D26B913F400810C9C /* processor_coastline.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB79BD26B913F300810C9C /* processor_coastline.hpp */; };
 		FACB7B0E26B913F400810C9C /* osm_element_helpers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB79BE26B913F300810C9C /* osm_element_helpers.hpp */; };
-		FACB7B0F26B913F400810C9C /* processor_booking.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB79BF26B913F300810C9C /* processor_booking.hpp */; };
 		FACB7B1026B913F400810C9C /* cells_merger.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB79C026B913F300810C9C /* cells_merger.hpp */; };
 		FACB7B1126B913F400810C9C /* translators_pool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB79C126B913F300810C9C /* translators_pool.cpp */; };
 		FACB7B1226B913F400810C9C /* srtm_parser.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB79C226B913F300810C9C /* srtm_parser.hpp */; };
@@ -231,7 +227,6 @@
 		FACB7BD726B913F400810C9C /* camera_info_collector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB7A9A26B913F300810C9C /* camera_info_collector.cpp */; };
 		FACB7BD826B913F400810C9C /* feature_maker_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB7A9B26B913F300810C9C /* feature_maker_base.cpp */; };
 		FACB7BD926B913F400810C9C /* wiki_url_dumper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB7A9C26B913F300810C9C /* wiki_url_dumper.hpp */; };
-		FACB7BDA26B913F400810C9C /* transit_generator_experimental.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACB7A9D26B913F300810C9C /* transit_generator_experimental.cpp */; };
 		FACB7BDB26B913F400810C9C /* translator_world.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB7A9E26B913F300810C9C /* translator_world.hpp */; };
 		FACB7BDC26B913F400810C9C /* routing_index_generator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB7A9F26B913F300810C9C /* routing_index_generator.hpp */; };
 		FACB7BDD26B913F400810C9C /* osm_xml_source.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FACB7AA026B913F300810C9C /* osm_xml_source.hpp */; };
@@ -319,10 +314,8 @@
 		FACB776C26B90CA800810C9C /* libicu.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libicu.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB776E26B90CAD00810C9C /* libgflags.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libgflags.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB777026B90CC300810C9C /* libexpat.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libexpat.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB777226B90CCF00810C9C /* libcppjansson.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcppjansson.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB777426B90CEE00810C9C /* libdescriptions.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libdescriptions.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB777626B90CF200810C9C /* minizip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = minizip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB777826B90CFB00810C9C /* libprotobuf.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libprotobuf.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB777A26B90D0700810C9C /* librouting_common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = librouting_common.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB777E26B90E7C00810C9C /* libmap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libmap.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB778026B90E9800810C9C /* libtransit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libtransit.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -346,7 +339,6 @@
 		FACB798426B913F300810C9C /* translator_interface.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = translator_interface.hpp; sourceTree = "<group>"; };
 		FACB798526B913F300810C9C /* routing_index_generator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = routing_index_generator.cpp; sourceTree = "<group>"; };
 		FACB798626B913F300810C9C /* translator_world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = translator_world.cpp; sourceTree = "<group>"; };
-		FACB798726B913F300810C9C /* transit_generator_experimental.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transit_generator_experimental.hpp; sourceTree = "<group>"; };
 		FACB798826B913F300810C9C /* wiki_url_dumper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wiki_url_dumper.cpp; sourceTree = "<group>"; };
 		FACB798926B913F300810C9C /* cluster_finder.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cluster_finder.hpp; sourceTree = "<group>"; };
 		FACB798A26B913F300810C9C /* filter_world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_world.cpp; sourceTree = "<group>"; };
@@ -394,7 +386,6 @@
 		FACB79BC26B913F300810C9C /* filter_collection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = filter_collection.cpp; sourceTree = "<group>"; };
 		FACB79BD26B913F300810C9C /* processor_coastline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = processor_coastline.hpp; sourceTree = "<group>"; };
 		FACB79BE26B913F300810C9C /* osm_element_helpers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = osm_element_helpers.hpp; sourceTree = "<group>"; };
-		FACB79BF26B913F300810C9C /* processor_booking.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = processor_booking.hpp; sourceTree = "<group>"; };
 		FACB79C026B913F300810C9C /* cells_merger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cells_merger.hpp; sourceTree = "<group>"; };
 		FACB79C126B913F300810C9C /* translators_pool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = translators_pool.cpp; sourceTree = "<group>"; };
 		FACB79C226B913F300810C9C /* srtm_parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = srtm_parser.hpp; sourceTree = "<group>"; };
@@ -521,7 +512,6 @@
 		FACB7A9A26B913F300810C9C /* camera_info_collector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = camera_info_collector.cpp; sourceTree = "<group>"; };
 		FACB7A9B26B913F300810C9C /* feature_maker_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = feature_maker_base.cpp; sourceTree = "<group>"; };
 		FACB7A9C26B913F300810C9C /* wiki_url_dumper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = wiki_url_dumper.hpp; sourceTree = "<group>"; };
-		FACB7A9D26B913F300810C9C /* transit_generator_experimental.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transit_generator_experimental.cpp; sourceTree = "<group>"; };
 		FACB7A9E26B913F300810C9C /* translator_world.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = translator_world.hpp; sourceTree = "<group>"; };
 		FACB7A9F26B913F300810C9C /* routing_index_generator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = routing_index_generator.hpp; sourceTree = "<group>"; };
 		FACB7AA026B913F300810C9C /* osm_xml_source.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = osm_xml_source.hpp; sourceTree = "<group>"; };
@@ -597,9 +587,7 @@
 				FACB778D26B9118900810C9C /* libeditor.a in Frameworks */,
 				FACB778B26B9112200810C9C /* libtess2.a in Frameworks */,
 				FACB778726B90ECD00810C9C /* libopening_hours.a in Frameworks */,
-				FACB777926B90CFB00810C9C /* libprotobuf.a in Frameworks */,
 				FACB777726B90CF200810C9C /* minizip.framework in Frameworks */,
-				FACB777326B90CCF00810C9C /* libcppjansson.a in Frameworks */,
 				FACB777126B90CC300810C9C /* libexpat.a in Frameworks */,
 				FACB776F26B90CAD00810C9C /* libgflags.a in Frameworks */,
 				FACB776D26B90CA800810C9C /* libicu.a in Frameworks */,
@@ -690,10 +678,8 @@
 				FACB778026B90E9800810C9C /* libtransit.a */,
 				FACB777E26B90E7C00810C9C /* libmap.a */,
 				FACB777A26B90D0700810C9C /* librouting_common.a */,
-				FACB777826B90CFB00810C9C /* libprotobuf.a */,
 				FACB777626B90CF200810C9C /* minizip.framework */,
 				FACB777426B90CEE00810C9C /* libdescriptions.a */,
-				FACB777226B90CCF00810C9C /* libcppjansson.a */,
 				FACB777026B90CC300810C9C /* libexpat.a */,
 				FACB776E26B90CAD00810C9C /* libgflags.a */,
 				FACB776C26B90CA800810C9C /* libicu.a */,
@@ -859,7 +845,6 @@
 				FACB79C426B913F300810C9C /* popular_places_section_builder.hpp */,
 				FACB79DE26B913F300810C9C /* postcode_points_builder.cpp */,
 				FACB7A6226B913F300810C9C /* postcode_points_builder.hpp */,
-				FACB79BF26B913F300810C9C /* processor_booking.hpp */,
 				FACB7ACF26B913F400810C9C /* processor_coastline.cpp */,
 				FACB79BD26B913F300810C9C /* processor_coastline.hpp */,
 				FACB7A7126B913F300810C9C /* processor_complex.cpp */,
@@ -912,8 +897,6 @@
 				FACB7A6026B913F300810C9C /* towns_dumper.hpp */,
 				FACB79B526B913F300810C9C /* traffic_generator.cpp */,
 				FACB7AC626B913F400810C9C /* traffic_generator.hpp */,
-				FACB7A9D26B913F300810C9C /* transit_generator_experimental.cpp */,
-				FACB798726B913F300810C9C /* transit_generator_experimental.hpp */,
 				FACB79C326B913F300810C9C /* transit_generator.cpp */,
 				FACB7AD026B913F400810C9C /* transit_generator.hpp */,
 				FACB7A5426B913F300810C9C /* translator_coastline.cpp */,
@@ -956,7 +939,6 @@
 			files = (
 				FACB7AFE26B913F400810C9C /* filter_complex.hpp in Headers */,
 				FACB7B9326B913F400810C9C /* osm2type.hpp in Headers */,
-				FACB7ADD26B913F400810C9C /* transit_generator_experimental.hpp in Headers */,
 				FACB7B2326B913F400810C9C /* translator.hpp in Headers */,
 				FACB7AD726B913F400810C9C /* camera_info_collector.hpp in Headers */,
 				FACB7BC226B913F400810C9C /* cross_mwm_osm_ways_collector.hpp in Headers */,
@@ -1029,7 +1011,6 @@
 				FACB7C0126B913F400810C9C /* restriction_generator.hpp in Headers */,
 				FACB7B9E26B913F400810C9C /* feature_processing_layers.hpp in Headers */,
 				FACB7B4526B913F400810C9C /* processor_country.hpp in Headers */,
-				FACB7B0F26B913F400810C9C /* processor_booking.hpp in Headers */,
 				FACB7ADA26B913F400810C9C /* translator_interface.hpp in Headers */,
 				FACB7BFD26B913F400810C9C /* traffic_generator.hpp in Headers */,
 				FAA6D8D32921189A00E8D50D /* water_boundary_checker.hpp in Headers */,
@@ -1158,7 +1139,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				DefaultBuildSystemTypeForWorkspace = Latest;
-				LastUpgradeCheck = 1510;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					6753401A1A3F2A1B00A0A8C3 = {
 						CreatedOnToolsVersion = 6.1;
@@ -1222,7 +1203,6 @@
 				FACB7BCC26B913F400810C9C /* maxspeeds_parser.cpp in Sources */,
 				FACB7BBE26B913F400810C9C /* relation_tags.cpp in Sources */,
 				FACB7BF126B913F400810C9C /* feature_merger.cpp in Sources */,
-				FACB7BDA26B913F400810C9C /* transit_generator_experimental.cpp in Sources */,
 				FACB7AD426B913F400810C9C /* restriction_writer.cpp in Sources */,
 				FACB7BCB26B913F400810C9C /* boundary_postcodes_enricher.cpp in Sources */,
 				FACB7BFB26B913F400810C9C /* filter_complex.cpp in Sources */,

@@ -12,7 +12,7 @@
     <string name="type.aerialway.gondola">Telecabine</string>
     <string name="type.aerialway.mixed_lift">Teleférico híbrido</string>
     <string name="type.aerialway.station">Estação de teleférico</string>
-    <string name="type.aeroway">Via aérea</string>
+    <string name="type.aeroway">Infraestrutura do espaço aéreo</string>
     <string name="type.aeroway.aerodrome">Aeroporto ou aeródromo</string>
     <string name="type.aeroway.aerodrome.international">Aeroporto internacional</string>
     <string name="type.aeroway.apron">Plataforma de estacionamento de aviões</string>
@@ -217,6 +217,7 @@
     <string name="type.building">Edifício</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Morada</string>
+    <string name="type.building.construction">Edifício em construção</string>
     <string name="type.building.has_parts">Edifício</string>
     <string name="type.building_part">Edifício</string>
     <string name="type.building.garage">Garagem</string>
@@ -306,7 +307,7 @@
     <string name="type.cuisine.mediterranean">Cozinha mediterrânea</string>
     <string name="type.cuisine.mexican">Cozinha mexicana</string>
     <string name="type.cuisine.moroccan">Cozinha marroquina</string>
-    <string name="type.cuisine.noodles">Massa asiática</string>
+    <string name="type.cuisine.noodle">Massa asiática</string>
     <string name="type.cuisine.oriental">Cozinha oriental</string>
     <string name="type.cuisine.pancake">Crepes</string>
     <string name="type.cuisine.pasta">Massa</string>
@@ -322,6 +323,7 @@
     <string name="type.cuisine.sausage">Salsichas</string>
     <string name="type.cuisine.savory_pancakes">Tortas salgadas</string>
     <string name="type.cuisine.seafood">Frutos do mar</string>
+    <string name="type.cuisine.shawarma">Xauarma</string>
     <string name="type.cuisine.soba">Soba</string>
     <string name="type.cuisine.spanish">Cozinha espanhola</string>
     <string name="type.cuisine.steak_house">Churrasqueira</string>
@@ -546,6 +548,7 @@
     <string name="type.historic.castle.shiro">Castelo japonês</string>
     <string name="type.historic.castle.stately">Château</string>
     <string name="type.historic.city_gate">Portas da cidade</string>
+    <string name="type.man_made.ceremonial_gate">Portão Cerimonial</string>
     <string name="type.historic.citywalls">Muralha</string>
     <string name="type.historic.fort">Forte</string>
     <string name="type.historic.gallows">Forca</string>
@@ -578,7 +581,8 @@
     <string name="type.junction.roundabout">Rotunda</string>
     <string name="type.landuse">Uso do solo</string>
     <string name="type.landuse.allotments">Horta comunitária</string>
-    <string name="type.landuse.basin">Reservatório</string>
+    <string name="type.landuse.basin">Bacia</string>
+    <string name="type.landuse.basin.intermittent">Bacia intermitente</string>
     <string name="type.landuse.brownfield">Terreno industrial devoluto</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Cemitério</string>
@@ -608,7 +612,6 @@
     <string name="type.landuse.quarry">Pedreira</string>
     <string name="type.landuse.railway">Área ferroviária</string>
     <string name="type.landuse.recreation_ground">Área de lazer</string>
-    <string name="type.landuse.reservoir">Água</string>
     <string name="type.landuse.residential">Área residencial</string>
     <string name="type.landuse.retail">Área de retalho</string>
     <string name="type.landuse.salt_pond">Salinas</string>
@@ -630,6 +633,7 @@
     <string name="type.leisure.ice_rink">Rinque de patinagem</string>
     <string name="type.leisure.marina">Marina</string>
     <string name="type.leisure.nature_reserve">Reserva natural</string>
+    <string name="type.leisure.bird_hide">Observatório de aves</string>
     <string name="type.leisure.outdoor_seating">Assentos ao ar livre</string>
     <string name="type.leisure.firepit">Lugar para Fogueira</string>
     <string name="type.leisure.park">Parque</string>
@@ -648,8 +652,8 @@
     <string name="type.leisure.stadium">Estádio</string>
     <string name="type.leisure.swimming_pool">Piscina</string>
     <string name="type.leisure.swimming_pool.private">Piscina</string>
-    <string name="type.leisure.track">Trilha</string>
-    <string name="type.leisure.track.area">Área de trilha</string>
+    <string name="type.leisure.track">Pista para desportos</string>
+    <string name="type.leisure.track.area">Pista para desportos</string>
     <string name="type.leisure.water_park">Parque aquático</string>
     <string name="type.leisure.beach_resort">Resort à beira mar</string>
     <string name="type.man_made">Construção humana</string>
@@ -716,10 +720,13 @@
     <string name="type.natural.water.reservoir">Reservatório</string>
     <string name="type.natural.water.basin">Bacia</string>
     <string name="type.natural.water.river">Rio</string>
+    <string name="type.natural.water.intermittent">Corpo de água intermitente</string>
     <string name="type.natural.land">Terra</string>
     <string name="type.natural.meadow">Pradaria</string>
     <string name="type.natural.orchard">Pomar</string>
     <string name="type.natural.peak">Pico</string>
+    <string name="type.natural.hill">Colina</string>
+    <string name="type.natural.arch">Arco de Rocha</string>
     <string name="type.natural.saddle">Sela da Montanha</string>
     <string name="type.natural.rock">Rochedo</string>
     <string name="type.natural.scrub">Matagal</string>
@@ -729,6 +736,7 @@
     <string name="type.natural.tree_row">Linha de árvores</string>
     <string name="type.natural.vineyard">Vinhedo</string>
     <string name="type.natural.volcano">Vulcão</string>
+    <string name="type.natural.volcano.active">Vulcão ativo</string>
     <string name="type.natural.water">Corpo de água</string>
     <string name="type.natural.wetland">Zona úmida</string>
     <string name="type.natural.wetland.bog">Pântano</string>
@@ -1274,6 +1282,18 @@
     <string name="type.sport.field_hockey">Hóquei em campo</string>
     <string name="type.sport.badminton">Badminton</string>
     <string name="type.sport.pelota">Pelota basca</string>
+    <string name="type.sport.boules">Petanca</string>
+    <string name="type.sport.cycling">Ciclismo</string>
+    <string name="type.sport.four_square">Quatro quadrados</string>
+    <string name="type.sport.horse_racing">Corridas de cavalos</string>
+    <string name="type.sport.karting">Karting</string>
+    <string name="type.sport.motocross">Motocross</string>
+    <string name="type.sport.motor">Desporto motorizado</string>
+    <string name="type.sport.netball">Netebol</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Râguebi</string>
+    <string name="type.sport.running">Corrida</string>
+    <string name="type.sport.softball">Softbol</string>
     <string name="type.tourism">Turismo</string>
     <string name="type.tourism.aquarium">Aquário</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1293,6 +1313,7 @@
     <string name="type.attraction.historic">Atração histórica</string>
     <string name="type.attraction.maze">Labirinto</string>
     <string name="type.attraction.roller_coaster">Montanha-russa</string>
+    <string name="type.roller_coaster.track">Montanha-russa</string>
     <string name="type.attraction.water_slide">Escorrega aquático</string>
     <string name="type.tourism.attraction.specified">Atração turística</string>
     <string name="type.tourism.camp_site">Parque de campismo</string>
@@ -1323,6 +1344,7 @@
     <string name="type.traffic_calming.bump">Lomba</string>
     <string name="type.traffic_calming.hump">Lomba longa</string>
     <string name="type.waterway">Curso de água</string>
+    <string name="type.waterway.access_point">Ponto de acesso à via navegável</string>
     <string name="type.waterway.canal">Canal</string>
     <string name="type.waterway.canal.tunnel">Túnel de canal</string>
     <string name="type.waterway.fish_pass">Escada de peixes</string>
@@ -1381,6 +1403,7 @@
     <string name="type.self_service.no">Sem autosserviço</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Instituição de serviços sociais</string>
+    <string name="type.amenity.stage">Palco</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Entrada do Serviço de Urgência</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1397,11 +1420,12 @@
     <string name="type.railway.miniature">Caminho de ferro em miniatura</string>
     <string name="type.amenity.kneipp_water_cure">Cura pela água Kneipp</string>
     <string name="type.area_highway.traffic_island">Ilha de tráfego</string>
-    <string name="type.man_made.monitoring_station">Estação de controlo</string>
+    <string name="type.man_made.monitoring_station">Estação de monitorização</string>
     <string name="type.man_made.monitoring_station.water_level">Estação de monitorização do nível da água</string>
     <string name="type.man_made.monitoring_station.weather">Estação de monitorização meteorológica</string>
     <string name="type.amenity.student_accommodation">Alojamento para estudantes</string>
     <string name="type.craft.watchmaker">Relojoeiro</string>
     <string name="type.xmas_feature.market">Mercado de Natal</string>
     <string name="type.xmas_feature.tree">Árvore de Natal</string>
+    <string name="type.amenity.hookah_lounge">Bar de narguilé</string>
 </resources>

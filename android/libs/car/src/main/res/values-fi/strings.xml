@@ -47,6 +47,8 @@
     <string name="auto">Automaattinen</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">3D-rakennukset</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Ei saatavilla</string>
     <!-- Text in menu -->
     <string name="help">Ohje</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Avoinna</string>
     <string name="twentyfour_seven">Päivin ja öin</string>
     <string name="day_off_today">Suljettu tänään</string>
+    <string name="midnight">Keskiyö</string>
+    <string name="noon">Keskipäivä</string>
     <string name="opens_in">Avautuu %s kuluttua</string>
     <string name="closes_in">Sulkeutuu %s kuluttua</string>
     <string name="closed">Suljettu</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Vältä lautan käyttöä</string>
     <string name="avoid_motorways">Vältä moottoritietä</string>
     <string name="unable_to_calc_alert_title">Reittiä ei voi luoda</string>
+    <string name="trip_finished">Olet perillä!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Järjestä kirjanmerkit</string>
     <!-- Android -->

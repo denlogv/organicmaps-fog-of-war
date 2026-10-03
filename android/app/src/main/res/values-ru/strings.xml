@@ -52,7 +52,7 @@
     <string name="unsupported_phone">Для работы приложения необходим аппаратно ускоренный OpenGL. К сожалению, ваше устройство не поддерживается.</string>
     <string name="download">Загрузить</string>
     <!-- Used in DownloadResources startup screen -->
-    <string name="disconnect_usb_cable">Отключите USB кабель или вставьте SD-карту</string>
+    <string name="disconnect_usb_cable">Для использования приложения Organic Maps отсоедините USB-кабель или вставьте карту памяти</string>
     <!-- Used in DownloadResources startup screen -->
     <string name="not_enough_free_space_on_sdcard">Недостаточно свободного места на SD карте/в памяти устройства для использования программы</string>
     <string name="download_resources">Для начала работы скачайте, пожалуйста, обзорную карту мира на ваше устройство.\nПотребуется %s данных.</string>
@@ -120,7 +120,7 @@
     <string name="category_hotel">Гостиница</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">Достопримечательности</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">Развлечения</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">Банкомат</string>
@@ -142,7 +142,7 @@
     <string name="category_police">Полиция</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">Переработка</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">Вода</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">Для автодомов</string>
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">Извините, настройки места хранения карт сейчас недоступны.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">Идет процесс загрузки карт.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Смотри где я сейчас. Жми %1$s или %2$s</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Проверь мою метку на карте Organic Maps!</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Проверь моё текущее местоположение на карте Organic Maps!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">Привет!\n\nЯ сейчас здесь: %1$s. Чтобы увидеть это место на карте Organic Maps, открой эту ссылку %2$s или эту %3$s\n\nСпасибо.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">Поделиться</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s в Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Место в Organic Maps</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">Электронная почта</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">3D здания</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">3D-здания отключаются в режиме энергосбережения</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">Спутниковые снимки</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">URL сервера</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">Введите корректный URL с {z}/{x}/{y}</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">Размер кэша (МБ)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">Непрозрачность площадных объектов</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">Источники пользовательских тайлов предоставляете вы. Используйте только сервисы, к которым у вас есть доступ. Вы несёте ответственность за указание авторства, условия лицензии, API-ключи, квоты и ограничения использования.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">Голосовые инструкции</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">Протестировать голосовые подсказки (TTS, Text-To-Speech)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">Проверьте громкость или системные настройки преобразования текста в речь, если сейчас ничего не слышно.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">Не доступны</string>
     <string name="pref_map_auto_zoom">Автозум</string>
     <string name="placepage_distance">Расстояние</string>
@@ -371,6 +379,8 @@
     <string name="clear_search">Очистить историю поиска</string>
     <!-- Place Page link to Wikipedia article (if map object has it). -->
     <string name="read_in_wikipedia">Википедия</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">Статья с сайта wikipedia.org</string>
     <!-- Place Page link to Wikimedia Commons. -->
     <string name="wikimedia_commons">Wikimedia Commons</string>
     <string name="p2p_your_location">Ваше местоположение</string>
@@ -399,19 +409,15 @@
     <string name="editor_example_values">Примеры значений</string>
     <string name="editor_correct_mistake">Исправьте ошибку</string>
     <string name="editor_add_select_location">Выберите местоположение</string>
-    <string name="editor_report_problem_desription_1">Пожалуйста, напишите подробно о проблеме, чтобы сообщество OpenStreetMap исправило ошибку.</string>
-    <string name="editor_report_problem_desription_2">Или сделайте это самостоятельно на сайте https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">Отправить</string>
-    <string name="editor_report_problem_title">Проблема</string>
-    <string name="editor_report_problem_no_place_title">Места не существует</string>
-    <string name="editor_report_problem_under_construction_title">Закрыто на ремонт</string>
-    <string name="editor_report_problem_duplicate_place_title">Повторяющееся место</string>
     <string name="autodownload">Автоматическая загрузка</string>
     <!-- Place Page opening hours text -->
     <string name="daily">Ежедневно</string>
     <string name="twentyfour_seven">Круглосуточно</string>
     <string name="day_off_today">Сегодня закрыто</string>
     <string name="day_off">Закрыто</string>
+    <string name="midnight">Полночь</string>
+    <string name="noon">Полдень</string>
     <string name="today">Сегодня</string>
     <string name="opens_in">Открывается через %s</string>
     <string name="closes_in">Закроется через %s</string>
@@ -464,8 +470,6 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">На местном языке</string>
     <string name="editor_edit_place_category_title">Категория</string>
-    <string name="detailed_problem_description">Подробное описание проблемы</string>
-    <string name="editor_report_problem_other_title">Другая проблема</string>
     <string name="placepage_add_business_button">Добавить организацию</string>
     <string name="message_invalid_feature_position">Объект не может находиться в этом месте</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
@@ -508,10 +512,10 @@
     <string name="day">д</string>
     <string name="second">с</string>
     <string name="placepage_more_button">Ещё</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Редактировать метку</string>
     <string name="placepage_personal_notes_hint">Примечание (текст или html)</string>
-    <string name="editor_comment_hint">Коментарий…</string>
+    <string name="editor_comment_hint">Комментарий…</string>
     <string name="editor_reset_edits_message">Сбросить все локальные правки?</string>
     <string name="editor_reset_edits_button">Сбросить</string>
     <string name="editor_remove_place_message">Удалить добавленный вами объект?</string>
@@ -536,7 +540,7 @@
     <!-- Dialog before publishing the modifications to the public map. -->
     <string name="editor_share_to_all_dialog_message_1">Убедитесь, что вы не ввели личные данные.</string>
     <string name="editor_share_to_all_dialog_message_2">Редакторы OpenStreetMap проверят изменения и свяжутся с вами, если у них возникнут вопросы.</string>
-    <string name="navigation_stop_button">Cтоп</string>
+    <string name="navigation_stop_button">Стоп</string>
     <!-- Shown as toast when starting the recent track recording -->
     <string name="track_recording">Запущена запись трека</string>
     <!-- For the first routing -->
@@ -552,11 +556,7 @@
     <string name="mobile_data_description">Мобильный интернет требуется для уведомлений об обновлении карты и для отображения более подробной информации о местах и метках.</string>
     <string name="mobile_data_option_never">Никогда не использовать</string>
     <string name="mobile_data_option_ask">Всегда спрашивать</string>
-    <string name="traffic_update_maps_text">Для отображения пробок необходимо обновить карты.</string>
     <string name="big_font">Увеличить шрифт на карте</string>
-    <string name="traffic_update_app">Обновите Organic Maps</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">Данные о пробках недоступны</string>
     <string name="enable_logging">Включить запись логов</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">Отправить отзыв</string>
@@ -565,14 +565,12 @@
     <string name="prefs_languages_information_off_link">Более подробная информация — в этом руководстве.</string>
     <string name="transliteration_title">Транслитерировать в Латинский алфавит</string>
     <string name="learn_more">Узнать больше</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">Используйте поиск, выберите метку, или коснитесь карты, чтобы добавить начальную точку маршрута</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">Используйте поиск, выберите метку, или коснитесь карты, чтобы добавить точку назначения</string>
     <string name="planning_route_manage_route">Изменить маршрут</string>
     <string name="button_plan">Построить</string>
     <string name="placepage_remove_stop">Удалить остановку</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
     <string name="placepage_add_stop">Добавить остановку</string>
+    <string name="drag_to_reorder">Изменить порядок</string>
     <string name="saved">Сохранено</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">Пожалуйста войдите в аккаунт OpenStreetMap.org, чтобы публиковать ваши изменения карты. Подробности по <a href="https://github.com/organicmaps/organicmaps/issues/6144">ссылке</a>.</string>
@@ -627,6 +625,8 @@
     <string name="button_layer_hiking">Пешие маршруты</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">Веломаршруты</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">Спутник</string>
     <string name="button_layer_subway">Метро</string>
     <string name="layers_title">Стили и слои карты</string>
     <string name="bookmarks_empty_list_title">Список пустой</string>
@@ -662,9 +662,13 @@
     <string name="bookmarks_text_placement_title">Названия меток на карте</string>
     <string name="bookmarks_text_placement_description">Если меток очень много, отображение их названий на карте может замедлить работу приложения.</string>
     <string name="show_to_the_right">Справа</string>
-    <string name="show_at_the_bottom">Под меткой</string>
+    <string name="show_at_the_bottom">Снизу</string>
     <string name="enable_logging_warning_message">Данная настройка включается для записи действий в целях диагностики, чтобы помочь нашей команде выявить проблемы с приложением. Временно включайте эту настройку только для отправки детальной информации о найденной вами проблеме в приложении через кнопку \"Сообщить о проблеме\".</string>
     <string name="driving_options_title">Настройки объезда</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Оптимизация маршрута</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Автоматически переставляет промежуточные остановки для построения более эффективного маршрута.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">Избегать платных дорог</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -679,6 +683,12 @@
     <string name="toll_road">Платная дорога</string>
     <string name="unpaved_road">Грунтовая дорога</string>
     <string name="ferry_crossing">Паромная переправа</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">Лестница</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">Ворота</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">Шлагбаум</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">Да</string>
     <!-- A generic "No" button in dialogs -->
@@ -713,7 +723,14 @@
     <string name="moreyear_ago_sorttype">Больше года назад</string>
     <string name="near_me_sorttype">Рядом со мной</string>
     <string name="others_sorttype">Другие</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">Сейчас закрыто</string>
+    <string name="opens_tomorrow_at">Откроется завтра в %s</string>
+    <string name="opens_dayoftheweek_at">Открывается в %1$s в %2$s</string>
+    <string name="opens_at">Открывается в %s</string>
+    <string name="closes_at">Закрывается в %s</string>
     <string name="editor_add_select_category_all_subtitle">Все категории</string>
+    <string name="placepage_replace_stop">Заменить остановку</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Еда</string>
@@ -732,6 +749,12 @@
     <string name="medicine">Медицина</string>
     <string name="search_in_the_list">Искать в списке</string>
     <string name="religious_places">Святые места</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">Выбрать</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">Выбрать все</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">Отменить выбор</string>
     <string name="select_list">Выбрать список</string>
     <string name="button_layer_isolines">Высоты</string>
     <string name="isolines_activation_error_dialog">Чтобы воспользоваться линиями высот, обновите или загрузите карту нужной местности</string>
@@ -826,15 +849,14 @@
     <string name="pref_tts_no_system_tts">Настройки синтеза речи не найдены, вы уверены, что ваше устройство поддерживает их?</string>
     <string name="drive_through">С окошком для водителей</string>
     <string name="clear_the_search">Очистите поиск</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">Приблизить</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">Отдалить</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">Ссылка на меню</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">Посмотреть меню</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Открыть в другом приложении</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Самообслуживание</string>
     <string name="select_option">Выберите вариант</string>
@@ -859,7 +881,7 @@
     <!-- Error message when there are no File Manager apps installed to select a folder when importing Bookmarks and Tracks -->
     <string name="error_no_file_manager_app">Невозможно отобразить диалог выбора папки, потому что на вашем устройстве не установлено подходящее приложение. Пожалуйста, установите менеджер файлов и повторите попытку.</string>
     <string name="choose_color">Выберите цвет</string>
-    <string name="edit_track">Редактировать маршрут</string>
+    <string name="edit_track">Редактировать трек</string>
     <string name="uri_open_location_failed">Не установлено приложение, которое может открыть местоположение</string>
     <!-- preference string for using auto theme only in navigation mode -->
     <string name="nav_auto">Авто в навигации</string>
@@ -869,6 +891,32 @@
     <string name="share_track">Поделиться треком</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Удалить %s?</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="one">Выбрано: %d</item>
+        <item quantity="few">Выбрано: %d</item>
+        <item quantity="many">Выбрано: %d</item>
+        <item quantity="other">Выбрано: %d</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="one">Удалить %d объект?</item>
+        <item quantity="few">Удалить %d объекта?</item>
+        <item quantity="many">Удалить %d объектов?</item>
+        <item quantity="other">Удалить %d объектов?</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">Переместить</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">Изменить цвет</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">Скрыть трек</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">Показать трек</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">Вы</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -881,4 +929,38 @@
     <string name="toast_bookmarks_color_changed">Цвет меток изменён</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">Цвет треков изменён</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">Спектр</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">Слайдеры</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">КРАСНЫЙ</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">ЗЕЛЕНЫЙ</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">СИНИЙ</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB Hex Color #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">Сетка</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">Голосовой поиск</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">Выбрать на карте</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">Откуда</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">Куда</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">Изменить начало</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">Изменить пункт назначения</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">Изменить остановку</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">Достигнуто максимальное количество остановок</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">Перемещайте и масштабируйте карту, чтобы установить крестик</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Остановить и сохранить</string>
 </resources>

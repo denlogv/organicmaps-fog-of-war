@@ -1,9 +1,10 @@
-• OSM žemėlapio duomenys kovo 10 d., Vikipedija – kovo 1 d.
-• Detalesnės Kinijos provincijų aukščio izoliacijos
-• Pridėtos medžių eilės, odos parduotuvės ir parduotuvės, prekiaujančios religinėmis prekėmis
-• Pridėtas sąlyginių greičio apribojimų palaikymas
-• Tanzanija padalinta į mažesnius regionus
-• Patobulintas įmonės darbo valandų rodymas
-• Ištaisyta keletas gedimų
-• Patobulinti programų ir šalių pavadinimų vertimai
-omaps.org/lt/news
+• OSM duomenys iki rugpjūčio 26 d.
+• NAUJA: kelių žymių ir trasų pasirinkimas
+• NAUJA: atskirų trasų slėpimas akies piktograma
+• NAUJA: Vikipedijos straipsniai bengalų, hindi, maratų, lenkų, tamilų, telugų ir urdu kalbomis
+• Pataisyti užlūžimai ir strigtys
+• Į žemėlapį įtrauktos paukščių stebyklos, scenos, kalvos ir uolų arkos
+• Geresnis vietų dalijimasis
+• „Android Auto“ pataisymai
+• Pataisytas maršruto stotelių pasirinkimas
+…daugiau informacijos rasite omaps.org/lt/news

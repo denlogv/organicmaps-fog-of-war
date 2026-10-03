@@ -24,7 +24,7 @@ import app.organicmaps.sdk.editor.OpeningHours;
 import app.organicmaps.sdk.editor.data.Timetable;
 import app.organicmaps.sdk.location.LocationHelper;
 import app.organicmaps.sdk.location.LocationState;
-import app.organicmaps.sdk.util.LocationUtils;
+import app.organicmaps.sdk.location.LocationUtils;
 import app.organicmaps.utils.Utils;
 import java.util.Calendar;
 
@@ -132,7 +132,12 @@ public final class UiHelpers
       if (timetables[0].isFullday)
         builder.setTitle(context.getString(R.string.twentyfour_seven));
       else
-        builder.setTitle(timetables[0].workingTimespan.toWideString());
+      {
+        final String shifts = timetables[0].formatOpenShifts(", ", context.getString(R.string.noon),
+                                                             context.getString(R.string.midnight));
+        // A day fully covered by breaks has no open shift; the place is closed.
+        builder.setTitle(shifts.isEmpty() ? context.getString(R.string.day_off_today) : shifts);
+      }
     }
     else
     {
@@ -148,8 +153,12 @@ public final class UiHelpers
           if (tt.isFullday)
             openTime = Utils.unCapitalize(context.getString(R.string.editor_time_allday));
           else
-            openTime = tt.workingTimespan.toWideString();
+            openTime =
+                tt.formatOpenShifts(", ", context.getString(R.string.noon), context.getString(R.string.midnight));
 
+          // A day fully covered by breaks has no open shift; the place is closed today.
+          if (openTime.isEmpty())
+            openTime = context.getString(R.string.day_off_today);
           builder.setTitle(openTime);
 
           break;

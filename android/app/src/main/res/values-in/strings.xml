@@ -120,7 +120,7 @@
     <string name="category_hotel">Hotel</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">Pemandangan</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">Hiburan</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">ATM</string>
@@ -142,7 +142,7 @@
     <string name="category_police">Polisi</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">Mendaur ulang</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">Air</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">Untuk RV</string>
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">Maaf, pengaturan Penyimpanan Peta saat ini sedang non-aktif.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">Pengunduhan negara sedang berjalan.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Hei, lihat lokasiku saat ini di Organic Maps! %1$s atau %2$s belum memiliki peta offline? Unduh di sini: https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Hei, lihat pinku di peta Organic Maps</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Hei, lihat lokasiku saat ini di peta Organic Maps!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">Hai,\n\nSekarang saya ada di sini: %1$s. Klik tautan ini %2$s atau yang ini %3$s untuk melihat tempatnya di peta.\n\nTerima kasih.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">Bagikan</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s di Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Tempat di Organic Maps</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">Surel</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">Bangunan 3D</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">Bangunan 3D dimatikan dalam mode hemat daya</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">Citra Satelit</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">URL server</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">Masukkan URL valid dengan {z}/{x}/{y}</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">Ukuran cache (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">Opasitas objek area</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">Sumber ubin khusus disediakan oleh Anda. Gunakan hanya layanan yang boleh Anda akses. Anda bertanggung jawab atas atribusi, ketentuan lisensi, kunci API, kuota, dan batas penggunaan.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">Petunjuk Suara</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,11 +239,13 @@
     <string name="pref_tts_test_voice_title">Menguji petunjuk suara (TTS, Text-To-Speech)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">Periksa pengaturan volume atau pengaturan teks-ke-ucapan sistem jika anda tidak mendengar suara sekarang.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">Tidak Tersedia</string>
     <string name="pref_map_auto_zoom">Perbesar otomatis</string>
     <string name="placepage_distance">Jarak</string>
     <string name="search_show_on_map">Tampilkan pada peta</string>
+    <!-- Menu button -->
+    <string name="menu">Menu</string>
     <!-- Text in menu -->
     <string name="website">Situs Web</string>
     <!-- Text in About menu, opens Organic Maps news website -->
@@ -367,6 +377,12 @@
     <string name="search_history_title">Riwayat Pencarian</string>
     <string name="search_history_text">Akses kueri pencarian terbaru dengan cepat.</string>
     <string name="clear_search">Bersihkan riwayat pencarian</string>
+    <!-- Place Page link to Wikipedia article (if map object has it). -->
+    <string name="read_in_wikipedia">Wikipedia</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">Artikel dari wikipedia.org</string>
+    <!-- Place Page link to Wikimedia Commons. -->
+    <string name="wikimedia_commons">Wikimedia Commons</string>
     <string name="p2p_your_location">Lokasi Anda</string>
     <string name="p2p_start">Mulai</string>
     <string name="p2p_from_here">Dari</string>
@@ -393,19 +409,15 @@
     <string name="editor_example_values">Contoh Nilai</string>
     <string name="editor_correct_mistake">Koreksi kesalahan</string>
     <string name="editor_add_select_location">Pilih Lokasi</string>
-    <string name="editor_report_problem_desription_1">Harap menggambarkan masalah secara rinci sehingga komunitas OpenStreetMap dapat memperbaiki kesalahan.</string>
-    <string name="editor_report_problem_desription_2">Atau Anda bisa melakukan sendiri di https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">Kirim</string>
-    <string name="editor_report_problem_title">Masalah</string>
-    <string name="editor_report_problem_no_place_title">Tempat tidak ada</string>
-    <string name="editor_report_problem_under_construction_title">Ditutup karena pemeliharaan</string>
-    <string name="editor_report_problem_duplicate_place_title">Tempat ganda</string>
     <string name="autodownload">Unduhan otomatis</string>
     <!-- Place Page opening hours text -->
     <string name="daily">Setiap Hari</string>
     <string name="twentyfour_seven">siang dan malam</string>
     <string name="day_off_today">Tutup hari ini</string>
     <string name="day_off">Tutup</string>
+    <string name="midnight">Tengah malam</string>
+    <string name="noon">Tengah hari</string>
     <string name="today">Hari ini</string>
     <string name="opens_in">Dibuka dalam %s</string>
     <string name="closes_in">Ditutup dalam %s</string>
@@ -458,8 +470,6 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">Seperti yang tertulis dalam bahasa lokal</string>
     <string name="editor_edit_place_category_title">Kategori</string>
-    <string name="detailed_problem_description">Gambaran terperinci tentang masalah</string>
-    <string name="editor_report_problem_other_title">Masalah yang berbeda</string>
     <string name="placepage_add_business_button">Tambahkan organisasi</string>
     <string name="message_invalid_feature_position">Objek tidak dapat diletakkan di sini</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
@@ -480,7 +490,7 @@
     <!-- Title for OSM note section in the editor -->
     <string name="editor_other_info">Catatan untuk relawan OpenStreetMap (opsional)</string>
     <!-- Hint of the input field in the OSM note section of the editor -->
-    <string name="editor_note_hint">Jelaskan kesalahan pada peta atau hal-hal yang tidak dapat diedit dengan Peta Organik</string>
+    <string name="editor_note_hint">Jelaskan kesalahan pada peta atau hal-hal yang tidak dapat diedit melalui Organic Maps</string>
     <!-- Information about OSM at the top of the editing page -->
     <string name="editor_about_osm">Hasil editan Anda akan diunggah ke database <a href="https://wiki.openstreetmap.org/wiki/About_OpenStreetMap">OpenStreetMap</a> publik. Mohon untuk tidak menambahkan informasi pribadi atau informasi yang memiliki hak cipta.</string>
     <string name="editor_more_about_osm">Selengkapnya tentang OpenStreetMap</string>
@@ -502,7 +512,7 @@
     <string name="day">hr</string>
     <string name="second">dtk</string>
     <string name="placepage_more_button">Lainnya</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Edit Penanda</string>
     <string name="placepage_personal_notes_hint">Catatan pribadi (teks atau html)</string>
     <string name="editor_comment_hint">Komentar…</string>
@@ -546,11 +556,7 @@
     <string name="mobile_data_description">Internet seluler diperlukan untuk menampilkan informasi terperinci tentang tempat, seperti foto, harga, dan ulasan.</string>
     <string name="mobile_data_option_never">Jangan Gunakan</string>
     <string name="mobile_data_option_ask">Selalu Tanya</string>
-    <string name="traffic_update_maps_text">Untuk memperlihatkan data lalu lintas, peta harus diperbarui.</string>
     <string name="big_font">Perbesar ukuran huruf pada peta</string>
-    <string name="traffic_update_app">Perbarui Organic Maps</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">Data lalu lintas tidak tersedia</string>
     <string name="enable_logging">Aktifkan pencatatan</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">Umpan Balik Umum</string>
@@ -559,14 +565,12 @@
     <string name="prefs_languages_information_off_link">Untuk informasi selengkapnya, bacalah panduan ini.</string>
     <string name="transliteration_title">Transliterasi ke dalam bahasa Latin</string>
     <string name="learn_more">Pelajari selengkapnya</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">Gunakan pencarian atau ketuk pada peta untuk menambahkan titik awal rute</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">Gunakan pencarian atau ketuk pada peta untuk menambahkan titik tujuan</string>
     <string name="planning_route_manage_route">Kelola rute</string>
     <string name="button_plan">Rencana</string>
     <string name="placepage_remove_stop">Hapus pemberhentian</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
     <string name="placepage_add_stop">Tambah perhentian</string>
+    <string name="drag_to_reorder">Mengatur ulang</string>
     <string name="saved">Tersimpan</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">Silahkan login ke OpenStreetMap untuk mengupload semua hasil edit peta Anda secara otomatis. Pelajari lebih lanjut <a href="https://github.com/organicmaps/organicmaps/issues/6144">di sini</a>.</string>
@@ -608,8 +612,12 @@
     <string name="privacy_policy">Kebijakan privasi</string>
     <string name="terms_of_use">Ketentuan penggunaan</string>
     <string name="button_layer_traffic">Lalu lintas</string>
+    <!-- Hiking routes layer name in the Styles and Layers dialog -->
+    <string name="button_layer_hiking">Pendakian</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">Bersepeda</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">Satelit</string>
     <string name="button_layer_subway">Kereta bawah tanah</string>
     <string name="layers_title">Gaya dan Lapisan Peta</string>
     <string name="bookmarks_empty_list_title">Daftar ini kosong</string>
@@ -644,10 +652,14 @@
     <!-- Settings/Bookmark Text Placement -->
     <string name="bookmarks_text_placement_title">Menandai nama di peta</string>
     <string name="bookmarks_text_placement_description">Jika ada terlalu banyak penanda, menampilkan nama mereka di peta dapat memperlambat aplikasi.</string>
-    <string name="show_to_the_right">Tunjukkan ke kanan</string>
+    <string name="show_to_the_right">Tampilkan di sebelah kanan</string>
     <string name="show_at_the_bottom">Tampilkan di bagian bawah</string>
     <string name="enable_logging_warning_message">Opsi ini mengaktifkan pencatatan untuk tujuan diagnostik. Bisa amat membantu bagi staf dukungan kami yang memecahkan masalah dalam aplikasi. Aktifkan opsi ini hanya saat diminta oleh dukungan Organic Maps.</string>
     <string name="driving_options_title">Pilihan berkendara</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Pengoptimalan rute</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Menyusun ulang perhentian antara secara otomatis untuk membuat rute yang lebih efisien.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">Hindari jalan tol</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -662,6 +674,12 @@
     <string name="toll_road">Jalan tol</string>
     <string name="unpaved_road">Jalan tanah</string>
     <string name="ferry_crossing">Penyeberangan kapal feri</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">Tangga</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">Gerbang</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">Palang pintu</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">Ya</string>
     <!-- A generic "No" button in dialogs -->
@@ -696,7 +714,14 @@
     <string name="moreyear_ago_sorttype">Lebih dari setahun yang lalu</string>
     <string name="near_me_sorttype">Dekat dengan saya</string>
     <string name="others_sorttype">Lainnya</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">Sekarang Tutup</string>
+    <string name="opens_tomorrow_at">Dibuka besok pada pukul %s</string>
+    <string name="opens_dayoftheweek_at">Membuka %1$s di %2$s</string>
+    <string name="opens_at">Dibuka di %s</string>
+    <string name="closes_at">Ditutup pada %s</string>
     <string name="editor_add_select_category_all_subtitle">Semua kategori</string>
+    <string name="placepage_replace_stop">Ganti Berhenti</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Makanan</string>
@@ -715,6 +740,12 @@
     <string name="medicine">Obat</string>
     <string name="search_in_the_list">Cari dalam daftar</string>
     <string name="religious_places">Tempat ibadah</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">Pilih</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">Pilih semua</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">Batalkan pilihan</string>
     <string name="select_list">Pilih daftar</string>
     <string name="button_layer_isolines">Isometrik</string>
     <string name="isolines_activation_error_dialog">Untuk mengaktifkan dan menggunakan lapisan topografi, silakan perbarui atau unduh peta area</string>
@@ -750,6 +781,8 @@
     <string name="splash_subtitle">Data peta dari OpenStreetMap</string>
     <!-- Include only languages supported on the website, add new translations here: https://github.com/organicmaps/website/tree/master/content -->
     <string name="translated_om_site_url">https://organicmaps.app/id/</string>
+    <!-- A number of bookmarks and a number of tracks, separated by comma, like: 1 bookmark, 5 tracks -->
+    <string name="comma_separated_pair">%1$s, %2$s</string>
     <!-- App Tip #00 -->
     <string name="app_tip_00">Terima kasih telah menggunakan peta buatan komunitas kami!</string>
     <!-- App tip #01 -->
@@ -799,15 +832,14 @@
     <string name="pref_tts_no_system_tts">Pengaturan Sintesis Ucapan tidak ditemukan, apakah Anda yakin perangkat Anda mendukungnya?</string>
     <string name="drive_through">Berkendara melewati</string>
     <string name="clear_the_search">Menghapus pencarian</string>
-    <string name="zoom_in">Memperbesar</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
+    <string name="zoom_in">Perbesar</string>
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">Perkecil</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">Tautan menu</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">Lihat Menu</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Buka di Aplikasi Lain</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Layanan mandiri</string>
     <string name="select_option">Pilih opsi</string>
@@ -842,6 +874,26 @@
     <string name="share_track">Bagikan Lintasan</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Hapus %s?</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="other">%d dipilih</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="other">Hapus %d item?</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">Pindah</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">Mengubah warna</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">Sembunyikan jalur</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">Tampilkan jalur</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">Anda</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -854,4 +906,38 @@
     <string name="toast_bookmarks_color_changed">Warna bookmark diubah</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">Warna trek diubah</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">Spektrum</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">Penggeser</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">MERAH</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">HIJAU</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">BIRU</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">Warna Heksa sRGB #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">Kisi</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">Pencarian suara</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">Pilih di peta</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">Titik awal</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">Tujuan</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">Ubah titik awal</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">Ubah tujuan</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">Ubah perhentian</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">Jumlah perhentian maksimum telah tercapai</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">Gerakkan dan perbesar/perkecil peta untuk menempatkan tanda silang</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Berhenti dan simpan</string>
 </resources>

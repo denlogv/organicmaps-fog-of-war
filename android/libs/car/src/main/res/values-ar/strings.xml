@@ -24,7 +24,7 @@
     <!-- Search category for grocery stores; any changes should be duplicated in categories.txt @category_food! -->
     <string name="category_food">بقالية</string>
     <!-- Search category for fuel stations; any changes should be duplicated in categories.txt @category_fuel! -->
-    <string name="category_fuel">وقود الحافلات</string>
+    <string name="category_fuel">وقود</string>
     <!-- Search category for parking lots; any changes should be duplicated in categories.txt @category_parking! -->
     <string name="category_parking">مرافق ركن السيارات</string>
     <!-- Search category for places to stay; any changes should be duplicated in categories.txt @category_hotel! -->
@@ -47,6 +47,8 @@
     <string name="auto">تلقائي</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">مباني ثلاثية الأبعاد</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">غير متاح</string>
     <!-- Text in menu -->
     <string name="help">مساعدة</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">مفتوح</string>
     <string name="twentyfour_seven">٢٤/٧(ليلاً ونهاراً)</string>
     <string name="day_off_today">مغلق اليوم</string>
+    <string name="midnight">منتصف الليل</string>
+    <string name="noon">الظهر</string>
     <string name="opens_in">يفتح بعد %s</string>
     <string name="closes_in">يغلق في غضون %s</string>
     <string name="closed">مغلق</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">تجنب استخدام العبّارات</string>
     <string name="avoid_motorways">تجنب الطريق السريع</string>
     <string name="unable_to_calc_alert_title">لا يمكن حساب الطريق</string>
+    <string name="trip_finished">لقد وصلت!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">رتّب العلامات المرجعية</string>
     <!-- Android -->
@@ -100,7 +105,7 @@
     <string name="downloader_loading_ios">جاري التنزيل</string>
     <string name="download_map_title">تنزيل الخريطة العامة للعالم</string>
     <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">تحتاج الخرائط العضوية في أندرويد أوتو إلى أذونات الموقع للعمل بفعالية</string>
+    <string name="aa_request_permission_activity_text">Organic Maps في Android Auto تحتاج إلى أذونات الموقع لتعمل بفعالية</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">أذونات المنح</string>
 </resources>

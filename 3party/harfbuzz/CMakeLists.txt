@@ -15,7 +15,6 @@ if (MSVC)
   target_compile_options(${PROJECT_NAME}
     PRIVATE
       /GR-
-      /EHsc-
       /Zc:threadSafeInit-
   )
 else()
@@ -26,6 +25,9 @@ else()
       -fno-exceptions
       -fno-threadsafe-statics
       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-format-pedantic>
+      # Undo the root -ffast-math's -ffinite-math-only: harfbuzz uses NAN
+      # as the unset-axis sentinel for variable fonts.
+      -fno-finite-math-only
   )
 endif()
 

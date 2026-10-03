@@ -1,5 +1,6 @@
 #include "drape_frontend/text_layout.hpp"
 #include "drape_frontend/map_shape.hpp"
+#include "drape_frontend/shape_view_params.hpp"
 #include "drape_frontend/visual_params.hpp"
 
 #include "drape/font_constants.hpp"
@@ -278,13 +279,16 @@ dp::TGlyphs TextLayout::GetGlyphs() const
   return glyphs;
 }
 
-StraightTextLayout::StraightTextLayout(std::string const & text, float fontSize, ref_ptr<dp::TextureManager> textures,
-                                       dp::Anchor anchor, bool forceNoWrap)
+StraightTextLayout::StraightTextLayout(std::string_view text, float fontSize, ref_ptr<dp::TextureManager> textures,
+                                       dp::Anchor anchor, bool forceNoWrap, int8_t lang)
 {
-  ASSERT_EQUAL(std::string::npos, text.find('\n'), ("Multiline text is not expected", text));
+  /// @todo Support multiline texts (e.g. in Bookmarks).
+  auto iBreak = text.find_first_of("\r\n");
+  if (iBreak != std::string_view::npos)
+    text = text.substr(0, iBreak);
 
   m_textSizeRatio = fontSize * static_cast<float>(VisualParams::Instance().GetFontScale()) / dp::kBaseFontSizePixels;
-  m_shapedGlyphs = textures->ShapeSingleTextLine(dp::kBaseFontSizePixels, text, &m_glyphRegions);
+  m_shapedGlyphs = textures->ShapeSingleTextLine(text, lang, &m_glyphRegions);
 
   // TODO(AB): Use ICU's BreakIterator to split text properly in different languages without spaces.
   // TODO(AB): Implement SplitText for RTL languages.
@@ -375,7 +379,7 @@ void StraightTextLayout::CacheDynamicGeometry(glsl::vec2 const & pixelOffset,
 }
 
 PathTextLayout::PathTextLayout(m2::PointD const & tileCenter, std::string const & text, float fontSize,
-                               ref_ptr<dp::TextureManager> textureManager)
+                               ref_ptr<dp::TextureManager> textureManager, int8_t lang)
   : m_tileCenter(tileCenter)
 {
   ASSERT_EQUAL(std::string::npos, text.find('\n'), ("Multiline text is not expected", text));
@@ -384,7 +388,7 @@ PathTextLayout::PathTextLayout(m2::PointD const & tileCenter, std::string const 
   m_textSizeRatio = fontSize * fontScale / dp::kBaseFontSizePixels;
 
   // TODO(AB): StraightTextLayout used a logic to split a longer string into two strings.
-  m_shapedGlyphs = textureManager->ShapeSingleTextLine(dp::kBaseFontSizePixels, text, &m_glyphRegions);
+  m_shapedGlyphs = textureManager->ShapeSingleTextLine(text, lang, &m_glyphRegions);
 }
 
 void PathTextLayout::CacheStaticGeometry(dp::TextureManager::ColorRegion const & colorRegion,
@@ -434,6 +438,7 @@ bool PathTextLayout::CacheDynamicGeometry(m2::Spline::iterator const & iter, flo
                          0.0f);
 
   ASSERT_EQUAL(m_glyphRegions.size(), m_shapedGlyphs.m_glyphs.size(), ());
+  m2::PointD prevTangent;
   for (size_t i = 0; i < m_glyphRegions.size(); ++i)
   {
     auto const & glyph = m_shapedGlyphs.m_glyphs[i];
@@ -441,7 +446,6 @@ bool PathTextLayout::CacheDynamicGeometry(m2::Spline::iterator const & iter, flo
     float const xAdvance = glyph.m_xAdvance * m_textSizeRatio;
 
     m2::PointD const baseVector = penIter.m_pos - pxPivot;
-    m2::PointD const currentTangent = penIter.m_avrDir.Normalize();
 
     constexpr float kEps = 1e-5f;
     if (fabs(xAdvance) > kEps)
@@ -467,10 +471,11 @@ bool PathTextLayout::CacheDynamicGeometry(m2::Spline::iterator const & iter, flo
 
     if (i > 0)
     {
-      auto const dotProduct = static_cast<float>(m2::DotProduct(currentTangent, newTangent));
+      auto const dotProduct = static_cast<float>(m2::DotProduct(prevTangent, newTangent));
       if (dotProduct < kValidSplineTurn)
         return false;
     }
+    prevTangent = newTangent;
   }
   return true;
 }

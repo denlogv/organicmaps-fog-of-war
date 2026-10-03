@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Sevärdheter";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Underhållning";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Återvinning";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Vatten";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Din position har inte fastslagits ännu";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Hej, kolla min kartnål på Organic Maps!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Jag är här på Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Hej, kolla på min nuvarande position på Organic Maps kartan!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ på Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "En plats på Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Öppna i Organic Maps eller i en webbläsare";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Hämta Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Öppna i en annan app";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "E-post";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Längd";
 "share_my_location" = "Dela min plats";
+"prefs_group_network" = "Nätverk";
 "prefs_group_route" = "Navigering";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D-byggnader är avstängda i energisparläge";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Satellitbilder";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "Server-URL";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Ange en giltig URL med {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Cachestorlek (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Opacitet för ytobjekt";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Anpassade rutkällor tillhandahålls av dig. Använd endast tjänster som du har behörighet att använda. Du ansvarar för upphovsangivelse, licensvillkor, API-nycklar, kvoter och användningsgränser.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Röstinstruktioner";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Röstspråk";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Testa röstinstruktioner (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "För att hämta en röst med högre kvalitet, öppna appen Inställningar och gå till Hjälpmedel → VoiceOver → Tal → Röst.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Automatisk zoom";
 "placepage_distance" = "Avstånd";
 "search_show_on_map" = "Visa på kartan";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Mörkt";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Övrigt";
-
 /* Tex label above the Donate button */
 "donate_description" = "Ge bort gratis kartor utan annonser till miljontals användare!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Fel när mailet skulle skickas";
-
-/* Settings item title */
-"pref_calibration_title" = "Kompasskalibrering";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Tillgänglig";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "Dygnet runt";
 "day_off_today" = "Stängt idag";
 "day_off" = "Stängt";
+"midnight" = "Midnatt";
+"noon" = "Middagstid";
 "today" = "Idag";
 "opens_in" = "Öppnar om %@";
 "closes_in" = "Stänger om %@";
@@ -571,11 +607,8 @@
 "day" = "d";
 "second" = "s";
 "placepage_more_button" = "Mer";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Redigera bokmärke";
 "placepage_personal_notes_hint" = "Personlig anteckning (text eller html)";
-"editor_comment_hint" = "kommentar…";
+"editor_comment_hint" = "Kommentar…";
 "editor_reset_edits_message" = "Återställ alla lokala ändringar?";
 "editor_reset_edits_button" = "Återställ";
 "editor_remove_place_message" = "Ta bort en tillagd plats?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Hantera rutt";
 "button_plan" = "Planera";
 "placepage_remove_stop" = "Ta bort stoppet";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Lägg till stopp";
 "saved" = "Sparade";
 "error_enter_correct_name" = "Ange ett korrekt namn";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Det här namnet är redan taget";
 "profile" = "OpenStreetMap profil";
 "restore" = "Återställa";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Integritet";
 "privacy_policy" = "Integritetspolicy";
 "terms_of_use" = "Allmänna villkor";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Cykling";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satellit";
 "button_layer_subway" = "Tunnelbana";
 "layers_title" = "Kartstilar och lager";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "Aktivera denna funktion för att logga detaljer för diagnostiska ändamål. Detta hjälper utvecklarna att identifiera problem med appen. Slå på funktionen endast på begäran av Organic Maps supporttjänst.";
 "driving_options_title" = "Ruttinställningar";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Ruttoptimering";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Ordnar automatiskt om mellanstoppen för att skapa en effektivare rutt.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Undvik avgiftsbelagda vägar";
 
@@ -707,6 +754,15 @@
 "toll_road" = "Betalväg";
 "unpaved_road" = "Oasfalterad väg";
 "ferry_crossing" = "Färjetrafik";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Trappa";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Grind";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Bom";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Ja";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Välj Platstjänster";
 "location_services_disabled_on_device_4" = "4. Aktivera platstjänster";
 "location_services_disabled_on_device_additional_message" = "Eller fortsätt använda Organic Maps utan Plats";
-"book_button" = "Boka";
 "placepage_call_button" = "Ring";
 "placepage_bookmark_name_hint" = "Bokmärkesnamn";
 "placepage_delete_bookmark_button" = "Radera bokmärke";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Stäng av inspelningen av din senaste rutt?";
 "off_recent_track_background_button" = "Avaktivera";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Kolla in";
 "recent_track_background_dialog_message" = "Organic Maps använder din geografiska position i bakgrunden för att spela in din senaste resta rutt.";
 "general_settings" = "Allmänna inställningar";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Populär";
 "hide_from_map" = "Dölj från karta";
 "tags_loading_error_subtitle" = "Ett fel uppstod när taggarna laddades, försök igen";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Rätt";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Botten";
 "trip_start" = "Nu åker vi";
 "pick_destination" = "Destination";
 "follow_my_position" = "Placera i mitten";
@@ -885,16 +931,28 @@
 "medicine" = "Medicin";
 "search_in_the_list" = "Sök i listan";
 "religious_places" = "Heliga platser";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Markera";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Markera alla";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Avmarkera alla";
 "transit_not_found" = "Tunnelbanenavigering är ännu inte tillgängligt i denna region";
 "dialog_pedestrian_route_is_long_header" = "Tunnelbanerutt hittades inte";
 "dialog_pedestrian_route_is_long_message" = "Välj ruttens start- eller mål närmare en tunnelbanestation";
 "button_layer_isolines" = "Terräng";
 "isolines_activation_error_dialog" = "Om du vill använda höjdlinjer, uppdatera eller ladda ner en karta över önskat område";
-"isolines_location_error_dialog" = "Höjningslinjer är ännu inte tillgängligt i den här regionen";
+"isolines_location_error_dialog" = "Höjdkurvor är ännu inte tillgängliga i det här området";
 "elevation_profile_ascent" = "Stigning";
 "elevation_profile_descent" = "Backe";
 "elevation_profile_min_elevation" = "Min. höjd";
 "elevation_profile_max_elevation" = "Max. höjd";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Börja röra dig för att se höjdprofilen";
 "isolines_toast_zooms_1_10" = "Förstora kartan för att se höjdlinjer";
 "downloader_loading_ios" = "Nedladdning";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Exportera alla bokmärken och spår";
 "drive_through" = "Drive-thru";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Zooma in";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Zooma ut";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Länk till meny";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Öppna i en annan app";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Självbetjäning";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Ändra färg";
 
+/* Text for the hiding track. */
+"hide_track" = "Dölj spår";
+
+/* Text for the showing track. */
+"show_track" = "Visa spår";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Karta";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Aktivera iCloud i enhetens inställningar för att kunna använda denna funktion.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Aktivera";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1121,7 +1188,7 @@
 "login_osm_credentials" = "Logga in med lösenord";
 
 /* Login to OSM button text */
-"login_osm_browser" = "Logga in med hjälp av webbläsare";
+"login_osm_browser" = "Logga in med hjälp av en webbläsare";
 
 /* Editor section title that shows recently used categories (types of objects) when adding a place on the map */
 "editor_add_select_category_recent_subtitle" = "Senast använda";
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Spårfärg ändrad";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Välj på kartan";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Startplats";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Destination";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Ändra startplats";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Ändra destination";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Ändra stopp";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Maximalt antal stopp har uppnåtts";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Flytta och zooma på kartan för att placera korset";

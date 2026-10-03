@@ -11,7 +11,6 @@
 
 #include "geometry/screenbase.hpp"
 
-#include <chrono>
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -49,6 +48,7 @@ public:
 
     drape_ptr<SubrouteArrowsData> m_arrowsData;
     std::vector<ArrowBorders> m_arrowBorders;
+    bool m_arrowsPrepareInProgress = false;
     float m_baseHalfWidth = 0.0f;
 
     drape_ptr<SubrouteMarkersData> m_markersData;
@@ -84,6 +84,7 @@ public:
   void Clear();
   void ClearObsoleteData(int currentRecacheId);
   void ClearContextDependentResources();
+  void RemoveAlternativeSubroutes();
 
   void UpdateDistanceFromBegin(double distanceFromBegin);
   void SetFollowingEnabled(bool enabled);
@@ -100,6 +101,18 @@ public:
   bool HasPreviewData() const;
 
 private:
+  // Preview dots live in dynamic circle-pack buffers; keep the screen inputs that
+  // affect them to avoid rewriting unchanged buffers every frame.
+  struct PreviewState
+  {
+    m2::PointD m_center{0, 0};
+    m2::RectD m_clipRect;
+    m2::RectD m_pixelRect;
+    double m_scale = 0.0;
+    double m_angle = 0.0;
+    bool m_isValid = false;
+  };
+
   void RenderSubroute(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::ProgramManager> mng,
                       SubrouteInfo const & subrouteInfo, size_t subrouteDataIndex, ScreenBase const & screen,
                       bool trafficShown, FrameValues const & frameValues);
@@ -111,6 +124,8 @@ private:
                              FrameValues const & frameValues);
   void RenderPreviewData(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::ProgramManager> mng,
                          ScreenBase const & screen, FrameValues const & frameValues);
+  bool NeedUpdatePreview(ScreenBase const & screen) const;
+  void InvalidatePreview();
   void ClearPreviewHandles();
   CirclesPackHandle * GetPreviewHandle(size_t & index);
   dp::Color GetRouteMaskColor(RouteType routeType, double baseDistance) const;
@@ -126,6 +141,7 @@ private:
   std::vector<std::pair<CirclesPackHandle *, size_t>> m_previewHandlesCache;
   bool m_waitForPreviewRenderData;
   std::unordered_map<dp::DrapeID, PreviewInfo> m_previewSegments;
-  m2::PointD m_previewPivot = m2::PointD::Zero();
+
+  PreviewState m_previewState;
 };
 }  // namespace df

@@ -7,7 +7,9 @@ extension UITextField {
   }
 
   @objc override func sw_didMoveToWindow() {
-    guard MapsAppDelegate.theApp().window === window else {
+    // A nil app window (a CarPlay-first launch, or a disconnected phone scene) must not match a
+    // view that is leaving the hierarchy: nil === nil is true.
+    guard let appWindow = MapsAppDelegate.theApp().window, appWindow === window else {
       sw_didMoveToWindow()
       return
     }
@@ -28,9 +30,10 @@ class UITextFieldRenderer {
     if let backgroundColor = style.backgroundColor {
       control.backgroundColor = backgroundColor
     }
-    if let font = style.font {
-      control.font = font
-      placeholderAttributes[NSAttributedString.Key.font] = font
+    if let fontStyle = style.fontStyle {
+      control.font = fontStyle.font
+      control.adjustsFontForContentSizeCategory = fontStyle.isDynamic
+      placeholderAttributes[NSAttributedString.Key.font] = fontStyle.font
     }
     if let fontColor = style.fontColor {
       control.textColor = fontColor

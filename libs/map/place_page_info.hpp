@@ -1,6 +1,7 @@
 #pragma once
 
 #include "map/routing_mark.hpp"
+#include "map/track.hpp"
 
 #include "storage/storage_defines.hpp"
 
@@ -13,9 +14,11 @@
 #include "indexer/feature_source.hpp"
 #include "indexer/map_object.hpp"
 
+#include "geometry/latlon.hpp"
 #include "geometry/point2d.hpp"
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace place_page
@@ -30,15 +33,54 @@ enum class OpeningMode
   Full
 };
 
+// Stable, persisted ids shared by all platforms (Android pref, iOS UserDefaults). NEVER reorder or
+// reuse a value; append a new format with the next free id. This order is also the cycle/display
+// order on every platform - the single source of order is kDescs in the .cpp.
 enum class CoordinatesFormat
 {
-  LatLonDMS = 0,  // DMS, comma separated
-  LatLonDecimal,  // Decimal, comma separated
-  OLCFull,        // Open location code, long format
-  OSMLink,        // Link to osm.org
-  UTM,            // Universal Transverse Mercator
-  MGRS            // Military Grid Reference System
+  LatLonDMS = 0,      // Degrees-minutes-seconds, space separated
+  LatLonDecimal = 1,  // Decimal degrees, comma separated
+  OLCFull = 2,        // Open Location Code, long format
+  OSMLink = 3,        // Link to osm.org
+  UTM = 4,            // Universal Transverse Mercator
+  MGRS = 5,           // Military Grid Reference System
+  OSGB = 6,           // British National Grid (OS Grid), Great Britain and the Isle of Man only
+  IrishGrid = 7,      // Irish Grid (letter reference), Northern Ireland and the Republic of Ireland
+  ITM = 8             // Irish Transverse Mercator (numeric), Northern Ireland and the Republic of Ireland
 };
+
+// The coordinate formats in cycle/display order (currently == ascending id). Single source of order.
+std::vector<CoordinatesFormat> const & AllCoordinateFormats();
+
+// Bare coordinate value for the format, e.g. "51.507400, -0.127800", "SW 7400 4210".
+// Empty if the format is unavailable here: UTM/MGRS beyond their valid latitudes (|lat| > 84),
+// or OSGB outside the region where it is the official reference (regionId fails IsOSGridRegion).
+std::string FormatCoordinateValue(CoordinatesFormat format, ms::LatLon ll, std::string_view regionId);
+
+// Display string: "<label>: <value>" for labelled formats (UTM/MGRS/OSGB), else the bare value.
+// Empty when the format is unavailable here (same condition as FormatCoordinateValue).
+std::string FormatCoordinateDisplay(CoordinatesFormat format, ms::LatLon ll, std::string_view regionId);
+
+// One coordinate format resolved at a point: its stable id and both string forms.
+struct CoordinateFormatEntry
+{
+  CoordinatesFormat m_format;
+  std::string m_display;  // Labelled form for the UI row, e.g. "OSGB: SW 7400 4210".
+  std::string m_value;    // Bare value for copying, e.g. "SW 7400 4210".
+};
+
+// The formats available at this point, in display order, resolved in a single pass. Never empty: the
+// decimal formats apply everywhere. This is the one primitive a place page needs - it resolves the
+// region once and returns every format's strings, so the platform picks/cycles over the list instead
+// of re-resolving per format, per refresh or per tap.
+std::vector<CoordinateFormatEntry> GetAvailableCoordinateFormats(ms::LatLon ll, std::string_view regionId);
+
+// Selection over a list from GetAvailableCoordinateFormats plus a saved stable id. The "effective"
+// format is the saved one if it is available here, else the first available; "next" is the one after
+// it (wrapping). Neither changes the saved preference, so it is restored once the user returns to a
+// region where it applies. entries must be non-empty.
+CoordinatesFormat EffectiveCoordinateFormat(std::vector<CoordinateFormatEntry> const & entries, int savedId);
+CoordinatesFormat NextCoordinateFormat(std::vector<CoordinateFormatEntry> const & entries, int savedId);
 
 struct BuildInfo
 {
@@ -97,6 +139,7 @@ public:
   bool IsFeature() const { return m_featureID.IsValid(); }
   bool IsBookmark() const;
   bool IsTrack() const { return m_trackId != kml::kInvalidTrackId; }
+  bool IsRelationTrack() const { return m_trackId == kml::kTempRelationTrackId; }
   bool IsMyPosition() const { return m_selectedObject == df::SelectionShape::ESelectedObject::OBJECT_MY_POSITION; }
   bool IsRoutePoint() const { return m_isRoutePoint; }
   bool IsRoadType() const { return m_roadType != RoadWarningMarkType::Count; }
@@ -132,7 +175,8 @@ public:
 
   std::string const & GetWikiDescription() const { return m_wikiDescription; }
   std::string const & GetOSMDescription() const { return m_osmDescription; }
-  /// @returns coordinate in DMS format if isDMS is true
+  /// @returns the display string for the format (see FormatCoordinateDisplay), or empty if it is
+  /// unavailable at this location. Used by the iOS place page (which keeps the array id-indexed).
   std::string GetFormattedCoordinate(CoordinatesFormat format) const;
 
   /// UI setters
@@ -158,9 +202,17 @@ public:
   /// Track
   void SetTrackId(kml::TrackId trackId) { m_trackId = trackId; }
   kml::TrackId GetTrackId() const { return m_trackId; }
+  void SetTrackRelationId(RelationID const & relationId) { m_trackRelationId = relationId; }
+  RelationID const & GetTrackRelationId() const { return m_trackRelationId; }
+
+  void SetTrackCandidates(std::vector<Track::TrackSelectionInfo> candidates);
+  // Returns only actionable candidates: empty when there is no real choice, otherwise 2 or more tracks.
+  std::vector<Track::TrackSelectionInfo> const & GetTrackCandidates() const { return m_trackSelectionCandidates; }
 
   /// Api
   void SetApiId(std::string const & apiId) { m_apiId = apiId; }
+  std::string const & GetApiId() const { return m_apiId; }
+  bool HasApiId() const { return !m_apiId.empty(); }
   void SetApiUrl(std::string const & url) { m_apiUrl = url; }
   std::string const & GetApiUrl() const { return m_apiUrl; }
 
@@ -215,7 +267,18 @@ public:
   void SetSelectedObject(df::SelectionShape::ESelectedObject selectedObject) { m_selectedObject = selectedObject; }
   df::SelectionShape::ESelectedObject GetSelectedObject() const { return m_selectedObject; }
 
-  std::string FormatRouteRefs() const;
+  struct RouteRef
+  {
+    std::string m_ref, m_from, m_to;
+    int m_iRef;  // used for int-like sort
+    uint32_t m_relID;
+    feature::RouteRelationBase::Type m_type;
+    dp::Color m_color;  // kEmptyColor if the relation has no color tag
+
+    RouteRef(uint32_t relID, feature::RouteRelationBase const & rel);
+  };
+
+  std::vector<RouteRef> const & GetRoutes() const { return m_routes; }
 
 private:
   std::string FormatSubtitle(bool withTypes, bool withMainType) const;
@@ -253,12 +316,18 @@ private:
   kml::BookmarkData m_bookmarkData;
   /// If not invalid, track is bound to this place page.
   kml::TrackId m_trackId = kml::kInvalidTrackId;
+  /// If valid, relation track is bound to this place page.
+  RelationID m_trackRelationId;
+  std::vector<Track::TrackSelectionInfo> m_trackSelectionCandidates;
   /// Whether to treat it as plain feature.
   bool m_hasMetadata = false;
 
-  /// Api ID passed for the selected object. It's automatically included in api url below.
+  /// Per-point API id (om://map?...&id=...) echoed back to the calling app
+  /// (Android EXTRA_POINT_ID). Independent of m_apiUrl: set even when the request
+  /// carried no back_url, in which case m_apiUrl is empty.
   std::string m_apiId;
-  /// [Deep] link to open when "Back" button is pressed in a Place Page.
+  /// Back-navigation deep link opened on "Back" (the API back_url).
+  /// Empty when the request carried no back_url.
   std::string m_apiUrl;
   /// Formatted feature address for inner using.
   std::string m_address;
@@ -288,15 +357,6 @@ private:
   OpeningMode m_openingMode = OpeningMode::Preview;
 
   df::SelectionShape::ESelectedObject m_selectedObject = df::SelectionShape::ESelectedObject::OBJECT_EMPTY;
-
-  struct RouteRef
-  {
-    std::string m_ref;
-    int m_iRef;  // used for int-like sort
-    uint32_t m_relID;
-
-    RouteRef(std::string const & ref, uint32_t relID);
-  };
 
   std::vector<RouteRef> m_routes;
 };

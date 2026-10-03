@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "נקודות עיניין";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "בידור";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "מיחזור";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "מים";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "מיקומך לא אותר עדיין";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "היי, בדוק את הסיכה שלי במפה של Organic Maps!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "אני כאן ב-Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "היי, בדקו את המיקום הנוכחי שלי במפה של Organic Maps!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ ב-Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "מקום ב-Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "פתיחה ב-Organic Maps או בדפדפן";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "קבלו את Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "פתח באפליקציה אחרת";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "דוא\"ל";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "אורך";
 "share_my_location" = "שיתוף מיקום שלי";
+"prefs_group_network" = "רשת";
 "prefs_group_route" = "ניווט";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "הגדרת מבנים בתלת מימד מבוטלת במצב חיסכון בחשמל";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "תמונות לוויין";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "כתובת URL של השרת";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "הזינו כתובת URL תקינה עם {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "גודל מטמון (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "אטימות של אובייקטי שטח";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "מקורות אריחים מותאמים אישית מסופקים על ידך. השתמש רק בשירותים שמותר לך לגשת אליהם. האחריות על ייחוס, תנאי רישיון, מפתחות API, מכסות ומגבלות שימוש מוטלת עליך.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "הנחיות קוליות";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "שפת קול";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "בדיקת הנחיות קוליות (TTS, טקסט לדיבור)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "כדי להוריד קול באיכות גבוהה יותר, פתח את אפליקציית ההגדרות ועבור אל נגישות → VoiceOver → דיבור → קול.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "זום אוטומטי";
 "placepage_distance" = "מרחק";
 "search_show_on_map" = "הראה במפה";
@@ -335,13 +375,13 @@
 "light_blue" = "כחול בהיר";
 
 /* cyan color */
-"cyan" = "Cyan";
+"cyan" = "ציאן";
 
 /* teal color */
-"teal" = "Teal";
+"teal" = "טורקיז";
 
 /* lime color */
-"lime" = "Lime";
+"lime" = "ליים";
 
 /* deep orange color */
 "deep_orange" = "כתום עמוק";
@@ -356,7 +396,7 @@
 "info" = "מידע";
 
 /* Prints version number in About dialog */
-"version" = "גרסת מפות אורגניות: %@";
+"version" = "Organic Maps גרסה: %@";
 
 /* Settings «Map» category: «Appearance» title */
 "pref_appearance_title" = "מראה";
@@ -366,9 +406,6 @@
 
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "כהה";
-
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "אחר";
 
 /* Tex label above the Donate button */
 "donate_description" = "העניקו במתנה מפות חינמיות וללא פרסומות למיליוני משתמשים!";
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "שגיאה בשליחת דוא\"ל";
-
-/* Settings item title */
-"pref_calibration_title" = "כיול המצפן";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "מפות זמינות";
@@ -459,7 +493,7 @@
 "read_in_wikipedia" = "ויקיפדיה";
 
 /* Place Page link to Wikimedia Commons. */
-"wikimedia_commons" = "Wikimedia Commons";
+"wikimedia_commons" = "ויקימדיה קומונס";
 "p2p_your_location" = "המיקום שלך";
 "p2p_start" = "צא לדרך";
 "p2p_from_here" = "מסלול מכאן";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "סגור היום";
 "day_off" = "סגור";
+"midnight" = "חצות";
+"noon" = "צהריים";
 "today" = "היום";
 "opens_in" = "נפתח עוד %@";
 "closes_in" = "נסגר עוד %@";
@@ -571,9 +607,6 @@
 "day" = "י";
 "second" = "ש׳׳";
 "placepage_more_button" = "עוד";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "ערוך סימניה";
 "placepage_personal_notes_hint" = "הערות אישיות (טקסט או HTML)";
 "editor_comment_hint" = "תגובה…";
 "editor_reset_edits_message" = "למחוק את כל השינויים המקומיים?";
@@ -621,8 +654,10 @@
 "planning_route_manage_route" = "ניהול מסלול";
 "button_plan" = "תכנון";
 "placepage_remove_stop" = "הסר עצירה";
-"placepage_add_stop" = "הוסף עצירה";
-"saved" = "Saved";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "הוספת עצירה";
+"saved" = "נשמר";
 "error_enter_correct_name" = "נא להזין שם תקין";
 "bookmark_lists" = "רשימות";
 
@@ -640,14 +675,20 @@
 "bookmarks_error_title_list_name_already_taken" = "השם הזה כבר תפוס";
 "profile" = "פרופיל OpenStreetMap";
 "restore" = "שחזור";
+
+/* Settings privacy group in settings screen */
+"privacy" = "פרטיות";
 "privacy_policy" = "מדיניות פרטיות";
 "terms_of_use" = "תנאי שימוש";
 
 /* Hiking routes layer name in the Styles and Layers dialog */
-"button_layer_hiking" = "Hiking";
+"button_layer_hiking" = "טיולים";
 
 /* Cycling routes layer name in the Styles and Layers dialog */
-"button_layer_cycling" = "Cycling";
+"button_layer_cycling" = "רכיבה על אופניים";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "לוויין";
 "button_layer_subway" = "רכבת תחתית";
 "layers_title" = "סגנונות ושכבות מפה";
 
@@ -684,12 +725,18 @@
 "power_managment_setting_manual_max" = "תמיד";
 
 /* Settings/Bookmark Text Placement */
-"bookmarks_text_placement_title" = "Bookmark names on the map";
-"bookmarks_text_placement_description" = "If there are too many bookmarks, displaying their names on the map may slow down the app.";
-"show_to_the_right" = "Show to the right";
-"show_at_the_bottom" = "Show at the bottom";
+"bookmarks_text_placement_title" = "שמות סימניות על המפה";
+"bookmarks_text_placement_description" = "אם יש יותר מדי סימניות, הצגת שמותיהן על המפה עלולה להאט את פעולת האפליקציה.";
+"show_to_the_right" = "הצג מימין";
+"show_at_the_bottom" = "הצג בתחתית";
 "enable_logging_warning_message" = "הפעל אפשרות זו כדי לתעד ובאופן ידני לשלוח אלינו פרטים דיאגנוסטיים על הבעיה שלך בעזרת הכפתור \"דווח על באג\" בתפריט עזרה. הפרטים עשויים לכלול מידע על מיקום.";
 "driving_options_title" = "אפשרויות מסלול";
+
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "מיטוב המסלול";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "מסדר מחדש באופן אוטומטי את תחנות הביניים כדי ליצור מסלול יעיל יותר.";
 
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "הימנע מכבישי אגרה";
@@ -707,6 +754,15 @@
 "toll_road" = "כביש אגרה";
 "unpaved_road" = "דרך לא סלולה";
 "ferry_crossing" = "מעבורת";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "מדרגות";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "שער";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "שער מתרומם";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "כן";
@@ -788,8 +844,7 @@
 "location_services_disabled_on_device_2" = "2. בחר פרטיות";
 "location_services_disabled_on_device_3" = "3. בחר שירותי מיקום";
 "location_services_disabled_on_device_4" = "4. הפעל את שירותי המיקום";
-"location_services_disabled_on_device_additional_message" = "או המשך להשתמש במפות אורגניות ללא מיקום";
-"book_button" = "הזמנה";
+"location_services_disabled_on_device_additional_message" = "או המשך להשתמש ב-Organic Maps ללא מיקום";
 "placepage_call_button" = "התקשר";
 "placepage_bookmark_name_hint" = "שם סימניה";
 "placepage_delete_bookmark_button" = "מחק סימניה";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "להשבית הקלטה של המסלול האחרון שלך?";
 "off_recent_track_background_button" = "השבת";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Check out";
 "recent_track_background_dialog_message" = "האפליקצייה Organic Maps משתמשת במיקום שלך ברקע כדי להקליט את המסלול האחרון שלך.";
 "general_settings" = "הגדרות כלליות";
 
@@ -810,8 +862,8 @@
 "traffic_update_app_message" = "כדי להציג מידע על עומס תנועה, יש לעדכן את האפליקצייה.";
 "log_file_size" = "גודל קובץ יומן: %@";
 "planning_route_remove_title" = "גרור לכאן כדי להסיר";
-"placepage_replace_stop" = "Replace Stop";
-"start_from_my_position" = "Start from";
+"placepage_replace_stop" = "החלף תחנה";
+"start_from_my_position" = "התחל מ-";
 
 /* For iOS message 'alert_reauth_message' should be splitted in two parts: message + link. Here's first part */
 "alert_reauth_message_ios" = "התחבר ל-OpenStreetMap כדי להעלות אוטומטית את כל עריכות המפה שלך. למידע נוסף";
@@ -831,12 +883,6 @@
 "popular_place" = "פופולארי";
 "hide_from_map" = "הסתר מהמפה";
 "tags_loading_error_subtitle" = "אירעה שגיאה בטעינת התגיות, נא לנסות שנית";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Right";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Bottom";
 "trip_start" = "נצא לדרך";
 "pick_destination" = "יעד";
 "follow_my_position" = "מרכוז";
@@ -870,7 +916,7 @@
 /********** Bookmark types used for sorting **********/
 
 "food_places" = "אוכל";
-"tourist_places" = "תיירות";
+"tourist_places" = "אטרקציות";
 "museums" = "מוזיאונים";
 "parks" = "פארקים";
 "swim_places" = "שחייה";
@@ -885,6 +931,15 @@
 "medicine" = "רפואה";
 "search_in_the_list" = "חפש ברשימה";
 "religious_places" = "מקומות דת";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "בחר";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "בחר הכול";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "בטל בחירה";
 "transit_not_found" = "ניווט ברכבת תחתית עוד לא זמין באזור זה";
 "dialog_pedestrian_route_is_long_header" = "מסלול רכבת תחתית לא נמצא";
 "dialog_pedestrian_route_is_long_message" = "נא לבחור נקודת התחלה או סוף קרובה יותר לתחנת רכבת תחתית";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "ירידה";
 "elevation_profile_min_elevation" = "מינ' גובה";
 "elevation_profile_max_elevation" = "מקס' גובה";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "התחילו לנוע כדי לראות את פרופיל הגובה";
 "isolines_toast_zooms_1_10" = "התקרב כדי לחקור קווי מתאר";
 "downloader_loading_ios" = "מוריד";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "ייצא את כל הסימניות והרצועות";
 "drive_through" = "דרייב ת'רו";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "להתקרב";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "להתרחק";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "קישור לתפריט";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "פתח באפליקציה אחרת";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "שירות עצמי";
@@ -1016,11 +1077,17 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "שנה צבע";
 
+/* Text for the hiding track. */
+"hide_track" = "הסתר מסלול";
+
+/* Text for the showing track. */
+"show_track" = "הצג מסלול";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "מפה";
 
 /* Message for the bug report alert. */
-"bugreport_alert_message" = "האם תרצה לשלוח דוח באג למפתחים?\nאנו סומכים על המשתמשים שלנו מכיוון שמפות אורגניות לא אוספות כל מידע על שגיאות באופן אוטומטי. תודה מראש על התמיכה במפות אורגניות!";
+"bugreport_alert_message" = "האם ברצונך לשלוח דיווח על תקלה למפתחים?\nאנו מסתמכים על המשתמשים שלנו, שכן Organic Maps אינה אוספת מידע על תקלות באופן אוטומטי. תודה מראש על תמיכתך ב-Organic Maps!";
 
 /* Title for the "Enable iCloud Syncronization" alert. */
 "enable_icloud_synchronization_title" = "הפעל סנכרון iCloud";
@@ -1034,8 +1101,8 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "אנא הפעל את iCloud בהגדרות המכשיר שלך כדי להשתמש בתכונה זו.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
-"enable" = "לְאַפשֵׁר";
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
+"enable" = "הפעל";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
 "backup" = "גיבוי";
@@ -1103,7 +1170,7 @@
 "ft" = "רגל";
 
 /* Toast text when the maps version should be updated to display the OSM hiking and cycling routes */
-"routes_update_maps_text" = "To display routes, maps must be updated.";
+"routes_update_maps_text" = "כדי להציג מסלולים, יש לעדכן את המפות.";
 
 /* Subway exits for public transport marks on the map */
 "core_exit" = "יציאה";
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "צבע המסלולים שונה";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "בחר במפה";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "נקודת התחלה";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "יעד";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "שינוי ההתחלה";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "שינוי היעד";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "שינוי העצירה";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "המספר המרבי של העצירות הושג";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "הזז את המפה ושנה את רמת הזום כדי למקם את הצלב";

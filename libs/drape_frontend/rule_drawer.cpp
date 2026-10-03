@@ -36,9 +36,11 @@ namespace
 {
 // The first zoom level in kAverageSegmentsCount.
 int constexpr kFirstZoomInAverageSegments = 10;
+// clang-format off
 std::array<size_t, 10> const kAverageSegmentsCount = {
     // 10  11    12     13    14    15    16    17    18   19
     10000, 5000, 10000, 5000, 2500, 5000, 2000, 1000, 500, 500};
+// clang-format on
 
 double constexpr kMetersPerLevel = 3.0;
 
@@ -289,10 +291,15 @@ void RuleDrawer::ProcessAreaAndPointStyle(FeatureType & f, Stylist const & s)
   if (!skipTriangles && isBuilding && f.GetTrgVerticesCount(m_zoomLevel) >= 10000)
     isBuilding = false;
 
-  ApplyAreaFeature apply(m_applyParams, f, s.m_captionDescriptor, isBuilding, m_isMwmBorder(types),
-                         areaMinHeight /* minPosZ */, areaHeight /* posZ */, m_context->GetBackgroundMode());
+  // In Satellite mode area fills are drawn at the user-configured opacity so the imagery shows through;
+  // 0 hides them entirely (skip the geometry below). Outside Satellite mode areas are always opaque.
+  float const areaOpacity =
+      m_context->GetBackgroundMode() == dp::BackgroundMode::Satellite ? m_context->GetAreaOpacity() : 1.0f;
 
-  if (!skipTriangles && (s.m_areaRule || s.m_hatchingRule))
+  ApplyAreaFeature apply(m_applyParams, f, s.m_captionDescriptor, isBuilding, m_isMwmBorder(types),
+                         areaMinHeight /* minPosZ */, areaHeight /* posZ */, areaOpacity);
+
+  if (areaOpacity > 0.0f && !skipTriangles && (s.m_areaRule || s.m_hatchingRule))
   {
     f.ForEachTriangle(apply, m_zoomLevel);
     if (apply.HasGeometry())
@@ -300,7 +307,10 @@ void RuleDrawer::ProcessAreaAndPointStyle(FeatureType & f, Stylist const & s)
       std::string_view hatchKey;
       if (s.m_hatchingRule)
         hatchKey = m_isHatching.GetHatch(types);
-      apply.ProcessAreaRules(s.m_areaRule, s.m_hatchingRule, hatchKey);
+      std::string_view patternKey;
+      if (s.m_areaRule)
+        patternKey = m_isAreaPattern.GetPattern(types);
+      apply.ProcessAreaRules(s.m_areaRule, s.m_hatchingRule, hatchKey, patternKey);
     }
   }
 
@@ -314,11 +324,12 @@ void RuleDrawer::ProcessAreaAndPointStyle(FeatureType & f, Stylist const & s)
 
 void RuleDrawer::ProcessLineStyle(FeatureType & f, Stylist const & s)
 {
+  bool const isIsoline = m_isIsoline(f);
   ApplyLineFeatureGeometry applyGeom(m_applyParams, f, m_relsSettings);
-  f.ForEachPoint(applyGeom, m_zoomLevel);
+  applyGeom.BuildGeometry(m_zoomLevel, isIsoline);
 
   if (applyGeom.HasGeometry())
-    applyGeom.ProcessLineRules(s.m_lineRules, m_isIsoline(f));
+    applyGeom.ProcessLineRules(s.m_lineRules, isIsoline);
 
   if (s.m_pathtextRule || s.m_shieldRule)
   {

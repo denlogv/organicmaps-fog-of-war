@@ -22,10 +22,8 @@ namespace
 bool ExtractName(FeatureNames const & names, int8_t langCode, std::vector<osm::LocalizedName> & result)
 {
   // Exclude languages that are already present.
-  auto const it = base::FindIf(
-      result, [langCode](osm::LocalizedName const & localizedName) { return localizedName.m_code == langCode; });
-
-  if (result.end() != it)
+  if (base::IsExistIf(
+          result, [langCode](osm::LocalizedName const & localizedName) { return localizedName.m_code == langCode; }))
     return false;
 
   result.emplace_back(langCode, names.Get(langCode));
@@ -164,6 +162,12 @@ void EditableMapObject::SetTestId(uint64_t id)
 void EditableMapObject::SetEditableProperties(osm::EditableProperties const & props)
 {
   m_editableProperties = props;
+}
+
+void EditableMapObject::SetFromFeatureType(FeatureType & ft)
+{
+  MapObject::SetFromFeatureType(ft);
+  m_selectionPoint.reset();
 }
 
 void EditableMapObject::SetName(std::string_view name, int8_t langCode)
@@ -411,7 +415,8 @@ bool EditableMapObject::ValidateFlats(std::string const & flats)
       return false;
 
     for (auto const & rangeBorder : range)
-      if (!std::all_of(std::begin(rangeBorder), std::end(rangeBorder), ::isalnum))
+      if (!std::all_of(std::begin(rangeBorder), std::end(rangeBorder),
+                       [](char c) { return strings::IsASCIIDigit(c) || strings::IsASCIILatin(c); }))
         return false;
   }
   return true;
@@ -455,10 +460,10 @@ bool EditableMapObject::ValidatePhoneList(std::string const & phone)
     std::string const symbols = "+-() ";
     for (; curr != last; ++curr)
     {
-      if (!isdigit(*curr) && std::find(symbols.begin(), symbols.end(), *curr) == symbols.end())
+      if (!strings::IsASCIIDigit(*curr) && std::find(symbols.begin(), symbols.end(), *curr) == symbols.end())
         return false;
 
-      if (isdigit(*curr))
+      if (strings::IsASCIIDigit(*curr))
         ++digitsCount;
     }
 
@@ -640,16 +645,16 @@ void EditableMapObject::ApplyJournalEntry(JournalEntry const & entry)
       // Remove old cuisine values
       std::vector<std::string_view> oldCuisines = strings::Tokenize(tagModData.old_value, ";");
       for (std::string_view const cuisine : oldCuisines)
-        m_types.Remove(cl.GetTypeByPath({kTagCuisine, cuisine}));
+        m_types.Remove(cl.GetTypeByPathSafe({kTagCuisine, cuisine}));
       // Add new cuisine values
       std::vector<std::string_view> newCuisines = strings::Tokenize(tagModData.new_value, ";");
       for (std::string_view const cuisine : newCuisines)
-        m_types.SafeAdd(cl.GetTypeByPath({kTagCuisine, cuisine}));
+        m_types.SafeAdd(cl.GetTypeByPathSafe({kTagCuisine, cuisine}));
     }
     else if (tagModData.key == "diet:vegetarian")
     {
       Classificator const & cl = classif();
-      uint32_t const vegetarianType = cl.GetTypeByPath({kTagCuisine, "vegetarian"});
+      uint32_t const vegetarianType = cl.GetTypeByPathSafe({kTagCuisine, "vegetarian"});
       if (tagModData.new_value == "yes")
         m_types.SafeAdd(vegetarianType);
       else
@@ -658,7 +663,7 @@ void EditableMapObject::ApplyJournalEntry(JournalEntry const & entry)
     else if (tagModData.key == "diet:vegan")
     {
       Classificator const & cl = classif();
-      uint32_t const veganType = cl.GetTypeByPath({kTagCuisine, "vegan"});
+      uint32_t const veganType = cl.GetTypeByPathSafe({kTagCuisine, "vegan"});
       if (tagModData.new_value == "yes")
         m_types.SafeAdd(veganType);
       else

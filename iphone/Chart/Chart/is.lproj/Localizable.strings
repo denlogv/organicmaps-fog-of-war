@@ -7,7 +7,9 @@
 
 /********** Uncategorized **********/
 
-"you" = "You";
+
+/* Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. */
+"you" = "Þú";
 
 
 /********** gps strings **********/
@@ -17,4 +19,4 @@
 "login_osm_credentials" = "Innskráning með lykilorði";
 
 /* Login to OSM button text */
-"login_osm_browser" = "Innskráning með vafrara";
+"login_osm_browser" = "Innskráning með vafra";

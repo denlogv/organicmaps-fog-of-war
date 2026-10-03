@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Адрас";
+"type.building.construction" = "Будынак у стадыі будаўніцтва";
 "type.building.has_parts" = "Будынак";
 "type.building_part" = "Будынак";
 "type.building.garage" = "Гараж";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Міжземнаморская";
 "type.cuisine.mexican" = "Мексіканская";
 "type.cuisine.moroccan" = "Мараканская";
-"type.cuisine.noodles" = "Локшына";
+"type.cuisine.noodle" = "Локшына";
 "type.cuisine.oriental" = "Усходнеазіяцкая";
 "type.cuisine.pancake" = "Блінніца";
 "type.cuisine.pasta" = "Паста";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Каўбасная";
 "type.cuisine.savory_pancakes" = "Несалодкія бліны";
 "type.cuisine.seafood" = "Морапрадукты";
+"type.cuisine.shawarma" = "Шаўрма";
 "type.cuisine.soba" = "Соба";
 "type.cuisine.spanish" = "Іспанская";
 "type.cuisine.steak_house" = "Стэйк-хаус";
@@ -378,7 +380,7 @@
 "type.emergency.lifeguard" = "Ратавальнік";
 
 /* A mountain rescue base for search and rescue activities. */
-"type.emergency.mountain_rescue" = "ГорныГ ратавальны пункт";
+"type.emergency.mountain_rescue" = "Горны ратавальны пункт";
 
 /* This is for secondary entrances, for main entrances see type.entrance.main */
 "type.entrance" = "Уваход";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Японскі замак";
 "type.historic.castle.stately" = "Замак";
 "type.historic.city_gate" = "Гарадская брама";
+"type.man_made.ceremonial_gate" = "Цырыманіяльная брама";
 "type.historic.citywalls" = "Гарадскі вал";
 "type.historic.fort" = "Форт";
 "type.historic.gallows" = "Шыбеніца";
@@ -716,6 +719,7 @@
 "type.landuse" = "Землекарыстанне";
 "type.landuse.allotments" = "Надзелы";
 "type.landuse.basin" = "Рэзервуар";
+"type.landuse.basin.intermittent" = "Перасыхаючы рэзервуар";
 "type.landuse.brownfield" = "Браўнфілд";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Кар'ер";
 "type.landuse.railway" = "Чыгуначныя будынкі";
 "type.landuse.recreation_ground" = "Зона адпачынку";
-"type.landuse.reservoir" = "Вадасховішча";
 "type.landuse.residential" = "Жылы раён";
 "type.landuse.retail" = "Гандлёвая зона";
 "type.landuse.salt_pond" = "Саляная сажалка";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Каток";
 "type.leisure.marina" = "Марына";
 "type.leisure.nature_reserve" = "Прыродны запаведнік";
+"type.leisure.bird_hide" = "Укрыццё для назірання за птушкамі";
 "type.leisure.outdoor_seating" = "Месцы на адкрытым паветры";
 "type.leisure.firepit" = "Кастрышча";
 "type.leisure.park" = "Парк";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "Вадасховішча";
 "type.natural.water.basin" = "Рэзервуар";
 "type.natural.water.river" = "Рака";
+"type.natural.water.intermittent" = "Перасыхаючы вадаём";
 "type.natural.land" = "Суша";
 "type.natural.meadow" = "Луг";
 "type.natural.orchard" = "Сад";
 "type.natural.peak" = "Вяршыня";
+"type.natural.hill" = "Узгорак";
+"type.natural.arch" = "Скальны арк";
 "type.natural.saddle" = "Седлавіна";
 "type.natural.rock" = "Камень";
 "type.natural.scrub" = "Зараснікі";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Шэраг дрэў";
 "type.natural.vineyard" = "Вінаграднік";
 "type.natural.volcano" = "Вулкан";
+"type.natural.volcano.active" = "Актыўны вулкан";
 "type.natural.water" = "Вадаём";
 "type.natural.wetland" = "Балоцістая мясцовасць";
 "type.natural.wetland.bog" = "Тарфянік";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Хакей на траве";
 "type.sport.badminton" = "Бадмінтон";
 "type.sport.pelota" = "Баскская пелота";
+"type.sport.boules" = "Боўлс";
+"type.sport.cycling" = "Веласпорт";
+"type.sport.four_square" = "Чатыры квадраты";
+"type.sport.horse_racing" = "Конныя скачкі";
+"type.sport.karting" = "Картынг";
+"type.sport.motocross" = "Мотакрос";
+"type.sport.motor" = "Аўтаспорт";
+"type.sport.netball" = "Нетбол";
+"type.sport.pickleball" = "Піклбол";
+"type.sport.rugby_union" = "Рэгбі-юніён";
+"type.sport.running" = "Бег";
+"type.sport.softball" = "Софтбол";
 "type.tourism" = "Турызм";
 "type.tourism.aquarium" = "Акварыум";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Гістарычная славутасць";
 "type.attraction.maze" = "Лабірынт";
 "type.attraction.roller_coaster" = "Амерыканскія горкі";
+"type.roller_coaster.track" = "Амерыканскія горкі";
 "type.attraction.water_slide" = "Водная горка";
 "type.tourism.attraction.specified" = "Славутасць";
 "type.tourism.camp_site" = "Кемпінг";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Затор";
 "type.traffic_calming.hump" = "Ляжачы паліцэйскі";
 "type.waterway" = "Водны шлях";
+"type.waterway.access_point" = "Пункт доступу да вадаёма";
 "type.waterway.canal" = "Канал";
 "type.waterway.canal.tunnel" = "Канальны тунэль";
 "type.waterway.fish_pass" = "Рыбаход";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Сацыяльная ўстанова";
+"type.amenity.stage" = "Сцэна";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Уваход у аддзяленне хуткай дапамогі";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Гадзіннікавы майстар";
 "type.xmas_feature.market" = "Калядны кірмаш";
 "type.xmas_feature.tree" = "Калядная ёлка";
+"type.amenity.hookah_lounge" = "Кальянная";

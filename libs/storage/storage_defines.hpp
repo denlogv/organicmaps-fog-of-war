@@ -2,8 +2,6 @@
 
 #include "platform/local_country_file.hpp"
 
-#include "base/geo_object_id.hpp"
-
 #include <functional>
 #include <map>
 #include <memory>
@@ -18,21 +16,17 @@ using CountryId = std::string;
 using CountriesSet = std::set<CountryId>;
 using CountriesVec = std::vector<CountryId>;
 using LocalFilePtr = std::shared_ptr<platform::LocalCountryFile>;
-using OldMwmMapping = std::map<CountryId, CountriesSet>;
 /// Map from key affiliation words into CountryIds.
 using Affiliations = std::unordered_map<std::string, CountriesVec>;
 /// Map from country name synonyms and old names into CountryId.
 using CountryNameSynonyms = std::unordered_map<std::string, CountryId>;
-/// Map from CountryId into city GeoObject id.
-using MwmTopCityGeoIds = std::unordered_map<CountryId, base::GeoObjectId>;
-using MwmTopCountryGeoIds = std::unordered_map<CountryId, std::vector<base::GeoObjectId>>;
 
 /// @note Android code relies that kInvalidCountryId is an empty string!
-storage::CountryId constexpr kInvalidCountryId;
+inline constexpr char kInvalidCountryId[] = "";
 
 inline bool IsCountryIdValid(CountryId const & countryId)
 {
-  return countryId != kInvalidCountryId;
+  return !countryId.empty();
 }
 
 /// Inner status which is used inside Storage class

@@ -19,7 +19,9 @@ import app.organicmaps.widget.recycler.RecyclerClickListener;
 import app.organicmaps.widget.recycler.RecyclerLongClickListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookmarkHolder>
 {
@@ -45,8 +47,21 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
   private RecyclerClickListener mClickListener;
   @Nullable
   private RecyclerLongClickListener mLongClickListener;
+  @Nullable
+  private SelectionStateProvider mSelectionStateProvider;
   private RecyclerClickListener mMoreClickListener;
+  private RecyclerClickListener mEyeClickListener;
   private IconClickListener mIconClickListener;
+
+  /**
+   * The multi-selection state lives outside the adapter: it has to outlive a configuration change, and the
+   * adapter itself, which is rebuilt when a load finishes while the screen is still starting up.
+   */
+  interface SelectionStateProvider
+  {
+    boolean isSelectionMode();
+    boolean isSelected(int itemType, long itemId);
+  }
 
   public static abstract class SectionsDataSource
   {
@@ -63,16 +78,6 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
       return mDataSource.getData();
     }
 
-    boolean hasDescription()
-    {
-      return (!mDataSource.getData().getAnnotation().isEmpty() || !mDataSource.getData().getDescription().isEmpty());
-    }
-
-    void invalidate()
-    {
-      mDataSource.invalidate();
-    }
-
     public abstract int getSectionsCount();
     public abstract boolean isEditable(int sectionIndex);
     public abstract boolean hasTitle(int sectionIndex);
@@ -82,7 +87,12 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     public abstract int getItemsType(int sectionIndex);
     public abstract long getBookmarkId(@NonNull SectionPosition pos);
     public abstract long getTrackId(@NonNull SectionPosition pos);
-    public abstract void onDelete(@NonNull SectionPosition pos);
+
+    /**
+     * Appends every id of a bookmarks or tracks section at once. Reading a section one position at a time would
+     * be quadratic, see {@link BookmarkCategory#getBookmarkIds()}.
+     */
+    public abstract void collectIds(int sectionIndex, @NonNull Collection<Long> ids);
   }
 
   private static class CategorySectionsDataSource extends SectionsDataSource
@@ -91,6 +101,10 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     private int mBookmarksSectionIndex;
     private int mTracksSectionIndex;
     private int mDescriptionSectionIndex;
+    @NonNull
+    private long[] mBookmarkIds;
+    @NonNull
+    private long[] mTrackIds;
 
     CategorySectionsDataSource(@NonNull DataSource<BookmarkCategory> dataSource)
     {
@@ -100,15 +114,22 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
 
     private void calculateSections()
     {
+      // Read once for the lifetime of this data source, which ends when refreshSections() builds the next one -
+      // every path that can change the category calls it. Asking the core for one id at a time is quadratic,
+      // see BookmarkCategory#getBookmarkIds(), and the section layout below counts these same arrays, so the
+      // rows drawn and the sections holding them cannot disagree.
+      mTrackIds = getCategory().getTrackIds();
+      mBookmarkIds = getCategory().getBookmarkIds();
+
       mBookmarksSectionIndex = SectionPosition.INVALID_POSITION;
       mTracksSectionIndex = SectionPosition.INVALID_POSITION;
 
       mSectionsCount = 0;
       // We must always show the description, even if it's blank.
       mDescriptionSectionIndex = mSectionsCount++;
-      if (getCategory().getTracksCount() > 0)
+      if (mTrackIds.length > 0)
         mTracksSectionIndex = mSectionsCount++;
-      if (getCategory().getBookmarksCount() > 0)
+      if (mBookmarkIds.length > 0)
         mBookmarksSectionIndex = mSectionsCount++;
     }
 
@@ -146,9 +167,9 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
       if (sectionIndex == mDescriptionSectionIndex)
         return 1;
       if (sectionIndex == mTracksSectionIndex)
-        return getCategory().getTracksCount();
+        return mTrackIds.length;
       if (sectionIndex == mBookmarksSectionIndex)
-        return getCategory().getBookmarksCount();
+        return mBookmarkIds.length;
       return 0;
     }
 
@@ -165,24 +186,24 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     }
 
     @Override
-    public void onDelete(@NonNull SectionPosition pos)
-    {
-      // we must invalidate datasource before calculate sections
-      invalidate();
-
-      calculateSections();
-    }
-
-    @Override
     public long getBookmarkId(@NonNull SectionPosition pos)
     {
-      return getCategory().getBookmarkIdByPosition(pos.getItemIndex());
+      return mBookmarkIds[pos.getItemIndex()];
     }
 
     @Override
     public long getTrackId(@NonNull SectionPosition pos)
     {
-      return getCategory().getTrackIdByPosition(pos.getItemIndex());
+      return mTrackIds[pos.getItemIndex()];
+    }
+
+    @Override
+    public void collectIds(int sectionIndex, @NonNull Collection<Long> ids)
+    {
+      if (sectionIndex == mTracksSectionIndex)
+        addAll(ids, mTrackIds);
+      else if (sectionIndex == mBookmarksSectionIndex)
+        addAll(ids, mBookmarkIds);
     }
   }
 
@@ -234,12 +255,6 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     }
 
     @Override
-    public void onDelete(@NonNull SectionPosition pos)
-    {
-      mSearchResults.remove(pos.getItemIndex());
-    }
-
-    @Override
     public long getBookmarkId(@NonNull SectionPosition pos)
     {
       return mSearchResults.get(pos.getItemIndex());
@@ -249,6 +264,12 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     public long getTrackId(@NonNull SectionPosition pos)
     {
       throw new AssertionError("Tracks unsupported in search results.");
+    }
+
+    @Override
+    public void collectIds(int sectionIndex, @NonNull Collection<Long> ids)
+    {
+      throw new AssertionError("Selection unsupported in search results.");
     }
   }
 
@@ -265,7 +286,7 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
 
     private boolean isDescriptionSection(int sectionIndex)
     {
-      return hasDescription() && sectionIndex == 0;
+      return sectionIndex == 0;
     }
 
     @NonNull
@@ -273,14 +294,14 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     {
       if (isDescriptionSection(sectionIndex))
         throw new IllegalArgumentException("Invalid section index for sorted block.");
-      int blockIndex = sectionIndex - (hasDescription() ? 1 : 0);
-      return mSortedBlocks.get(blockIndex);
+      return mSortedBlocks.get(sectionIndex - 1);
     }
 
     @Override
     public int getSectionsCount()
     {
-      return mSortedBlocks.size() + (hasDescription() ? 1 : 0);
+      // Sorting does not take the description away, blank or not: the unsorted list shows it either way.
+      return mSortedBlocks.size() + 1;
     }
 
     @Override
@@ -324,27 +345,6 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
       return TYPE_TRACK;
     }
 
-    @Override
-    public void onDelete(@NonNull SectionPosition pos)
-    {
-      if (isDescriptionSection(pos.getSectionIndex()))
-        throw new IllegalArgumentException("Delete failed. Invalid section index.");
-
-      int blockIndex = pos.getSectionIndex() - (hasDescription() ? 1 : 0);
-      SortedBlock block = mSortedBlocks.get(blockIndex);
-      if (block.isBookmarksBlock())
-      {
-        block.getBookmarkIds().remove(pos.getItemIndex());
-        if (block.getBookmarkIds().isEmpty())
-          mSortedBlocks.remove(blockIndex);
-        return;
-      }
-
-      block.getTrackIds().remove(pos.getItemIndex());
-      if (block.getTrackIds().isEmpty())
-        mSortedBlocks.remove(blockIndex);
-    }
-
     public long getBookmarkId(@NonNull SectionPosition pos)
     {
       return getSortedBlock(pos.getSectionIndex()).getBookmarkIds().get(pos.getItemIndex());
@@ -353,6 +353,13 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     public long getTrackId(@NonNull SectionPosition pos)
     {
       return getSortedBlock(pos.getSectionIndex()).getTrackIds().get(pos.getItemIndex());
+    }
+
+    @Override
+    public void collectIds(int sectionIndex, @NonNull Collection<Long> ids)
+    {
+      final SortedBlock block = getSortedBlock(sectionIndex);
+      ids.addAll(block.isBookmarksBlock() ? block.getBookmarkIds() : block.getTrackIds());
     }
   }
 
@@ -370,6 +377,12 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
       mSectionsDataSource = new SortedSectionsDataSource(mDataSource, mSortedResults);
     else
       mSectionsDataSource = new CategorySectionsDataSource(mDataSource);
+  }
+
+  void refreshDataSource()
+  {
+    mDataSource.invalidate();
+    refreshSections();
   }
 
   private SectionPosition getSectionPosition(int position)
@@ -429,9 +442,19 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     mMoreClickListener = listener;
   }
 
+  public void setEyeListener(@Nullable RecyclerClickListener listener)
+  {
+    mEyeClickListener = listener;
+  }
+
   public void setIconClickListener(IconClickListener listener)
   {
     mIconClickListener = listener;
+  }
+
+  void setSelectionStateProvider(@Nullable SelectionStateProvider provider)
+  {
+    mSelectionStateProvider = provider;
   }
 
   @Override
@@ -449,6 +472,7 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
       trackHolder.setOnLongClickListener(mLongClickListener);
       trackHolder.setTrackIconClickListener(mIconClickListener);
       trackHolder.setMoreButtonClickListener(mMoreClickListener);
+      trackHolder.setEyeClickListener(mEyeClickListener);
       holder = trackHolder;
       break;
     case TYPE_BOOKMARK:
@@ -457,10 +481,11 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
       bookmarkHolder.setOnClickListener(mClickListener);
       bookmarkHolder.setOnLongClickListener(mLongClickListener);
       bookmarkHolder.setBookmarkIconClickListener(mIconClickListener);
+      bookmarkHolder.setMoreButtonClickListener(mMoreClickListener);
       holder = bookmarkHolder;
       break;
     case TYPE_SECTION:
-      TextView tv = (TextView) inflater.inflate(R.layout.item_category_title, parent, false);
+      TextView tv = (TextView) inflater.inflate(R.layout.item_bookmark_section_title, parent, false);
       holder = new Holders.SectionViewHolder(tv);
       break;
     case TYPE_DESC:
@@ -487,6 +512,18 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
   {
     SectionPosition sp = getSectionPosition(position);
     holder.bind(sp, mSectionsDataSource);
+
+    final int sectionIndex = sp.getSectionIndex();
+    final int itemsType = mSectionsDataSource.getItemsType(sectionIndex);
+    final int itemsCount = mSectionsDataSource.getItemsCount(sectionIndex);
+    holder.bindCardPosition(sp.getItemIndex() == 0, sp.getItemIndex() == itemsCount - 1);
+
+    // Everything below is derived from sp: re-entering getItemIdAt(int)/getItemViewType(int) here would walk the
+    // sections again, which getSectionPosition() has just done.
+    final boolean selectionMode = mSelectionStateProvider != null && mSelectionStateProvider.isSelectionMode();
+    final long itemId =
+        selectionMode && sp.isItemPosition() && isSelectableType(itemsType) ? getItemIdAt(sp, itemsType) : -1;
+    holder.bindSelection(selectionMode, itemId != -1 && mSelectionStateProvider.isSelected(itemsType, itemId));
   }
 
   @Override
@@ -523,18 +560,133 @@ public class BookmarkListAdapter extends RecyclerView.Adapter<Holders.BaseBookma
     return itemCount;
   }
 
-  void onDelete(int position)
+  void removeDeletedItem(long itemId, int type)
   {
-    SectionPosition sp = getSectionPosition(position);
-    mSectionsDataSource.onDelete(sp);
-    // In case of the search results editing reset cached sorted blocks.
-    if (isSearchResults())
+    if (mSearchResults != null)
+    {
+      if (type == TYPE_BOOKMARK)
+        mSearchResults.remove(Long.valueOf(itemId));
+      // The cached sorted snapshot is hidden while search results are shown. Drop it because it
+      // can contain the deleted bookmark or track and would be reused after search is closed.
       mSortedResults = null;
+      return;
+    }
+
+    if (mSortedResults == null)
+      return;
+
+    for (int i = 0; i < mSortedResults.size(); ++i)
+    {
+      SortedBlock block = mSortedResults.get(i);
+      final List<Long> ids = type == TYPE_BOOKMARK ? block.getBookmarkIds() : block.getTrackIds();
+      if (!ids.remove(Long.valueOf(itemId)))
+        continue;
+
+      if (block.getBookmarkIds().isEmpty() && block.getTrackIds().isEmpty())
+      {
+        mSortedResults.remove(i);
+        dropEmptySortedResults();
+      }
+      return;
+    }
+  }
+
+  /**
+   * An empty snapshot means "nothing sorted", not "sorted into no blocks": kept around it would hide every item
+   * the category gains afterwards, until the screen is opened again.
+   */
+  private void dropEmptySortedResults()
+  {
+    if (mSortedResults != null && mSortedResults.isEmpty())
+      mSortedResults = null;
+  }
+
+  /**
+   * Same as {@link #removeDeletedItem(long, int)} for a whole selection, in a single pass: removing the ids one by
+   * one rescans every sorted block per id.
+   */
+  void removeDeletedItems(@NonNull Set<Long> bookmarkIds, @NonNull Set<Long> trackIds)
+  {
+    // Search results are not handled: a batch comes from selection mode, which search excludes.
+    if (mSortedResults == null)
+      return;
+
+    for (int i = mSortedResults.size() - 1; i >= 0; --i)
+    {
+      final SortedBlock block = mSortedResults.get(i);
+      block.getBookmarkIds().removeAll(bookmarkIds);
+      block.getTrackIds().removeAll(trackIds);
+      if (block.getBookmarkIds().isEmpty() && block.getTrackIds().isEmpty())
+        mSortedResults.remove(i);
+    }
+    dropEmptySortedResults();
   }
 
   boolean isSearchResults()
   {
     return mSearchResults != null;
+  }
+
+  boolean isSortedResults()
+  {
+    return mSortedResults != null;
+  }
+
+  /**
+   * @return how many rows can be selected, counted per section instead of per row so that it stays cheap enough
+   *     to call on every menu invalidation.
+   */
+  int getSelectableCount()
+  {
+    int count = 0;
+    final int sectionsCount = mSectionsDataSource.getSectionsCount();
+    for (int i = 0; i < sectionsCount; ++i)
+      if (isSelectableType(mSectionsDataSource.getItemsType(i)))
+        count += mSectionsDataSource.getItemsCount(i);
+    return count;
+  }
+
+  void collectSelectableIds(@NonNull Collection<Long> bookmarkIds, @NonNull Collection<Long> trackIds)
+  {
+    final int sectionsCount = mSectionsDataSource.getSectionsCount();
+    for (int i = 0; i < sectionsCount; ++i)
+    {
+      final int itemsType = mSectionsDataSource.getItemsType(i);
+      if (itemsType == TYPE_BOOKMARK)
+        mSectionsDataSource.collectIds(i, bookmarkIds);
+      else if (itemsType == TYPE_TRACK)
+        mSectionsDataSource.collectIds(i, trackIds);
+    }
+  }
+
+  private static boolean isSelectableType(int itemsType)
+  {
+    return itemsType == TYPE_BOOKMARK || itemsType == TYPE_TRACK;
+  }
+
+  private static void addAll(@NonNull Collection<Long> ids, @NonNull long[] values)
+  {
+    for (long value : values)
+      ids.add(value);
+  }
+
+  /**
+   * @return the bookmark or track id of the row, or -1 for a section title, the category description and a
+   *     position that is no longer in the list.
+   */
+  long getItemIdAt(int position)
+  {
+    final SectionPosition pos = getSectionPosition(position);
+    if (!pos.isItemPosition())
+      return -1;
+
+    final int itemType = mSectionsDataSource.getItemsType(pos.getSectionIndex());
+    return isSelectableType(itemType) ? getItemIdAt(pos, itemType) : -1;
+  }
+
+  private long getItemIdAt(@NonNull SectionPosition pos, int itemType)
+  {
+    return itemType == TYPE_BOOKMARK ? mSectionsDataSource.getBookmarkId(pos) : mSectionsDataSource.getTrackId(pos);
   }
 
   int getPositionById(long id, int type)

@@ -1,23 +1,50 @@
-• OSM map data as of March 10
-• Wikipedia data as of March 1
-• Added support for conditional speed limits
-• More detailed elevation isolines for Chinese provinces
-• Added leather shops and shops selling religious goods
-• Added rows of trees
-• Added public transport stop platforms without nearby bus stops
-• Fixed country downloading progress calculation
-• Split Tanzania into smaller regions
-• Added recently used categories history in the Editor
-• Improved swiping up on the route planning screen
-• Fixed ruler position for CarPlay
-• Fixed several crashes, improved stability and performance
+## Map & places
 
-### Translations
+• Updated OpenStreetMap data as of August 26, 2026
+• Updated Wikipedia articles in Arabic, Bengali, Chinese, English, French, German, Hindi, Italian, Japanese, Korean, Marathi, Polish, Portuguese, Russian, Spanish, Tamil, Telugu, Turkish, and Urdu
+• Added bird hides, stages, hills, and rock arches to the map, plus a new icon for rocks
+• Resized peak, cave, and mountain pass icons
+• Protected areas, national parks, and wetlands are now displayed in lighter shades
+• Fixed many issues that caused opening hours to be displayed incorrectly
+• Reorganized settings into General, Map, Navigation, Network, and Privacy sections
+• Removed the compass calibration setting because calibration is now handled automatically
+• Fixed compass issues that could cause the current-position arrow to point in the wrong direction or freeze
+• The corresponding point is now shown on the map while you drag across the elevation profile in a walking or cycling route preview
+• Fixed an app freeze and an issue that occasionally caused taps and gestures to be ignored
 
-• Improved country descriptions
-• Applied Romanian fixes from Eugen Dedu
-• Updated country names
-• Updated translations from Weblate contributors
-• Fixed Ukrainian translation
+## Sharing, bookmarks & tracks
 
-Thanks to everyone who is contributing, donating and supporting Organic Maps! Let's build the best maps together!
+• NEW: Added multi-selection to the Bookmarks and Tracks lists, with batch actions to delete, move, and change the colour of selected items, plus Select All and Deselect All
+• Added AirDrop support for sharing places
+• Sharing a place, bookmark, or current position now sends a readable link with useful information
+• Exported bookmarks now preserve their original names and descriptions
+• Shared bookmark lists now use their displayed names instead of internal file names
+• Fixed an elevation chart display issue that could occur immediately after starting a track recording
+• Restored the custom colour picker in the colour palette popover
+• Fixed the rendering of HTML descriptions when a bookmark is selected on the map
+
+## Routing & navigation
+
+• NEW: Added a CarPlay dashboard and fixed multiple CarPlay issues
+• Fixed the activation of the car navigation map style
+• Tapping a route stop or mark now opens it correctly instead of switching between planned routes
+• Public transport routes are now planned faster
+• Fixed incorrect turn instructions
+• Fixed an incorrect start point after a route was rebuilt
+• Laterite roads are now treated as having a poor-quality unpaved surface during route planning
+• Roads tagged access=unknown are now handled like roads with private or destination-only access
+
+## OpenStreetMap editor
+
+• Fixed a crash when an OpenStreetMap upload finished in the background
+• Clearing the opening hours field no longer leaves the Save or Done button disabled
+• Uploads that partially fail are now retried instead of being reported as fully successful
+
+## Translations
+
+• Added voice guidance in Armenian and Lao
+• Updated Help/Frequently Asked Questions (FAQ), added Japanese translation
+• Corrected the Japanese translation of “Closed now”
+• Improved the Chinese translations of “track” and “disable”
+
+See the detailed release notes at https://omaps.org/news/

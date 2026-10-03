@@ -198,6 +198,22 @@ UNIT_TEST(EqualNoCase)
   TEST(strings::EqualNoCase("HaHaHa", "hahaha"), ());
 }
 
+UNIT_TEST(EqualAsciiNoCase)
+{
+  TEST(strings::EqualAsciiNoCase("", ""), ());
+  TEST(strings::EqualAsciiNoCase("HaHaHa", "hahaha"), ());
+  TEST(strings::EqualAsciiNoCase("zh-Hant", "ZH-HANT"), ());
+  TEST(strings::EqualAsciiNoCase("0;9z", "0;9Z"), ());
+
+  TEST(!strings::EqualAsciiNoCase("fi", "fil"), ());
+  TEST(!strings::EqualAsciiNoCase("fil", "fi"), ());
+  TEST(!strings::EqualAsciiNoCase("", "a"), ());
+  // Case-insensitive comparison must not fold characters that merely differ by the same 0x20 bit.
+  TEST(!strings::EqualAsciiNoCase("[", "{"), ());
+  // Non-ASCII bytes are compared as-is, without Unicode case folding.
+  TEST(!strings::EqualAsciiNoCase("Ä", "ä"), ());
+}
+
 UNIT_TEST(to_double)
 {
   std::string s;
@@ -859,6 +875,15 @@ UNIT_TEST(Tokenize)
   TEST_EQUAL(strings::Tokenize("  xxx yyy  ", " "), std::vector<std::string_view>({"xxx", "yyy"}), ());
 }
 
+UNIT_TEST(TokenizeAndTrim)
+{
+  // OSM-style multi-value tag: trims around the values and skips the empty ones.
+  TEST_EQUAL(strings::TokenizeAndTrim<std::string>("a; b ;;  ; c", ";"), std::vector<std::string>({"a", "b", "c"}), ());
+  TEST_EQUAL(strings::TokenizeAndTrim("  ", ";"), std::vector<std::string_view>(), ());
+  TEST_EQUAL(strings::TokenizeAndTrim("", ";"), std::vector<std::string_view>(), ());
+  TEST_EQUAL(strings::TokenizeAndTrim(" +48 12 34 ", ";"), std::vector<std::string_view>({"+48 12 34"}), ());
+}
+
 UNIT_TEST(LastUniChar)
 {
   TEST_EQUAL(strings::LastUniChar(""), 0, ());
@@ -1255,9 +1280,20 @@ UNIT_TEST(IsHTML)
 
   TEST(IsHTML("<a href=\"link\">some link</a>"), ());
   TEST(IsHTML("This is: ---> a <b>broken</b> html"), ());
+  TEST(IsHTML("Leading text, then a <p>paragraph</p>"), ());
+  TEST(IsHTML("<!-- comment --> and some text"), ());
   TEST(!IsHTML("This is not html"), ());
   TEST(!IsHTML("This is not html < too!"), ());
   TEST(!IsHTML("I am > not html"), ());
+  TEST(!IsHTML(""), ());
+  // Plain text with stray comparison/arrow characters must stay plain, so it is
+  // not garbled by (or needlessly routed through) the HTML renderer.
+  TEST(!IsHTML("Pace <5 min, route A->B"), ());
+  TEST(!IsHTML("2 < 3 and 5 > 4"), ());
+  TEST(!IsHTML("temp <0, climb >2000m"), ());
+  TEST(!IsHTML(">_< emoticon"), ());
+  // A closing-tag fragment with no opening tag is treated as plain text.
+  TEST(!IsHTML("the </summary> section runs > 50 pages"), ());
 }
 
 UNIT_TEST(AlmostEqual)
@@ -1454,6 +1490,12 @@ UNIT_TEST(ToLower_ToUpper)
 
   strings::AsciiToUpper(s);
   TEST_EQUAL(s, "ABC0;9Z", ());
+
+  // Only ASCII letters are converted, everything else is passed through unchanged.
+  static_assert(strings::AsciiToLower('A') == 'a' && strings::AsciiToLower('a') == 'a');
+  static_assert(strings::AsciiToUpper('z') == 'Z' && strings::AsciiToUpper('Z') == 'Z');
+  static_assert(strings::AsciiToLower('9') == '9' && strings::AsciiToUpper(';') == ';');
+  static_assert(strings::AsciiToLower('[') == '[' && strings::AsciiToUpper('{') == '{');
 }
 
 }  // namespace string_utils_test

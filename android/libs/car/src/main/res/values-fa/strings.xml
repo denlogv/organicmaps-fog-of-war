@@ -47,6 +47,8 @@
     <string name="auto">خودکار</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">ساختمان‌های سه بعدی</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">موجود نیست</string>
     <!-- Text in menu -->
     <string name="help">کمک</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">باز</string>
     <string name="twentyfour_seven">شبانه روزی</string>
     <string name="day_off_today">امروز تعطیل است</string>
+    <string name="midnight">نیمه‌شب</string>
+    <string name="noon">ظهر</string>
     <string name="opens_in">در %s باز می‌شود</string>
     <string name="closes_in">در %s بسته می‌شود</string>
     <string name="closed">تعطیل</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">اجتناب از گذرگاه‌های کشتی</string>
     <string name="avoid_motorways">از بزرگراه دوری کنید</string>
     <string name="unable_to_calc_alert_title">امکان محاسبه مسیر نیست</string>
+    <string name="trip_finished">شما به مقصد رسیدید!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">مرتب‌سازی نشانک‌ها</string>
     <!-- Android -->

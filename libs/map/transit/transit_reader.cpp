@@ -5,12 +5,12 @@
 #include "drape_frontend/visual_params.hpp"
 
 #include "transit/transit_graph_data.hpp"
-#include "transit/transit_version.hpp"
 
 #include "indexer/data_source.hpp"
 #include "indexer/drawing_rules.hpp"
-#include "indexer/drules_include.hpp"  // needed despite of IDE warning
 #include "indexer/feature_algo.hpp"
+#include "indexer/ftypes_matcher.hpp"
+#include "indexer/scales.hpp"
 
 #include "coding/reader.hpp"
 
@@ -76,77 +76,69 @@ void ReadTransitTask::Do()
   auto reader = mwmValue.m_cont.GetReader(TRANSIT_FILE_TAG);
   CHECK(reader.GetPtr() != nullptr, ());
 
-  auto const transitHeaderVersion = ::transit::GetVersion(*reader.GetPtr());
-  if (transitHeaderVersion == ::transit::TransitVersion::OnlySubway)
+  routing::transit::GraphData graphData;
+  graphData.DeserializeForRendering(*reader.GetPtr());
+
+  FillItemsByIdMap(graphData.GetStops(), m_transitInfo->m_stopsSubway);
+  for (auto const & stop : m_transitInfo->m_stopsSubway)
   {
-    m_transitInfo->m_transitVersion = ::transit::TransitVersion::OnlySubway;
-
-    routing::transit::GraphData graphData;
-    graphData.DeserializeForRendering(*reader.GetPtr());
-
-    FillItemsByIdMap(graphData.GetStops(), m_transitInfo->m_stopsSubway);
-    for (auto const & stop : m_transitInfo->m_stopsSubway)
+    if (stop.second.GetFeatureId() != kInvalidFeatureId)
     {
-      if (stop.second.GetFeatureId() != kInvalidFeatureId)
-      {
-        auto const featureId = FeatureID(m_mwmId, stop.second.GetFeatureId());
-        m_transitInfo->m_features[featureId] = {};
-      }
-
-      if (m_loadSubset && (stop.second.GetTransferId() != routing::transit::kInvalidTransferId))
-        m_transitInfo->m_transfersSubway[stop.second.GetTransferId()] = {};
-    }
-    FillItemsByIdMap(graphData.GetTransfers(), m_transitInfo->m_transfersSubway);
-    FillItemsByIdMap(graphData.GetLines(), m_transitInfo->m_linesSubway);
-    FillItemsByIdMap(graphData.GetShapes(), m_transitInfo->m_shapesSubway);
-  }
-  else if (transitHeaderVersion == ::transit::TransitVersion::AllPublicTransport)
-  {
-    m_transitInfo->m_transitVersion = ::transit::TransitVersion::AllPublicTransport;
-
-    ::transit::experimental::TransitData transitData;
-    transitData.DeserializeForRendering(*reader.GetPtr());
-
-    FillItemsByIdMap(transitData.GetStops(), m_transitInfo->m_stopsPT);
-
-    for (auto const & edge : transitData.GetEdges())
-    {
-      ::transit::EdgeId const edgeId(edge.GetStop1Id(), edge.GetStop2Id(), edge.GetLineId());
-      ::transit::EdgeData const edgeData(edge.GetShapeLink(), edge.GetWeight());
-
-      if (!m_loadSubset)
-      {
-        m_transitInfo->m_edgesPT.emplace(edgeId, edgeData);
-      }
-      else
-      {
-        auto it = m_transitInfo->m_edgesPT.find(edgeId);
-        if (it != m_transitInfo->m_edgesPT.end())
-          it->second = edgeData;
-      }
+      auto const featureId = FeatureID(m_mwmId, stop.second.GetFeatureId());
+      m_transitInfo->m_features[featureId] = {};
     }
 
-    for (auto const & stop : m_transitInfo->m_stopsPT)
-    {
-      if (stop.second.GetFeatureId() != kInvalidFeatureId)
-      {
-        auto const featureId = FeatureID(m_mwmId, stop.second.GetFeatureId());
-        m_transitInfo->m_features[featureId] = {};
-      }
-
-      if (m_loadSubset && !stop.second.GetTransferIds().empty())
-        for (auto const transferId : stop.second.GetTransferIds())
-          m_transitInfo->m_transfersPT[transferId] = {};
-    }
-
-    FillItemsByIdMap(transitData.GetTransfers(), m_transitInfo->m_transfersPT);
-    FillItemsByIdMap(transitData.GetShapes(), m_transitInfo->m_shapesPT);
-    FillLinesAndRoutes(transitData);
+    if (m_loadSubset && (stop.second.GetTransferId() != routing::transit::kInvalidTransferId))
+      m_transitInfo->m_transfersSubway[stop.second.GetTransferId()] = {};
   }
-  else
+
+  // Bus/tram stops are based on stop_position OSM nodes which don't produce a feature, so they
+  // carry no feature id and thus no name. As a temporary measure (until the generator assigns the
+  // main station feature id) resolve the nearest public transport stop feature. Only done for the
+  // built route (m_loadSubset), where the stops set is small.
+  if (m_loadSubset)
   {
-    CHECK(false, (transitHeaderVersion));
+    double constexpr kMaxStopFeatureDistanceM = 100.0;
+    auto const & stopChecker = ftypes::IsPublicTransportStopChecker::Instance();
+    for (auto & [stopId, stop] : m_transitInfo->m_stopsSubway)
+    {
+      if (stop.GetFeatureId() != kInvalidFeatureId)
+        continue;
+
+      auto const center = stop.GetPoint();
+      FeatureID nearest;
+      double nearestDist = kMaxStopFeatureDistanceM;
+      auto const addFn = [&](FeatureType & ft)
+      {
+        if (ft.GetID().m_mwmId != m_mwmId || !stopChecker(ft))
+          return;
+        auto const dist = feature::GetMinDistanceMeters(ft, center);
+        if (dist < nearestDist)
+        {
+          nearestDist = dist;
+          nearest = ft.GetID();
+        }
+      };
+
+      /// @todo Use mwmValue.
+      /// Also, update ForClosestToPoint function to call stopFn after processing the whole ring around |center|.
+      /// To ensure that other emitted objects have a bigger distance.
+      m_dataSource.ForClosestToPoint(addFn, []() { return false; }, center, kMaxStopFeatureDistanceM,
+                                     scales::GetUpperScale());
+      if (nearest.IsValid())
+      {
+        stop.SetFeatureId(nearest.m_index);
+        m_transitInfo->m_features[nearest] = {};
+      }
+    }
   }
+
+  FillItemsByIdMap(graphData.GetTransfers(), m_transitInfo->m_transfersSubway);
+  // Load ALL lines (not just the route's subset) so the Place Page can enumerate parallel lines
+  // that share a route segment (see TransitRouteDisplay GetSharedLineNumbers). Lines are small.
+  for (auto const & line : graphData.GetLines())
+    m_transitInfo->m_linesSubway[line.GetId()] = line;
+  FillItemsByIdMap(graphData.GetShapes(), m_transitInfo->m_shapesSubway);
 
   std::vector<FeatureID> features;
   for (auto & id : m_transitInfo->m_features)
@@ -164,7 +156,7 @@ void ReadTransitTask::Do()
       // TODO(pastk): there should be a simpler way to just get a symbol name.
       df::Stylist stylist(ft, 19, 0, false /* forceOutdoorStyle */);
       if (stylist.m_symbolRule != nullptr)
-        featureInfo.m_gateSymbolName = stylist.m_symbolRule->name();
+        featureInfo.m_gateSymbolName = stylist.m_symbolRule->name;
     }
     featureInfo.m_point = feature::GetCenter(ft);
   }, features);
@@ -182,39 +174,6 @@ void ReadTransitTask::Reset()
 std::unique_ptr<TransitDisplayInfo> && ReadTransitTask::GetTransitInfo()
 {
   return std::move(m_transitInfo);
-}
-
-void ReadTransitTask::FillLinesAndRoutes(::transit::experimental::TransitData const & transitData)
-{
-  auto const & routes = transitData.GetRoutes();
-  auto const & linesMeta = transitData.GetLinesMetadata();
-
-  for (auto const & line : transitData.GetLines())
-  {
-    ::transit::TransitId const routeId = line.GetRouteId();
-    auto const itRoute = ::transit::FindById(routes, routeId);
-    auto const itLineMetadata = ::transit::FindById(linesMeta, line.GetId(), false /*exists*/);
-
-    if (m_loadSubset)
-    {
-      auto it = m_transitInfo->m_linesPT.find(line.GetId());
-
-      if (it != m_transitInfo->m_linesPT.end())
-      {
-        it->second = line;
-        m_transitInfo->m_routesPT.emplace(routeId, *itRoute);
-        if (itLineMetadata != linesMeta.end())
-          m_transitInfo->m_linesMetadataPT.emplace(itLineMetadata->GetId(), *itLineMetadata);
-      }
-    }
-    else
-    {
-      m_transitInfo->m_linesPT.emplace(line.GetId(), line);
-      m_transitInfo->m_routesPT.emplace(routeId, *itRoute);
-      if (itLineMetadata != linesMeta.end())
-        m_transitInfo->m_linesMetadataPT.emplace(itLineMetadata->GetId(), *itLineMetadata);
-    }
-  }
 }
 
 TransitReadManager::TransitReadManager(DataSource & dataSource, TReadFeaturesFn const & readFeaturesFn,
@@ -348,11 +307,7 @@ void TransitReadManager::UpdateViewport(ScreenBase const & screen)
       if (!transitInfo)
         continue;
 
-      if (transitInfo->m_transitVersion == ::transit::TransitVersion::OnlySubway && transitInfo->m_linesSubway.empty())
-        continue;
-
-      if (transitInfo->m_transitVersion == ::transit::TransitVersion::AllPublicTransport &&
-          transitInfo->m_linesPT.empty())
+      if (transitInfo->m_linesSubway.empty())
         continue;
 
       auto it = m_mwmCache.find(mwmId);

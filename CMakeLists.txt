@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.22.1)
 
+# Let CMAKE_MSVC_DEBUG_INFORMATION_FORMAT choose between /Zi and /Z7, and keep the debug info inside the
+# object files: ccache cannot cache /Zi compilations, which write PDBs.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  if (NOT CMAKE_MSVC_DEBUG_INFORMATION_FORMAT)
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:Embedded>")
+  endif()
+endif()
+
 project(omim C CXX)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -27,6 +36,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 include(OmimPlatform)
 include(OmimOptions)
+include(OmimWindowsDistribution)
 include(OmimConfig)
 include(OmimHelpers)
 include(OmimTesting)
@@ -49,6 +59,7 @@ endif()
 message(STATUS "Using compiler ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
 if (CMAKE_UNITY_BUILD)
+  set(CMAKE_UNITY_BUILD_RELOCATABLE ON)
   message(STATUS "Using Unity Build with batch ${CMAKE_UNITY_BUILD_BATCH_SIZE}, use -DCMAKE_UNITY_BUILD=OFF to disable it.")
 endif()
 
@@ -65,21 +76,12 @@ endif()
 
 if(${PLATFORM_MAC})
   set(XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES)
-
-  # Metal language support
-  list(APPEND CMAKE_MODULE_PATH ${OMIM_ROOT}/3party/CMake-MetalShaderSupport/cmake)
-  include(CheckLanguage)
-  include(CMakeMetalInformation)
-  include(MetalShaderSupport)
-  check_language(Metal)
-  if(CMAKE_Metal_COMPILER)
-    enable_language(Metal)
-  endif()
 endif()
 
 # Global compile options for all configurations.
 if (MSVC)
-  add_compile_options(/utf-8)
+  add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>)
+  add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/bigobj>)
   add_link_options(/INCREMENTAL:NO)
 else()
   add_compile_options(-ffast-math $<$<CXX_COMPILER_ID:GNU>:-Wno-psabi>)
@@ -92,44 +94,54 @@ if (PLATFORM_WIN)
   )
 endif()
 
-# Built-in CMake configurations: Debug, Release, RelWithDebInfo, MinSizeRel
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  add_definitions(-DDEBUG)
-  if (NOT MSVC)
-    add_compile_options(-fno-omit-frame-pointer)
-  endif()
-elseif (${CMAKE_BUILD_TYPE} MATCHES "Rel")
-  add_definitions(-DRELEASE)
-  if (NOT MSVC)
-    add_compile_options(-O3)
-  endif()
-else()
-  message(FATAL_ERROR "Unknown build type: " ${CMAKE_BUILD_TYPE})
+# Built-in CMake configurations: Debug, Release, RelWithDebInfo, MinSizeRel.
+# Use generator expressions so this also works with multi-config generators
+# (Xcode, Visual Studio, Ninja Multi-Config) where CMAKE_BUILD_TYPE is empty
+# at configure time and the active config is only known per-build.
+add_compile_definitions(
+  $<$<CONFIG:Debug>:DEBUG>
+  $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>:RELEASE>
+)
+if (NOT MSVC)
+  add_compile_options(
+    $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
+    $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>:-O3>
+  )
 endif()
 
-message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+# For single-config generators we can still validate CMAKE_BUILD_TYPE early.
+get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (NOT _is_multi_config)
+  if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT CMAKE_BUILD_TYPE MATCHES "Rel")
+    message(FATAL_ERROR "Unknown build type: " ${CMAKE_BUILD_TYPE})
+  endif()
+  message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+else()
+  message(STATUS "Multi-config generator: build type selected per-build (Debug/Release/RelWithDebInfo/MinSizeRel)")
+endif()
 
 if (PLATFORM_LINUX OR PLATFORM_ANDROID)
   find_program(LLD_FOUND ld.lld)
   if (LLD_FOUND)
     message(STATUS "Using ld.lld linker")
-    set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld")
+    add_link_options(-fuse-ld=lld)
   else()
     find_program(GOLD_FOUND ld.gold)
     if (GOLD_FOUND)
       message(STATUS "Using ld.gold")
-      set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=gold")
+      add_link_options(-fuse-ld=gold)
     endif()
   endif()
 endif()
 
-if (NOT SKIP_TESTS)
-  enable_testing()
-  # Enables ctest -T memcheck with valgrind
-  include(CTest)
-  if (COVERAGE_REPORT)
-    include(OmimCoverage)
-  endif ()
+set(OMIM_OPTIMIZED_CONFIG "$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>")
+if (MSVC)
+  add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:C,CXX>,${OMIM_OPTIMIZED_CONFIG}>:/Gy;/Gw>")
+elseif (APPLE)
+  add_link_options($<${OMIM_OPTIMIZED_CONFIG}:-Wl,-dead_strip>)
+else()
+  add_compile_options($<${OMIM_OPTIMIZED_CONFIG}:-ffunction-sections> $<${OMIM_OPTIMIZED_CONFIG}:-fdata-sections>)
+  add_link_options($<${OMIM_OPTIMIZED_CONFIG}:-Wl,--gc-sections>)
 endif()
 
 if (NOT PYTHON_VERSION)
@@ -145,7 +157,7 @@ find_package(Threads REQUIRED)
 
 if (NOT PLATFORM_IPHONE AND NOT PLATFORM_ANDROID)
   list(APPEND qt_components Core Network)
-  if (NOT SKIP_QT_GUI OR NOT SKIP_TESTS OR PYBINDINGS)
+  if (NOT SKIP_QT_GUI OR BUILD_TESTING)
     list(APPEND qt_components Widgets)
   endif()
   if (NOT SKIP_QT_GUI)
@@ -159,6 +171,22 @@ if (NOT PLATFORM_IPHONE AND NOT PLATFORM_ANDROID)
     message(FATAL_ERROR "Unsupported Qt version: ${Qt6Widgets_VERSION}, the minimum required is ${MINIMUM_REQUIRED_QT_VERSION}")
   else()
     message(STATUS "Found Qt version: ${Qt6Widgets_VERSION}")
+  endif()
+
+  if (PLATFORM_LINUX AND Qt6_DIR MATCHES "/\\.?linuxbrew/")
+    message(WARNING
+      "Qt6 was found under Homebrew (Linuxbrew) at ${Qt6_DIR}.\n"
+      "Linuxbrew's Qt6 libraries embed a DT_RPATH that forces Linuxbrew's bundled "
+      "Mesa libGL.so.1 to be loaded at runtime, bypassing the system libglvnd dispatcher. "
+      "On systems with the NVIDIA proprietary driver this silently falls back to software "
+      "rendering (llvmpipe) and then crashes in qtoglcontextfactory.cpp when creating "
+      "an offscreen GL surface.\n"
+      "Recommended: install Qt6 from your distribution "
+      "(e.g. 'apt install qt6-base-dev qt6-positioning-dev', "
+      "'dnf install qt6-qtbase-devel qt6-qtpositioning-devel') and reconfigure.\n"
+      "Workaround: run the binary with LD_PRELOAD pointing at the system libGL, e.g. "
+      "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGL.so.1 (Debian/Ubuntu) or "
+      "LD_PRELOAD=/usr/lib64/libGL.so.1 (Fedora/RHEL).")
   endif()
 endif()
 
@@ -184,12 +212,18 @@ if (WITH_SYSTEM_PROVIDED_3PARTY)
   find_package(gflags REQUIRED)
 
   find_package(expat CONFIG REQUIRED)
-  find_package(jansson CONFIG REQUIRED)
+
   find_package(pugixml REQUIRED)
   find_package(utf8cpp REQUIRED)
-endif()
+  find_package(Boost REQUIRED)
+  if (BUILD_TESTING)
+    find_package(GTest REQUIRED)
+  endif()
 
-find_package(ZLIB REQUIRED)
+  # Otherwise zlib-ng is built from 3party/zlib-ng (see 3party/CMakeLists.txt) as
+  # a drop-in replacement -- system zlib is not available out of the box on Windows.
+  find_package(ZLIB REQUIRED)
+endif()
 
 # Include 3party dependencies.
 add_subdirectory(3party)

@@ -10,6 +10,9 @@
 
 #include "indexer/map_style_reader.hpp"
 
+#include "coding/string_utf8_multilang.hpp"
+
+#include "platform/preferred_languages.hpp"
 #include "platform/settings.hpp"
 
 #include <unordered_map>
@@ -35,6 +38,12 @@ DrapeEngine::DrapeEngine(Params && params)
   SetFontScaleFactor(params.m_fontsScaleFactor);
 
   gui::DrapeGui::Instance().SetSurfaceSize(m2::PointF(m_viewport.GetWidth(), m_viewport.GetHeight()));
+
+  // DrapeGui is a process-wide singleton; call unconditionally so a recreated engine under an
+  // unsupported locale cannot inherit a previous engine's UI lang. GetLangIndex returns
+  // kUnsupportedLanguageCode for unknown locales, which short-circuits to HB_LANGUAGE_INVALID
+  // in the shaper -- no locl hint, same outcome as before for these cases.
+  gui::DrapeGui::Instance().SetUILang(StringUtf8Multilang::GetLangIndex(languages::GetCurrentNorm()));
 
   m_textureManager = make_unique_dp<dp::TextureManager>();
   m_threadCommutator = make_unique_dp<ThreadsCommutator>();
@@ -92,11 +101,11 @@ DrapeEngine::DrapeEngine(Params && params)
       params.m_onGraphicsContextInitialized, std::move(params.m_renderInjectionHandler),
       params.m_model.ReadTileBackgroundFn(), params.m_model.CancelTileBackgroundReadingFn());
 
-  BackendRenderer::Params brParams(params.m_apiVersion, frParams.m_commutator, frParams.m_oglContextFactory,
-                                   frParams.m_texMng, params.m_model, params.m_model.UpdateCurrentCountryFn(),
-                                   make_ref(m_requestedTiles), params.m_allow3dBuildings, params.m_trafficEnabled,
-                                   params.m_isolinesEnabled, params.m_simplifiedTrafficColors, params.m_backgroundMode,
-                                   std::move(params.m_arrow3dCustomDecl), params.m_onGraphicsContextInitialized);
+  BackendRenderer::Params brParams(
+      params.m_apiVersion, frParams.m_commutator, frParams.m_oglContextFactory, frParams.m_texMng, params.m_model,
+      params.m_model.UpdateCurrentCountryFn(), make_ref(m_requestedTiles), params.m_allow3dBuildings,
+      params.m_trafficEnabled, params.m_isolinesEnabled, params.m_simplifiedTrafficColors, params.m_backgroundMode,
+      params.m_satelliteAreaOpacity, std::move(params.m_arrow3dCustomDecl), params.m_onGraphicsContextInitialized);
 
   m_backend = make_unique_dp<BackendRenderer>(std::move(brParams));
   m_frontend = make_unique_dp<FrontendRenderer>(std::move(frParams));
@@ -127,7 +136,6 @@ DrapeEngine::~DrapeEngine()
   m_frontend.reset();
   m_backend.reset();
 
-  gui::DrapeGui::Instance().Destroy();
   m_textureManager->Release();
 }
 
@@ -152,8 +160,6 @@ void DrapeEngine::RecoverSurface(int w, int h, bool recreateContextDependentReso
 
 void DrapeEngine::Resize(int w, int h)
 {
-  ASSERT_GREATER(w, 0, ());
-  ASSERT_GREATER(h, 0, ());
   if (m_viewport.GetHeight() != static_cast<uint32_t>(h) || m_viewport.GetWidth() != static_cast<uint32_t>(w))
     ResizeImpl(w, h);
 }
@@ -462,6 +468,8 @@ void DrapeEngine::UserPositionChanged(m2::PointD const & position, bool hasPosit
 
 void DrapeEngine::ResizeImpl(int w, int h)
 {
+  CHECK(w > 0 && h > 0, (w, h));
+
   gui::DrapeGui::Instance().SetSurfaceSize(m2::PointF(w, h));
   m_viewport.SetViewport(0, 0, w, h);
   PostUserEvent(make_unique_dp<ResizeEvent>(w, h));
@@ -553,6 +561,14 @@ void DrapeEngine::DeselectObject(bool restoreViewport)
       make_unique_dp<SelectObjectMessage>(SelectObjectMessage::DismissTag(), restoreViewport), MessagePriority::Normal);
 }
 
+void DrapeEngine::SetSelectionLines(SelectionInfo && info)
+{
+  if (info.m_lines.empty())
+    return;
+  m_threadCommutator->PostMessage(ThreadsCommutator::RenderThread,
+                                  make_unique_dp<SetSelectionLinesMessage>(std::move(info)), MessagePriority::Normal);
+}
+
 dp::DrapeID DrapeEngine::AddSubroute(SubrouteConstPtr subroute)
 {
   dp::DrapeID const id = GenerateDrapeID();
@@ -566,6 +582,15 @@ void DrapeEngine::RemoveSubroute(dp::DrapeID subrouteId, bool deactivateFollowin
   m_threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
                                   make_unique_dp<RemoveSubrouteMessage>(subrouteId, deactivateFollowing),
                                   MessagePriority::Normal);
+}
+
+void DrapeEngine::RemoveAlternativeSubroutes()
+{
+  // UberHighSingleton so this is processed before any pending High-priority UpdateMapStyle
+  // message. Otherwise UpdateContextDependentResources would iterate m_subroutes while it
+  // still has alternatives and re-issue AddSubroute for them — defeating the clear.
+  m_threadCommutator->PostMessage(ThreadsCommutator::RenderThread, make_unique_dp<RemoveAlternativeSubroutesMessage>(),
+                                  MessagePriority::UberHighSingleton);
 }
 
 void DrapeEngine::DeactivateRouteFollowing()
@@ -660,7 +685,7 @@ void DrapeEngine::ClearGpsTrackPoints()
 }
 
 void DrapeEngine::EnableChoosePositionMode(bool enable, std::vector<m2::TriangleD> && boundAreaTriangles,
-                                           m2::PointD const * optionalPosition)
+                                           m2::PointD const * optionalPosition, bool shouldChangeViewport)
 {
   m_choosePositionMode = enable;
   bool kineticScroll = m_kineticScrollEnabled;
@@ -677,7 +702,8 @@ void DrapeEngine::EnableChoosePositionMode(bool enable, std::vector<m2::Triangle
   }
   m_threadCommutator->PostMessage(
       ThreadsCommutator::RenderThread,
-      make_unique_dp<SetAddNewPlaceModeMessage>(enable, std::move(boundAreaTriangles), kineticScroll, optionalPosition),
+      make_unique_dp<SetAddNewPlaceModeMessage>(enable, std::move(boundAreaTriangles), kineticScroll, optionalPosition,
+                                                shouldChangeViewport),
       MessagePriority::Normal);
 }
 
@@ -794,6 +820,20 @@ void DrapeEngine::UpdateTransitScheme(TransitDisplayInfos && transitDisplayInfos
                                   MessagePriority::Normal);
 }
 
+void DrapeEngine::ShowRouteTransit(TransitInfo && info)
+{
+  if (info.IsEmpty())
+    return;
+  m_threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
+                                  make_unique_dp<ShowRouteTransitMessage>(std::move(info)), MessagePriority::Normal);
+}
+
+void DrapeEngine::HideRouteTransit()
+{
+  m_threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread, make_unique_dp<HideRouteTransitMessage>(),
+                                  MessagePriority::Normal);
+}
+
 void DrapeEngine::EnableIsolines(bool enable)
 {
   m_threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
@@ -875,7 +915,8 @@ drape_ptr<UserMarkRenderParams> DrapeEngine::GenerateMarkRenderInfo(UserPointMar
     renderInfo->m_depth = mark->GetDepth();
     renderInfo->m_customDepth = true;
   }
-  renderInfo->m_depthLayer = mark->GetDepthLayerEx(m_bookmarksTextPlacement);
+  renderInfo->m_depthLayer = mark->GetDepthLayer();
+  renderInfo->m_titleDepthLayer = mark->GetDepthLayerEx(m_bookmarksTextPlacement);
   renderInfo->m_minZoom = mark->GetMinZoom();
   renderInfo->m_minTitleZoom = mark->GetMinTitleZoom();
   renderInfo->m_isVisible = mark->IsVisible();
@@ -887,6 +928,7 @@ drape_ptr<UserMarkRenderParams> DrapeEngine::GenerateMarkRenderInfo(UserPointMar
   renderInfo->m_symbolSizes = mark->GetSymbolSizes();
   renderInfo->m_symbolOffsets = mark->GetSymbolOffsets();
   renderInfo->m_color = mark->GetColorConstant();
+  renderInfo->m_customColor = mark->GetCustomColor();
   renderInfo->m_symbolIsPOI = mark->SymbolIsPOI();
   renderInfo->m_hasTitlePriority = mark->HasTitlePriority();
   renderInfo->m_priority = mark->GetPriority();
@@ -897,7 +939,6 @@ drape_ptr<UserMarkRenderParams> DrapeEngine::GenerateMarkRenderInfo(UserPointMar
   renderInfo->m_isMarkAboveText = mark->IsMarkAboveText();
   renderInfo->m_symbolOpacity = mark->GetSymbolOpacity();
   renderInfo->m_isSymbolSelectable = mark->IsSymbolSelectable();
-  renderInfo->m_isNonDisplaceable = mark->IsNonDisplaceable();
   return renderInfo;
 }
 
@@ -906,6 +947,7 @@ drape_ptr<UserLineRenderParams> DrapeEngine::GenerateLineRenderInfo(UserLineMark
   auto renderInfo = make_unique_dp<UserLineRenderParams>();
   renderInfo->m_minZoom = mark->GetMinZoom();
   renderInfo->m_depthLayer = mark->GetDepthLayer();
+  renderInfo->m_visible = mark->IsVisible();
 
   mark->ForEachGeometry([&renderInfo](std::vector<m2::PointD> && points)
   { renderInfo->m_splines.emplace_back(std::move(points)); });
@@ -947,20 +989,29 @@ void DrapeEngine::SetCustomArrow3d(std::optional<Arrow3dCustomDecl> arrow3dCusto
                                   MessagePriority::High);
 }
 
-void DrapeEngine::SetTileBackgroundData(df::TileKey const & tileKey, uint32_t width, uint32_t height,
-                                        dp::TextureFormat format, dp::BackgroundMode mode,
-                                        std::vector<uint8_t> && bytes)
+void DrapeEngine::AddTileBackgroundImage(std::string const & uid, uint32_t width, uint32_t height,
+                                         dp::TextureFormat format, dp::BackgroundMode mode,
+                                         std::vector<uint8_t> && bytes)
 {
   m_threadCommutator->PostMessage(
       ThreadsCommutator::ResourceUploadThread,
-      make_unique_dp<SetTileBackgroundDataMessage>(tileKey, width, height, format, mode, std::move(bytes)),
+      make_unique_dp<AddTileBackgroundImageMessage>(uid, width, height, format, mode, std::move(bytes)),
       MessagePriority::Normal);
 }
 
-void DrapeEngine::SetTileBackgroundMode(dp::BackgroundMode mode)
+void DrapeEngine::SetTileBackgroundData(df::TileKey const & tileKey, std::string const & imageUid,
+                                        m2::RectF const & rect)
 {
   m_threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
-                                  make_unique_dp<SetTileBackgroundModeMessage>(mode), MessagePriority::Normal);
+                                  make_unique_dp<SetTileBackgroundDataMessage>(tileKey, imageUid, rect),
+                                  MessagePriority::Normal);
+}
+
+void DrapeEngine::SetTileBackgroundMode(dp::BackgroundMode mode, float satelliteAreaOpacity /* = 0.5f */)
+{
+  m_threadCommutator->PostMessage(ThreadsCommutator::ResourceUploadThread,
+                                  make_unique_dp<SetTileBackgroundModeMessage>(mode, satelliteAreaOpacity),
+                                  MessagePriority::Normal);
 }
 
 void DrapeEngine::EnableFogOfWar(bool enable)

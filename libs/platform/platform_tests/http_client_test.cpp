@@ -23,18 +23,27 @@ namespace http_client_test
 using namespace platform;
 using std::string;
 
-char constexpr kTestUrl1[] = "http://localhost:34568/unit_tests/1.txt";
-char constexpr kTestUrl404[] = "http://localhost:34568/unit_tests/notexisting_unittest";
-char constexpr kTestUrlBigFile[] = "http://localhost:34568/unit_tests/47kb.file";
-char constexpr kTestUrlEchoHeaders[] = "http://localhost:34568/unit_tests/echo_headers";
-char constexpr kTestUrlEchoCookies[] = "http://localhost:34568/unit_tests/echo_cookies";
-char constexpr kTestUrlTimeout[] = "http://localhost:34568/unit_tests/timeout";
-char constexpr kTestUrl500[] = "http://localhost:34568/unit_tests/500";
-char constexpr kTestUrl403[] = "http://localhost:34568/unit_tests/403";
-char constexpr kTestUrlRedirect[] = "http://localhost:34568/unit_tests/redirect_to_1txt";
-char constexpr kTestUrlSetCookies[] = "http://localhost:34568/unit_tests/set_cookies";
-char constexpr kTestUrlMultiSetCookies[] = "http://localhost:34568/unit_tests/multi_set_cookies";
-char constexpr kTestUrlPost[] = "http://localhost:34568/unit_tests/post.php";
+// Reads through a temporary before deleting because Windows cannot delete an open file.
+string ReadAndDeleteFile(string const & path)
+{
+  string data;
+  FileReader(path).ReadAsString(data);
+  TEST(base::DeleteFileX(path), (path));
+  return data;
+}
+
+char constexpr kTestUrl1[] = "http://localhost:24568/unit_tests/1.txt";
+char constexpr kTestUrl404[] = "http://localhost:24568/unit_tests/notexisting_unittest";
+char constexpr kTestUrlBigFile[] = "http://localhost:24568/unit_tests/47kb.file";
+char constexpr kTestUrlEchoHeaders[] = "http://localhost:24568/unit_tests/echo_headers";
+char constexpr kTestUrlEchoCookies[] = "http://localhost:24568/unit_tests/echo_cookies";
+char constexpr kTestUrlTimeout[] = "http://localhost:24568/unit_tests/timeout";
+char constexpr kTestUrl500[] = "http://localhost:24568/unit_tests/500";
+char constexpr kTestUrl403[] = "http://localhost:24568/unit_tests/403";
+char constexpr kTestUrlRedirect[] = "http://localhost:24568/unit_tests/redirect_to_1txt";
+char constexpr kTestUrlSetCookies[] = "http://localhost:24568/unit_tests/set_cookies";
+char constexpr kTestUrlMultiSetCookies[] = "http://localhost:24568/unit_tests/multi_set_cookies";
+char constexpr kTestUrlPost[] = "http://localhost:24568/unit_tests/post.php";
 
 int constexpr kBigFileSize = 47684;
 
@@ -446,14 +455,8 @@ UNIT_TEST(HttpClient_ReceivedFile_Success)
     // When writing to file, m_serverResponse should be empty.
     TEST(result.m_serverResponse.empty(), ());
   }
-  // Verify file contents.
-  {
-    FileReader reader(filePath);
-    string data;
-    reader.ReadAsString(data);
-    TEST_EQUAL(data, "Test1", ());
-  }
-  base::DeleteFileX(filePath);
+  auto const data = ReadAndDeleteFile(filePath);
+  TEST_EQUAL(data, "Test1", ());
 }
 
 UNIT_TEST(HttpClient_ReceivedFile_InvalidPath)
@@ -494,15 +497,10 @@ UNIT_TEST(HttpClient_ReceivedFile_WithProgress)
     TEST_EQUAL(result.m_errorCode, 200, ());
     TEST(result.m_serverResponse.empty(), ());
   }
-  {
-    FileReader reader(filePath);
-    string data;
-    reader.ReadAsString(data);
-    TEST_EQUAL(data.size(), expectedBody.size(), ());
-    TEST_EQUAL(data, expectedBody, ());
-  }
+  auto const data = ReadAndDeleteFile(filePath);
+  TEST_EQUAL(data.size(), expectedBody.size(), ());
+  TEST_EQUAL(data, expectedBody, ());
   TEST(progressCalled.load(std::memory_order_acquire), ());
-  base::DeleteFileX(filePath);
 }
 
 UNIT_TEST(HttpClient_ReceivedFile_WithProgress_InvalidPath)
@@ -806,7 +804,7 @@ UNIT_TEST(HttpClient_Cancel_Idempotent)
 // Basic Auth (SetUserAndPassword)
 // =====================================================================
 
-char constexpr kTestUrlBasicAuth[] = "http://localhost:34568/unit_tests/basic_auth";
+char constexpr kTestUrlBasicAuth[] = "http://localhost:24568/unit_tests/basic_auth";
 
 UNIT_TEST(HttpClient_BasicAuth_Success)
 {
@@ -877,8 +875,8 @@ UNIT_TEST(HttpClient_MultiSetCookies)
 // Case-insensitive Set-Cookie header parsing
 // =====================================================================
 
-char constexpr kTestUrlSetCookiesLower[] = "http://localhost:34568/unit_tests/set_cookies_lowercase";
-char constexpr kTestUrlSetCookiesUpper[] = "http://localhost:34568/unit_tests/set_cookies_uppercase";
+char constexpr kTestUrlSetCookiesLower[] = "http://localhost:24568/unit_tests/set_cookies_lowercase";
+char constexpr kTestUrlSetCookiesUpper[] = "http://localhost:24568/unit_tests/set_cookies_uppercase";
 
 UNIT_TEST(HttpClient_SetCookie_LowercaseHeader)
 {
@@ -1030,13 +1028,8 @@ UNIT_TEST(HttpClient_RangeRequest_WithReceivedFile)
     TEST_EQUAL(result.m_errorCode, 206, ());
     TEST(result.m_serverResponse.empty(), ());
   }
-  {
-    FileReader reader(filePath);
-    string data;
-    reader.ReadAsString(data);
-    TEST_EQUAL(static_cast<int64_t>(data.size()), 100, ());
-  }
-  base::DeleteFileX(filePath);
+  auto const data = ReadAndDeleteFile(filePath);
+  TEST_EQUAL(static_cast<int64_t>(data.size()), 100, ());
 }
 
 // =====================================================================
@@ -1088,20 +1081,15 @@ UNIT_TEST(HttpClient_Post_BodyData_ResponseToFile)
     // Response went to file — m_serverResponse must NOT contain stale request body.
     TEST(result.m_serverResponse.empty(), (result.m_serverResponse));
   }
-  {
-    FileReader reader(filePath);
-    string data;
-    reader.ReadAsString(data);
-    TEST_EQUAL(data, body, ());
-  }
-  base::DeleteFileX(filePath);
+  auto const data = ReadAndDeleteFile(filePath);
+  TEST_EQUAL(data, body, ());
 }
 
 // =====================================================================
 // Regression: POST to 204 No Content must not return request body as response
 // =====================================================================
 
-char constexpr kTestUrl204[] = "http://localhost:34568/unit_tests/204";
+char constexpr kTestUrl204[] = "http://localhost:24568/unit_tests/204";
 
 UNIT_TEST(HttpClient_Post_NoContentResponse)
 {
@@ -1113,6 +1101,255 @@ UNIT_TEST(HttpClient_Post_NoContentResponse)
   TEST_EQUAL(result.m_errorCode, 204, ());
   // Response body must be empty for 204 — NOT the request body.
   TEST(result.m_serverResponse.empty(), (result.m_serverResponse));
+}
+
+// =====================================================================
+// SetReceivedFileSegment: ranged streaming into an existing file at offset.
+// Matches Python test_server routes under /unit_tests/segment/*.
+// =====================================================================
+
+// Must match SEGMENT_TEST_TOTAL_SIZE in tools/python/test_server/server/ResponseProvider.py.
+int constexpr kSegmentTestTotalSize = 1000;
+// Must match SEGMENT_TEST_RANGE_END in ResponseProvider.py (inclusive end).
+int64_t constexpr kSegmentTestRangeEnd = 99;
+int64_t constexpr kSegmentTestRangeBytes = kSegmentTestRangeEnd + 1;  // 100 bytes: offsets 0..99.
+
+char constexpr kUrlSegmentOk[] = "http://localhost:24568/unit_tests/segment/ok";
+char constexpr kUrlSegmentIgnoreRange[] = "http://localhost:24568/unit_tests/segment/ignore_range";
+char constexpr kUrlSegmentMissingCR[] = "http://localhost:24568/unit_tests/segment/missing_content_range";
+char constexpr kUrlSegmentShortBody[] = "http://localhost:24568/unit_tests/segment/short_body";
+char constexpr kUrlSegmentOverflowBody[] = "http://localhost:24568/unit_tests/segment/overflow_body";
+char constexpr kUrlSegmentUnknownTotal[] = "http://localhost:24568/unit_tests/segment/unknown_total";
+
+// Create a temp file pre-filled with a known sentinel byte pattern so tests can verify
+// that only the target segment was modified.
+string MakeSegmentTargetFile(uint8_t sentinel)
+{
+  string const path = GetPlatform().TmpPathForFile("http_segment_test_", ".tmp");
+  string const pattern(static_cast<size_t>(kSegmentTestTotalSize), static_cast<char>(sentinel));
+  FileWriter writer(path);
+  writer.Write(pattern.data(), pattern.size());
+  return path;
+}
+
+// The test server's segment_test_body(n) returns bytes i%256 for i in 0..n-1.
+uint8_t ExpectedSegmentByte(int64_t i)
+{
+  return static_cast<uint8_t>(i % 256);
+}
+
+UNIT_TEST(HttpClient_Segment_Success_NonZeroOffset)
+{
+  // Request bytes 200-299 into an existing file; verify only that segment is overwritten.
+  int64_t const offset = 200;
+  int64_t const bytes = 100;
+  string const path = MakeSegmentTargetFile(0xAB);
+
+  HttpClient client(kUrlSegmentOk);
+  client.SetRange(offset, offset + bytes - 1);
+  client.SetReceivedFileSegment({path, offset, bytes, kSegmentTestTotalSize});
+  client.LoadHeaders(true);
+  auto result = RunAsync(client);
+
+  TEST(result.m_success, ("errorCode:", result.m_errorCode));
+  TEST_EQUAL(result.m_errorCode, 206, ());
+  TEST(result.m_serverResponse.empty(), ("segment mode must leave m_serverResponse empty"));
+
+  auto const data = ReadAndDeleteFile(path);
+  TEST_EQUAL(static_cast<int64_t>(data.size()), kSegmentTestTotalSize, ());
+  for (int64_t i = 0; i < kSegmentTestTotalSize; ++i)
+  {
+    uint8_t const got = static_cast<uint8_t>(data[i]);
+    uint8_t const expected = (i >= offset && i < offset + bytes) ? ExpectedSegmentByte(i) : 0xAB;
+    TEST_EQUAL(got, expected, ("byte at", i));
+  }
+}
+
+UNIT_TEST(HttpClient_Segment_Success_OpenEndedRange)
+{
+  // SetRange with end=-1 means "from offset to end of resource". The server responds with
+  // Content-Range spanning offset..total-1, so expectedBytes must cover the whole tail.
+  int64_t const offset = 500;
+  int64_t const bytes = kSegmentTestTotalSize - offset;
+  string const path = MakeSegmentTargetFile(0xCD);
+
+  HttpClient client(kUrlSegmentOk);
+  client.SetRange(offset);  // end = -1 → open-ended.
+  client.SetReceivedFileSegment({path, offset, bytes, kSegmentTestTotalSize});
+  client.LoadHeaders(true);
+  auto result = RunAsync(client);
+
+  TEST(result.m_success, ("errorCode:", result.m_errorCode));
+  TEST_EQUAL(result.m_errorCode, 206, ());
+
+  auto const data = ReadAndDeleteFile(path);
+  for (int64_t i = offset; i < kSegmentTestTotalSize; ++i)
+    TEST_EQUAL(static_cast<uint8_t>(data[i]), ExpectedSegmentByte(i), ("byte at", i));
+}
+
+UNIT_TEST(HttpClient_Segment_WrongExpectedTotal)
+{
+  // Client claims total size is 9999, server says 1000. Must fail with kInconsistentFileSize
+  // BEFORE any byte is written.
+  string const path = MakeSegmentTargetFile(0xEF);
+
+  HttpClient client(kUrlSegmentOk);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, /*expectedTotal=*/9999});
+  client.LoadHeaders(true);
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kInconsistentFileSize, ());
+
+  // File must be unchanged (sentinel bytes preserved).
+  auto const data = ReadAndDeleteFile(path);
+  for (size_t i = 0; i < data.size(); ++i)
+    TEST_EQUAL(static_cast<uint8_t>(data[i]), 0xEF, ("byte at", i));
+}
+
+UNIT_TEST(HttpClient_Segment_IgnoredRange_Returns200)
+{
+  // Server ignores Range header and returns 200 + full body. Segment-mode client must
+  // refuse to write and flag the protocol violation.
+  string const path = MakeSegmentTargetFile(0x11);
+
+  HttpClient client(kUrlSegmentIgnoreRange);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kInconsistentFileSize, ());
+
+  // File untouched.
+  auto const data = ReadAndDeleteFile(path);
+  for (size_t i = 0; i < data.size(); ++i)
+    TEST_EQUAL(static_cast<uint8_t>(data[i]), 0x11, ("byte at", i));
+}
+
+UNIT_TEST(HttpClient_Segment_MissingContentRange)
+{
+  // Server returns 206 without Content-Range header. RFC 7233 §4.1 violation.
+  string const path = MakeSegmentTargetFile(0x22);
+
+  HttpClient client(kUrlSegmentMissingCR);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kInconsistentFileSize, ());
+
+  auto const data = ReadAndDeleteFile(path);
+  for (size_t i = 0; i < data.size(); ++i)
+    TEST_EQUAL(static_cast<uint8_t>(data[i]), 0x22, ("byte at", i));
+}
+
+UNIT_TEST(HttpClient_Segment_ShortBody)
+{
+  // Server advertises 100 bytes via Content-Range but delivers only 50.
+  // Header validation passes; underflow is detected at finish.
+  string const path = MakeSegmentTargetFile(0x33);
+
+  HttpClient client(kUrlSegmentShortBody);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kInconsistentFileSize, ());
+  base::DeleteFileX(path);
+}
+
+UNIT_TEST(HttpClient_Segment_OverflowBody)
+{
+  // Server advertises 100 bytes via Content-Range but delivers 150.
+  // Overflow is detected mid-stream and the request is aborted.
+  string const path = MakeSegmentTargetFile(0x44);
+
+  HttpClient client(kUrlSegmentOverflowBody);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kInconsistentFileSize, ());
+  base::DeleteFileX(path);
+}
+
+UNIT_TEST(HttpClient_Segment_UnknownTotal_Rejected)
+{
+  // Server returns 206 with "Content-Range: bytes 0-99/*" and a 100-byte body.
+  // The range start/end match, but the total is "*". When the caller supplied an
+  // expected total size, this must fail: a mirror could serve a byte-range from
+  // a different file version that happens to match offset/length, and we'd silently
+  // write corrupt data. Matches the pre-segment-rewrite downloader behavior, which
+  // rejected Content-Range values without a numeric total.
+  string const path = MakeSegmentTargetFile(0x66);
+
+  HttpClient client(kUrlSegmentUnknownTotal);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kInconsistentFileSize, ());
+
+  // File untouched — no bytes written before validation failure.
+  auto const data = ReadAndDeleteFile(path);
+  for (size_t i = 0; i < data.size(); ++i)
+    TEST_EQUAL(static_cast<uint8_t>(data[i]), 0x66, ("byte at", i));
+}
+
+UNIT_TEST(HttpClient_Segment_404_PreservesHttpCode)
+{
+  // 404 for a ranged request must surface as errorCode=404 so the downloader can
+  // distinguish FileNotFound from other failures (kInconsistentFileSize, kWriteException).
+  string const path = MakeSegmentTargetFile(0x55);
+
+  HttpClient client(kTestUrl404);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, 404, ("404 must propagate, not become kInconsistentFileSize"));
+  base::DeleteFileX(path);
+}
+
+UNIT_TEST(HttpClient_Segment_MissingTarget_WriteException)
+{
+  // Segment mode requires the target file to already exist (m_writer creates the
+  // .downloading file before chunks start). If the file is missing, opening with
+  // ExistingOnly fails → kWriteException.
+  string const path = GetPlatform().TmpPathForFile("http_segment_missing_", ".tmp");
+  // Do NOT create the file.
+
+  HttpClient client(kUrlSegmentOk);
+  client.SetRange(0, kSegmentTestRangeEnd);
+  client.SetReceivedFileSegment({path, 0, kSegmentTestRangeBytes, kSegmentTestTotalSize});
+  auto result = RunAsync(client);
+
+  TEST(!result.m_success, ());
+  TEST_EQUAL(result.m_errorCode, HttpClient::kWriteException, ());
+}
+
+UNIT_TEST(HttpClient_Segment_NoSegment_ExistingBehaviorUnchanged)
+{
+  // Regression guard: without SetReceivedFileSegment, SetReceivedFile still truncates
+  // and writes the full body as before.
+  string const path = GetPlatform().TmpPathForFile("http_segment_regression_", ".tmp");
+
+  HttpClient client(kTestUrl1);
+  client.SetReceivedFile(path);
+  auto result = RunAsync(client);
+  TEST(result.m_success, ("errorCode:", result.m_errorCode));
+  TEST_EQUAL(result.m_errorCode, 200, ());
+  TEST(result.m_serverResponse.empty(), ());
+
+  auto const data = ReadAndDeleteFile(path);
+  TEST_EQUAL(data, "Test1", ());
 }
 
 }  // namespace http_client_test

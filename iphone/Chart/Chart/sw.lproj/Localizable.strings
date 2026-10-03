@@ -2,12 +2,14 @@
 
 /********** Other translations **********/
 
-"placepage_distance" = "Distance";
+"placepage_distance" = "Umbali";
 
 
 /********** Uncategorized **********/
 
-"you" = "You";
+
+/* Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. */
+"you" = "Wewe";
 
 
 /********** gps strings **********/

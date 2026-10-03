@@ -1,4 +1,4 @@
-#include "iphone/Maps/Classes/MetalContextFactory.h"
+#include "iphone/Maps/Core/MapRendering/MetalContextFactory.h"
 
 #include "drape/gl_functions.hpp"
 #include "drape/metal/metal_base_context.hpp"
@@ -133,8 +133,14 @@ public:
 
   void SetView(NSView * view)
   {
+    // NSOpenGLContext is deprecated since macOS 10.14; dev_sandbox is a developer
+    // tool and the Metal path covers production. Suppress until the OpenGL path
+    // is removed.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [m_context setView:view];
     [m_context update];
+#pragma clang diagnostic pop
     m_viewSet = true;
   }
 
@@ -274,8 +280,8 @@ drape_ptr<dp::GraphicsContextFactory> CreateContextFactory(GLFWwindow * window, 
     NSScreen * screen = [NSScreen mainScreen];
     CGFloat factor = [screen backingScaleFactor];
     layer.contentsScale = factor;
-    nswindow.contentView.layer = layer;
     nswindow.contentView.wantsLayer = YES;
+    nswindow.contentView.layer = layer;
 
     return make_unique_dp<MetalContextFactory>(layer, size);
   }
@@ -291,8 +297,8 @@ drape_ptr<dp::GraphicsContextFactory> CreateContextFactory(GLFWwindow * window, 
     NSScreen * screen = [NSScreen mainScreen];
     CGFloat factor = [screen backingScaleFactor];
     layer.contentsScale = factor;
-    nswindow.contentView.layer = layer;
     nswindow.contentView.wantsLayer = YES;
+    nswindow.contentView.layer = layer;
 
     auto contextFactory = make_unique_dp<MacOSVulkanContextFactory>();
     contextFactory->SetSurface(layer);

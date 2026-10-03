@@ -54,6 +54,10 @@
   return self;
 }
 
+// A cancelled image task intentionally skips the completion handler, so the
+// analyzer cannot prove it is always invoked.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcompletion-handler"
 - (id<IMWMImageTask>)imageWithUrl:(NSURL *)url completion:(MWMWebImageCompletion)completion
 {
   MWMWebImageTask * imageTask = [MWMWebImageTask new];
@@ -64,9 +68,7 @@
                         return;
 
                       if (image)
-                      {
                         completion(image, nil);
-                      }
                       else
                       {
                         NSURLSessionTask * dataTask = [self.urlSession
@@ -92,6 +94,7 @@
 
   return imageTask;
 }
+#pragma clang diagnostic pop
 
 - (void)cleanup
 {

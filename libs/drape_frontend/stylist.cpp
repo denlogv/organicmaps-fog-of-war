@@ -1,9 +1,11 @@
 #include "drape_frontend/stylist.hpp"
 
 #include "indexer/classificator.hpp"
-#include "indexer/drules_include.hpp"
+#include "indexer/classificator_loader.hpp"
 #include "indexer/feature.hpp"
+#include "indexer/feature_utils.hpp"
 #include "indexer/feature_visibility.hpp"
+#include "indexer/map_style_reader.hpp"
 #include "indexer/scales.hpp"
 
 #include "drape/hatching_decl.hpp"
@@ -54,9 +56,55 @@ std::string_view IsHatchingTerritoryChecker::GetHatch(feature::TypesHolder const
   return {};
 }
 
+IsAreaPatternChecker::Stipple::Stipple()
+  : ftypes::BaseCheckerEx({{"natural", "beach"},  // natural=sand is a beach subtype
+                           {"natural", "desert"}})
+{}
+
+IsAreaPatternChecker::IntermittentWater::IntermittentWater()
+  : ftypes::BaseCheckerEx({{"natural", "water", "intermittent"}, {"landuse", "basin", "intermittent"}})
+{}
+
+IsAreaPatternChecker::Speckle::Speckle() : ftypes::BaseCheckerEx({{"natural", "scree"}, {"natural", "bare_rock"}}) {}
+
+IsAreaPatternChecker::Grid::Grid() : ftypes::BaseCheckerEx({{"landuse", "orchard"}, {"landuse", "vineyard"}}) {}
+
+std::string_view IsAreaPatternChecker::GetPattern(uint32_t type) const
+{
+  if (m_stipple(type) || IsIntermittentWater(type))
+    return dp::kStipplePattern;
+  if (m_speckle(type))
+    return dp::kSpecklePattern;
+  if (m_grid(type))
+    return dp::kGridPattern;
+  return {};
+}
+
+std::string_view IsAreaPatternChecker::GetPattern(feature::TypesHolder const & types) const
+{
+  for (uint32_t t : types)
+  {
+    auto s = GetPattern(t);
+    if (!s.empty())
+      return s;
+  }
+  return {};
+}
+
 void CaptionDescription::Init(FeatureType & f, int8_t deviceLang, int zoomLevel, feature::GeomType geomType,
                               bool auxCaptionExists)
 {
+  if (auto const & info = f.GetID().m_mwmId.GetInfo())
+    m_mwmRegionLang = feature::GetRegionLang(info->GetRegionData());
+
+  // An unqualified OSM `name=` is reported as kDefaultCode, which is not a real BCP-47 tag.
+  // Resolve it to the region's on-the-ground language so HarfBuzz applies the matching OpenType
+  // `locl` glyph variants (Turkish dotless-i, Serbian Cyrillic, CJK regional forms). Multi-lingual
+  // regions may guess wrong, but a shared-script mismatch is mostly harmless and strictly better
+  // than passing no hint at all.
+  auto const localizeLang = [this](int8_t lang)
+  { return lang == StringUtf8Multilang::kDefaultCode ? m_mwmRegionLang : lang; };
+
   feature::NameParamsOut out;
   // TODO(pastk) : remove forced secondary text for all lines and set it via styles for major roads and rivers only.
   // ATM even minor paths/streams/etc use secondary which makes their pathtexts take much more space.
@@ -65,6 +113,7 @@ void CaptionDescription::Init(FeatureType & f, int8_t deviceLang, int zoomLevel,
     // Get both primary and secondary/aux names.
     f.GetPreferredNames(true /* allowTranslit */, deviceLang, out);
     m_auxText = out.secondary;
+    m_auxTextLang = localizeLang(out.secondaryLang);
   }
   else
   {
@@ -72,6 +121,7 @@ void CaptionDescription::Init(FeatureType & f, int8_t deviceLang, int zoomLevel,
     f.GetReadableName(true /* allowTranslit */, deviceLang, out);
   }
   m_mainText = out.GetPrimary();
+  m_mainTextLang = localizeLang(out.primaryLang);
   ASSERT(m_auxText.empty() || !m_mainText.empty(), ("auxText without mainText"));
 
   uint8_t constexpr kLongCaptionsMaxZoom = 4;
@@ -80,6 +130,7 @@ void CaptionDescription::Init(FeatureType & f, int8_t deviceLang, int zoomLevel,
   {
     m_mainText.clear();
     m_auxText.clear();
+    m_mainTextLang = m_auxTextLang = StringUtf8Multilang::kUnsupportedLanguageCode;
     return;
   }
 
@@ -98,7 +149,10 @@ void CaptionDescription::Init(FeatureType & f, int8_t deviceLang, int zoomLevel,
     // styles.
     m_houseNumberText = f.GetHouseNumber();
     if (!m_houseNumberText.empty() && !m_mainText.empty() && m_houseNumberText.find(m_mainText) != std::string::npos)
+    {
       m_mainText.clear();
+      m_mainTextLang = StringUtf8Multilang::kUnsupportedLanguageCode;
+    }
   }
 }
 
@@ -117,13 +171,14 @@ void Stylist::ProcessKey(FeatureType & f, drule::Key const & key)
     m_symbolRule = dRule->GetSymbol();
     break;
   case drule::caption:
-    ASSERT(dRule->GetCaption() && dRule->GetCaption()->has_primary() && !m_captionRule &&
+    ASSERT(dRule->GetCaption() && dRule->GetCaption()->primary.has_value() && !m_captionRule &&
                (geomType == GeomType::Point || geomType == GeomType::Area),
            (m_captionRule == nullptr, f.DebugString()));
     m_captionRule = dRule->GetCaption();
     break;
   case drule::pathtext:
-    ASSERT(dRule->GetPathtext() && dRule->GetPathtext()->has_primary() && !m_pathtextRule && geomType == GeomType::Line,
+    ASSERT(dRule->GetPathtext() && dRule->GetPathtext()->primary.has_value() && !m_pathtextRule &&
+               geomType == GeomType::Line,
            (m_pathtextRule == nullptr, geomType, f.DebugString()));
     m_pathtextRule = dRule->GetPathtext();
     break;
@@ -159,6 +214,13 @@ void Stylist::ProcessKey(FeatureType & f, drule::Key const & key)
 Stylist::Stylist(FeatureType & f, uint8_t zoomLevel, int8_t deviceLang, bool forceOutdoorStyle)
   : m_rulesHolder(forceOutdoorStyle ? drule::GetOutdoorRules() : drule::GetCurrentRules())
 {
+#ifdef DEBUG
+  auto const style = GetStyleReader().GetCurrentStyle();
+  ASSERT(classificator::IsStyleLoaded(
+             forceOutdoorStyle ? (MapStyleIsDark(style) ? MapStyleOutdoorsDark : MapStyleOutdoorsLight) : style),
+         ("Drawing rules for the current style are not loaded", style, forceOutdoorStyle));
+#endif  // DEBUG
+
   feature::TypesHolder const types(f);
   Classificator const & cl = forceOutdoorStyle ? GetOutdoorClassif() : classif();
 
@@ -182,6 +244,11 @@ Stylist::Stylist(FeatureType & f, uint8_t zoomLevel, int8_t deviceLang, bool for
   }
 
   auto const & hatchingChecker = IsHatchingTerritoryChecker::Instance();
+  auto const & areaPatternChecker = IsAreaPatternChecker::Instance();
+  // BG-top style groups give intermittent water drawing priority 20, permanent water 40, and
+  // ditch/drain/wastewater 50. A 25-point selection boost places intermittent water between the latter
+  // two without changing its drawing depth.
+  int constexpr kIntermittentWaterSelectionBoost = 25;
   auto const geomType = types.GetGeomType();
 
   drule::KeysT keys;
@@ -193,6 +260,10 @@ Stylist::Stylist(FeatureType & f, uint8_t zoomLevel, int8_t deviceLang, bool for
 
     for (auto & k : typeKeys)
     {
+      // The intermittent fill wins on the same feature, while separate permanent-water polygons draw above it.
+      if (types.Size() > 1 && k.m_type == drule::area && areaPatternChecker.IsIntermittentWater(t))
+        k.m_priority += kIntermittentWaterSelectionBoost;
+
       // Take overlay drules from the main type only.
       if (t == mainOverlayType || (k.m_type != drule::caption && k.m_type != drule::symbol &&
                                    k.m_type != drule::shield && k.m_type != drule::pathtext))
@@ -217,8 +288,8 @@ Stylist::Stylist(FeatureType & f, uint8_t zoomLevel, int8_t deviceLang, bool for
 
   if (m_captionRule || m_pathtextRule)
   {
-    bool const auxExists =
-        (m_captionRule && m_captionRule->has_secondary()) || (m_pathtextRule && m_pathtextRule->has_secondary());
+    bool const auxExists = (m_captionRule && m_captionRule->secondary.has_value()) ||
+                           (m_pathtextRule && m_pathtextRule->secondary.has_value());
     m_captionDescriptor.Init(f, deviceLang, zoomLevel, geomType, auxExists);
 
     if (m_captionDescriptor.IsHouseNumberExists())

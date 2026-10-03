@@ -49,12 +49,12 @@
     <!-- The button that opens system location settings -->
     <string name="location_settings">إعدادات الموقع</string>
     <string name="close">إغلاق</string>
-    <string name="unsupported_phone">أنت بحاجة الى OpenGL بأجهزة تسريع. لسوء الحظ جهازك لا يدعم هذه الخاصية.</string>
+    <string name="unsupported_phone">يتطلب التطبيق OpenGL مع تسريع الأجهزة. لسوء الحظ، جهازك غير مدعوم.</string>
     <string name="download">تنزيل</string>
     <!-- Used in DownloadResources startup screen -->
     <string name="disconnect_usb_cable">الرجاء فصل كابل الناقل التسلسلي الشامل أو إدخال بطاقة الذاكرة من أجل استخدام Organic Maps</string>
     <!-- Used in DownloadResources startup screen -->
-    <string name="not_enough_free_space_on_sdcard">الرجاء إخلاء بعض المساحة في تخزين البطاقة الرقمية الآمنةلناقل التسلسلي الشامل أولا من أجل استخدام هذا التطبيق</string>
+    <string name="not_enough_free_space_on_sdcard">الرجاء إخلاء بعض المساحة أولاً في بطاقة SD/تخزين USB لاستخدام التطبيق.</string>
     <string name="download_resources">قبل البدء في استخدام التطبيق، يرجى تنزيل خريطة نظرة عامة على العالم على جهازك.\nسيستخدم %s من مساحة التخزين.</string>
     <string name="download_resources_continue">الذهاب الى الخريطة</string>
     <string name="downloading_country_can_proceed">تنزيل %s. يمكنك الآن\nالمتابعة الى الخريطة.</string>
@@ -109,7 +109,7 @@
     <!-- Search category for public transport; any changes should be duplicated in categories.txt @category_transport! -->
     <string name="category_transport">مواصلات</string>
     <!-- Search category for fuel stations; any changes should be duplicated in categories.txt @category_fuel! -->
-    <string name="category_fuel">وقود الحافلات</string>
+    <string name="category_fuel">وقود</string>
     <!-- Search category for parking lots; any changes should be duplicated in categories.txt @category_parking! -->
     <string name="category_parking">مرافق ركن السيارات</string>
     <!-- Search category for malls/clothes/shoes/gifts/jewellery/sport shops; any changes should be duplicated in categories.txt @category_shopping! -->
@@ -120,7 +120,7 @@
     <string name="category_hotel">فندق</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">سياحة</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">تسلية</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">صراف آلي</string>
@@ -142,7 +142,7 @@
     <string name="category_police">شرطة</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">إعادة تدوير</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">ماء</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">منشآت للمنازل المتنقلة</string>
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">نأسف، اعدادات تخزين الخرائط معطلة حالياً.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">جاري الآن تنزيل الخريطة.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">مرحباً، تفقد الموقع الخاص بي على Organic Maps! %1$s أو %2$s. ليس لديك أي خرائط تعمل بدون الاتصال مع الانترنت مثبتة على جهازك؟ قم بتحميلها من هنا: https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">مرحباً، تفقد الدبوس الخاص بي على خريطة Organic Maps!</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">مرحباً، تحقق من موقعي الحالي على خريطة Organic Maps!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">ًمرحبا،\n\nأنا هنا الآن: %1$s. انقر على هذا الرابط %2$s أو ذلك الرابط %3$s لمشاهدة المكان على الخريطة.\n\nشكراً.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">مشاركة</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s على Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">مكان على Organic Maps</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">البريد الالكتروني</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">مباني ثلاثية الأبعاد</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">يتم إيقاف تشغيل المباني ثلاثية الأبعاد في وضع توفير الطاقة</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">صور الأقمار الصناعية</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">رابط الخادم</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">أدخل رابطًا صالحًا يحتوي على {z}/{x}/{y}</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">حجم ذاكرة التخزين المؤقت (ميغابايت)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">عتامة الكائنات المساحية</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">مصادر المربعات المخصصة مقدَّمة منك. استخدم فقط الخدمات المسموح لك بالوصول إليها. أنت مسؤول عن الإسناد وشروط الترخيص ومفاتيح API والحصص وحدود الاستخدام.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">تعليمات صوتية</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">اختبار الاتجاهات الصوتية (TTS، تحويل النص إلى كلام)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">تحقق من مستوى الصوت أو إعدادات تحويل النص إلى كلام في النظام إذا كنت لا تسمع الصوت الآن.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">غير متاح</string>
     <string name="pref_map_auto_zoom">تكبير تلقائي</string>
     <string name="placepage_distance">المسافة</string>
@@ -371,6 +379,8 @@
     <string name="clear_search">مسح سجل البحث</string>
     <!-- Place Page link to Wikipedia article (if map object has it). -->
     <string name="read_in_wikipedia">ويكيبيديا</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">مقالة من wikipedia.org</string>
     <!-- Place Page link to Wikimedia Commons. -->
     <string name="wikimedia_commons">مشاعات ويكيميديا</string>
     <string name="p2p_your_location">موقعك</string>
@@ -399,19 +409,15 @@
     <string name="editor_example_values">أمثلة على القيم</string>
     <string name="editor_correct_mistake">تصحيح الخطأ</string>
     <string name="editor_add_select_location">اختر الموقع</string>
-    <string name="editor_report_problem_desription_1">يرجى وصف المشكلة بالتفاصيل حتى يتسنى لفريق خريطة الشارع المفتوحة إصلاح الخطأ.</string>
-    <string name="editor_report_problem_desription_2">أو افعل ذلك بنفسك من خلال الموقع https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">إرسال</string>
-    <string name="editor_report_problem_title">مشكلة</string>
-    <string name="editor_report_problem_no_place_title">المكان غير موجود</string>
-    <string name="editor_report_problem_under_construction_title">مغلق للصيانة</string>
-    <string name="editor_report_problem_duplicate_place_title">مكان مكرر</string>
     <string name="autodownload">التنزيل التلقائي</string>
     <!-- Place Page opening hours text -->
     <string name="daily">يومياً</string>
     <string name="twentyfour_seven">٢٤/٧(ليلاً ونهاراً)</string>
     <string name="day_off_today">مغلق اليوم</string>
     <string name="day_off">مغلق</string>
+    <string name="midnight">منتصف الليل</string>
+    <string name="noon">الظهر</string>
     <string name="today">اليوم</string>
     <string name="opens_in">يفتح بعد %s</string>
     <string name="closes_in">يغلق في غضون %s</string>
@@ -464,14 +470,12 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">كما هو مكتوب باللغة المحلية</string>
     <string name="editor_edit_place_category_title">الفئة</string>
-    <string name="detailed_problem_description">وصف مفصّل للمشكلة</string>
-    <string name="editor_report_problem_other_title">مشكلة أخرى</string>
     <string name="placepage_add_business_button">إضافة مؤسسة</string>
     <string name="message_invalid_feature_position">لا يمكن تحديد موقع الكائن هنا</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
     <string name="osm_presentation">بيانات OpenStreetMap التي أنشأها المجتمع اعتبارًا من %s. تعرف على المزيد حول كيفية تعديل الخريطة وتحديثها على OpenStreetMap.org</string>
     <!-- OSM explanation on Android login screen -->
-    <string name="login_osm_presentation">OpenStreetMap.org (OSM) هو مشروع مجتمعي لبناء خريطة مجانية ومفتوحة. إنه المصدر الرئيسي لبيانات الخرائط في الخرائط العضوية ويعمل على غرار ويكيبيديا. يمكنك إضافة الأماكن أو تعديلها وتصبح متاحة لملايين المستخدمين في جميع أنحاء العالم.\nانضم إلى المجتمع وساعد في إنشاء خريطة أفضل للجميع!</string>
+    <string name="login_osm_presentation">OpenStreetMap.org (OSM) هو مشروع مجتمعي يهدف إلى إنشاء خريطة مجانية ومفتوحة. وهو المصدر الرئيسي لبيانات الخرائط في Organic Maps ويعمل بشكل مشابه لـويكيبيديا. يمكنك إضافة أو تعديل الأماكن لتصبح متاحة لملايين المستخدمين في جميع أنحاء العالم.\nانضم إلى المجتمع وساعد في إنشاء خريطة أفضل للجميع!</string>
     <string name="login_to_make_edits_visible">أنشئ حساباً على OpenStreetMap أو سجّل الدخول لنشر تعديلاتك على الخريطة للعالم.</string>
     <!-- Downloaded 10 **of** 20 <- it is that "of" -->
     <string name="downloader_of">%1$d من%2$d</string>
@@ -486,7 +490,7 @@
     <!-- Title for OSM note section in the editor -->
     <string name="editor_other_info">ملاحظة لمتطوعي OpenStreetMap (اختياري)</string>
     <!-- Hint of the input field in the OSM note section of the editor -->
-    <string name="editor_note_hint">وصف الأخطاء على الخريطة أو الأشياء التي لا يمكن تحريرها باستخدام الخرائط العضوية</string>
+    <string name="editor_note_hint">يرجى وصف الأخطاء الموجودة على الخريطة أو العناصر التي لا يمكن تعديلها عبر البريد الإلكتروني Organic Maps</string>
     <!-- Information about OSM at the top of the editing page -->
     <string name="editor_about_osm">يتم تحميل تعديلاتك على قاعدة البيانات العامة <a href="https://wiki.openstreetmap.org/wiki/Ar:About_OpenStreetMap">OpenStreetMap</a>. يرجى عدم إضافة معلومات شخصية أو محمية بحقوق الطبع والنشر.</string>
     <string name="editor_more_about_osm">المزيد عن خريطة الشارع المفتوحة</string>
@@ -496,7 +500,7 @@
     <!-- To indicate the operator of ATMs, bicycle rentals, electric vehicle charging stations… -->
     <string name="operator">المشغل: %s</string>
     <string name="editor_category_unsuitable_title">لا يمكن العثور على فئة مناسبة؟</string>
-    <string name="editor_category_unsuitable_text">تسمح الخرائط العضوية بإضافة فئات نقاط بسيطة فقط، وهذا يعني عدم وجود بلدات وطرق وبحيرات ومخططات للمباني وما إلى ذلك. يرجى إضافة هذه الفئات مباشرة إلى <a href="https://www.openstreetmap.org">OpenStreetMap.org</a>. راجع موقعنا <a href="https://organicmaps.app/faq/editing/advanced-map-editing">دليل</a> للحصول على تعليمات مفصلة خطوة بخطوة.</string>
+    <string name="editor_category_unsuitable_text">Organic Maps تسمح بإضافة فئات النقاط البسيطة فقط، وهذا يعني عدم إضافة المدن والطرق والبحيرات وخطوط المباني، إلخ. يرجى إضافة هذه الفئات مباشرة إلى <a href="https://www.openstreetmap.org">OpenStreetMap.org</a>. راجع <a href="https://organicmaps.app/faq/editing/advanced-map-editing">دليلنا</a> للحصول على إرشادات تفصيلية خطوة بخطوة.</string>
     <string name="downloader_no_downloaded_maps_title">لم تقم بتنزيل أية خرائط</string>
     <string name="downloader_no_downloaded_maps_message">قم بتنزيل خرائط للبحث عن مكان واستخدام الملاحة بدون اتصال بالإنترنت.</string>
     <string name="current_location_unknown_error_title">الموقع الحالي غير معروف.</string>
@@ -508,7 +512,7 @@
     <string name="day">يوم</string>
     <string name="second">ث</string>
     <string name="placepage_more_button">المزيد</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">تحرير العلامة المرجعية</string>
     <string name="placepage_personal_notes_hint">ملاحظات شخصية (نص أو html)</string>
     <string name="editor_comment_hint">تعليق…</string>
@@ -552,27 +556,21 @@
     <string name="mobile_data_description">إننا نحتاج بيانات الجوال لعرض معلومات تفصيلية عن الأماكن والإشارات المرجعية.</string>
     <string name="mobile_data_option_never">عدم الاستخدام مطلقًا</string>
     <string name="mobile_data_option_ask">السؤال دوماً</string>
-    <string name="traffic_update_maps_text">لعرض البيانات المرورية، يجب تحديث الخرائط.</string>
     <string name="big_font">زيادة حجم الخط على الخريطة</string>
-    <string name="traffic_update_app">الرجاء تحديث Organic Maps</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">البيانات المرورية غير متاحة</string>
     <string name="enable_logging">تفعيل التسجيل</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">تعقيب عام</string>
-    <string name="prefs_languages_information">نحن نستخدم نظام تحويل النص إلى كلام (TTS) للتعليمات الصوتية. تستخدم العديد من أجهزة أندرويد نظام Google TTS، يمكنك تنزيله من أو تحديثه من متجر Play</string>
+    <string name="prefs_languages_information">نحن نستخدم نظام تحويل النص إلى كلام (TTS) للتعليمات الصوتية. تستخدم العديد من أجهزة أندرويد Google TTS، ويمكنك تنزيله أو تحديثه من متجر Google Play</string>
     <string name="prefs_languages_information_off">بالنسبة لبعض اللغات، ستحتاج إلى تنزيل تطبيق تحويل النص إلى كلام أو حزمة لغات إضافية من متجر التطبيقات(متجر Play، Galaxy Store، App Gallery، FDroid).\nافتح إعدادات جهازك ثم اللغة والإدخال ثم تحويل النص إلى كلام.\nهنا يمكنك إدارة الإعدادات لأنظمة تحويل النص إلى كلا (على سبيل المثال، تنزيل حزمة اللغة للاستجدام دون اتصال انترنت).</string>
     <string name="prefs_languages_information_off_link">لمزيد من المعلومات الرجاء مراجعة هذا الدليل.</string>
     <string name="transliteration_title">ترجمة حرفية إلى الأبجدية اللاتينية</string>
     <string name="learn_more">معرفة المزيد</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">استخدام البحث أو حدّد إشارة مرجعية أو النقر على الخريطة لإضافة نقطة بداية الطريق</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">استخدام البحث أو حدّد إشارة مرجعية أو النقر على الخريطة لإضافة نقطة وجهة</string>
     <string name="planning_route_manage_route">إدارة المسار</string>
     <string name="button_plan">خطة</string>
     <string name="placepage_remove_stop">إزالة نقطة توقف</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
     <string name="placepage_add_stop">إضافة نقطة توقف</string>
+    <string name="drag_to_reorder">إعادة الترتيب</string>
     <string name="saved">حُفظت</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">برجاء تسجيل الدخول إلى OpenStreetMap لتحميل جميع تعديلات الخريطة تلقائيًا. تعرف على المزيد <a href="https://github.com/organicmaps/organicmaps/issues/6144">هنا</a>.</string>
@@ -632,6 +630,8 @@
     <string name="button_layer_hiking">تضاريس</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">ركوب الدراجات</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">قمر صناعي</string>
     <string name="button_layer_subway">مترو الانفاق</string>
     <string name="layers_title">أنماط الخريطة وطبقاتها</string>
     <string name="bookmarks_empty_list_title">هذه اللائحة فارغة</string>
@@ -670,6 +670,10 @@
     <string name="show_at_the_bottom">اعرض في الأسفل</string>
     <string name="enable_logging_warning_message">هذا الخيار يقوم ببدأ تسجيل سجلات التطبيق لإغراض التشخيصة. يمكن أن يكون مفيدًا لفريق الدعم الخاص بنا لحل المشاكل التي تواجهكم داخل التطبيق. قم بتفعيل هذا الخيار بشكل مؤقت فقط في حالة طلب الدعم من Organic Maps.</string>
     <string name="driving_options_title">خيارات رسم المسار</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">تحسين المسار</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">يعيد ترتيب المحطات الوسيطة تلقائيًا لإنشاء مسار أكثر كفاءة.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">تجنب الطرق ذات الرسوم</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -684,6 +688,12 @@
     <string name="toll_road">طريق برسوم مرور</string>
     <string name="unpaved_road">طريق غير معبد</string>
     <string name="ferry_crossing">استخدام عبّارة</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">درج</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">بوابة</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">حاجز بوابة</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">نعم</string>
     <!-- A generic "No" button in dialogs -->
@@ -718,7 +728,14 @@
     <string name="moreyear_ago_sorttype">منذ أكثر من سنة</string>
     <string name="near_me_sorttype">قريب مني</string>
     <string name="others_sorttype">أخرى</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">مغلق الآن</string>
+    <string name="opens_tomorrow_at">يُفتتح غداً في %s</string>
+    <string name="opens_dayoftheweek_at">يفتح %1$s في %2$s</string>
+    <string name="opens_at">يفتح في %s</string>
+    <string name="closes_at">يغلق في %s</string>
     <string name="editor_add_select_category_all_subtitle">جميع الفئات</string>
+    <string name="placepage_replace_stop">استبدال التوقف</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">طعام</string>
@@ -737,6 +754,12 @@
     <string name="medicine">دواء</string>
     <string name="search_in_the_list">ابحث في القائمة</string>
     <string name="religious_places">أماكن دينية</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">تحديد</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">تحديد الكل</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">إلغاء تحديد الكل</string>
     <string name="select_list">اختر القائمة</string>
     <string name="button_layer_isolines">تضاريس</string>
     <string name="isolines_activation_error_dialog">لتفعيل الطبقة الطبوغرافية واستخدامها ، يرجى تحديث أو تنزيل خريطة المنطقة</string>
@@ -803,9 +826,9 @@
     <!-- App tip #09 -->
     <string name="app_tip_09">هدفنا الرئيسي هو إنشاء خرائط سريعة وسهلة الاستخدام تركز على الخصوصية والتي ستعجبك.</string>
     <!-- Text on the Android Auto or CarPlay placeholder screen that maps are displayed on the phone screen -->
-    <string name="car_used_on_the_phone_screen">أنت الآن تستخدم الخرائط العضوية على شاشة الهاتف</string>
+    <string name="car_used_on_the_phone_screen">أنت تستخدم الآن Organic Maps على شاشة الهاتف</string>
     <!-- Text on the phone placeholder screen that maps are displayed on the car screen -->
-    <string name="car_used_on_the_car_screen">أنت الآن تستخدم الخرائط العضوية على شاشة السيارة</string>
+    <string name="car_used_on_the_car_screen">أنت تستخدم الآن Organic Maps على شاشة السيارة</string>
     <!-- Displayed on the phone screen. Android Auto connected -->
     <string name="aa_connected_title">أنت متصل بـ Android Auto</string>
     <!-- Displayed on the phone screen. Button to display maps on the phone screen instead of a car -->
@@ -813,13 +836,13 @@
     <!-- Displayed on the Android Auto or CarPlay screen. Button to display maps on the car screen instead of a phone. Must be no more than 18 symbols! -->
     <string name="car_continue_in_the_car">إلى شاشة السيارة</string>
     <!-- Ask user to grant location permissions -->
-    <string name="aa_location_permissions_request">تحتاج الخرائط العضوية إلى الوصول إلى الموقع. عندما يكون الوضع آمنًا، تحقق من الإشعارات الموجودة على هاتفك.</string>
+    <string name="aa_location_permissions_request">Organic Maps تحتاج إلى الوصول إلى الموقع. عندما يكون الوضع آمنًا، تحقق من الإشعار على هاتفك.</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">هذا التطبيق يحتاج إلى إذنك</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">أذونات المنح</string>
     <!-- Outdoors/hiking map style (activity) name in the Styles and Layers dialog -->
-    <string name="button_layer_outdoor">جولة على الأقدام</string>
+    <string name="button_layer_outdoor">الأنشطة الخارجية</string>
     <!-- Text displayed when a webview or a browser are disabled, and external links can't be opened. -->
     <string name="browser_not_available">متصفح الويب غير متوفر</string>
     <string name="volume">مستوى الصوت</string>
@@ -829,17 +852,16 @@
     <string name="pref_tts_open_system_settings">إعدادات تركيب الكلام النظام</string>
     <!-- toast displayed when pressing the "Speech synthesis system settings" button, and the system settings aren't found. -->
     <string name="pref_tts_no_system_tts">لم يتم العثور على إعدادات تركيب الكلام، هل أنت متأكد من أن جهازك يدعمها؟</string>
-    <string name="drive_through">الشراء من السيارة</string>
+    <string name="drive_through">خدمة من السيارة</string>
     <string name="clear_the_search">مسح البحث</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">تكبير</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">تصغير</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">رابط القائمة</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">عرض القائمة</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">فتح في تطبيق آخر</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">الخدمة الذاتية</string>
     <string name="select_option">حدد الخيار</string>
@@ -874,6 +896,36 @@
     <string name="share_track">شارك المسار</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">احذف %s؟</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="zero">تم تحديد %d</item>
+        <item quantity="one">تم تحديد %d</item>
+        <item quantity="two">تم تحديد %d</item>
+        <item quantity="few">تم تحديد %d</item>
+        <item quantity="many">تم تحديد %d</item>
+        <item quantity="other">تم تحديد %d</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="zero">حذف %d عنصر؟</item>
+        <item quantity="one">حذف %d عنصر؟</item>
+        <item quantity="two">حذف %d عنصرين؟</item>
+        <item quantity="few">حذف %d عناصر؟</item>
+        <item quantity="many">حذف %d عنصرًا؟</item>
+        <item quantity="other">حذف %d عنصرًا؟</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">نقل</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">غير اللون</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">إخفاء المسار</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">عرض المسار</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">موقعي</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -886,4 +938,38 @@
     <string name="toast_bookmarks_color_changed">تم تغيير لون الإشارات المرجعية</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">تم تغيير لون المسارات</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">الطيف</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">منزلقات</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">أحمر</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">أخضر</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">أزرق</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB Hex Color #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">الشبكة</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">البحث الصوتي</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">اختر على الخريطة</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">نقطة البداية</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">الوجهة</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">تغيير البداية</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">تغيير الوجهة</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">تغيير نقطة التوقف</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">تم الوصول إلى الحد الأقصى لعدد نقاط التوقف</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">حرك الخريطة وقم بتكبيرها أو تصغيرها لوضع الصليب</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">إيقاف وحفظ</string>
 </resources>

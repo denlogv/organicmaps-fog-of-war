@@ -5,16 +5,50 @@
 
 #include "indexer/road_shields_parser.hpp"
 
+#include "base/assert.hpp"
 #include "base/string_utils.hpp"
 
+#include <initializer_list>
 #include <regex>
 #include <string>
+#include <string_view>
 
 namespace routing::turns::sound
 {
-
 namespace
 {
+// Expands the positional %N$s placeholders of the sound-string templates, everything else is copied
+// verbatim. Not printf: MSVC has no positional arguments, and a translated template is not a
+// trustworthy format string.
+std::string FormatPositional(std::string_view format, std::initializer_list<std::string_view> args)
+{
+  std::string out;
+  out.reserve(format.size() + 64);
+  for (size_t i = 0; i < format.size(); ++i)
+  {
+    if (format[i] != '%')
+    {
+      out += format[i];
+      continue;
+    }
+
+    bool const isPlaceholder =
+        i + 3 < format.size() && strings::IsASCIIDigit(format[i + 1]) && format[i + 2] == '$' && format[i + 3] == 's';
+    ASSERT(isPlaceholder, (format));
+    if (!isPlaceholder)
+    {
+      out += format[i];
+      continue;
+    }
+
+    size_t const index = static_cast<size_t>(format[i + 1] - '1');
+    ASSERT_LESS(index, args.size(), (format));
+    if (index < args.size())
+      out += *(args.begin() + index);
+    i += 3;
+  }
+  return out;
+}
 
 template <class TIter>
 std::string DistToTextId(TIter begin, TIter end, uint32_t dist)
@@ -36,6 +70,13 @@ std::string DistToTextId(TIter begin, TIter end, uint32_t dist)
   }
 
   return it->second;
+}
+
+// Japanese and Chinese (including Cantonese, e.g. "yue-HK") are written without spaces
+// between words, so their turn notifications are concatenated without inter-field spaces.
+bool IsSpacelessLanguage(std::string const & locale)
+{
+  return locale == "ja" || locale.starts_with("zh") || locale.starts_with("yue");
 }
 }  //  namespace
 
@@ -124,7 +165,7 @@ std::string GetTtsText::GetTurnNotification(Notification const & notification) c
   {
     // add "then" and space only if needed, for appropriate languages
     thenStr = GetTextByIdTrimmed("then");
-    if (localeKey != "ja")
+    if (!IsSpacelessLanguage(localeKey))
       thenStr.push_back(' ');
   }
 
@@ -143,7 +184,7 @@ std::string GetTtsText::GetTurnNotification(Notification const & notification) c
     // We're going to pronounce the street name.
 
     // Replace any full-stop characters (in between sub-instructions) to make TTS flow better.
-    // Full stops are: . (Period) or 。 (East Asian) or । (Hindi)
+    // Full stops are: . (Period) or 。 (East Asian) or । (Hindi) or ։ (Armenian)
     RemoveLastDot(distStr);
 
     // If the turn direction with the key +_street exists for this locale, and isn't "NULL",
@@ -211,14 +252,12 @@ std::string GetTtsText::GetTurnNotification(Notification const & notification) c
       }
     }
 
-    char ttsOut[1024];
-    std::snprintf(ttsOut, std::size(ttsOut), distDirOntoStreetStr.c_str(),
-                  distStr.c_str(),    // in 100 feet
-                  dirStr.c_str(),     // turn right / take exit
-                  ontoStr.c_str(),    // onto / null
-                  streetOut.c_str(),  // Main Street / 543:: M4: Queens Parkway, London
-                  dirVerb.c_str()     // (optional "turn right" verb)
-    );
+    std::string const ttsOut =
+        FormatPositional(distDirOntoStreetStr, {distStr,    // in 100 feet
+                                                dirStr,     // turn right / take exit
+                                                ontoStr,    // onto / null
+                                                streetOut,  // Main Street / 543:: M4: Queens Parkway, London
+                                                dirVerb});  // (optional "turn right" verb)
 
     // remove floating punctuation
     static std::regex const rP(" [,\\.:;]+ ");
@@ -236,7 +275,7 @@ std::string GetTtsText::GetTurnNotification(Notification const & notification) c
   if (!distStr.empty())
   {
     // add distance and/or space only if needed, for appropriate languages
-    if (localeKey != "ja")
+    if (!IsSpacelessLanguage(localeKey))
       out = thenStr + distStr + " " + dirStr;
     else
       out = thenStr + distStr + dirStr;

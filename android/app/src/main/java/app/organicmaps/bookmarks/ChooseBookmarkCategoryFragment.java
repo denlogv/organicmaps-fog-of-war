@@ -1,125 +1,148 @@
 package app.organicmaps.bookmarks;
 
-import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.FragmentManager;
 import app.organicmaps.R;
 import app.organicmaps.base.BaseMwmDialogFragment;
 import app.organicmaps.dialog.EditTextDialogFragment;
 import app.organicmaps.sdk.bookmarks.data.BookmarkCategory;
 import app.organicmaps.sdk.bookmarks.data.BookmarkManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ChooseBookmarkCategoryFragment
-    extends BaseMwmDialogFragment implements ChooseBookmarkCategoryAdapter.CategoryListener
+public class ChooseBookmarkCategoryFragment extends BaseMwmDialogFragment
 {
-  public static final String CATEGORY_POSITION = "ExtraCategoryPosition";
+  public static final String CATEGORY_ID = "ExtraCategoryId";
+  public static final String RESULT_CATEGORY_ID = "CategoryId";
+  private static final String REQUEST_KEY = "RequestKey";
+  private static final String RESULT_TARGET = "ResultTarget";
 
-  private ChooseBookmarkCategoryAdapter mAdapter;
-  private RecyclerView mRecycler;
+  public static void showForResult(@NonNull FragmentManager manager, long categoryId, @NonNull String requestKey,
+                                   @NonNull Bundle target)
+  {
+    final Bundle args = new Bundle();
+    args.putLong(CATEGORY_ID, categoryId);
+    args.putString(REQUEST_KEY, requestKey);
+    args.putBundle(RESULT_TARGET, target);
+    final ChooseBookmarkCategoryFragment fragment = new ChooseBookmarkCategoryFragment();
+    fragment.setArguments(args);
+    fragment.show(manager, null);
+  }
 
   public interface Listener
   {
     void onCategoryChanged(@NonNull BookmarkCategory newCategory);
   }
-  private Listener mListener;
 
   @Override
-  protected int getStyle()
+  public void onCreate(@Nullable Bundle savedInstanceState)
   {
-    return STYLE_NO_TITLE;
-  }
+    super.onCreate(savedInstanceState);
 
-  @Nullable
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-  {
-    View root = inflater.inflate(R.layout.choose_bookmark_category_fragment, container, false);
-    mRecycler = root.findViewById(R.id.recycler);
-    mRecycler.setLayoutManager(new LinearLayoutManager(requireActivity()));
-    return root;
-  }
-
-  @Override
-  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-  {
-    super.onViewCreated(view, savedInstanceState);
-
-    final Bundle args = getArguments();
-    final int catPosition = args != null ? args.getInt(CATEGORY_POSITION, 0) : 0;
-    List<BookmarkCategory> items = BookmarkManager.INSTANCE.getCategories();
-    mAdapter = new ChooseBookmarkCategoryAdapter(requireActivity(), catPosition, items);
-    mAdapter.setListener(this);
-    mRecycler.setAdapter(mAdapter);
-
-    if (mListener == null)
+    // Neither field survives recreation, and restoring only one leaves the empty input unguarded.
+    final EditTextDialogFragment nameDialog =
+        (EditTextDialogFragment) getChildFragmentManager().findFragmentByTag(EditTextDialogFragment.TAG);
+    if (nameDialog != null)
     {
-      final Fragment parent = getParentFragment();
-      final Activity activity = requireActivity();
-      if (parent instanceof Listener)
-        mListener = (Listener) parent;
-      else if (activity instanceof Listener)
-        mListener = (Listener) activity;
+      nameDialog.setTextSaveListener(this::createCategory);
+      nameDialog.setValidator(new CategoryValidator());
     }
   }
 
-  private void createCategory(@NonNull String name)
+  @NonNull
+  @Override
+  public Dialog onCreateDialog(@Nullable Bundle savedInstanceState)
   {
-    BookmarkManager.INSTANCE.createCategory(name);
+    final long checkedId = requireArguments().getLong(CATEGORY_ID);
+    // getCategories() is a live view re-sorted on every change; snapshot it before reordering below.
+    final List<BookmarkCategory> categories = new ArrayList<>(BookmarkManager.INSTANCE.getCategories());
 
-    List<BookmarkCategory> bookmarkCategories = mAdapter.getBookmarkCategories();
-
-    if (bookmarkCategories.isEmpty())
-      throw new AssertionError("BookmarkCategories are empty");
-
-    int categoryPosition = -1;
-
-    for (int i = 0; i < bookmarkCategories.size(); i++)
+    // AlertController scrolls the checked row to the top, hiding every list above it. Keep it first instead.
+    int checkedItem = -1;
+    for (int i = 0; i < categories.size(); i++)
     {
-      if (bookmarkCategories.get(i).getName().equals(name))
+      if (categories.get(i).getId() == checkedId)
       {
-        categoryPosition = i;
+        categories.add(0, categories.remove(i));
+        checkedItem = 0;
         break;
       }
     }
 
-    if (categoryPosition == -1)
-      throw new AssertionError("No selected category in the list");
+    final String[] names = new String[categories.size()];
+    for (int i = 0; i < categories.size(); i++)
+      names[i] = categories.get(i).getName();
 
-    mAdapter.chooseItem(categoryPosition);
+    final AlertDialog dialog =
+        new MaterialAlertDialogBuilder(requireActivity(), R.style.MwmTheme_AlertDialog)
+            .setTitle(R.string.select_list)
+            .setSingleChoiceItems(names, checkedItem, (d, which) -> onCategorySet(categories.get(which)))
+            .setPositiveButton(R.string.add_new_set, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create();
 
-    if (mListener != null)
+    // Must not dismiss: the name dialog lives in this fragment's child FragmentManager.
+    dialog.setOnShowListener(
+        d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> onCategoryCreate()));
+
+    return dialog;
+  }
+
+  @Nullable
+  private Listener getListener()
+  {
+    final Fragment parent = getParentFragment();
+    if (parent instanceof Listener)
+      return (Listener) parent;
+    return getActivity() instanceof Listener ? (Listener) getActivity() : null;
+  }
+
+  private void onCategorySet(@NonNull BookmarkCategory category)
+  {
+    final String requestKey = requireArguments().getString(REQUEST_KEY);
+    if (requestKey != null)
     {
-      BookmarkCategory newCategory = bookmarkCategories.get(categoryPosition);
-      mListener.onCategoryChanged(newCategory);
+      final Bundle target = requireArguments().getBundle(RESULT_TARGET);
+      if (target == null)
+        throw new IllegalStateException("Category result target is missing");
+      final Bundle result = new Bundle(target);
+      result.putLong(RESULT_CATEGORY_ID, category.getId());
+      getParentFragmentManager().setFragmentResult(requestKey, result);
+    }
+    else
+    {
+      final Listener listener = getListener();
+      if (listener != null)
+        listener.onCategoryChanged(category);
     }
     dismiss();
   }
 
-  @Override
-  public void onCategorySet(int categoryPosition)
+  private void createCategory(@NonNull String name)
   {
-    mAdapter.chooseItem(categoryPosition);
-    if (mListener != null)
-    {
-      final BookmarkCategory category = mAdapter.getBookmarkCategories().get(categoryPosition);
-      mListener.onCategoryChanged(category);
-    }
-    dismiss();
+    final long categoryId = BookmarkManager.INSTANCE.createCategory(name);
+    onCategorySet(BookmarkManager.INSTANCE.getCategoryById(categoryId));
   }
 
-  @Override
-  public void onCategoryCreate()
+  private void onCategoryCreate()
   {
-    EditTextDialogFragment dialogFragment = EditTextDialogFragment.show(
-        getString(R.string.bookmark_set_name), null, getString(R.string.ok), null, this, new CategoryValidator());
+    // The picker stays open behind the name dialog, so guard against a second one. show() and
+    // dismiss() commit asynchronously, so flush them before asking.
+    final FragmentManager fm = getChildFragmentManager();
+    fm.executePendingTransactions();
+    if (fm.findFragmentByTag(EditTextDialogFragment.TAG) != null)
+      return;
+
+    EditTextDialogFragment dialogFragment =
+        EditTextDialogFragment.show(getString(R.string.bookmark_set_name), null, "", getString(R.string.ok),
+                                    getString(R.string.cancel), CategoryValidator.MAX_NAME_LENGTH, this);
+    dialogFragment.setValidator(new CategoryValidator());
     dialogFragment.setTextSaveListener(this::createCategory);
   }
 }

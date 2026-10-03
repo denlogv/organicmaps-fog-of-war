@@ -3,6 +3,7 @@ package app.organicmaps.maplayer;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -22,6 +23,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import app.organicmaps.MwmActivity;
 import app.organicmaps.R;
+import app.organicmaps.routing.RoutingPlanViewModel;
 import app.organicmaps.sdk.Framework;
 import app.organicmaps.sdk.downloader.MapManager;
 import app.organicmaps.sdk.downloader.UpdateInfo;
@@ -31,6 +33,7 @@ import app.organicmaps.sdk.maplayer.subway.SubwayManager;
 import app.organicmaps.sdk.maplayer.traffic.TrafficManager;
 import app.organicmaps.sdk.routing.RoutingController;
 import app.organicmaps.sdk.util.Config;
+import app.organicmaps.search.SearchPageViewModel;
 import app.organicmaps.util.ThemeUtils;
 import app.organicmaps.util.UiUtils;
 import app.organicmaps.util.Utils;
@@ -56,7 +59,6 @@ public class MapButtonsController extends Fragment
   private LayersButton mToggleMapLayerButton;
   @Nullable
   FloatingActionButton mTrackRecordingStatusButton;
-
   @Nullable
   private MyPositionButton mNavMyPosition;
   private SearchWheel mSearchWheel;
@@ -68,9 +70,14 @@ public class MapButtonsController extends Fragment
 
   private MapButtonClickListener mMapButtonClickListener;
   private PlacePageViewModel mPlacePageViewModel;
+  private RoutingPlanViewModel mRoutingPlanViewModel;
   private MapButtonsViewModel mMapButtonsViewModel;
+  private SearchPageViewModel mSearchPageViewModel;
 
-  private final Observer<Integer> mPlacePageDistanceToTopObserver = this::move;
+  private final Observer<Integer> mPlacePageDistanceToTopObserver = translationY -> move(translationY, true);
+  private final Observer<Integer> mRoutingBottomDistanceToTopObserver = translationY -> move(translationY, false);
+  private final Observer<Boolean> mBottomButtonHiddenObserver = this::setBottomButtonsHidden;
+  private final Observer<Integer> mSearchPageDistanceToTopObserver = this::moveForSearch;
   private final Observer<Boolean> mButtonHiddenObserver = this::setButtonsHidden;
   private final Observer<Integer> mMyPositionModeObserver = this::updateNavMyPositionButton;
   private final Observer<SearchWheel.SearchOption> mSearchOptionObserver = this::onSearchOptionChange;
@@ -88,13 +95,12 @@ public class MapButtonsController extends Fragment
   {
     final FragmentActivity activity = requireActivity();
     mMapButtonClickListener = (MwmActivity) activity;
+    mRoutingPlanViewModel = new ViewModelProvider(activity).get(RoutingPlanViewModel.class);
     mPlacePageViewModel = new ViewModelProvider(activity).get(PlacePageViewModel.class);
     mMapButtonsViewModel = new ViewModelProvider(activity).get(MapButtonsViewModel.class);
-    final LayoutMode layoutMode = mMapButtonsViewModel.getLayoutMode().getValue();
-    if (layoutMode == LayoutMode.navigation)
+    mSearchPageViewModel = new ViewModelProvider(activity).get(SearchPageViewModel.class);
+    if (mMapButtonsViewModel.getLayoutMode().getValue() == LayoutMode.navigation)
       mFrame = inflater.inflate(R.layout.map_buttons_layout_navigation, container, false);
-    else if (layoutMode == LayoutMode.planning)
-      mFrame = inflater.inflate(R.layout.map_buttons_layout_planning, container, false);
     else
       mFrame = inflater.inflate(R.layout.map_buttons_layout_regular, container, false);
 
@@ -103,27 +109,6 @@ public class MapButtonsController extends Fragment
     mBottomButtonsFrame = mFrame.findViewById(R.id.map_buttons_bottom);
 
     final FloatingActionButton helpButton = mFrame.findViewById(R.id.help_button);
-    if (helpButton != null)
-    {
-      if (Framework.nativeCanShowCrowdfundingPromo() && !TextUtils.isEmpty(Utils.getDonateUrl(requireContext())))
-      {
-        helpButton.setImageResource(R.drawable.ic_crowdfunding);
-        helpButton.getDrawable().setTintList(null);
-      }
-      else if (Config.isNY() && !TextUtils.isEmpty(Utils.getDonateUrl(requireContext())))
-      {
-        helpButton.setImageResource(R.drawable.ic_christmas_tree);
-        helpButton.getDrawable().setTintList(null);
-      }
-      else
-      {
-        helpButton.setImageResource(app.organicmaps.branding.R.drawable.logo);
-        // Keep this button colorful in normal theme.
-        if (!ThemeUtils.isDarkTheme(requireContext()))
-          helpButton.getDrawable().setTintList(null);
-      }
-    }
-
     final View zoomFrame = mFrame.findViewById(R.id.zoom_buttons_container);
     mFrame.findViewById(R.id.nav_zoom_in)
         .setOnClickListener((v) -> mMapButtonClickListener.onMapButtonClick(MapButtons.zoomIn));
@@ -166,10 +151,11 @@ public class MapButtonsController extends Fragment
     if (helpButton != null)
       helpButton.setOnClickListener((v) -> mMapButtonClickListener.onMapButtonClick(MapButtons.help));
 
-    mSearchWheel = new SearchWheel(mFrame,
-                                   (v)
-                                       -> mMapButtonClickListener.onMapButtonClick(MapButtons.search),
-                                   (v) -> mMapButtonClickListener.onSearchCanceled(), mMapButtonsViewModel);
+    mSearchWheel =
+        new SearchWheel(mFrame,
+                        (v)
+                            -> mMapButtonClickListener.onMapButtonClick(MapButtons.search),
+                        (v) -> mMapButtonClickListener.onSearchCanceled(), mMapButtonsViewModel, mSearchPageViewModel);
     final View searchButton = mFrame.findViewById(R.id.btn_search);
 
     // Used to get the maximum height the buttons will evolve in
@@ -191,6 +177,12 @@ public class MapButtonsController extends Fragment
       mButtonsMap.put(MapButtons.trackRecordingStatus, mTrackRecordingStatusButton);
     showButton(false, MapButtons.trackRecordingStatus);
     return mFrame;
+  }
+  // For disabling bottom buttons which are visible in tablets
+  private void setBottomButtonsHidden(boolean hide)
+  {
+    if (mBottomButtonsFrame != null)
+      UiUtils.showIf(!hide, mBottomButtonsFrame);
   }
 
   public void showButton(boolean show, MapButtonsController.MapButtons button)
@@ -300,13 +292,39 @@ public class MapButtonsController extends Fragment
     updateMenuBadge(TrackRecorder.nativeIsTrackRecordingEnabled());
   }
 
+  public void updateHelpButtonIcon()
+  {
+    final View view = mButtonsMap.get(MapButtons.help);
+    if (!(view instanceof FloatingActionButton helpButton))
+      return;
+
+    if (Framework.nativeCanShowCrowdfundingPromo() && !TextUtils.isEmpty(Utils.getDonateUrl(requireContext())))
+    {
+      helpButton.setImageResource(R.drawable.ic_crowdfunding);
+      helpButton.getDrawable().setTintList(null);
+    }
+    else if (Config.isNY() && !TextUtils.isEmpty(Utils.getDonateUrl(requireContext())))
+    {
+      helpButton.setImageResource(R.drawable.ic_christmas_tree);
+      helpButton.getDrawable().setTintList(null);
+    }
+    else
+    {
+      helpButton.setImageResource(app.organicmaps.branding.R.drawable.logo);
+      // Keep this button colorful in normal theme.
+      if (!ThemeUtils.isDarkTheme(requireContext()))
+        helpButton.getDrawable().setTintList(null);
+    }
+  }
+
   public void updateLayerButton()
   {
     if (mToggleMapLayerButton == null)
       return;
     final boolean buttonSelected = TrafficManager.INSTANCE.isEnabled() || IsolinesManager.isEnabled()
                                 || SubwayManager.isEnabled() || Framework.nativeIsOutdoorsLayerEnabled()
-                                || Framework.nativeIsHikingLayerEnabled() || Framework.nativeIsCyclingLayerEnabled();
+                                || Framework.nativeIsHikingLayerEnabled() || Framework.nativeIsCyclingLayerEnabled()
+                                || Framework.nativeIsBackgroundTilesEnabled();
     mToggleMapLayerButton.setHasActiveLayers(buttonSelected);
   }
 
@@ -320,22 +338,43 @@ public class MapButtonsController extends Fragment
     return true;
   }
 
+  private boolean isBehindSearchSheet(View v)
+  {
+    if (mSearchPageViewModel == null)
+      return false;
+    final Integer searchPageWidth = mSearchPageViewModel.getSearchPageWidth().getValue();
+    if (searchPageWidth != null)
+      return !(mContentWidth / 2 > (searchPageWidth.floatValue() / 2.0) + v.getWidth());
+    return true;
+  }
+
   private boolean isMoving(View v)
   {
     return v.getTranslationY() < 0;
   }
 
-  public void move(float translationY)
+  public void move(float translationY, boolean shouldActivate)
+  {
+    if (RoutingController.get().isNavigating() || mContentHeight == 0)
+      return;
+    final boolean pp = Boolean.TRUE.equals(mRoutingPlanViewModel.getIsPlacePageActive().getValue());
+    // don't apply move in landscape
+    if (!shouldActivate == pp || getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+      return;
+    if (mInnerRightButtonsFrame != null)
+      applyMove(mInnerRightButtonsFrame, translationY);
+  }
+
+  private void moveForSearch(float translationY)
   {
     if (mContentHeight == 0)
       return;
 
-    // Move the buttons containers to follow the place page
     if (mInnerRightButtonsFrame != null
-        && (isBehindPlacePage(mInnerRightButtonsFrame) || isMoving(mInnerRightButtonsFrame)))
+        && (isBehindSearchSheet(mInnerRightButtonsFrame) || isMoving(mInnerRightButtonsFrame)))
       applyMove(mInnerRightButtonsFrame, translationY);
     if (mInnerLeftButtonsFrame != null
-        && (isBehindPlacePage(mInnerLeftButtonsFrame) || isMoving(mInnerLeftButtonsFrame)))
+        && (isBehindSearchSheet(mInnerLeftButtonsFrame) || isMoving(mInnerLeftButtonsFrame)))
       applyMove(mInnerLeftButtonsFrame, translationY);
   }
 
@@ -410,40 +449,44 @@ public class MapButtonsController extends Fragment
   }
 
   @Override
+  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+  {
+    super.onViewCreated(view, savedInstanceState);
+    // FragmentStateManager requests insets for the frame before onViewCreated(), but the dispatch
+    // itself only happens on the next layout pass — so a listener attached here still receives it.
+    // Attaching in onResume() is too late: the dispatch has already run and nothing re-requests
+    // insets for an already attached view, leaving the padding at zero.
+    ViewCompat.setOnApplyWindowInsetsListener(
+        view, WindowInsetUtils.PaddingInsetsListener.allSides(WindowInsetsCompat.Type.systemBars()
+                                                              | WindowInsetsCompat.Type.displayCutout()));
+  }
+
+  @Override
   public void onStart()
   {
     super.onStart();
     final var viewLifecycleOwner = getViewLifecycleOwner();
+    mRoutingPlanViewModel.getRoutingBottomDistanceToTop().observe(viewLifecycleOwner,
+                                                                  mRoutingBottomDistanceToTopObserver);
     mPlacePageViewModel.getPlacePageDistanceToTop().observe(viewLifecycleOwner, mPlacePageDistanceToTopObserver);
+    mMapButtonsViewModel.getBottomButtonsHidden().observe(viewLifecycleOwner, mBottomButtonHiddenObserver);
     mMapButtonsViewModel.getButtonsHidden().observe(viewLifecycleOwner, mButtonHiddenObserver);
+    mSearchPageViewModel.getSearchPageDistanceToTop().observe(viewLifecycleOwner, mSearchPageDistanceToTopObserver);
     mMapButtonsViewModel.getMyPositionMode().observe(viewLifecycleOwner, mMyPositionModeObserver);
     mMapButtonsViewModel.getSearchOption().observe(viewLifecycleOwner, mSearchOptionObserver);
     mMapButtonsViewModel.getTrackRecorderState().observe(viewLifecycleOwner, mTrackRecorderObserver);
     mMapButtonsViewModel.getTopButtonsMarginTop().observe(viewLifecycleOwner, mTopButtonMarginObserver);
   }
 
+  @Override
   public void onResume()
   {
     super.onResume();
-    mSearchWheel.onResume();
+    if (mMapButtonsViewModel.getLayoutMode().getValue() == LayoutMode.navigation)
+      mSearchWheel.onResume();
     updateMenuBadge();
     updateLayerButton();
-    final WindowInsetUtils.PaddingInsetsListener insetsListener =
-        new WindowInsetUtils.PaddingInsetsListener.Builder()
-            .setInsetsTypeMask(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout())
-            .setAllSides()
-            .build();
-    ViewCompat.setOnApplyWindowInsetsListener(mFrame, insetsListener);
-    // Fixes insets on older Androids and with a search opened via API on all Androids.
-    if (mFrame.hasWindowFocus())
-      ViewCompat.requestApplyInsets(mFrame);
-  }
-
-  @Override
-  public void onPause()
-  {
-    ViewCompat.setOnApplyWindowInsetsListener(mFrame, null);
-    super.onPause();
+    updateHelpButtonIcon();
   }
 
   @Override
@@ -459,7 +502,7 @@ public class MapButtonsController extends Fragment
 
   public void onSearchOptionChange(@Nullable SearchWheel.SearchOption searchOption)
   {
-    if (searchOption == null)
+    if (searchOption == null && mMapButtonsViewModel.getLayoutMode().getValue() == LayoutMode.navigation)
       mSearchWheel.reset();
   }
 

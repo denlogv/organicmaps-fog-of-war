@@ -15,7 +15,8 @@ check_keys() {
 }
 
 check_screenshots() {
-    if [[ ! -r ../screenshots/ios/en-US/0_APP_IPHONE_65_0.png ]]; then
+    if ! find ../screenshots/ios/en-US \
+             \( -name '*.png' -o -name '*.jpg' \) -print -quit | grep -q .; then
         echo >&2 "Please checkout screenshots to ../screenshots"
         exit 3
     fi
@@ -55,6 +56,7 @@ upload_metadata() {
         --skip_app_version_update=true \
         --skip_screenshots \
         --precheck_include_in_app_purchases=false \
+        --ignore_language_directory_validation=true \
         --automatic_release=false
 }
 
@@ -69,6 +71,7 @@ upload_screenshots() {
         --skip_metadata \
         --sync_screenshots=true \
         --precheck_include_in_app_purchases=false \
+        --ignore_language_directory_validation=true \
         --automatic_release=false
 }
 

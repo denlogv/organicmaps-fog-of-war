@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "آدرس";
+"type.building.construction" = "ساختمان در حال ساخت";
 "type.building.has_parts" = "ساختمان";
 "type.building_part" = "ساختمان";
 "type.building.garage" = "گاراژ";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Mediterranean";
 "type.cuisine.mexican" = "Mexican";
 "type.cuisine.moroccan" = "Moroccan";
-"type.cuisine.noodles" = "Noodles";
+"type.cuisine.noodle" = "Noodles";
 "type.cuisine.oriental" = "East Asian";
 "type.cuisine.pancake" = "Pancake";
 "type.cuisine.pasta" = "Pasta";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "سوسیس";
 "type.cuisine.savory_pancakes" = "Savory Pancakes";
 "type.cuisine.seafood" = "غذای دریایی";
+"type.cuisine.shawarma" = "شاورما";
 "type.cuisine.soba" = "سوبا­­";
 "type.cuisine.spanish" = "اسپانیایی";
 "type.cuisine.steak_house" = "خانه استیک";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "قلعه ژاپنی";
 "type.historic.castle.stately" = "گردشگری";
 "type.historic.city_gate" = "دروازه شهر";
+"type.man_made.ceremonial_gate" = "دروازهٔ تشریفاتی";
 "type.historic.citywalls" = "دیوار شهر";
 "type.historic.fort" = "دژ";
 "type.historic.gallows" = "چوبه دار";
@@ -716,6 +719,7 @@
 "type.landuse" = "Landuse";
 "type.landuse.allotments" = "قسمت ها";
 "type.landuse.basin" = "حوضه آب";
+"type.landuse.basin.intermittent" = "حوضه آب موقت";
 "type.landuse.brownfield" = "توسعه یافته";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Quarry";
 "type.landuse.railway" = "محدوده راه آهن";
 "type.landuse.recreation_ground" = "Recreation Ground";
-"type.landuse.reservoir" = "اب";
 "type.landuse.residential" = "Residential Area";
 "type.landuse.retail" = "Retail Area";
 "type.landuse.salt_pond" = "نمک‌زار";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Ice Rink";
 "type.leisure.marina" = "Marina";
 "type.leisure.nature_reserve" = "Nature Reserve";
+"type.leisure.bird_hide" = "مخفیگاه پرنده‌نگری";
 "type.leisure.outdoor_seating" = "نشستن در فضای باز";
 "type.leisure.firepit" = "Firepit";
 "type.leisure.park" = "پارک";
@@ -788,8 +792,8 @@
 "type.leisure.stadium" = "استادیوم";
 "type.leisure.swimming_pool" = "استخرشنا";
 "type.leisure.swimming_pool.private" = "استخرشنا";
-"type.leisure.track" = "Track";
-"type.leisure.track.area" = "Track";
+"type.leisure.track" = "پیست ورزشی";
+"type.leisure.track.area" = "پیست ورزشی";
 "type.leisure.water_park" = "گردشگری";
 "type.leisure.beach_resort" = "Beach Resort";
 "type.man_made" = "Man Made";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "مخزن";
 "type.natural.water.basin" = "حوضه آب";
 "type.natural.water.river" = "رودخانه";
+"type.natural.water.intermittent" = "پهنه آبی موقت";
 "type.natural.land" = "خشکی";
 "type.natural.meadow" = "چمنزار";
 "type.natural.orchard" = "باغ میوه";
 "type.natural.peak" = "قله";
+"type.natural.hill" = "تپه";
+"type.natural.arch" = "کمان سنگی";
 "type.natural.saddle" = "زین کوه";
 "type.natural.rock" = "سنگ";
 "type.natural.scrub" = "بوته زار";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "ردیف درخت";
 "type.natural.vineyard" = "تاکستان";
 "type.natural.volcano" = "اتشفشان";
+"type.natural.volcano.active" = "آتشفشان فعال";
 "type.natural.water" = "پهنه آبی";
 "type.natural.wetland" = "ناحیه تالابی";
 "type.natural.wetland.bog" = "خلاش";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "ﻦﻤﭼ ﯼﻭﺭ ﯽﮐﺎﻫ";
 "type.sport.badminton" = "ﻥﻮﺘﻨﯿﻣﺪﺑ";
 "type.sport.pelota" = "ﯽﮑﺳﺎﺑ ﯼﺎﺗﻮﻠﭘ";
+"type.sport.boules" = "بولز";
+"type.sport.cycling" = "دوچرخه‌سواری";
+"type.sport.four_square" = "چهار مربع";
+"type.sport.horse_racing" = "اسب‌دوانی";
+"type.sport.karting" = "کارتینگ";
+"type.sport.motocross" = "موتورکراس";
+"type.sport.motor" = "ورزش‌های موتوری";
+"type.sport.netball" = "نتبال";
+"type.sport.pickleball" = "پیکل‌بال";
+"type.sport.rugby_union" = "راگبی ۱۵ نفره";
+"type.sport.running" = "دویدن";
+"type.sport.softball" = "سافت‌بال";
 "type.tourism" = "Tourism";
 "type.tourism.aquarium" = "آکواریوم";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "جاذبه تاریخی";
 "type.attraction.maze" = "ماز";
 "type.attraction.roller_coaster" = "ترن هوایی";
+"type.roller_coaster.track" = "ترن هوایی";
 "type.attraction.water_slide" = "سرسره آبی";
 "type.tourism.attraction.specified" = "گردشگری";
 "type.tourism.camp_site" = "محل چادر زنی";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Traffic Bump";
 "type.traffic_calming.hump" = "Traffic Hump";
 "type.waterway" = "Waterway";
+"type.waterway.access_point" = "نقطه دسترسی به آبراهه";
 "type.waterway.canal" = "کانال اب";
 "type.waterway.canal.tunnel" = "کانال اب";
 "type.waterway.fish_pass" = "نردبان ماهی";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "تسهیلات اجتماعی";
+"type.amenity.stage" = "صحنه";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "ورودی بخش اورژانس";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "ساعت ساز";
 "type.xmas_feature.market" = "بازار کریسمس";
 "type.xmas_feature.tree" = "درخت کریسمس";
+"type.amenity.hookah_lounge" = "قلیان‌سرا";

@@ -6,10 +6,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import app.organicmaps.sdk.routing.RoutePointInfo;
 import app.organicmaps.sdk.util.Distance;
+import java.util.Arrays;
+import java.util.List;
 
 public final class Track extends MapObject
 {
   private final long mId;
+  private final boolean mIsRelationTrack;
   private String mName;
   private final Distance mLength;
   private long mCategoryId;
@@ -19,49 +22,57 @@ public final class Track extends MapObject
   private ElevationInfo mElevationInfo;
   @Nullable
   private TrackStatistics mTrackStatistics;
+  @NonNull
+  private final List<TrackSelectionCandidate> mCandidates;
+  private boolean mVisible;
 
   // Called from JNI.
   @Keep
   @SuppressWarnings("unused")
-  private Track(long id, long categoryId, String name, Distance length, int color)
+  private Track(long id, long categoryId, boolean isRelationTrack, String name, Distance length, int color,
+                boolean visible)
   {
     super(TRACK, name, "", "", "", 0, 0, "", null, OPENING_MODE_PREVIEW_PLUS, "", "",
           RoadWarningMarkType.UNKNOWN.ordinal(), null);
     mId = id;
+    mIsRelationTrack = isRelationTrack;
     mCategoryId = categoryId;
     mName = name;
     mLength = length;
     mColor = color;
+    mCandidates = List.of();
+    mVisible = visible;
   }
 
   // Called from JNI.
   @Keep
   @SuppressWarnings("unused")
-  private Track(long categoryId, long id, String title, @Nullable String secondaryTitle, @Nullable String subtitle,
-                @Nullable String address, @Nullable RoutePointInfo routePointInfo, @OpeningMode int openingMode,
-                @NonNull String wikiArticle, @NonNull String osmDescription, @Nullable String[] rawTypes,
-                @ColorInt int color, Distance length, double lat, double lon)
+  private Track(long categoryId, long id, boolean isRelationTrack, String title, @Nullable String secondaryTitle,
+                @Nullable String subtitle, @Nullable String address, @Nullable RoutePointInfo routePointInfo,
+                @OpeningMode int openingMode, @NonNull String wikiArticle, @NonNull String osmDescription,
+                @Nullable String[] rawTypes, @ColorInt int color, Distance length, double lat, double lon,
+                @Nullable TrackSelectionCandidate[] candidates, boolean visible)
   {
     super(TRACK, title, secondaryTitle, subtitle, address, lat, lon, "", routePointInfo, openingMode, wikiArticle,
           osmDescription, RoadWarningMarkType.UNKNOWN.ordinal(), rawTypes);
     mId = id;
+    mIsRelationTrack = isRelationTrack;
     mCategoryId = categoryId;
     mColor = color;
     mName = title;
     mLength = length;
+    mCandidates = (candidates != null) ? List.copyOf(Arrays.asList(candidates)) : List.of();
+    mVisible = visible;
   }
-
-  /// Temp relation track ID matches BookmarkManager::kTempRelationTrackId (kInvalidTrackId - 1).
-  private static final long TEMP_RELATION_TRACK_ID = -2L;
 
   public long getTrackId()
   {
     return mId;
   }
 
-  public boolean isTempRelationTrack()
+  public boolean isRelationTrack()
   {
-    return mId == TEMP_RELATION_TRACK_ID;
+    return mIsRelationTrack;
   }
 
   public void setCategoryId(long categoryId)
@@ -97,12 +108,31 @@ public final class Track extends MapObject
     nativeChangeColor(mId, mColor);
   }
 
+  public boolean isVisible()
+  {
+    return mVisible;
+  }
+
+  public void setVisibility(boolean visible)
+  {
+    if (mVisible == visible)
+      return;
+    mVisible = visible;
+    BookmarkManager.INSTANCE.setTrackVisibility(mId, mVisible);
+  }
+
+  public void toggleVisibility()
+  {
+    setVisibility(!mVisible);
+  }
+
   public long getCategoryId()
   {
     return mCategoryId;
   }
 
   @NonNull
+  @Override
   public String getDescription()
   {
     return nativeGetDescription(mId);
@@ -125,7 +155,7 @@ public final class Track extends MapObject
   }
 
   @NonNull
-  public ElevationInfo.Point getElevationActivePointCoordinates()
+  public double[] getElevationActivePointCoordinates()
   {
     return nativeGetElevationActivePointCoordinates(mId);
   }
@@ -138,6 +168,17 @@ public final class Track extends MapObject
   public double getElevationActivePointDistance()
   {
     return nativeGetElevationActivePointDistance(mId);
+  }
+
+  @NonNull
+  public List<TrackSelectionCandidate> getCandidates()
+  {
+    return mCandidates;
+  }
+
+  public boolean hasMultipleCandidates()
+  {
+    return mCandidates.size() > 1;
   }
 
   public void update(@NonNull String name, @ColorInt int color, @NonNull String description)
@@ -155,7 +196,7 @@ public final class Track extends MapObject
   @NonNull
   public static native TrackStatistics nativeGetStatistics(long id);
   @NonNull
-  private static native ElevationInfo.Point nativeGetElevationActivePointCoordinates(long trackId);
+  private static native double[] nativeGetElevationActivePointCoordinates(long trackId);
 
   private static native void nativeSetParams(long id, @NonNull String name, @ColorInt int color, @NonNull String descr);
   private static native void nativeChangeColor(long id, @ColorInt int color);

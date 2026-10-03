@@ -6,11 +6,36 @@ set(SRC
   imgui_renderer.hpp
 )
 
-if (${PLATFORM_MAC})
+if (PLATFORM_MAC)
+  # Metal language support. dev_sandbox is its only CMake consumer: iOS compiles
+  # the same libs/shaders/Metal/*.metal via xcode/omim.xcworkspace.
+  list(APPEND CMAKE_MODULE_PATH ${OMIM_ROOT}/3party/CMake-MetalShaderSupport/cmake)
+  include(CheckLanguage)
+  include(MetalShaderSupport)
+
+  # The Metal compiler lives in an on-demand cryptex mount whose path suffix changes on
+  # every remount, so a cached path goes dead. check_language() skips detection while the
+  # variable is set (NOTFOUND included), and enable_language() would reuse the dead path
+  # recorded in the info file, which upstream re-resolves only at an unchanged version.
+  if (NOT EXISTS "${CMAKE_Metal_COMPILER}")
+    unset(CMAKE_Metal_COMPILER CACHE)
+    file(REMOVE "${CMAKE_PLATFORM_INFO_DIR}/CMakeMetalCompiler.cmake")
+  endif()
+  check_language(Metal)
+
+  if (NOT CMAKE_Metal_COMPILER)
+    # The shaders target below would still be generated, but with unexpanded rule
+    # placeholders that fail the build with a cryptic message.
+    message(WARNING "Skipping dev_sandbox: no Metal toolchain."
+                    " Install it with: xcodebuild -downloadComponent MetalToolchain")
+    return()
+  endif()
+  enable_language(Metal)
+
   append(SRC
     main.mm
-    ../iphone/Maps/Classes/MetalContextFactory.h
-    ../iphone/Maps/Classes/MetalContextFactory.mm
+    ../iphone/Maps/Core/MapRendering/MetalContextFactory.h
+    ../iphone/Maps/Core/MapRendering/MetalContextFactory.mm
   )
 
   file(GLOB_RECURSE SHADER_SOURCES_FILES ${OMIM_ROOT}/libs/shaders/Metal/*.metal)
@@ -52,13 +77,17 @@ if (Vulkan_FOUND)
   target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 endif()
 
-if(PLATFORM_MAC)
-  target_embed_metal_shader_libraries(${PROJECT_NAME} shaders_metal)
-endif()
-
 target_compile_definitions(${PROJECT_NAME} PUBLIC GL_SILENCE_DEPRECATION)
 if (PLATFORM_MAC)
+  target_embed_metal_shader_libraries(${PROJECT_NAME} shaders_metal)
   set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES)
+  # Xcode's multi-config generator puts the .app under $(CONFIGURATION)/ by default,
+  # while copy_resources() writes directly to ${CMAKE_BINARY_DIR}/${BUNDLE_NAME}.app.
+  # Force Xcode to drop the per-config subdir so resources end up in the running bundle.
+  if (CMAKE_GENERATOR STREQUAL "Xcode")
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+      XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "${CMAKE_BINARY_DIR}")
+  endif()
 endif()
 
 target_compile_definitions(${PROJECT_NAME}
@@ -83,38 +112,36 @@ set(RESOURCES_FOLDER ${BUNDLE_FOLDER}/Contents/Resources)
 set(DATA_DIR ${OMIM_ROOT}/data)
 
 function(copy_resources)
-  execute_process(COMMAND mkdir -p ${RESOURCES_FOLDER})
   foreach(file ${ARGN})
-    execute_process(
-      COMMAND cp -r ${DATA_DIR}/${file} ${RESOURCES_FOLDER}
-    )
+    file(COPY ${DATA_DIR}/${file} DESTINATION ${RESOURCES_FOLDER})
   endforeach()
 endfunction()
 
-copy_resources(
-  fonts
-  symbols
-  countries-strings
-  vulkan_shaders
+# The bundle resources are only read on macOS, the other platforms resolve the data directory at run time.
+if (PLATFORM_MAC)
+  copy_resources(
+    fonts
+    symbols
+    countries-strings
+    vulkan_shaders
 
-  categories.txt
-  categories_cuisines.txt
-  classificator.txt
-  colors.txt
-  countries.txt
-  drules_proto_default_light.bin
-  drules_proto_default_dark.bin
-  drules_proto_vehicle_light.bin
-  drules_proto_vehicle_dark.bin
-  editor.config
-  packed_polygons.bin
-  patterns.txt
-  transit_colors.txt
-  types.txt
-  World.mwm
-  WorldCoasts.mwm
-)
-
-if (NOT WITH_SYSTEM_PROVIDED_3PARTY)
-  copy_resources(icudt78l.dat)
+    categories.txt
+    categories_cuisines.txt
+    classificator.txt
+    colors.txt
+    countries.json
+    drules_default.bin
+    drules_outdoors.bin
+    drules_vehicle.bin
+    editor.config
+    packed_polygons.bin
+    patterns.txt
+    transit_colors.txt
+    types.txt
+    World.mwm
+    WorldCoasts.mwm
+  )
+  if (NOT WITH_SYSTEM_PROVIDED_3PARTY)
+    copy_resources(icudt78l.dat)
+  endif()
 endif()

@@ -95,13 +95,6 @@ using namespace osmoh;
   return [self.sections[section] cellKeyForRow:indexPath.row];
 }
 
-- (CGFloat)heightForIndexPath:(NSIndexPath * _Nonnull)indexPath withWidth:(CGFloat)width
-{
-  NSUInteger const section = indexPath.section;
-  NSAssert(section < self.count, @"Invalid section index");
-  return [self.sections[section] heightForRow:indexPath.row withWidth:width];
-}
-
 - (void)fillCell:(MWMOpeningHoursTableViewCell * _Nonnull)cell atIndexPath:(NSIndexPath * _Nonnull)indexPath
 {
   NSUInteger const section = indexPath.section;
@@ -156,7 +149,10 @@ using namespace osmoh;
 
 - (BOOL)isValid
 {
-  return osmoh::OpeningHours(self.delegate.openingHours.UTF8String).IsValid();
+  // An empty string is how the user deletes the tag; it is not a valid
+  // opening_hours value, so check it before parsing or Done stays disabled.
+  NSString * const openingHours = self.delegate.openingHours;
+  return !openingHours.length || osmoh::OpeningHours(openingHours.UTF8String).IsValid();
 }
 
 - (void)setIsSimpleMode:(BOOL)isSimpleMode

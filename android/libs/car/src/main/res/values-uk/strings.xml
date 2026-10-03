@@ -12,7 +12,7 @@
     <string name="country_status_download_failed">Помилка завантаження</string>
     <string name="close">Закрити</string>
     <string name="download">Завантажити</string>
-    <string name="download_resources">Перш ніж почати користуватися додатком, завантажте оглядову карту світу на свій пристрій.\nВона використовуватиме %s пам’яті.</string>
+    <string name="download_resources">Перш ніж почати користуватися додатком, завантажте оглядову мапу світу на свій пристрій.\nВона використовуватиме %s пам’яті.</string>
     <!-- Should be used in the bookmarks-only context, see bookmarks_and_tracks if tracks are also implied. -->
     <string name="bookmarks">Мітки</string>
     <!-- Settings button in system menu -->
@@ -47,6 +47,8 @@
     <string name="auto">Автоматично</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">Будівлі у 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Не доступні</string>
     <!-- Text in menu -->
     <string name="help">Допомога</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Відчинено</string>
     <string name="twentyfour_seven">Цілодобово</string>
     <string name="day_off_today">Сьогодні не працює</string>
+    <string name="midnight">Північ</string>
+    <string name="noon">Полудень</string>
     <string name="opens_in">Відкривається через %s</string>
     <string name="closes_in">Зачиняється через %s</string>
     <string name="closed">Зачинено</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Уникати поромів</string>
     <string name="avoid_motorways">Уникати автострад</string>
     <string name="unable_to_calc_alert_title">Неможливо побудувати маршрут</string>
+    <string name="trip_finished">Ви прибули!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Сортувати мітки</string>
     <!-- Android -->

@@ -39,8 +39,7 @@ void ShapeTestFixture::Render(char const * title, uint32_t width, uint32_t heigh
 {
   RunTestInOpenGLOffscreenEnvironment(title, [&]()
   {
-    if (!Init(width, height))
-      return;
+    Init(width, height);
 
     createShapes(*this);
 
@@ -67,18 +66,12 @@ void ShapeTestFixture::ReleaseGLResources()
   m_texMng.reset();
   m_progMng.reset();
 
-  if (m_fbo != 0)
-  {
-    glDeleteFramebuffers(1, &m_fbo);
-    glDeleteRenderbuffers(1, &m_colorRbo);
-    glDeleteRenderbuffers(1, &m_depthRbo);
-    m_fbo = 0;
-  }
+  m_framebuffer.reset();
 
   m_context.reset();
 }
 
-bool ShapeTestFixture::Init(uint32_t width, uint32_t height)
+void ShapeTestFixture::Init(uint32_t width, uint32_t height)
 {
   m_width = width;
   m_height = height;
@@ -92,31 +85,20 @@ bool ShapeTestFixture::Init(uint32_t width, uint32_t height)
   m_context = std::move(ctx);
   auto const contextRef = make_ref(m_context);
 
-  // Create FBO for offscreen rendering.
-  glGenFramebuffers(1, &m_fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-  glGenRenderbuffers(1, &m_colorRbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, m_colorRbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_colorRbo);
-
-  glGenRenderbuffers(1, &m_depthRbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, m_depthRbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthRbo);
-
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-  {
-    LOG(LWARNING, ("FBO incomplete, skipping visual test"));
-    return false;
-  }
+  // Offscreen render target: the same RGBA8 color plus depth framebuffer FrontendRenderer draws into.
+  m_framebuffer =
+      make_unique_dp<dp::Framebuffer>(dp::TextureFormat::RGBA8, true /* depthEnabled */, false /* stencilEnabled */);
+  m_framebuffer->SetSize(contextRef, width, height);
+  CHECK(m_framebuffer->IsSupported(), ("RGBA8 + depth FBO is incomplete"));
 
   m_context->SetViewport(0, 0, width, height);
   m_context->SetDepthTestEnabled(true);
   m_context->SetCullingEnabled(false);
-  m_context->SetClearColor(dp::Color::White());
-  m_context->Clear(dp::ClearBits::ColorBit | dp::ClearBits::DepthBit, 0);
+
+  // Global GL state, applied once per context by FrontendRenderer::OnContextCreate. Without it GL keeps
+  // its default (GL_ONE, GL_ZERO) and every fragment overwrites the target, so shapes would be validated
+  // against raw fragment output instead of what actually reaches the screen.
+  dp::AlphaBlendingState::Apply(contextRef);
 
   // Initialize ProgramManager (compiles all shaders).
   m_progMng = std::make_unique<gpu::ProgramManager>();
@@ -143,8 +125,6 @@ bool ShapeTestFixture::Init(uint32_t width, uint32_t height)
   m_batcher = std::make_unique<dp::Batcher>(kBatchSize, kBatchSize);
   m_batcher->StartSession([this](dp::RenderState const & state, drape_ptr<dp::RenderBucket> && bucket)
   { m_buckets.push_back({state, std::move(bucket)}); });
-
-  return true;
 }
 
 void ShapeTestFixture::AddShape(drape_ptr<MapShape> && shape)
@@ -166,7 +146,7 @@ void ShapeTestFixture::Render()
 {
   auto const contextRef = make_ref(m_context);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+  m_framebuffer->Bind();
   m_context->SetClearColor(dp::Color::White());
   m_context->Clear(dp::ClearBits::ColorBit | dp::ClearBits::DepthBit, 0);
 

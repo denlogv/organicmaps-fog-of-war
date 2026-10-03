@@ -1,6 +1,5 @@
 package app.organicmaps.sdk;
 
-import android.graphics.Bitmap;
 import androidx.annotation.IntDef;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -22,7 +21,8 @@ import app.organicmaps.sdk.routing.RoutingProgressListener;
 import app.organicmaps.sdk.routing.RoutingRecommendationListener;
 import app.organicmaps.sdk.routing.TransitRouteInfo;
 import app.organicmaps.sdk.settings.SpeedCameraMode;
-import app.organicmaps.sdk.util.Constants;
+import app.organicmaps.sdk.widget.placepage.CoordinatesFormatEntry;
+import app.organicmaps.sdk.widget.placepage.RouteInfo;
 import dalvik.annotation.optimization.FastNative;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -56,44 +56,30 @@ public class Framework
     public boolean buildings;
   }
 
-  // Used by JNI.
-  @Keep
-  @SuppressWarnings("unused")
-  public static class RouteAltitudeLimits
-  {
-    public int totalAscent;
-    public int totalDescent;
-    public String totalAscentString;
-    public String totalDescentString;
-    public boolean isMetricUnits;
-  }
-
   // this class is just bridge between Java and C++ worlds, we must not create it
   private Framework() {}
 
-  public static String getHttpGe0Url(double lat, double lon, double zoomLevel, String name)
+  // The plain body, HTML body and subject basis produced by the core share::Build. Used by JNI.
+  @Keep
+  @SuppressWarnings("unused")
+  public static final class ShareData
   {
-    return nativeGetGe0Url(lat, lon, zoomLevel, name)
-        .replaceFirst(Constants.Url.SHORT_SHARE_PREFIX, Constants.Url.HTTP_SHARE_PREFIX);
-  }
+    @NonNull
+    public final String mText;
+    @NonNull
+    public final String mHtml;
+    /// Place name, else address, else empty. Platforms build the localized email subject from it.
+    @NonNull
+    public final String mSubjectBasis;
+    public final boolean mIsMyPosition;
 
-  /**
-   * Generates Bitmap with route altitude image chart taking into account current map style.
-   * @param width is width of the image.
-   * @param height is height of the image.
-   * @return Bitmap if there's pedestrian or bicycle route and null otherwise.
-   */
-  @Nullable
-  public static Bitmap generateRouteAltitudeChart(int width, int height, @NonNull RouteAltitudeLimits limits)
-  {
-    if (width <= 0 || height <= 0)
-      return null;
-
-    final int[] altitudeChartBits = Framework.nativeGenerateRouteAltitudeChartBits(width, height, limits);
-    if (altitudeChartBits == null)
-      return null;
-
-    return Bitmap.createBitmap(altitudeChartBits, width, height, Bitmap.Config.ARGB_8888);
+    private ShareData(@NonNull String text, @NonNull String html, @NonNull String subjectBasis, boolean isMyPosition)
+    {
+      mText = text;
+      mHtml = html;
+      mSubjectBasis = subjectBasis;
+      mIsMyPosition = isMyPosition;
+    }
   }
 
   public static void setSpeedCamerasMode(@NonNull SpeedCameraMode mode)
@@ -119,14 +105,34 @@ public class Framework
                                                                                double srcLat, double srcLon,
                                                                                double north);
 
-  public static native String nativeFormatLatLon(double lat, double lon, int coordFormat);
+  // Stable id of place_page::CoordinatesFormat::LatLonDecimal - the always-available default format.
+  // Keep in sync with the C++ enum in libs/map/place_page_info.hpp.
+  public static final int COORDINATES_FORMAT_DECIMAL = 1;
+
+  // Bare coordinate value ("SW 7400 4210") for the given stable format id (see place_page::CoordinatesFormat).
+  // Returns null if the format is unavailable at this location; used for the route point titles (decimal).
+  public static native String nativeFormatLatLon(double lat, double lon, int formatId);
+
+  // The formats available at this location, in display order, each with its labelled display string and
+  // bare value. Resolves the region once, so the place page renders, cycles and copies from a single
+  // call. Never empty: the decimal formats apply everywhere.
+  @NonNull
+  @Size(min = 1)
+  public static native CoordinatesFormatEntry[] nativeGetCoordinateFormats(double lat, double lon);
 
   public static native String nativeFormatAltitude(double alt);
 
   public static native String nativeFormatSpeed(double speed);
 
-  public static native String nativeGetGe0Url(double lat, double lon, double zoomLevel, String name);
   public static native String nativeGetGeoUri(double lat, double lon, double zoomLevel, String name);
+
+  // Built by the core share::Build. Requires an open place page.
+  @NonNull
+  public static native ShareData nativeGetShareData();
+  @NonNull
+  public static native ShareData nativeGetShareDataForMyPosition(double lat, double lon);
+  @NonNull
+  public static native ShareData nativeGetShareDataForBookmark(long bookmarkId);
 
   public static native String nativeGetAddress(double lat, double lon);
 
@@ -170,6 +176,19 @@ public class Framework
   @NonNull
   public static native @RequestType int nativeParseAndSetApiUrl(String url);
   public static native ParsedRoutingData nativeGetParsedRoutingData();
+
+  // Custom raster background tiles (Settings -> Background Map tiles).
+  public static native void nativeSetBackgroundTiles(boolean enabled, @NonNull String url, int cacheSizeMB,
+                                                     int areaOpacityPct);
+  // Flips only the on/off flag, keeping the configured URL / cache size / area opacity.
+  public static native void nativeSetBackgroundTilesEnabled(boolean enabled);
+  @NonNull
+  public static native String nativeGetBackgroundTilesUrl();
+  // Basic check: http(s):// scheme + host + literal {z}/{x}/{y} placeholders.
+  public static native boolean nativeIsWellFormedBackgroundTilesUrl(@NonNull String url);
+  public static native int nativeGetBackgroundTilesCacheSizeMB();
+  public static native boolean nativeIsBackgroundTilesEnabled();
+  public static native int nativeGetBackgroundTilesAreaOpacity();
   public static native ParsedSearchRequest nativeGetParsedSearchRequest();
   public static native @Nullable String nativeGetParsedAppName();
   public static native @Nullable String nativeGetParsedOAuth2Code();
@@ -178,7 +197,8 @@ public class Framework
   public static native double[] nativeGetParsedCenterLatLon();
   public static native @Nullable String nativeGetParsedBackUrl();
 
-  public static native void nativeDeactivatePopup();
+  /// @return true if a transit route selection was recovered.
+  public static native boolean nativeDeactivatePopup();
   public static native void nativeDeactivateMapSelectionCircle(boolean restoreViewport);
 
   public static native String nativeGetDataFileExt();
@@ -221,8 +241,11 @@ public class Framework
   public static native JunctionInfo[] nativeGetRouteJunctionPoints(double maxDistM);
 
   @Nullable
-  public static native final int[] nativeGenerateRouteAltitudeChartBits(int width, int height,
-                                                                        RouteAltitudeLimits routeAltitudeLimits);
+  public static native app.organicmaps.sdk.routing.RouteAltitudeData nativeGetRouteAltitudeData();
+
+  public static native void nativeRouteSetElevationActivePoint(double distanceMeters);
+
+  public static native void nativeRouteRemoveElevationActivePoint();
 
   // When an end user is going to a turn he gets sound turn instructions.
   // If C++ part wants the client to pronounce an instruction nativeGenerateTurnNotifications returns
@@ -245,20 +268,28 @@ public class Framework
 
   public static native void nativeShowCountry(String countryId, boolean zoomToDownloadButton);
 
-  public static void addRoutePoint(RouteMarkData point)
+  public static boolean addRoutePoint(RouteMarkData point, boolean allowOptimization)
   {
-    addRoutePoint(point, true);
+    return Framework.nativeAddRoutePoint(point.mTitle, point.mSubtitle, point.mPointType, point.mIsMyPosition,
+                                         point.mLat, point.mLon, allowOptimization);
   }
 
-  public static void addRoutePoint(RouteMarkData point, boolean reorderIntermediatePoints)
-  {
-    Framework.nativeAddRoutePoint(point.mTitle, point.mSubtitle, point.mPointType, point.mIntermediateIndex,
-                                  point.mIsMyPosition, point.mLat, point.mLon, reorderIntermediatePoints);
-  }
+  public static native boolean nativeAddRoutePoint(String title, String subtitle, @NonNull RouteMarkType markType,
+                                                   boolean isMyPosition, double lat, double lon,
+                                                   boolean allowOptimization);
 
-  public static native void nativeAddRoutePoint(String title, String subtitle, @NonNull RouteMarkType markType,
-                                                int intermediateIndex, boolean isMyPosition, double lat, double lon,
-                                                boolean reorderIntermediatePoints);
+  public static native void nativeReplaceRoutePoint(String title, String subtitle, @NonNull RouteMarkType markType,
+                                                    int intermediateIndex, boolean isMyPosition, double lat,
+                                                    double lon);
+
+  /**
+   * Appends the point to the end of the route: the current finish becomes the last intermediate point and
+   * the given point becomes the new finish.
+   *
+   * @return {@code false} if the route has no finish point or the route points limit is reached.
+   */
+  public static native boolean nativeContinueRouteToPoint(String title, String subtitle, boolean isMyPosition,
+                                                          double lat, double lon);
 
   public static native void nativeRemoveRoutePoints();
 
@@ -266,7 +297,13 @@ public class Framework
 
   public static native void nativeRemoveIntermediateRoutePoints();
 
+  public static native boolean nativeOptimizeRoutePoints();
+
   public static native boolean nativeCouldAddIntermediatePoint();
+
+  /** Checks the mark limit even when a route build has failed and routing is inactive. */
+  public static native boolean nativeIsRoutePointsLimitReached();
+
   @NonNull
   public static native RouteMarkData[] nativeGetRoutePoints();
 
@@ -356,7 +393,15 @@ public class Framework
 
   public static native String nativeGetActiveObjectFormattedCuisine();
 
-  public static native String nativeGetActiveObjectFormattedRouteRefs();
+  @Nullable
+  public static native RouteInfo[] nativeGetActiveObjectRoutes();
+
+  public static native void nativeShowRouteTransit(int relId);
+
+  public static native void nativeSelectTrackCandidate(int candidateIndex);
+
+  @Nullable
+  public static native String nativeGetActiveTransitRouteRef();
 
   public static native void nativeSetVisibleRect(int left, int top, int right, int bottom);
 

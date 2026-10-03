@@ -1,9 +1,16 @@
 #import "MWMRoutePoint.h"
 #import "MWMRouterType.h"
 
-typedef NS_ENUM(NSInteger, MWMRoadType) { MWMRoadTypeToll, MWMRoadTypeDirty, MWMRoadTypeFerry, MWMRoadTypeMotorway };
+@class RouteElevationPreviewData;
 
-typedef void (^MWMImageHeightBlock)(UIImage *, NSString *, NSString *);
+typedef NS_ENUM(NSInteger, MWMRoadType) {
+  MWMRoadTypeToll,
+  MWMRoadTypeDirty,
+  MWMRoadTypeFerry,
+  MWMRoadTypeMotorway
+};
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface MWMRouter : NSObject
 
@@ -19,14 +26,15 @@ typedef void (^MWMImageHeightBlock)(UIImage *, NSString *, NSString *);
 + (BOOL)isSpeedCamLimitExceeded;
 
 + (BOOL)canAddIntermediatePoint;
++ (BOOL)isRoutePointsLimitReached;
 
 + (void)startRouting;
 + (void)stopRouting;
 
 + (NSArray<MWMRoutePoint *> *)points;
 + (NSInteger)pointsCount;
-+ (MWMRoutePoint *)startPoint;
-+ (MWMRoutePoint *)finishPoint;
++ (nullable MWMRoutePoint *)startPoint;
++ (nullable MWMRoutePoint *)finishPoint;
 
 + (void)enableAutoAddLastLocation:(BOOL)enable;
 
@@ -60,7 +68,10 @@ typedef void (^MWMImageHeightBlock)(UIImage *, NSString *, NSString *);
 + (void)rebuildWithBestRouter:(BOOL)bestRouter;
 
 + (BOOL)hasRouteAltitude;
-+ (void)routeAltitudeImageForSize:(CGSize)size completion:(MWMImageHeightBlock)block;
++ (void)saveRouteAsTrack;
++ (nullable RouteElevationPreviewData *)routeElevationProfileData;
++ (void)setRouteElevationActivePointDistance:(double)distance;
++ (void)resetRouteElevationActivePoint;
 
 + (void)saveRouteIfNeeded;
 + (void)restoreRouteIfNeeded;
@@ -70,6 +81,7 @@ typedef void (^MWMImageHeightBlock)(UIImage *, NSString *, NSString *);
 + (void)updateRoute;
 + (BOOL)hasActiveDrivingOptions;
 + (void)avoidRoadTypeAndRebuild:(MWMRoadType)type;
++ (void)optimizeRoutePointsAndRebuild;
 + (void)showNavigationMapControls;
 + (void)hideNavigationMapControls;
 
@@ -90,3 +102,5 @@ typedef void (^MWMImageHeightBlock)(UIImage *, NSString *, NSString *);
 + (void)updatePreviewMode;
 
 @end
+
+NS_ASSUME_NONNULL_END

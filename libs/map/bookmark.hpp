@@ -7,6 +7,9 @@
 
 #include "search/reverse_geocoder.hpp"
 
+#include "drape/color.hpp"
+
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -25,9 +28,6 @@ public:
   search::ReverseGeocoder::RegionAddress const & GetAddress() const;
   void SetAddress(search::ReverseGeocoder::RegionAddress const & address);
 
-  bool IsVisible() const override { return m_isVisible; }
-  void SetIsVisible(bool isVisible);
-
   bool HasCreationAnimation() const override;
 
   std::string GetPreferredName() const;
@@ -36,12 +36,18 @@ public:
   void SetName(kml::LocalizableString const & name);
   void SetName(std::string const & name, int8_t langCode);
 
-  std::string GetCustomName() const;
   void SetCustomName(std::string const & customName);
 
+  // Returns the preset color, or None for a custom-colored bookmark. A bookmark is a preset only for
+  // imported or legacy data (e.g. a KML/GeoJSON named color, or a new bookmark seeded from the
+  // last-edited / default color); the runtime pickers always store a custom color via SetColor().
   kml::PredefinedColor GetColor() const;
-  void InvalidateRGBAColor();
-  void SetColor(kml::PredefinedColor color);
+  // Sets an arbitrary custom color (forced opaque, clears the preset). Mirrors Track::SetColor.
+  void SetColor(dp::Color color);
+  // Explicit custom color, or nullopt for preset bookmarks (which resolve via GetColorConstant()).
+  std::optional<dp::Color> GetCustomColor() const override;
+  // Effective color used for rendering: the custom color if set, else the resolved preset color.
+  dp::Color GetColorForRendering() const;
 
   m2::RectD GetViewport() const;
 
@@ -70,18 +76,13 @@ public:
   bool CanFillPlacePageMetadata() const;
 
   void Attach(kml::MarkGroupId groupId);
-  void AttachCompilation(kml::MarkGroupId groupId);
   void Detach();
-
-  kml::GroupIdCollection const & GetCompilations() const { return m_compilationIds; }
 
 private:
   drape_ptr<df::UserPointMark::SymbolNameZoomInfo> GetCustomSymbolNames() const;
 
   kml::BookmarkData m_data;
   kml::MarkGroupId m_groupId;
-  kml::GroupIdCollection m_compilationIds;
-  bool m_isVisible = true;
   search::ReverseGeocoder::RegionAddress m_address;
 };
 
@@ -93,11 +94,7 @@ public:
   BookmarkCategory(std::string const & name, kml::MarkGroupId groupId, bool autoSave);
   BookmarkCategory(kml::CategoryData && data, bool autoSave);
 
-  static kml::PredefinedColor GetDefaultColor();
-
   kml::MarkGroupId GetID() const { return m_data.m_id; }
-  kml::MarkGroupId GetParentID() const { return m_parentId; }
-  void SetParentId(kml::MarkGroupId parentId) { m_parentId = parentId; }
 
   void SetIsVisible(bool isVisible) override;
   void SetName(std::string const & name);
@@ -111,12 +108,6 @@ public:
 
   kml::CategoryData const & GetCategoryData() const { return m_data; }
 
-  void SetServerId(std::string const & serverId);
-  std::string const & GetServerId() const { return m_serverId; }
-
-  bool HasElevationProfile() const;
-
-  void SetAuthor(std::string const & name, std::string const & id);
   void SetAccessRules(kml::AccessRules accessRules);
   void SetTags(std::vector<std::string> const & tags);
   void SetCustomProperty(std::string const & key, std::string const & value);
@@ -133,6 +124,4 @@ private:
   std::string m_file;
   bool m_autoSave = true;
   kml::CategoryData m_data;
-  std::string m_serverId;
-  kml::MarkGroupId m_parentId = kml::kInvalidMarkGroupId;
 };

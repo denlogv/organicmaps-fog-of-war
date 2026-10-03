@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Turismoa";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Entretenimendua";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Birziklapena";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Ura";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Zure kokapena ez da oraindik zehaztu";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Begiratu nire markagailua Organic Maps-en!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Hemen nago Organic Maps-en";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Ikusi nire uneko kokapena Organic Maps mapan!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ Organic Maps-en";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Leku bat Organic Maps-en";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Ireki Organic Maps-en edo arakatzailean";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Eskuratu Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Ireki beste aplikazio batean";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "Posta elektronikoa";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Luzera";
 "share_my_location" = "Partekatu nire kokapena";
+"prefs_group_network" = "Sarea";
 "prefs_group_route" = "Nabigazioa";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D eraikinak desgaituta daude energia aurrezteko moduan";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Satelite-irudiak";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "Zerbitzariaren URLa";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Sartu {z}/{x}/{y} duen baliozko URL bat";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Cache-tamaina (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Azalera-objektuen opakutasuna";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Lauza-iturri pertsonalizatuak zuk hornitzen dituzu. Erabili soilik sarbidea baimenduta duzun zerbitzuak. Zu zara egiletza-aitortzaren, lizentzia-baldintzen, API gakoen, kuoten eta erabilera-mugen arduraduna.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Ahots argibideak";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Ahots hizkuntza";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Probatu ahots bidezko jarraibideak (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Kalitate handiagoko ahotsa deskargatzeko, ireki Ezarpenak aplikazioa eta joan Irisgarritasuna → VoiceOver → Ahotsa → Ahotsa.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Zoom automatikoa";
 "placepage_distance" = "Distantzia";
 "search_show_on_map" = "Ikusi mapan";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Iluna";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Beste batzuk";
-
 /* Tex label above the Donate button */
 "donate_description" = "Oparitu doako mapak iragarkirik gabe milioika erabiltzaileri!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Errore bat mezua bidaltzean";
-
-/* Settings item title */
-"pref_calibration_title" = "Iparrorratzaren kalibrazioa";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Eskuragarria";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "Gaur atseden eguna";
 "day_off" = "Itxita";
+"midnight" = "Gauerdia";
+"noon" = "Eguerdia";
 "today" = "Gaur";
 "opens_in" = "%@ barru irekiko da";
 "closes_in" = "%@ barru itxiko da";
@@ -571,9 +607,6 @@
 "day" = "e";
 "second" = "s";
 "placepage_more_button" = "Gehiago";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Editatu markagailua";
 "placepage_personal_notes_hint" = "Ohar pertsonalak (testua edo html)";
 "editor_comment_hint" = "Iruzkina…";
 "editor_reset_edits_message" = "Tokiko aldaketa guztiak berrezarri nahi dituzu?";
@@ -621,7 +654,9 @@
 "planning_route_manage_route" = "Kudeatu ibilbidea";
 "button_plan" = "Planifikatu";
 "placepage_remove_stop" = "Kendu geltokia";
-"placepage_add_stop" = "Gehitu geltokia";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "Gehitu geldialdia";
 "saved" = "Gordeta";
 "error_enter_correct_name" = "Mesedez, idatzi baliozko izen bat";
 "bookmark_lists" = "Zerrendak";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Izen hau dagoeneko hartua da";
 "profile" = "OpenStreetMap profila";
 "restore" = "Berreskuratu";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Pribatutasuna";
 "privacy_policy" = "Pribatutasun politika";
 "terms_of_use" = "Erabilera baldintzak";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Txirrindularitza";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satelitea";
 "button_layer_subway" = "Metroa";
 "layers_title" = "Maparen estiloak eta geruzak";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "Aukera hau diagnostiko helburua duten erregistro ekintzetarako gaituta dago. Honek gure taldeari aplikazioarekin arazoak identifikatzen laguntzen dio. Gaitu aukera Organic Maps laguntzari eskatuta soilik.";
 "driving_options_title" = "Bideratzeko aukerak";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Ibilbidearen optimizazioa";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Tarteko geldialdiak automatikoki berrantolatzen ditu ibilbide eraginkorragoa sortzeko.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Bidesariak saihestea";
 
@@ -707,6 +754,15 @@
 "toll_road" = "Ordainpeko errepidea";
 "unpaved_road" = "Asfaltatu gabeko errepidea";
 "ferry_crossing" = "Ferry zeharkaldia";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Eskailerak";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Ate";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Hesia";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Bai";
@@ -776,7 +832,7 @@
 "migration_no_space_message" = "Leku gehiago behar duzu deskargatzeko. Ezabatu beharrezkoak ez diren datuak.";
 "editor_sharing_title" = "Organic Maps mapak hobetu ditut";
 "editor_detailed_description_hint" = "Iruzkin zehatza";
-"editor_detailed_description" = "Iradoki dituzun aldaketak OpenStreetMap komunitatean argitaratuko dira. Deskribatu mapa organikoetan editatu ezin diren xehetasunak.";
+"editor_detailed_description" = "Zure proposatutako mapen aldaketak OpenStreetMap komunitateari bidaliko zaizkio. Mesedez, azaldu Organic Maps-en editatu ezin diren bestelako xehetasun guztiak.";
 "current_location_unknown_error_message" = "Errore bat gertatu da zure kokapena bilatzean. Egiaztatu gailua behar bezala dabilela eta saiatu berriro geroago.";
 "location_services_disabled_header" = "Kokapen zerbitzuak desaktibatuta daude";
 "location_services_disabled_message" = "Aktibatu geokokapenerako sarbidea gailuaren ezarpenetan";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Hautatu Kokapen zerbitzuak";
 "location_services_disabled_on_device_4" = "4. Aktibatu Kokapen Zerbitzuak";
 "location_services_disabled_on_device_additional_message" = "Edo jarraitu kokapenik gabeko Organic Maps erabiltzen";
-"book_button" = "Erreserba";
 "placepage_call_button" = "Deitu";
 "placepage_bookmark_name_hint" = "Markagailuaren izena";
 "placepage_delete_bookmark_button" = "Ezabatu markagailua";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Bidaiatutako azken ibilbidearen grabaketa desaktibatu nahi duzu?";
 "off_recent_track_background_button" = "Desgaitu";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Egiaztatu";
 "recent_track_background_dialog_message" = "Organic Maps-ek zure geokokapena erabiltzen du atzeko planoan egindako azken ibilbidea erregistratzeko.";
 "general_settings" = "Ezarpen orokorrak";
 
@@ -810,7 +862,7 @@
 "traffic_update_app_message" = "Trafiko datuak bistaratzeko, aplikazioa eguneratu behar duzu.";
 "log_file_size" = "Erregistro fitxategiaren tamaina: %@";
 "planning_route_remove_title" = "Arrastatu hona kentzeko";
-"placepage_replace_stop" = "Replace Stop";
+"placepage_replace_stop" = "Ordeztu geldialdia";
 "start_from_my_position" = "Hasi hemendik";
 
 /* For iOS message 'alert_reauth_message' should be splitted in two parts: message + link. Here's first part */
@@ -831,12 +883,6 @@
 "popular_place" = "Ospetsua";
 "hide_from_map" = "Ezkutatu mapan";
 "tags_loading_error_subtitle" = "Errore bat gertatu da etiketak kargatzean. Saiatu berriro";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Right";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Bottom";
 "trip_start" = "Goazen";
 "pick_destination" = "Helmuga";
 "follow_my_position" = "Berriz zentratu";
@@ -885,6 +931,15 @@
 "medicine" = "Medikuntza";
 "search_in_the_list" = "Bilatu zerrendan";
 "religious_places" = "Erlijio guneak";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Hautatu";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Hautatu dena";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Kendu hautapena";
 "transit_not_found" = "Metroko nabigazioa oraindik ez dago erabilgarri eskualde honetan";
 "dialog_pedestrian_route_is_long_header" = "Ez da aurkitu metroko ibilbiderik";
 "dialog_pedestrian_route_is_long_message" = "Aukeratu metrotik hurbilen dagoen ibilbidearen hasiera edo amaiera puntua";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Maldan behera";
 "elevation_profile_min_elevation" = "Altitude min";
 "elevation_profile_max_elevation" = "Altitude max";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Hasi mugitzen altitude-profila ikusteko";
 "isolines_toast_zooms_1_10" = "Handitu mapa sestra kurbak ikusteko";
 "downloader_loading_ios" = "Deskargatzen";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Esportatu markagailu eta arrasto guztiak";
 "drive_through" = "Autoz hartzeko";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Handitu";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Txikiagotu";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Menuaren esteka";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Ireki beste aplikazio batean";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Autozerbitzu";
@@ -1016,11 +1077,17 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Kolorea aldatu";
 
+/* Text for the hiding track. */
+"hide_track" = "Ezkutatu arrastoa";
+
+/* Text for the showing track. */
+"show_track" = "Erakutsi arrastoa";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Mapa";
 
 /* Message for the bug report alert. */
-"bugreport_alert_message" = "Akatsen txostena bidali nahi diezu garatzaileei?\nGure erabiltzaileengan oinarritzen gara Organic Maps-ek ez baitu automatikoki akatsen informaziorik biltzen. Eskerrik asko aldez aurretik Maps organikoak laguntzeagatik!";
+"bugreport_alert_message" = "Akatsen txostena bidali nahi diezu garatzaileei?\nGure erabiltzaileengan oinarritzen gara Organic Maps-ek ez baitu automatikoki akatsen informaziorik biltzen. Eskerrik asko aldez aurretik Organic Maps laguntzeagatik!";
 
 /* Title for the "Enable iCloud Syncronization" alert. */
 "enable_icloud_synchronization_title" = "Gaitu iCloud sinkronizazioa";
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Mesedez, gaitu iCloud zure gailuaren ezarpenetan eginbide hau erabiltzeko.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Gaitu";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Ibilbideen kolorea aldatu da";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Aukeratu mapan";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Abiapuntua";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Helmuga";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Aldatu abiapuntua";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Aldatu helmuga";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Aldatu geldialdia";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Geldialdien kopuru maximoa lortu da";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Mugitu eta handitu mapa gurutzea kokatzeko";

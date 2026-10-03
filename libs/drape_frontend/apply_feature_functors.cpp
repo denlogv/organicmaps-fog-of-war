@@ -11,20 +11,18 @@
 #include "drape_frontend/text_layout.hpp"
 #include "drape_frontend/text_shape.hpp"
 
-#include "indexer/drules_include.hpp"
 #include "indexer/road_shields_parser.hpp"
 
 #include "geometry/clipping.hpp"
 #include "geometry/mercator.hpp"
 #include "geometry/robust_orientation.hpp"
-#include "geometry/smoothing.hpp"
 
 #include "drape/color.hpp"
+#include "drape/font_constants.hpp"
 #include "drape/stipple_pen_resource.hpp"
 #include "drape/texture_manager.hpp"
 
 #include "base/logging.hpp"
-#include "base/stl_helpers.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -110,53 +108,53 @@ private:
 };
 #endif
 
-void ExtractLineParams(LineRuleProto const & lineRule, double visScale, LineViewParams & params)
+void ExtractLineParams(drule::LineRule const & lineRule, double visScale, LineViewParams & params)
 {
-  params.m_color = ToDrapeColor(lineRule.color());
-  params.m_width = static_cast<float>(std::max(lineRule.width() * visScale, 1.0));
+  params.m_color = ToDrapeColor(lineRule.color);
+  params.m_width = static_cast<float>(std::max(lineRule.width * visScale, 1.0));
 
-  if (lineRule.has_dashdot())
+  if (lineRule.dashdot.has_value())
   {
-    DashDotProto const & dd = lineRule.dashdot();
+    drule::DashDot const & dd = *lineRule.dashdot;
 
-    int const count = dd.dd_size();
+    size_t const count = dd.dd.size();
     params.m_pattern.reserve(count);
-    for (int i = 0; i < count; ++i)
-      params.m_pattern.push_back(dp::PatternFloat2Pixel(dd.dd(i) * visScale));
+    for (size_t i = 0; i < count; ++i)
+      params.m_pattern.push_back(dp::PatternFloat2Pixel(dd.dd[i] * visScale));
   }
 
-  switch (lineRule.cap())
+  switch (lineRule.cap)
   {
-  case ::ROUNDCAP: params.m_cap = dp::RoundCap; break;
-  case ::BUTTCAP: params.m_cap = dp::ButtCap; break;
-  case ::SQUARECAP: params.m_cap = dp::SquareCap; break;
+  case drule::LineCap::Round: params.m_cap = dp::RoundCap; break;
+  case drule::LineCap::Butt: params.m_cap = dp::ButtCap; break;
+  case drule::LineCap::Square: params.m_cap = dp::SquareCap; break;
   default: CHECK(false, ());
   }
 
-  switch (lineRule.join())
+  switch (lineRule.join)
   {
-  case ::NOJOIN: params.m_join = dp::MiterJoin; break;
-  case ::ROUNDJOIN: params.m_join = dp::RoundJoin; break;
-  case ::BEVELJOIN: params.m_join = dp::BevelJoin; break;
+  case drule::LineJoin::No: params.m_join = dp::MiterJoin; break;
+  case drule::LineJoin::Round: params.m_join = dp::RoundJoin; break;
+  case drule::LineJoin::Bevel: params.m_join = dp::BevelJoin; break;
   default: CHECK(false, ());
   }
 }
 
-void CaptionDefProtoToFontDecl(CaptionDefProto const * capRule, double visScale, dp::FontDecl & params)
+void CaptionDefToFontDecl(drule::CaptionDef const * capRule, double visScale, dp::FontDecl & params)
 {
-  params.m_color = ToDrapeColor(capRule->color());
-  params.m_size = static_cast<float>(std::max(kMinVisibleFontSize, capRule->height() * visScale));
+  params.m_color = ToDrapeColor(capRule->color);
+  params.m_size = static_cast<float>(std::max(kMinVisibleFontSize, capRule->height * visScale));
 
-  if (capRule->stroke_color() != 0)
-    params.m_outlineColor = ToDrapeColor(capRule->stroke_color());
+  if (capRule->stroke_color != 0)
+    params.m_outlineColor = ToDrapeColor(capRule->stroke_color);
 }
 
-void ShieldRuleProtoToFontDecl(ShieldRuleProto const * shieldRule, double visScale, dp::FontDecl & params)
+void ShieldRuleToFontDecl(drule::ShieldRule const * shieldRule, double visScale, dp::FontDecl & params)
 {
-  params.m_color = ToDrapeColor(shieldRule->text_color());
-  params.m_size = static_cast<float>(std::max(kMinVisibleFontSize, shieldRule->height() * visScale));
-  if (shieldRule->text_stroke_color() != 0)
-    params.m_outlineColor = ToDrapeColor(shieldRule->text_stroke_color());
+  params.m_color = ToDrapeColor(shieldRule->text_color);
+  params.m_size = static_cast<float>(std::max(kMinVisibleFontSize, shieldRule->height * visScale));
+  if (shieldRule->text_stroke_color != 0)
+    params.m_outlineColor = ToDrapeColor(shieldRule->text_stroke_color);
 }
 
 dp::Anchor GetAnchor(int offsetX, int offsetY)
@@ -328,8 +326,8 @@ void BaseApplyFeature::FillCommonParams(CommonOverlayViewParams & p) const
   p.m_featureId = m_f.GetID();
 }
 
-void ApplyPointFeature::ExtractCaptionParams(CaptionDefProto const * primaryProto,
-                                             CaptionDefProto const * secondaryProto, TextViewParams & params) const
+void ApplyPointFeature::ExtractCaptionParams(drule::CaptionDef const * primary, drule::CaptionDef const * secondary,
+                                             TextViewParams & params) const
 {
   FillCommonParams(params);
   params.m_depthLayer = DepthLayer::OverlayLayer;
@@ -340,18 +338,18 @@ void ApplyPointFeature::ExtractCaptionParams(CaptionDefProto const * primaryProt
   auto & titleDecl = params.m_titleDecl;
 
   dp::FontDecl decl;
-  CaptionDefProtoToFontDecl(primaryProto, visScale, decl);
+  CaptionDefToFontDecl(primary, visScale, decl);
   titleDecl.m_primaryTextFont = decl;
-  titleDecl.m_anchor = GetAnchor(primaryProto->offset_x(), primaryProto->offset_y());
+  titleDecl.m_anchor = GetAnchor(primary->offset_x, primary->offset_y);
   // TODO(pastk) : remove offsets processing as de-facto "text-offset: *" is used to define anchors only.
-  titleDecl.m_primaryOffset = GetOffset(primaryProto->offset_x(), primaryProto->offset_y(), visScale);
-  titleDecl.m_primaryOptional = primaryProto->is_optional();
+  titleDecl.m_primaryOffset = GetOffset(primary->offset_x, primary->offset_y, visScale);
+  titleDecl.m_primaryOptional = primary->is_optional;
 
   if (!titleDecl.m_secondaryText.empty())
   {
-    ASSERT(secondaryProto != nullptr, ());
+    ASSERT(secondary != nullptr, ());
     dp::FontDecl auxDecl;
-    CaptionDefProtoToFontDecl(secondaryProto, visScale, auxDecl);
+    CaptionDefToFontDecl(secondary, visScale, auxDecl);
     titleDecl.m_secondaryTextFont = auxDecl;
     // Secondary captions are optional always.
     titleDecl.m_secondaryOptional = true;
@@ -399,8 +397,8 @@ double BaseApplyFeature::PriorityToDepth(int priority, drule::TypeT ruleType, do
   return depth;
 }
 
-void ApplyPointFeature::ProcessPointRules(SymbolRuleProto const * symbolRule, CaptionRuleProto const * captionRule,
-                                          CaptionRuleProto const * houseNumberRule, m2::PointD const & centerPoint,
+void ApplyPointFeature::ProcessPointRules(drule::SymbolRule const * symbolRule, drule::CaptionRule const * captionRule,
+                                          drule::CaptionRule const * houseNumberRule, m2::PointD const & centerPoint,
                                           ref_ptr<dp::TextureManager> texMng)
 {
   auto const [createdByEditor, obsoleteInEditor] = m_params.GetEditStatus(m_f.GetID());
@@ -412,13 +410,13 @@ void ApplyPointFeature::ProcessPointRules(SymbolRuleProto const * symbolRule, Ca
     FillCommonParams(params);
     params.m_depthLayer = DepthLayer::OverlayLayer;
     params.m_depthTestEnabled = false;
-    params.m_depth = PriorityToDepth(symbolRule->priority(), drule::symbol, 0);
-    params.m_symbolName = symbolRule->name();
-    ASSERT_GREATER_OR_EQUAL(symbolRule->min_distance(), 0, ());
+    params.m_depth = PriorityToDepth(symbolRule->priority, drule::symbol, 0);
+    params.m_symbolName = symbolRule->name;
+    ASSERT_GREATER_OR_EQUAL(symbolRule->min_distance, 0, ());
 
     // Where 0.1 comes from: https://github.com/organicmaps/organicmaps/pull/649
     params.m_extendingSize =
-        static_cast<uint32_t>(m_params.m_vparams.GetVisualScale() * symbolRule->min_distance() * 0.1);
+        static_cast<uint32_t>(m_params.m_vparams.GetVisualScale() * symbolRule->min_distance * 0.1);
 
     params.m_posZ = m_posZ;
     params.m_hasArea = HasArea();
@@ -439,16 +437,20 @@ void ApplyPointFeature::ProcessPointRules(SymbolRuleProto const * symbolRule, Ca
   if (captionRule)
   {
     TextViewParams params;
-    CaptionDefProto const * capRule = &captionRule->primary();
-    CaptionDefProto const * auxRule = captionRule->has_secondary() ? &captionRule->secondary() : nullptr;
+    drule::CaptionDef const * capRule = &*captionRule->primary;
+    drule::CaptionDef const * auxRule = captionRule->secondary.has_value() ? &*captionRule->secondary : nullptr;
 
     params.m_titleDecl.m_primaryText = m_captions.GetMainText();
+    params.m_titleDecl.m_primaryLang = m_captions.GetMainTextLang();
     if (auxRule)
+    {
       params.m_titleDecl.m_secondaryText = m_captions.GetAuxText();
+      params.m_titleDecl.m_secondaryLang = m_captions.GetAuxTextLang();
+    }
     ASSERT(!params.m_titleDecl.m_primaryText.empty(), ());
 
     ExtractCaptionParams(capRule, auxRule, params);
-    params.m_depth = PriorityToDepth(captionRule->priority(), drule::caption, 0);
+    params.m_depth = PriorityToDepth(captionRule->priority, drule::caption, 0);
     params.m_hasArea = HasArea();
     params.m_createdByEditor = createdByEditor;
 
@@ -465,13 +467,15 @@ void ApplyPointFeature::ProcessPointRules(SymbolRuleProto const * symbolRule, Ca
   if (houseNumberRule)
   {
     TextViewParams params;
-    CaptionDefProto const * capRule = &houseNumberRule->primary();
+    drule::CaptionDef const * capRule = &*houseNumberRule->primary;
 
+    // House numbers come straight from OSM addr:housenumber in the MWM's local script.
     params.m_titleDecl.m_primaryText = m_captions.GetHouseNumberText();
+    params.m_titleDecl.m_primaryLang = m_captions.GetMwmRegionLang();
     ASSERT(!params.m_titleDecl.m_primaryText.empty(), ());
 
     ExtractCaptionParams(capRule, nullptr, params);
-    params.m_depth = PriorityToDepth(houseNumberRule->priority(), drule::caption, 0);
+    params.m_depth = PriorityToDepth(houseNumberRule->priority, drule::caption, 0);
     params.m_hasArea = HasArea();
     params.m_createdByEditor = createdByEditor;
 
@@ -637,8 +641,8 @@ void ApplyAreaFeature::CalculateBuildingOutline(bool calculateNormals, BuildingO
   }
 }
 
-void ApplyAreaFeature::ProcessAreaRules(AreaRuleProto const * areaRule, AreaRuleProto const * hatchingRule,
-                                        std::string_view hatchKey)
+void ApplyAreaFeature::ProcessAreaRules(drule::AreaRule const * areaRule, drule::AreaRule const * hatchingRule,
+                                        std::string_view hatchKey, std::string_view patternKey)
 {
   ASSERT(areaRule || hatchingRule, ());
   ASSERT(HasGeometry(), ());
@@ -647,46 +651,48 @@ void ApplyAreaFeature::ProcessAreaRules(AreaRuleProto const * areaRule, AreaRule
 
   if (hatchingRule)
   {
-    ASSERT_GREATER_OR_EQUAL(hatchingRule->priority(), drule::kBasePriorityFg, (m_f.DebugString()));
-    ProcessRule(*hatchingRule, areaDepth, hatchKey);
+    ASSERT_GREATER_OR_EQUAL(hatchingRule->priority, drule::kBasePriorityFg, (m_f.DebugString()));
+    ProcessRule(*hatchingRule, areaDepth, hatchKey, {});
   }
 
   if (areaRule)
   {
     // Calculate areaDepth for BG-by-size areas only.
-    if (areaRule->priority() < drule::kBasePriorityBgTop)
+    if (areaRule->priority < drule::kBasePriorityBgTop)
       areaDepth = drule::CalcAreaBySizeDepth(m_f);
-    ProcessRule(*areaRule, areaDepth, {});
+    ProcessRule(*areaRule, areaDepth, {}, patternKey);
   }
 }
 
-void ApplyAreaFeature::ProcessRule(AreaRuleProto const & areaRule, double areaDepth, std::string_view hatchKey)
+void ApplyAreaFeature::ProcessRule(drule::AreaRule const & areaRule, double areaDepth, std::string_view hatchKey,
+                                   std::string_view patternKey)
 {
   bool const isHatching = !hatchKey.empty();
 
   AreaViewParams params;
   params.m_depthLayer = m_isMwmBorder ? DepthLayer::MwmBorderLayer : DepthLayer::GeometryLayer;
   params.m_tileCenter = m_params.m_tileRect.Center();
-  params.m_depth = PriorityToDepth(areaRule.priority(), drule::area, areaDepth);
-  params.m_color = ToDrapeColor(areaRule.color());
-  if (m_backgroundMode == dp::BackgroundMode::Satellite)
+  params.m_depth = PriorityToDepth(areaRule.priority, drule::area, areaDepth);
+  params.m_color = ToDrapeColor(areaRule.color);
+  if (m_areaOpacity < 1.0f)
   {
     params.m_color = dp::Color(params.m_color.GetRed(), params.m_color.GetGreen(), params.m_color.GetBlue(),
-                               uint8_t(float(params.m_color.GetAlpha()) * 0.5f));
+                               uint8_t(float(params.m_color.GetAlpha()) * m_areaOpacity));
   }
   params.m_rank = m_f.GetRank();
   params.m_minPosZ = m_minPosZ;
   params.m_posZ = m_posZ;
-  params.m_hatching = hatchKey;
+  // Hatch and solid-fill patterns are mutually exclusive here (one key is always empty).
+  params.m_areaPattern = hatchKey.empty() ? patternKey : hatchKey;
   params.m_baseGtoPScale = m_params.m_currentScaleGtoP;
 
   BuildingOutline outline;
   if (m_isBuilding && !isHatching)
   {
     outline.m_generateOutline =
-        areaRule.has_border() && areaRule.color() != areaRule.border().color() && areaRule.border().width() > 0.0;
+        areaRule.border.has_value() && areaRule.color != areaRule.border->color && areaRule.border->width > 0.0;
     if (outline.m_generateOutline)
-      params.m_outlineColor = ToDrapeColor(areaRule.border().color());
+      params.m_outlineColor = ToDrapeColor(areaRule.border->color);
 
     bool const calculateNormals = m_posZ > 0.0;
     if (calculateNormals || outline.m_generateOutline)
@@ -704,95 +710,62 @@ ApplyLineFeatureGeometry::ApplyLineFeatureGeometry(Params const & params, Featur
                                                    RelationsDrawSettings const & relsSettings)
   : TBase(params, f, {})
   , m_relsInfo(relsSettings)
+  , m_builder(params)
 {
-  m_spline.Reset(new m2::Spline(f.GetPointsCount()));
-
   if (m_params.IsRelationRoutes())
     m_relsInfo.Init(f);
 }
 
-void ApplyLineFeatureGeometry::operator()(m2::PointD const & point)
+void ApplyLineFeatureGeometry::BuildGeometry(int zoomLevel, bool isIsoline)
 {
 #ifdef LINES_GENERATION_CALC_FILTERED_POINTS
-  ++m_readCount;
+  m_readCount += m_f.GetPointsCount();
 #endif
 
-  if (m_spline->IsEmpty())
-  {
-    m_spline->AddPoint(point);
-    m_lastAddedPoint = point;
-  }
-  else if (m_params.IsSimplifyLines() &&
-           ((m_spline->GetSize() > 1 && point.SquaredLength(m_lastAddedPoint) < m_params.m_minSegmentSqrLength) ||
-            m_spline->IsProlonging(point)))
-  {
-    m_spline->ReplacePoint(point);
-  }
-  else
-  {
-    m_spline->AddPoint(point);
-    m_lastAddedPoint = point;
-  }
+  m_builder.Build(m_f, zoomLevel, isIsoline);
 }
 
 void ApplyLineFeatureGeometry::ProcessLineRules(Stylist::LineRulesT const & lineRules, bool isIsoline)
 {
   ASSERT(!lineRules.empty(), ());
   ASSERT(HasGeometry(), ());
+  ASSERT(!isIsoline || lineRules.size() == 1, ());
 
-  if (!isIsoline)
-  {
-    // A line crossing the tile several times will be split in several parts.
-    // TODO(pastk) : use feature's pre-calculated limitRect when possible.
-    m_clippedSplines = m2::ClipSplineByRect(m_params.m_tileRect, m_spline);
-  }
-  else
-  {
-    // Isolines smoothing.
-    ASSERT_EQUAL(lineRules.size(), 1, ());
-    m2::GuidePointsForSmooth guidePointsForSmooth;
-    std::vector<std::vector<m2::PointD>> clippedPaths;
-    auto extTileRect = m_params.m_tileRect;
-    extTileRect.Scale(1.6);  // same as Inflate(0.3*szX, 0.3*szY)
-    m2::ClipPathByRectBeforeSmooth(extTileRect, m_spline->GetPath(), guidePointsForSmooth, clippedPaths);
+#ifdef LINES_GENERATION_CALC_FILTERED_POINTS
+  size_t const builtSize = m_builder.GetPathSize();
+#endif
 
-    if (clippedPaths.empty())
-      return;
-
-    m2::SmoothPaths(guidePointsForSmooth, 4 /* newPointsPerSegmentCount */, m2::kCentripetalAlpha, clippedPaths);
-
-    ASSERT(m_clippedSplines.empty(), ());
-    std::function<void(m2::SharedSpline &&)> inserter = base::MakeBackInsertFunctor(m_clippedSplines);
-    for (auto & path : clippedPaths)
-      m2::ClipPathByRect(m_params.m_tileRect, std::move(path), inserter);
-  }
+  // Builds clipped splines from the (possibly simplified) feature path.
+  // Directions/lengths are computed only on the splines actually returned —
+  // see ClipSplinesBuilder::Release.
+  m_clippedSplines = m_builder.Release(isIsoline);
 
   if (m_clippedSplines.empty())
     return;
 
-  for (LineRuleProto const * r : lineRules)
+  for (drule::LineRule const * r : lineRules)
     ProcessRule(*r);
 
 #ifdef LINES_GENERATION_CALC_FILTERED_POINTS
-  LinesStat::Get().InsertLine(m_f.GetID(), m_tileKey.m_zoomLevel, m_readCount, static_cast<int>(m_spline->GetSize()));
+  LinesStat::Get().InsertLine(m_f.GetID(), m_tileKey.m_zoomLevel, m_readCount, static_cast<int>(builtSize));
 #endif
 }
 
-void ApplyLineFeatureGeometry::ProcessRule(LineRuleProto const & lineRule)
+void ApplyLineFeatureGeometry::ProcessRule(drule::LineRule const & lineRule)
 {
   double const visScale = m_params.m_vparams.GetVisualScale();
-  double const depth = PriorityToDepth(lineRule.priority(), drule::line, 0);
+  double const depth = PriorityToDepth(lineRule.priority, drule::line, 0);
 
-  if (lineRule.has_pathsym())
+  if (lineRule.pathsym.has_value())
   {
-    PathSymProto const & symRule = lineRule.pathsym();
+    drule::PathSym const & symRule = *lineRule.pathsym;
     PathSymbolViewParams params;
     params.m_tileCenter = m_params.m_tileRect.Center();
     params.m_depth = depth;
     params.m_rank = m_f.GetRank();
-    params.m_symbolName = symRule.name();
-    params.m_offset = static_cast<float>(symRule.offset() * visScale);
-    params.m_step = static_cast<float>(symRule.step() * visScale);
+    params.m_symbolName = symRule.name;
+    params.m_offset = static_cast<float>(symRule.offset * visScale);
+    params.m_step = static_cast<float>(symRule.step * visScale);
     params.m_baseGtoPScale = m_params.m_currentScaleGtoP;
 
     for (auto const & spline : m_clippedSplines)
@@ -857,22 +830,27 @@ void ApplyLineFeatureAdditional::GetRoadShieldsViewParams(ref_ptr<dp::TextureMan
   m2::PointF const shieldTextOffset = GetShieldOffset(anchor, paddingWidth, paddingHeight);
 
   dp::FontDecl font;
-  ShieldRuleProtoToFontDecl(m_shieldRule, mainScale, font);
+  ShieldRuleToFontDecl(m_shieldRule, mainScale, font);
   UpdateRoadShieldTextFont(font, shield);
 
   FillCommonParams(textParams);
   textParams.m_depthLayer = DepthLayer::OverlayLayer;
   textParams.m_depthTestEnabled = false;
   textParams.m_depth = m_shieldDepth;
+  // Road shield ref/additional come from OSM tags in the MWM's local script. Use the same
+  // lang for both so the additional-text rendering matches its primary.
+  auto const regionLang = m_captions.GetMwmRegionLang();
   textParams.m_titleDecl.m_anchor = anchor;
   textParams.m_titleDecl.m_primaryText = roadNumber;
+  textParams.m_titleDecl.m_primaryLang = regionLang;
+  textParams.m_titleDecl.m_secondaryLang = regionLang;
   textParams.m_titleDecl.m_primaryTextFont = font;
   textParams.m_titleDecl.m_primaryOffset = shieldOffset + shieldTextOffset;
   textParams.m_titleDecl.m_primaryOptional = false;
   textParams.m_titleDecl.m_secondaryOptional = false;
   textParams.m_startOverlayRank = dp::OverlayRank1;
 
-  auto const textMetrics = texMng->ShapeSingleTextLine(dp::kBaseFontSizePixels, roadNumber, nullptr);
+  auto const textMetrics = texMng->ShapeSingleTextLine(roadNumber, regionLang, nullptr);
   float const textRatio = font.m_size * fontScale / dp::kBaseFontSizePixels;
   float const textWidthInPixels = textMetrics.m_lineWidthInPixels * textRatio;
   float const textHeightInPixels = textMetrics.m_maxLineHeightInPixels * textRatio;
@@ -894,10 +872,10 @@ void ApplyLineFeatureAdditional::GetRoadShieldsViewParams(ref_ptr<dp::TextureMan
     symbolParams.m_offset = shieldOffset;
     symbolParams.m_shape = ColoredSymbolViewParams::Shape::RoundedRectangle;
     symbolParams.m_radiusInPixels = static_cast<float>(2.5 * mainScale);
-    symbolParams.m_color = ToDrapeColor(m_shieldRule->color());
-    if (m_shieldRule->stroke_color() != m_shieldRule->color())
+    symbolParams.m_color = ToDrapeColor(m_shieldRule->color);
+    if (m_shieldRule->stroke_color != m_shieldRule->color)
     {
-      symbolParams.m_outlineColor = ToDrapeColor(m_shieldRule->stroke_color());
+      symbolParams.m_outlineColor = ToDrapeColor(m_shieldRule->stroke_color);
       symbolParams.m_outlineWidth = static_cast<float>(1.0 * mainScale);
     }
     symbolParams.m_sizeInPixels = shieldPixelSize;
@@ -952,8 +930,8 @@ bool ApplyLineFeatureAdditional::CheckShieldsNearby(m2::PointD const & shieldPos
   return true;
 }
 
-void ApplyLineFeatureAdditional::ProcessAdditionalLineRules(PathTextRuleProto const * pathtextRule,
-                                                            ShieldRuleProto const * shieldRule,
+void ApplyLineFeatureAdditional::ProcessAdditionalLineRules(drule::PathTextRule const * pathtextRule,
+                                                            drule::ShieldRule const * shieldRule,
                                                             ref_ptr<dp::TextureManager> texMng,
                                                             ftypes::RoadShieldsSetT const & roadShields,
                                                             GeneratedRoadShields & generatedRoadShields)
@@ -967,19 +945,19 @@ void ApplyLineFeatureAdditional::ProcessAdditionalLineRules(PathTextRuleProto co
   if (shieldRule)
   {
     m_shieldRule = shieldRule;
-    m_shieldDepth = PriorityToDepth(shieldRule->priority(), drule::shield, 0);
+    m_shieldDepth = PriorityToDepth(shieldRule->priority, drule::shield, 0);
     shieldPositions.reserve(m_clippedSplines.size() * 3);
   }
 
   if (pathtextRule)
   {
     ASSERT(!m_captions.GetMainText().empty(), ());
-    m_captionRule = &pathtextRule->primary();
-    ASSERT_GREATER_OR_EQUAL(m_captionRule->height(), kMinVisibleFontSize / df::kMaxVisualScale, ());
-    m_captionDepth = PriorityToDepth(pathtextRule->priority(), drule::pathtext, 0);
+    m_captionRule = &*pathtextRule->primary;
+    ASSERT_GREATER_OR_EQUAL(m_captionRule->height, kMinVisibleFontSize / df::kMaxVisualScale, ());
+    m_captionDepth = PriorityToDepth(pathtextRule->priority, drule::pathtext, 0);
 
     dp::FontDecl fontDecl;
-    CaptionDefProtoToFontDecl(m_captionRule, visScale, fontDecl);
+    CaptionDefToFontDecl(m_captionRule, visScale, fontDecl);
     PathTextViewParams params;
     FillCommonParams(params);
     params.m_depthLayer = DepthLayer::OverlayLayer;
@@ -989,6 +967,7 @@ void ApplyLineFeatureAdditional::ProcessAdditionalLineRules(PathTextRuleProto co
     params.m_auxText = m_captions.GetAuxText();
     params.m_textFont = fontDecl;
     params.m_baseGtoPScale = m_params.m_currentScaleGtoP;
+    params.m_lang = m_captions.GetMainTextLang();
 
     uint32_t textIndex = kPathTextBaseTextIndex;
     for (auto const & spline : m_clippedSplines)
@@ -1047,7 +1026,7 @@ void ApplyLineFeatureAdditional::ProcessAdditionalLineRules(PathTextRuleProto co
   ASSERT(m_shieldRule, ());  // goes together with shieldPositions
 
   // Set default shield's icon min distance.
-  int minDistance = m_shieldRule->min_distance();
+  int minDistance = m_shieldRule->min_distance;
   ASSERT_GREATER_OR_EQUAL(minDistance, 0, ());
   if (minDistance <= 0)
     minDistance = 50;

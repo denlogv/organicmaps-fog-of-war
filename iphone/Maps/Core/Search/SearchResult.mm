@@ -10,6 +10,8 @@
 
 #import "geometry/mercator.hpp"
 
+#include <string>
+
 @implementation SearchResult
 
 - (instancetype)initWithTitleText:(NSString *)titleText type:(SearchItemType)type suggestion:(NSString *)suggestion
@@ -34,10 +36,10 @@
   if (self)
   {
     _index = index;
-    _titleText =
-        result.GetString().empty() ? @(result.GetLocalizedFeatureType().c_str()) : @(result.GetString().c_str());
+    std::string const localizedFeatureType = result.GetLocalizedFeatureType();
+    _titleText = result.GetString().empty() ? @(localizedFeatureType.c_str()) : @(result.GetString().c_str());
     _addressText = @(result.GetAddress().c_str());
-    _infoText = @(result.GetFeatureDescription().c_str());
+    _infoText = @(result.GetFeatureDescription(localizedFeatureType).c_str());
     if (result.IsSuggest())
       _suggestion = @(result.GetSuggestionString().c_str());
 
@@ -116,8 +118,7 @@
 
     if (result.GetResultType() == search::Result::Type::Feature)
     {
-      auto const featureType = result.GetFeatureType();
-      auto const bookmarkImage = GetBookmarkIconByFeatureType(featureType);
+      auto const bookmarkImage = GetBookmarkMatchInfo(result.GetFeatureType()).m_icon;
       _iconImageName =
           [NSString stringWithFormat:@"%@%@", @"ic_bm_", [@(kml::ToString(bookmarkImage).c_str()) lowercaseString]];
     }

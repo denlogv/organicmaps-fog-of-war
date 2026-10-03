@@ -1,9 +1,7 @@
 #pragma once
 
-#include "drape_frontend/color_constants.hpp"
 #include "drape_frontend/map_shape.hpp"
 #include "drape_frontend/render_state_extension.hpp"
-#include "drape_frontend/shape_view_params.hpp"
 
 #include "drape/pointers.hpp"
 #include "drape/render_bucket.hpp"
@@ -78,18 +76,17 @@ enum class SubrouteStyleType
 struct SubrouteStyle
 {
   SubrouteStyle() = default;
-  explicit SubrouteStyle(df::ColorConstant const & color) : m_color(color), m_outlineColor(color) {}
-  SubrouteStyle(df::ColorConstant const & color, df::ColorConstant const & outlineColor)
+  explicit SubrouteStyle(std::string const & color) : m_color(color), m_outlineColor(color) {}
+  SubrouteStyle(std::string const & color, std::string const & outlineColor)
     : m_color(color)
     , m_outlineColor(outlineColor)
   {}
-  SubrouteStyle(df::ColorConstant const & color, df::RoutePattern const & pattern)
+  SubrouteStyle(std::string const & color, df::RoutePattern const & pattern)
     : m_color(color)
     , m_outlineColor(color)
     , m_pattern(pattern)
   {}
-  SubrouteStyle(df::ColorConstant const & color, df::ColorConstant const & outlineColor,
-                df::RoutePattern const & pattern)
+  SubrouteStyle(std::string const & color, std::string const & outlineColor, df::RoutePattern const & pattern)
     : m_color(color)
     , m_outlineColor(outlineColor)
     , m_pattern(pattern)
@@ -102,8 +99,8 @@ struct SubrouteStyle
 
   bool operator!=(SubrouteStyle const & style) const { return !operator==(style); }
 
-  df::ColorConstant m_color;
-  df::ColorConstant m_outlineColor;
+  std::string m_color;
+  std::string m_outlineColor;
   df::RoutePattern m_pattern;
   size_t m_startIndex = 0;
   size_t m_endIndex = 0;
@@ -117,9 +114,9 @@ struct SubrouteMarker
   // Distance from the beginning of route.
   double m_distance = 0.0;
   // Array of colors in range [0;2].
-  std::vector<df::ColorConstant> m_colors;
+  std::vector<std::string> m_colors;
   // Color of inner circle.
-  df::ColorConstant m_innerColor;
+  std::string m_innerColor;
   // Normalized up vector to determine rotation of circle.
   m2::PointD m_up = m2::PointD(0.0, 1.0);
   // Scale (1.0 when the radius is equal to route line half-width).
@@ -129,6 +126,10 @@ struct SubrouteMarker
 struct Subroute
 {
   void AddStyle(SubrouteStyle const & style);
+
+  // Alternative-route subroutes are rendered with a sub-1 alpha multiplier; the active route
+  // keeps the default 1.0. Used to skip alts when navigation is active.
+  bool IsAlternative() const { return m_alphaMul < 1.0f; }
 
   df::RouteType m_routeType;
   m2::PolylineD m_polyline;
@@ -145,6 +146,10 @@ struct Subroute
 
   double m_headFakeDistance = 0.0;
   double m_tailFakeDistance = 0.0;
+
+  // Per-subroute alpha multiplier, applied to all style colors at render time. 1.0 is fully opaque.
+  // Used by alternative-route rendering to visually dim non-active alternatives.
+  float m_alphaMul = 1.0f;
 };
 
 using SubrouteConstPtr = std::shared_ptr<Subroute const>;

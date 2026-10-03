@@ -1,6 +1,5 @@
 package app.organicmaps.car.screens.download;
 
-import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.car.app.CarContext;
 import androidx.car.app.constraints.ConstraintManager;
@@ -71,7 +70,7 @@ class DownloaderScreen extends BaseScreen
     @Override
     public void onProgress(String countryId, long localSize, long remoteSize)
     {
-      if (!mIsAppRefreshEnabled || TextUtils.isEmpty(countryId))
+      if (!mIsAppRefreshEnabled)
         return;
 
       final CountryItem item = mMissingMaps.get(countryId);

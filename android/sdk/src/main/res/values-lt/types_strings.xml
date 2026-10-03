@@ -6,9 +6,9 @@
     <string name="type.addr_interpolation.even">Adresas / blokas</string>
     <string name="type.addr_interpolation.odd">Adresas / blokas</string>
     <string name="type.aerialway">Keltuvas</string>
-    <string name="type.aerialway.cable_car">Cable Car</string>
-    <string name="type.aerialway.chair_lift">Kėdė Liftas</string>
-    <string name="type.aerialway.drag_lift">Pasipriešinimas Liftas</string>
+    <string name="type.aerialway.cable_car">Kabininis keltuvas</string>
+    <string name="type.aerialway.chair_lift">Kėdutinis keltuvas</string>
+    <string name="type.aerialway.drag_lift">Vilkimo keltuvas</string>
     <string name="type.aerialway.gondola">Gondola</string>
     <string name="type.aerialway.mixed_lift">Mišrus keltuvas</string>
     <string name="type.aerialway.station">Keltuvo stotis</string>
@@ -18,7 +18,7 @@
     <string name="type.aeroway.apron">Peronas</string>
     <string name="type.aeroway.gate">Vartai</string>
     <string name="type.aeroway.helipad">Sraigtasparnių aikštelė</string>
-    <string name="type.aeroway.runway">Runway</string>
+    <string name="type.aeroway.runway">Kilimo ir tūpimo takas</string>
     <string name="type.aeroway.taxiway">Riedėjimo takas</string>
     <string name="type.aeroway.terminal">Terminalas</string>
     <string name="type.amenity">Paslaugos</string>
@@ -237,6 +237,7 @@
     <string name="type.building">Pastatas</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Adresas</string>
+    <string name="type.building.construction">Statomas pastatas</string>
     <string name="type.building.has_parts">Pastatas</string>
     <string name="type.building_part">Pastatas</string>
     <string name="type.building.garage">Garažas</string>
@@ -327,7 +328,7 @@
     <string name="type.cuisine.mediterranean">Viduržemio jūros virtuvė</string>
     <string name="type.cuisine.mexican">Meksikiečių virtuvė</string>
     <string name="type.cuisine.moroccan">Maroko virtuvė</string>
-    <string name="type.cuisine.noodles">Makaronai</string>
+    <string name="type.cuisine.noodle">Makaronai</string>
     <string name="type.cuisine.oriental">Rytų Azijos virtuvė</string>
     <string name="type.cuisine.pancake">Blynai</string>
     <string name="type.cuisine.pasta">Makaronai</string>
@@ -343,6 +344,7 @@
     <string name="type.cuisine.sausage">Dešrelės</string>
     <string name="type.cuisine.savory_pancakes">Nesaldūs blynai</string>
     <string name="type.cuisine.seafood">Jūros gėrybės</string>
+    <string name="type.cuisine.shawarma">Šavarma</string>
     <string name="type.cuisine.soba">Soba</string>
     <string name="type.cuisine.spanish">Ispanų virtuvė</string>
     <string name="type.cuisine.steak_house">Kepsnių restoranas</string>
@@ -570,6 +572,7 @@
     <string name="type.historic.castle.shiro">Japonų pilis</string>
     <string name="type.historic.castle.stately">Iškilminga pilis</string>
     <string name="type.historic.city_gate">Miesto vartai</string>
+    <string name="type.man_made.ceremonial_gate">Ceremonijų vartai</string>
     <string name="type.historic.citywalls">Miesto siena</string>
     <string name="type.historic.fort">Fortas</string>
     <string name="type.historic.gallows">Kartuvės</string>
@@ -602,7 +605,8 @@
     <string name="type.junction.roundabout">Žiedinė sankryža</string>
     <string name="type.landuse">Žemėnauda</string>
     <string name="type.landuse.allotments">Sodų bendrija</string>
-    <string name="type.landuse.basin">Baseinas</string>
+    <string name="type.landuse.basin">Vandens baseinas</string>
+    <string name="type.landuse.basin.intermittent">Periodinis vandens baseinas</string>
     <string name="type.landuse.brownfield">Apleista teritorija</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Kapinės</string>
@@ -633,7 +637,6 @@
     <string name="type.landuse.quarry">Karjeras</string>
     <string name="type.landuse.railway">Geležinkelio teritorija</string>
     <string name="type.landuse.recreation_ground">Poilsio zona</string>
-    <string name="type.landuse.reservoir">Rezervuaras</string>
     <string name="type.landuse.residential">Gyvenamoji zona</string>
     <string name="type.landuse.retail">Prekybos zona</string>
     <string name="type.landuse.salt_pond">Druskos tvenkinys</string>
@@ -655,6 +658,7 @@
     <string name="type.leisure.ice_rink">Čiuožykla</string>
     <string name="type.leisure.marina">Prieplauka</string>
     <string name="type.leisure.nature_reserve">Gamtos rezervatas</string>
+    <string name="type.leisure.bird_hide">Paukščių stebėjimo slėptuvė</string>
     <string name="type.leisure.outdoor_seating">Lauko kavinė</string>
     <string name="type.leisure.firepit">Laužavietė</string>
     <string name="type.leisure.park">Parkas</string>
@@ -739,12 +743,15 @@
     <string name="type.natural.water.lock">Šliuzas</string>
     <string name="type.natural.water.pond">Tvenkinys</string>
     <string name="type.natural.water.reservoir">Vandens saugykla</string>
-    <string name="type.natural.water.basin">Baseinas</string>
+    <string name="type.natural.water.basin">Vandens baseinas</string>
     <string name="type.natural.water.river">Upė</string>
+    <string name="type.natural.water.intermittent">Periodinis vandens telkinys</string>
     <string name="type.natural.land">Sausuma</string>
     <string name="type.natural.meadow">Pievos</string>
     <string name="type.natural.orchard">Sodas</string>
     <string name="type.natural.peak">Viršūnė</string>
+    <string name="type.natural.hill">Kalva</string>
+    <string name="type.natural.arch">Uolų arka</string>
     <string name="type.natural.saddle">Balnas</string>
     <string name="type.natural.rock">Akmuo</string>
     <string name="type.natural.scrub">Krūmynai</string>
@@ -754,6 +761,7 @@
     <string name="type.natural.tree_row">Medžių eilė</string>
     <string name="type.natural.vineyard">Vynuogynas</string>
     <string name="type.natural.volcano">Ugnikalnis</string>
+    <string name="type.natural.volcano.active">Aktyvus ugnikalnis</string>
     <string name="type.natural.water">Vanduo</string>
     <string name="type.natural.wetland">Šlapynė</string>
     <string name="type.natural.wetland.bog">Pelkė</string>
@@ -1303,6 +1311,18 @@
     <string name="type.sport.field_hockey">Žolės riedulys</string>
     <string name="type.sport.badminton">Badmintonas</string>
     <string name="type.sport.pelota">Baskų pelota</string>
+    <string name="type.sport.boules">Petankas</string>
+    <string name="type.sport.cycling">Dviračių sportas</string>
+    <string name="type.sport.four_square">Keturi kvadratai</string>
+    <string name="type.sport.horse_racing">Žirgų lenktynės</string>
+    <string name="type.sport.karting">Kartingas</string>
+    <string name="type.sport.motocross">Motokrosas</string>
+    <string name="type.sport.motor">Motorinis sportas</string>
+    <string name="type.sport.netball">Tinklasvydis</string>
+    <string name="type.sport.pickleball">Pikbolas</string>
+    <string name="type.sport.rugby_union">Regbis</string>
+    <string name="type.sport.running">Bėgimas</string>
+    <string name="type.sport.softball">Softbolas</string>
     <string name="type.tourism">Turizmas</string>
     <string name="type.tourism.aquarium">Akvariumas</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1322,6 +1342,7 @@
     <string name="type.attraction.historic">Istorinė atrakcija</string>
     <string name="type.attraction.maze">Labirintas</string>
     <string name="type.attraction.roller_coaster">Amerikietiški kalneliai</string>
+    <string name="type.roller_coaster.track">Amerikietiški kalneliai</string>
     <string name="type.attraction.water_slide">Vandens kalnelis</string>
     <string name="type.tourism.attraction.specified">Lankytina vieta</string>
     <string name="type.tourism.camp_site">Stovyklavietė</string>
@@ -1353,6 +1374,7 @@
     <string name="type.traffic_calming.bump">Greičio mažinimo kalnelis</string>
     <string name="type.traffic_calming.hump">Greičio mažinimo kalnelis</string>
     <string name="type.waterway">Vandens kelias</string>
+    <string name="type.waterway.access_point">Prieigos prie vandens kelių taškas</string>
     <string name="type.waterway.canal">Kanalas</string>
     <string name="type.waterway.canal.tunnel">Kanalo tunelis</string>
     <string name="type.waterway.fish_pass">Žuvitakis</string>
@@ -1411,6 +1433,7 @@
     <string name="type.self_service.no">Nėra savitarnos</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Socialinė priemonė</string>
+    <string name="type.amenity.stage">Scena</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Skubios pagalbos skyriaus įėjimas</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1442,4 +1465,5 @@
     <string name="type.craft.watchmaker">Laikrodininkas</string>
     <string name="type.xmas_feature.market">Kalėdų mugė</string>
     <string name="type.xmas_feature.tree">Kalėdų eglutė</string>
+    <string name="type.amenity.hookah_lounge">Kaljanų baras</string>
 </resources>

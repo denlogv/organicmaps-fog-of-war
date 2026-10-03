@@ -1,0 +1,11 @@
+• OSM podaci od 26. augusta
+• NOVO: višestruki odabir oznaka i staza
+• NOVO: skrivanje pojedinačnih staza ikonom oka
+• NOVO: članci Wikipedije na bengalskom, hindskom, maratskom, poljskom, tamilskom, teluškom i urdu
+• Ispravljena rušenja i zamrzavanja
+• Na kartu dodata skloništa za posmatranje ptica, bine, brda i stjenoviti lukovi
+• Bolje dijeljenje mjesta
+• Ispravke za Android Auto
+• Ispravljen odabir stanica na ruti
+• Ispravljeno radno vrijeme
+…više na omaps.org/news

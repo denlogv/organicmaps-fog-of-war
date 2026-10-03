@@ -28,29 +28,15 @@
 
 class DataSource;
 
-namespace search
-{
-struct EverywhereSearchParams;
-}
-
 namespace android
 {
-enum CoordinatesFormat  // See Java enum app.organicmaps.widget.placepage.CoordinatesFormat for all possible values.
-{
-  LatLonDMS = 0,      // Latitude, Longitude in degrees minutes seconds format, comma separated
-  LatLonDecimal = 1,  // Latitude, Longitude in decimal format, comma separated
-  OLCFull = 2,        // Open location code, full format
-  OSMLink = 3,        // Link to the OSM. E.g. https://osm.org/go/xcXjyqQlq-?m=
-  UTM = 4,            // Universal Transverse Mercator
-  MGRS = 5            // Military Grid Reference System
-};
-
-// Keep in sync `public @interface ChoosePositionMode`in Framework.java.
+// Keep in sync with app.organicmaps.sdk.ChoosePositionMode.
 enum class ChoosePositionMode
 {
   None = 0,
   Editor = 1,
   Api = 2,
+  Routing = 3,
 };
 
 class Framework : private power_management::PowerManager::Subscriber
@@ -62,8 +48,6 @@ private:
 
   math::LowPassVector<float, 3> m_sensors[2];
   double m_lastCompass = 0;
-
-  std::string m_searchQuery;
 
   std::map<gui::EWidget, gui::Position> m_guiPositions;
 
@@ -131,15 +115,9 @@ public:
 
   void Touch(int action, Finger const & f1, Finger const & f2, uint8_t maskedPointer);
 
-  bool Search(search::EverywhereSearchParams const & params);
-  std::string GetLastSearchQuery() { return m_searchQuery; }
-  void ClearLastSearchQuery() { m_searchQuery.clear(); }
-
   void AddLocalMaps();
   void RemoveLocalMaps();
   void ReloadWorldMaps();
-
-  m2::PointD GetViewportCenter() const;
 
   void AddString(std::string const & name, std::string const & value);
 
@@ -158,7 +136,7 @@ public:
 
   void ExecuteMapApiRequest();
 
-  void DeactivatePopup();
+  bool DeactivatePopup();
   void DeactivateMapSelectionCircle(bool restoreViewport);
 
   //    std::string GetOutdatedCountriesString();
@@ -202,11 +180,6 @@ public:
   void OnPowerFacilityChanged(power_management::Facility const facility, bool enabled) override;
   void OnPowerSchemeChanged(power_management::Scheme const actualScheme) override;
 };
-
-namespace framework
-{
-jint registerNativeMethods(JNIEnv * env);
-}  // namespace framework
 }  // namespace android
 
 extern CheckedPtr<android::Framework> g_framework;

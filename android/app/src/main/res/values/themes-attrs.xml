@@ -6,6 +6,10 @@
     <attr name="textDialogTheme" format="reference" />
     <attr name="windowBackgroundForced" format="reference|color" />
     <attr name="cardBackground" format="reference" />
+    <!-- Let one toolbar_search_controls layout serve both the branded toolbar and one that continues the
+         surface below it. -->
+    <attr name="searchToolbarTextAppearance" format="reference" />
+    <attr name="searchToolbarEndIconTint" format="color" />
     <attr name="clickableBackground" format="reference" />
     <attr name="statusBar" format="color" />
     <attr name="secondary" format="color" />
@@ -30,6 +34,7 @@
     <attr name="accentButtonBackground" format="reference" />
     <attr name="accentButtonTextColor" format="color" />
     <attr name="accentButtonTextColorDisabled" format="color" />
+    <attr name="colorAccentTransparent" format="reference|color" />
     <attr name="redButtonBackground" format="reference" />
     <attr name="redButtonTextColor" format="color" />
     <attr name="redButtonTextColorDisabled" format="color" />
@@ -37,18 +42,19 @@
     <attr name="menuBackground" format="color" />
     <attr name="myPositionButtonAnimation" format="reference" />
     <attr name="wheelPendingAnimation" format="reference" />
-    <attr name="trafficLoadingAnimation" format="reference" />
     <attr name="navButtonsThemeRect" format="reference" />
     <attr name="navButtonsThemeRound" format="reference" />
     <attr name="downloaderTheme" format="reference" />
     <attr name="navigationTheme" format="reference" />
-    <attr name="routingButtonHint" format="color" />
+    <attr name="routingTabPillBg" format="color" />
+    <attr name="routingTabActiveBg" format="color" />
     <attr name="drivingOptionsViewBg" format="color" />
     <attr name="transitPedestrianBackground" format="color" />
     <attr name="transitRulerBackground" format="color" />
     <attr name="colorBtnHighlight" format="color" />
     <attr name="transitStepDivider" format="reference" />
-    <attr name="colorAccentTransparent" format="reference" />
+    <attr name="textSearchField" format="color" />
+    <attr name="textSearchFieldHint" format="color" />
   </declare-styleable>
   <declare-styleable name="ThemeAttrs.Downloader">
     <attr name="status_done" format="reference" />

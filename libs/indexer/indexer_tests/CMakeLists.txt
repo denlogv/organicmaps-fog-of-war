@@ -10,12 +10,12 @@ set(SRC
   checker_test.cpp
   cities_boundaries_serdes_tests.cpp
   classificator_tests.cpp
-  complex_serdes_tests.cpp
-  complex_serdes_utils_tests.cpp
   custom_keyvalue_tests.cpp
   data_source_test.cpp
+  drules_format_tests.cpp
   drules_selector_parser_test.cpp
   editable_map_object_test.cpp
+  feature_covering_test.cpp
   feature_metadata_test.cpp
   feature_names_test.cpp
   feature_to_osm_tests.cpp
@@ -36,6 +36,7 @@ set(SRC
   string_slice_tests.cpp
   test_mwm_set.hpp
   test_type.cpp
+  tmp_mwm_copy.hpp
   tree_node_tests.cpp
   trie_test.cpp
   validate_and_format_contacts_test.cpp
@@ -47,6 +48,8 @@ omim_add_test(${PROJECT_NAME} ${SRC})
 
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
+    # @todo Take TestWithClassificator out into some common test support lib,
+    # so that indexer tests don't depend on the generator above them.
     generator_tests_support
     platform_tests_support
     indexer

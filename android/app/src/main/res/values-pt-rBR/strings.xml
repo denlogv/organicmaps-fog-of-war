@@ -16,7 +16,7 @@
     <!-- View and button titles for accessibility. Also used in iPhone home screen quick actions. -->
     <string name="search">Buscar</string>
     <!-- Search box placeholder text; Used when searching on the map itself, not when searching for a map -->
-    <string name="search_map">Procurar mapa</string>
+    <string name="search_map">Procurar no mapa</string>
     <!-- Location services are disabled by user alert - message -->
     <string name="location_is_disabled_long_text">Atualmente todos os serviços de localização para este dispositivo ou aplicativo estão desativados. Por favor ative-os em configurações.</string>
     <!-- A dialog text, that warns a user that Precise Location is disabled and suggests to turn it on -->
@@ -75,7 +75,7 @@
     <!-- Search category for grocery stores; any changes should be duplicated in categories.txt @category_food! -->
     <string name="category_food">Mercados</string>
     <!-- Search category for fuel stations; any changes should be duplicated in categories.txt @category_fuel! -->
-    <string name="category_fuel">Gás</string>
+    <string name="category_fuel">Combustível</string>
     <!-- Search category for second_hand/charity/antique/auction shops; any changes should be duplicated in categories.txt @category_secondhand! -->
     <string name="category_secondhand">De segunda mão</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
@@ -111,16 +111,10 @@
     <string name="cant_change_this_setting">Lamentamos, as configurações do armazenamento do mapa estão desativadas.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">O download do país está atualmente em progresso.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Veja onde estou agora. Abra o link: %1$s ou %2$s Não tem mapas offline instalados? Baixe aqui: https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Ei, dê uma olhada no meu pin no Organic Maps!</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Veja no mapa a minha localização atual via Organic Maps!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">Olá,\n\nEstou aqui agora: %1$s. Clique neste link %2$s ou neste %3$s para ver o local no mapa.\n\nObrigado.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">Compartilhar</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Um lugar no Organic Maps</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">E-mail</string>
     <!-- Confirmation for OpenStreetMap log out. -->
@@ -148,6 +142,12 @@
     <string name="pref_map_3d_buildings_title">Prédios em 3D</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">Os edifícios 3D são desativados no modo de economia de energia</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">Tamanho do cache (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">Opacidade dos objetos de área</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">As fontes de blocos personalizados são fornecidas por você. Use apenas serviços que você tem permissão para acessar. Você é responsável pela atribuição, termos de licença, chaves de API, cotas e limites de uso.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">Orientação por voz</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -275,11 +275,6 @@
     <string name="editor_example_values">Exemplo de Valores</string>
     <string name="editor_correct_mistake">Erro correto</string>
     <string name="editor_add_select_location">Selecionar Localização</string>
-    <string name="editor_report_problem_desription_1">Por favor, descreva o problema em detalhes para que a comunidade OpenStreetMap possa corrigir o erro.</string>
-    <string name="editor_report_problem_desription_2">Ou faça-o você mesmo em https://www.openstreetmap.org/</string>
-    <string name="editor_report_problem_no_place_title">Esse lugar não existe</string>
-    <string name="editor_report_problem_under_construction_title">Fechado para manutenção</string>
-    <string name="editor_report_problem_duplicate_place_title">Lugar duplicado</string>
     <string name="autodownload">Download automático</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="edit_opening_hours">Editar horário comercial</string>
@@ -319,11 +314,10 @@
     <string name="editor_edit_place_name_hint">Nome do local</string>
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">Como está escrito no idioma local</string>
-    <string name="editor_report_problem_other_title">Problema diferente</string>
     <string name="placepage_add_business_button">Adicionar uma empresa</string>
     <string name="message_invalid_feature_position">Nenhum objeto pode ser localizado aqui</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
-    <string name="osm_presentation">Dados do OpenStreetMap criados pela comunidade a partir de %s. Saiba mais sobre como editar e atualizar o mapa em OpenStreetMap.org</string>
+    <string name="osm_presentation">Dados do OpenStreetMap criados pela comunidade em %s. Saiba mais sobre como editar e atualizar o mapa em OpenStreetMap.org</string>
     <!-- OSM explanation on Android login screen -->
     <string name="login_osm_presentation">O OpenStreetMap (OSM) é um projeto comunitário aberto para construir um mapa gratuito. O OSM é a principal fonte de dados de mapas do Organic Maps e funciona de forma semelhante à Wikipédia. Você pode adicionar ou editar lugares e eles ficam disponíveis para milhões de usuários no mundo todo.\nJunte-se à comunidade e ajude a criar um mapa melhor para todos!</string>
     <string name="login_to_make_edits_visible">Crie uma conta no OpenStreetMap ou faça login para publicar suas edições de mapas para o mundo.</string>
@@ -346,7 +340,7 @@
     <string name="downloader_no_downloaded_maps_message">Baixe mapas para pesquisar locais e usar navegação offline.</string>
     <string name="day">d</string>
     <string name="placepage_more_button">Mais informações</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Editar marcador</string>
     <string name="placepage_personal_notes_hint">Anotações pessoais (texto ou html)</string>
     <string name="editor_comment_hint">Comentar…</string>
@@ -388,10 +382,7 @@
     <string name="mobile_data_description">Para visualizar informações detalhadas sobre os locais, tais como fotos, preços e avaliações, é necessário acesso à internet móvel.</string>
     <string name="mobile_data_option_never">Nunca usar</string>
     <string name="mobile_data_option_ask">Pergunte sempre</string>
-    <string name="traffic_update_maps_text">Para ver os dados de tráfego, os mapas devem ser atualizados.</string>
     <string name="big_font">Aumentar o tamanho dos rótulos dos mapas</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">Não existem dados de tráfego</string>
     <string name="enable_logging">Ativar o registro</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">Comentários gerais</string>
@@ -399,13 +390,10 @@
     <string name="prefs_languages_information_off">Para alguns idiomas, você precisa instalar um sintetizador de fala ou um pacote adicional de linguagem da loja de aplicativo (Google Play Market, Samsung Apps).\nAbra as configurações do seu dispositivo → Idioma e entrada → Fala → Saída de texto para fala.\nAqui você pode gerenciar as configurações para o sintetizador de fala (por exemplo, baixar pacote de idioma para usar off-line) e selecionar outro motor de texto-para-fala.</string>
     <string name="transliteration_title">Transliterar para alfabeto latino</string>
     <string name="learn_more">Saiba mais</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">Use a busca ou toque no mapa para adicionar um ponto de partida da rota</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">Use a pesquisa, selecione um marcador ou toque no mapa para adicionar um ponto de destino</string>
     <string name="planning_route_manage_route">Gerenciar rota</string>
     <string name="button_plan">Planejar</string>
     <string name="placepage_remove_stop">Remover parada</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
     <string name="placepage_add_stop">Adicionar parada</string>
     <string name="saved">Salvo</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
@@ -466,6 +454,10 @@
     <string name="bookmarks_text_placement_description">Se houver muitos favoritos, a exibição de seus nomes no mapa pode deixar o aplicativo lento.</string>
     <string name="enable_logging_warning_message">A opção ativa logging para realizar diagnósticos. Pode ser útil para nossa equipe de suporte que estão solucionando problemas com o aplicativo. Ative esta opção apenas ao ser solicitado pelo suporte do Organic Maps.</string>
     <string name="driving_options_title">Opções de trajeto</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Otimização da rota</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Reorganiza automaticamente as paradas intermediárias para criar uma rota mais eficiente.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">Evitar pedágios</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -480,6 +472,10 @@
     <string name="toll_road">Pedágio</string>
     <string name="unpaved_road">Pista não pavimentada</string>
     <string name="ferry_crossing">Balsa</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">Escadaria</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">Cancela</string>
     <string name="trip_finished">Você chegou!</string>
     <string name="ok">Tudo bem</string>
     <!-- max. 10 symbols, both iOS and Android -->
@@ -493,6 +489,11 @@
     <string name="moremonth_ago_sorttype">Há mais de um mês</string>
     <string name="moreyear_ago_sorttype">Há mais de um ano</string>
     <string name="near_me_sorttype">Próximo de mim</string>
+    <string name="opens_tomorrow_at">Abre amanhã em %s</string>
+    <string name="opens_dayoftheweek_at">Abre %1$s em %2$s</string>
+    <string name="opens_at">Abre em %s</string>
+    <string name="closes_at">Encerra às %s</string>
+    <string name="placepage_replace_stop">Substituir a parada</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Alimentos</string>
@@ -583,15 +584,14 @@
     <string name="pref_tts_no_system_tts">As configurações do Speech Synthesis não foram encontradas. Você tem certeza de que seu dispositivo é compatível?</string>
     <string name="drive_through">Drive-through</string>
     <string name="clear_the_search">Limpar pesquisa</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">Aumentar o zoom</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">Reduzir o zoom</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">Link do cardápio</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">Exibir menu</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Abrir em outro aplicativo</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Autoatendimento</string>
     <string name="select_option">Selecione a opção</string>
@@ -620,6 +620,18 @@
     <string name="nav_auto">Automático na navegação</string>
     <!-- Setting option to sync the app's theme with the operating system's dark/light mode -->
     <string name="follow_system">Usar o padrão do sistema</string>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="one">Excluir %d item?</item>
+        <item quantity="many">Excluir %d itens?</item>
+        <item quantity="other">Excluir %d itens?</item>
+    </plurals>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">Mudança de cor</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">Ocultar trilha</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">Mostrar trilha</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -628,4 +640,14 @@
     <string name="login_osm_browser">Fazer login usando o navegador</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">Cor das trilhas alterada</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">Controles deslizantes</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">Grade</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">Alterar parada</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">Número máximo de paradas atingido</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Parar e salvar</string>
 </resources>

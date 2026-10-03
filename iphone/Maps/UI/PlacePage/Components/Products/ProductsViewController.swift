@@ -47,14 +47,14 @@ final class ProductsViewController: UIViewController {
 
   private func setupTitleLabel() {
     titleLabel.text = viewModel.title
-    titleLabel.font = UIFont.semibold16()
-    titleLabel.numberOfLines = 1
+    titleLabel.setFontStyle(.semibold16)
+    titleLabel.configureSingleLineAutoScaling()
     titleLabel.translatesAutoresizingMaskIntoConstraints = false
   }
 
   private func setupDescriptionLabel() {
     descriptionLabel.text = viewModel.description
-    descriptionLabel.font = UIFont.regular14()
+    descriptionLabel.setFontStyle(.regular14)
     descriptionLabel.numberOfLines = 0
     descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
   }
@@ -83,13 +83,13 @@ final class ProductsViewController: UIViewController {
   private func setupSubtitleButtons() {
     leadingSubtitleButton.setTitle(viewModel.leadingSubtitle, for: .normal)
     leadingSubtitleButton.backgroundColor = .clear
-    leadingSubtitleButton.setTitleColor(.linkBlue(), for: .normal)
+    leadingSubtitleButton.setTitleColor(.linkBlue, for: .normal)
     leadingSubtitleButton.translatesAutoresizingMaskIntoConstraints = false
     leadingSubtitleButton.addTarget(self, action: #selector(leadingSubtitleButtonDidTap), for: .touchUpInside)
 
     trailingSubtitleButton.setTitle(viewModel.trailingSubtitle, for: .normal)
     trailingSubtitleButton.backgroundColor = .clear
-    trailingSubtitleButton.setTitleColor(.linkBlue(), for: .normal)
+    trailingSubtitleButton.setTitleColor(.linkBlue, for: .normal)
     trailingSubtitleButton.translatesAutoresizingMaskIntoConstraints = false
     trailingSubtitleButton.addTarget(self, action: #selector(trailingSubtitleButtonDidTap), for: .touchUpInside)
   }
@@ -154,7 +154,7 @@ final class ProductsViewController: UIViewController {
   }
 
   func hide() {
-    UIView.transition(with: view, duration: kFastAnimationDuration, options: .transitionCrossDissolve) {
+    UIView.transition(with: view, duration: AppConstants.fastAnimationDuration, options: .transitionCrossDissolve) {
       self.view.isHidden = true
     }
   }

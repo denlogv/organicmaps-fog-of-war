@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Sights";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Entertainment";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Recycling";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Water";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "ຍັງບໍ່ທັນສາມາດລະບຸຕຳແໜ່ງຂອງທ່ານໄດ້";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "ເຮີ້ຍ, ເບິ່ງປັກໝຸດຂອງຂ້ອຍໃນ Organic Maps ແມ້!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "ຂ້ອຍຢູ່ທີ່ນີ້ໃນ Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "ເຮີ້ຍ, ເບິ່ງຕຳແໜ່ງປັດຈຸບັນຂອງຂ້ອຍໃນແຜນທີ່ Organic Maps ແມ້!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ ໃນ Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "ສະຖານທີ່ໃນ Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "ເປີດໃນ Organic Maps ຫຼືໃນບຣາວເຊີ";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "ຮັບ Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "ເປີດໃນແອັບອື່ນ";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "ອີເມລ";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "ຄວາມຍາວ";
 "share_my_location" = "ແບ່ງປັນຕຳແໜ່ງຂອງຂ້ອຍ";
+"prefs_group_network" = "ເຄືອຂ່າຍ";
 "prefs_group_route" = "ການນຳທາງ";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "ອາຄານ 3D ຖືກປິດໃຊ້ງານໃນໂໝດປະຢັດພະລັງງານ";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "ຮູບພາບດາວທຽມ";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "URL ຂອງເຊີບເວີ";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "ປ້ອນ URL ທີ່ຖືກຕ້ອງທີ່ມີ {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "ຂະໜາດແຄຊ (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "ຄວາມທຶບຂອງວັດຖຸພື້ນທີ່";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "ແຫຼ່ງແຜ່ນແບບກຳນົດເອງແມ່ນທ່ານເປັນຜູ້ສະໜອງ. ໃຊ້ສະເພາະບໍລິການທີ່ທ່ານໄດ້ຮັບອະນຸຍາດໃຫ້ເຂົ້າເຖິງ. ທ່ານຮັບຜິດຊອບຕໍ່ການລະບຸແຫຼ່ງທີ່ມາ, ເງື່ອນໄຂໃບອະນຸຍາດ, ກະແຈ API, ໂກຕາ ແລະ ຂີດຈຳກັດການນຳໃຊ້.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "ຄຳແນະນຳດ້ວຍສຽງ";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "ພາສາຂອງສຽງ";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "ທົດສອບຄຳແນະນຳດ້ວຍສຽງ (TTS)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "ເພື່ອດາວໂຫຼດສຽງຄຸນນະພາບສູງກວ່າ, ເປີດແອັບ ການຕັ້ງຄ່າ ແລ້ວໄປທີ່ ການເຂົ້າເຖິງ → VoiceOver → ການເວົ້າ → ສຽງ.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "ຊູມອັດຕະໂນມັດ";
 "placepage_distance" = "ໄລຍະທາງ";
 "search_show_on_map" = "ເບິ່ງໃນແຜນທີ່";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "ມືດ";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "ອື່ນໆ";
-
 /* Tex label above the Donate button */
 "donate_description" = "ມອບແຜນທີ່ຟຣີທີ່ບໍ່ມີໂຄສະນາໃຫ້ກັບຜູ້ໃຊ້ຫຼາຍລ້ານຄົນ!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "ເກີດຂໍ້ຜິດພາດໃນການສົ່ງອີເມລ";
-
-/* Settings item title */
-"pref_calibration_title" = "ການປັບຕັ້ງເຂັມທິດ";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "ມີໃຫ້ໃຊ້";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "ປິດມື້ນີ້";
 "day_off" = "ປິດ";
+"midnight" = "ທ່ຽງຄືນ";
+"noon" = "ທ່ຽງວັນ";
 "today" = "ມື້ນີ້";
 "opens_in" = "ຈະເປີດໃນອີກ %@";
 "closes_in" = "ຈະປິດໃນອີກ %@";
@@ -571,9 +607,6 @@
 "day" = "ມື້";
 "second" = "ວິ";
 "placepage_more_button" = "ເພີ່ມເຕີມ";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "ແກ້ໄຂບຸກມາກ";
 "placepage_personal_notes_hint" = "ບັນທຶກສ່ວນຕົວ (ຂໍ້ຄວາມ ຫຼື html)";
 "editor_comment_hint" = "ສະແດງຄວາມຄິດເຫັນ…";
 "editor_reset_edits_message" = "ຍົກເລີກການປ່ຽນແປງພາຍໃນທັງໝົດບໍ່?";
@@ -621,7 +654,9 @@
 "planning_route_manage_route" = "ຈັດການເສັ້ນທາງ";
 "button_plan" = "ວາງແຜນ";
 "placepage_remove_stop" = "ເອົາຈຸດແວ່ພັກອອກ";
-"placepage_add_stop" = "ເພີ່ມຈຸດແວ່ພັກ";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "ເພີ່ມຈຸດຈອດ";
 "saved" = "ບັນທຶກແລ້ວ";
 "error_enter_correct_name" = "ກະລຸນາປ້ອນຊື່ທີ່ຖືກຕ້ອງ";
 "bookmark_lists" = "ລາຍການ";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "ຊື່ນີ້ຖືກໃຊ້ແລ້ວ";
 "profile" = "ໂປຣໄຟລ໌ OpenStreetMap";
 "restore" = "ກູ້ຄືນ";
+
+/* Settings privacy group in settings screen */
+"privacy" = "ຄວາມເປັນສ່ວນຕົວ";
 "privacy_policy" = "ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ";
 "terms_of_use" = "ເງື່ອນໄຂການໃຊ້ງານ";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "ການຂີ່ລົດຖີບ";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "ດາວທຽມ";
 "button_layer_subway" = "ລົດໄຟໃຕ້ດິນ";
 "layers_title" = "ຮູບແບບແຜນທີ່ ແລະ ເລເຢີ້";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "ເປີດໃຊ້ຕົວເລືອກນີ້ຊົ່ວຄາວເພື່ອບັນທຶກ ແລະ ສົ່ງລັອກການວິນິດໄສໂດຍລະອຽດກ່ຽວກັບບັນຫາຂອງທ່ານໃຫ້ພວກເຮົາໂດຍໃຊ້ \"ລາຍງານຂໍ້ຜິດພາດ\" ໃນສ່ວນຊ່ວຍເຫຼືອ. ລັອກອາດຈະລວມມີຂໍ້ມູນຕຳແໜ່ງທີ່ຕັ້ງ.";
 "driving_options_title" = "ຕົວເລືອກການສ້າງເສັ້ນທາງ";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "ການປັບເສັ້ນທາງໃຫ້ເໝາະສົມ";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "ຈັດລຽງຈຸດຢຸດລະຫວ່າງທາງໃໝ່ອັດຕະໂນມັດ ເພື່ອສ້າງເສັ້ນທາງທີ່ມີປະສິດທິພາບກວ່າ.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "ເລ່ຽງທາງເສຍຄ່າທຳນຽມ";
 
@@ -707,6 +754,15 @@
 "toll_road" = "ທາງເສຍຄ່າທຳນຽມ";
 "unpaved_road" = "ທາງບໍ່ປູຢາງ";
 "ferry_crossing" = "ຈຸດຂ້າມເຮືອຟາກ";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "ຂັ້ນໄດ";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "ປະຕູຮົ້ວ";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "ໄມ້ກັ້ນຍົກ";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "ແມ່ນ";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. ເລືອກ ບໍລິການຕຳແໜ່ງ";
 "location_services_disabled_on_device_4" = "4. ເປີດ ບໍລິການຕຳແໜ່ງ";
 "location_services_disabled_on_device_additional_message" = "ຫຼື ໃຊ້ Organic Maps ຕໍ່ໄປໂດຍບໍ່ໃຊ້ຕຳແໜ່ງ";
-"book_button" = "ຈອງ";
 "placepage_call_button" = "ໂທ";
 "placepage_bookmark_name_hint" = "ຊື່ບຸກມາກ";
 "placepage_delete_bookmark_button" = "ລຶບບຸກມາກ";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "ປິດການບັນທຶກເສັ້ນທາງການເດີນທາງຫຼ້າສຸດຂອງທ່ານຫຼືບໍ່?";
 "off_recent_track_background_button" = "ປິດໃຊ້ງານ";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "ເບິ່ງທີ່ນີ້";
 "recent_track_background_dialog_message" = "Organic Maps ໃຊ້ຕຳແໜ່ງຂອງທ່ານໃນເບື້ອງຫຼັງເພື່ອບັນທຶກເສັ້ນທາງການເດີນທາງຫຼ້າສຸດຂອງທ່ານ.";
 "general_settings" = "ການຕັ້ງຄ່າທົ່ວໄປ";
 
@@ -831,12 +883,6 @@
 "popular_place" = "ຍອດນິຍົມ";
 "hide_from_map" = "ເຊື່ອງຈາກແຜນທີ່";
 "tags_loading_error_subtitle" = "ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດແທັກ, ກະລຸນາລອງໃໝ່";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "ຂວາ";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "ລຸ່ມ";
 "trip_start" = "ໄປກັນເລີຍ";
 "pick_destination" = "ຈຸດໝາຍປາຍທາງ";
 "follow_my_position" = "ຈັດຕຳແໜ່ງກາງໃໝ່";
@@ -885,6 +931,15 @@
 "medicine" = "ການແພດ";
 "search_in_the_list" = "ຄົ້ນຫາໃນລາຍການ";
 "religious_places" = "ສະຖານທີ່ທາງສາດສະໜາ";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "ເລືອກ";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "ເລືອກທັງໝົດ";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "ຍົກເລີກການເລືອກ";
 "transit_not_found" = "ການນຳທາງດ້ວຍລົດໄຟໃຕ້ດິນໃນພາກພື້ນນີ້ຍັງບໍ່ທັນມີເທື່ອ";
 "dialog_pedestrian_route_is_long_header" = "ບໍ່ພົບເສັ້ນທາງລົດໄຟໃຕ້ດິນ";
 "dialog_pedestrian_route_is_long_message" = "ກະລຸນາເລືອກຈຸດເລີ່ມຕົ້ນ ຫຼື ປາຍທາງໃຫ້ໃກ້ກັບສະຖານີລົດໄຟໃຕ້ດິນ";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "ທາງລົງ";
 "elevation_profile_min_elevation" = "ລະດັບຄວາມສູງຕ່ຳສຸດ";
 "elevation_profile_max_elevation" = "ລະດັບຄວາມສູງສູງສຸດ";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "ເລີ່ມເຄື່ອນທີ່ເພື່ອເບິ່ງໂປຣໄຟລ໌ລະດັບຄວາມສູງ";
 "isolines_toast_zooms_1_10" = "ຊູມເຂົ້າເພື່ອເບິ່ງເສັ້ນລະດັບຄວາມສູງ";
 "downloader_loading_ios" = "ກຳລັງດາວໂຫລດ";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "ສົ່ງອອກບຸກມາກ ແລະ ເສັ້ນທາງທັງໝົດ";
 "drive_through" = "ໄດຣຟ໌ທຣູ";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "ຊູມເຂົ້າ";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "ຊູມອອກ";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "ລິ້ງເມນູ";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "ເປີດໃນແອັບອື່ນ";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "ບໍລິການຕົນເອງ";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "ປ່ຽນສີ";
 
+/* Text for the hiding track. */
+"hide_track" = "Hide track";
+
+/* Text for the showing track. */
+"show_track" = "Show track";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "ແຜນທີ່";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "ກະລຸນາເປີດໃຊ້ iCloud ໃນການຕັ້ງຄ່າອຸປະກອນຂອງທ່ານເພື່ອໃຊ້ຟີເຈີນີ້.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "ເປີດໃຊ້ງານ";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "ສີຂອງເສັ້ນທາງໄດ້ປ່ຽນແລ້ວ";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "ເລືອກຢູ່ໃນແຜນທີ່";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "ຈຸດເລີ່ມຕົ້ນ";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "ປາຍທາງ";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "ປ່ຽນຈຸດເລີ່ມຕົ້ນ";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "ປ່ຽນປາຍທາງ";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "ປ່ຽນຈຸດຈອດ";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "ຮອດຈຳນວນຈຸດຈອດສູງສຸດແລ້ວ";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "ຍ້າຍ ແລະ ຊູມແຜນທີ່ເພື່ອວາງເຄື່ອງໝາຍບວກ";

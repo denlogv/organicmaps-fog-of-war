@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Památky";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Zábava";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Recyklace";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Voda";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Vaše poloha zatím nebyla určena";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Koukni na mojí značku na mapě v Organic Maps!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Jsem tady na mapě Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Podívej se na mou aktuální polohu na mapě v Organic Maps!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ v Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Místo v Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Otevřít v Organic Maps nebo v prohlížeči";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Získat Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Otevřít v jiné aplikaci";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "E-mail";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Délka";
 "share_my_location" = "Sdílet mé umístění";
+"prefs_group_network" = "Síť";
 "prefs_group_route" = "Navigace";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D budovy jsou vypnuty v úsporném režimu";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Satelitní snímky";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "URL serveru";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Zadejte platnou adresu URL s {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Velikost mezipaměti (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Krytí plošných objektů";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Zdroje vlastních dlaždic poskytujete vy. Používejte pouze služby, ke kterým máte oprávněný přístup. Nesete odpovědnost za uvedení autorství, licenční podmínky, klíče API, kvóty a omezení používání.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Hlasové instrukce";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Jazyk hlasu";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Otestovat hlasové pokyny (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Chcete-li stáhnout hlas ve vyšší kvalitě, otevřete aplikaci Nastavení a přejděte do Zpřístupnění → VoiceOver → Řeč → Hlas.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Automatické zvětšení";
 "placepage_distance" = "Vzdálenost";
 "search_show_on_map" = "Zobrazit na mapě";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Tmavý";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Ostatní";
-
 /* Tex label above the Donate button */
 "donate_description" = "Darujte bezplatné mapy bez reklam milionům uživatelů!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Chyba při odesílání emailu";
-
-/* Settings item title */
-"pref_calibration_title" = "Kalibrace kompasu";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Dostupné";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "Nonstop";
 "day_off_today" = "Dnes zavřeno";
 "day_off" = "Zavřeno";
+"midnight" = "Půlnoc";
+"noon" = "Poledne";
 "today" = "Dnes";
 "opens_in" = "Otevírá za %@";
 "closes_in" = "Zavírá za %@";
@@ -558,7 +594,7 @@
 /* To indicate the operator of ATMs, bicycle rentals, electric vehicle charging stations… */
 "operator" = "Operátor: %@";
 "editor_category_unsuitable_title" = "Nemůžete najít vhodnou kategorii?";
-"editor_category_unsuitable_text" = "Organické mapy umožňují přidávat pouze jednoduché kategorie bodů, tedy žádná města, silnice, jezera, obrysy budov atd. Takové kategorie prosím přidávejte přímo na <a href=\"https://www.openstreetmap.org\">OpenStreetMap.org</a>. Podrobné pokyny krok za krokem najdete v našem <a href=\"https://organicmaps.app/faq/editing/advanced-map-editing\">průvodci</a>.";
+"editor_category_unsuitable_text" = "Organic Maps umožňuje přidávat pouze jednoduché bodové kategorie, to znamená žádná města, silnice, jezera, obrysy budov atd. Tyto kategorie prosím přidávejte přímo na <a href=\"https://www.openstreetmap.org\">OpenStreetMap.org</a>. Podrobný návod krok za krokem najdete v našem <a href=\"https://organicmaps.app/faq/editing/advanced-map-editing\">průvodci</a>.";
 "downloader_no_downloaded_maps_title" = "Nemáte stažené žádné mapy";
 "downloader_no_downloaded_maps_message" = "Stáhněte si mapy a hledejte cestu a její cíl, i když jste offline.";
 "current_location_unknown_error_title" = "Současná poloha nezjištěna.";
@@ -571,9 +607,6 @@
 "day" = "d";
 "second" = "s";
 "placepage_more_button" = "Více";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Upravit záložku";
 "placepage_personal_notes_hint" = "Vlastní poznámka (text nebo HTML)";
 "editor_comment_hint" = "Poznámka…";
 "editor_reset_edits_message" = "Vymazat všechny místní změny?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Spravovat trasu";
 "button_plan" = "Naplánovat";
 "placepage_remove_stop" = "Odstranit zastávku";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Přidat zastávku";
 "saved" = "Uloženo";
 "error_enter_correct_name" = "Zadejte prosím správný název";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Toto jméno již bylo provedeno";
 "profile" = "Profil OpenStreetMap";
 "restore" = "Obnovit";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Soukromí";
 "privacy_policy" = "Zásady ochrany osobních údajů";
 "terms_of_use" = "Podmínky užívání";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Cyklistika";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satelit";
 "button_layer_subway" = "Metro";
 "layers_title" = "Styly a vrstvy mapy";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "Dočasně zapněte, abyste mohli zaznamenat a ručně nám poslat podrobná diagnostická data o vašem problému pomocí tlačítka „Nahlásit chybu“ v okně nápovědy. Protokoly mohou zahrnovat informace o poloze.";
 "driving_options_title" = "Možnosti trasy";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Optimalizace trasy";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Automaticky přeuspořádá průjezdní zastávky a vytvoří efektivnější trasu.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Vyhnout se mýtnému";
 
@@ -707,6 +754,15 @@
 "toll_road" = "Silnice s mýtným";
 "unpaved_road" = "Nezpevněná silnice";
 "ferry_crossing" = "Přejezd trajektů";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Schody";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Brána";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Zvedací brána";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Ano";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Vyberte možnost Služby určování polohy";
 "location_services_disabled_on_device_4" = "4. Zapnutí služeb určování polohy";
 "location_services_disabled_on_device_additional_message" = "Nebo pokračujte v používání aplikace Organic Maps bez polohy";
-"book_button" = "Rezervace";
 "placepage_call_button" = "Volat";
 "placepage_bookmark_name_hint" = "Název záložky";
 "placepage_delete_bookmark_button" = "Smazat záložku";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Zakázat zaznamenávání vaší nedávno ujeté trasy?";
 "off_recent_track_background_button" = "Zakázat";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Odjezd";
 "recent_track_background_dialog_message" = "Organic Maps používají geopozici na pozadí, aby se zaznamenala vaše nedávno ujetá trasa.";
 "general_settings" = "Obecná nastavení";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Populární";
 "hide_from_map" = "Neukazovat na mapě";
 "tags_loading_error_subtitle" = "Během nahrávání tagů se stala chyba, zkuste to prosím ještě jednou";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Vpravo";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Dole";
 "trip_start" = "Pojďme";
 "pick_destination" = "Destinace";
 "follow_my_position" = "Znovu vystředit";
@@ -885,6 +931,15 @@
 "medicine" = "Medicína";
 "search_in_the_list" = "Vyhledat v seznamu";
 "religious_places" = "Posvátná místa";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Vybrat";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Vybrat vše";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Zrušit výběr";
 "transit_not_found" = "Navigace metra v této oblasti zatím není k dispozici";
 "dialog_pedestrian_route_is_long_header" = "Trasa metra nebyla nalezena";
 "dialog_pedestrian_route_is_long_message" = "Zvolte prosím počáteční nebo koncový bod blíže k stanici metra";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Klesání";
 "elevation_profile_min_elevation" = "Min. výška";
 "elevation_profile_max_elevation" = "Max. výška";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Začněte se pohybovat a zobrazí se výškový profil";
 "isolines_toast_zooms_1_10" = "Přiblížit pro prozkoumání izolinií";
 "downloader_loading_ios" = "Probíhá stahování";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Export všech záložek a stop";
 "drive_through" = "Průjezd";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Přiblížení";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Oddálení";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Odkaz na menu";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Otevřít v jiné aplikaci";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Samoobsluha";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Změna barvy";
 
+/* Text for the hiding track. */
+"hide_track" = "Skrýt stopu";
+
+/* Text for the showing track. */
+"show_track" = "Zobrazit stopu";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Mapa";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Chcete-li tuto funkci používat, povolte v nastavení zařízení službu iCloud.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Povolit";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Barva tras byla změněna";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Vybrat na mapě";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Začátek";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Cíl";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Změnit začátek";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Změnit cíl";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Změnit zastávku";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Byl dosažen maximální počet zastávek";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Posuňte a přibližujte mapu, abyste umístili křížek";

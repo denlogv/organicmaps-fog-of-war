@@ -1,10 +1,11 @@
-• OSM-karttatiedot 10. maaliskuuta, Wikipedia 1. maaliskuuta
-• Tarkemmat korkeuskäyrät Kiinan provinsseille
-• Lisätty rivejä puita, nahkakauppoja ja uskonnollisia tavaroita myyviä liikkeitä
-• Lisätty tuki ehdollisille nopeusrajoituksille
-• Tansania jaettu pienempiin alueisiin
-• Parannettu aukioloaikojen näyttö
-• Korjattu useita kaatumisia
-• Parannetut sovellusten ja maiden nimien käännökset
-• Lisätty joukkoliikenteen pysäkkitasoja ilman lähellä olevia bussipysäkkejä
-omaps.org/news
+• OSM-tiedot 26. elokuuta
+• UUTTA: kirjanmerkkien ja reittien monivalinta
+• UUTTA: yksittäisten reittien piilotus silmäkuvakkeella
+• UUTTA: Wikipedia-artikkelit bengaliksi, hindiksi, marathiksi, puolaksi, tamiliksi, teluguksi ja urduksi
+• Korjattu kaatumiset ja jumiutumiset
+• Kartalle lisätty lintupiiloja, esiintymislavoja, kukkuloita ja kivikaaria
+• Parempi paikkojen jakaminen
+• Android Auto -korjauksia
+• Korjattu reitin pysäkkien valinta
+• Korjattu aukioloajat
+…lisää osoitteessa omaps.org/news

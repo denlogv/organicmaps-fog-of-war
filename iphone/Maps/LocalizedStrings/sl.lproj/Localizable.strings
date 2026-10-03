@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Znamenitosti";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Zabava";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Recikliranje";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Voda";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Vaša lokacija še ni bila določena";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Hej, poglej moj žebljiček v Organic Maps!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Tukaj sem na zemljevidu Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Hej, poglej mojo trenutno lokacijo na zemljevidu Organic Maps!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ v Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Kraj v Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Odpri v Organic Maps ali v brskalniku";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Prenesi Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Odpri v drugi aplikaciji";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "E-pošta";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Dolžina";
 "share_my_location" = "Deli mojo lokacijo";
+"prefs_group_network" = "Omrežje";
 "prefs_group_route" = "Navigacija";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D zgradbe so onemogočene v načinu varčevanja z energijo";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Satelitske slike";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "URL strežnika";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Vnesite veljaven URL z {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Velikost predpomnilnika (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Neprosojnost ploskovnih objektov";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Vire ploščic po meri zagotavljate sami. Uporabljajte samo storitve, do katerih imate dovoljen dostop. Sami ste odgovorni za navedbo avtorstva, licenčne pogoje, ključe API, kvote in omejitve uporabe.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Glasovna navodila";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Jezik glasu";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Preizkusi glasovna navodila (TTS, pretvorba besedila v govor)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Če želite prenesti glas višje kakovosti, odprite aplikacijo Nastavitve in pojdite v Dostopnost → VoiceOver → Govor → Glas.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Samodejna povečava";
 "placepage_distance" = "Razdalja";
 "search_show_on_map" = "Prikaži na zemljevidu";
@@ -353,7 +393,7 @@
 "blue_gray" = "Modro siva";
 
 /* place preview title */
-"info" = "Info";
+"info" = "Informacije";
 
 /* Prints version number in About dialog */
 "version" = "Različica Organic Maps: %@";
@@ -366,9 +406,6 @@
 
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Temna";
-
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Drugo";
 
 /* Tex label above the Donate button */
 "donate_description" = "Podarite brezplačne zemljevide brez oglasov milijonom uporabnikov!";
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Napaka pri pošiljanju e-pošte";
-
-/* Settings item title */
-"pref_calibration_title" = "Umerjanje kompasa";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Na voljo";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "Danes zaprto";
 "day_off" = "Zaprto";
+"midnight" = "Polnoč";
+"noon" = "Poldne";
 "today" = "Danes";
 "opens_in" = "Odpira se čez %@";
 "closes_in" = "Zapira se čez %@";
@@ -571,9 +607,6 @@
 "day" = "d";
 "second" = "s";
 "placepage_more_button" = "Več";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Uredi zaznamek";
 "placepage_personal_notes_hint" = "Osebne opombe (besedilo ali html)";
 "editor_comment_hint" = "Komentar…";
 "editor_reset_edits_message" = "Zavrnem vse lokalne spremembe?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Upravljaj pot";
 "button_plan" = "Načrtuj";
 "placepage_remove_stop" = "Odstrani postanek";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Dodaj postanek";
 "saved" = "Shranjeno";
 "error_enter_correct_name" = "Vnesite pravilno ime";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "To ime je že zasedeno";
 "profile" = "Profil OpenStreetMap";
 "restore" = "Obnovi";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Zasebnost";
 "privacy_policy" = "Politika zasebnosti";
 "terms_of_use" = "Pogoji uporabe";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Kolesarjenje";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satelit";
 "button_layer_subway" = "Podzemna železnica";
 "layers_title" = "Slogi in plasti zemljevida";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "To možnost omogočite začasno, da posnamete in nam ročno pošljete podrobne diagnostične dnevnike o vaši težavi z uporabo \"Prijavi napako\" v pogovornem oknu Pomoč. Dnevniki lahko vključujejo podatke o lokaciji.";
 "driving_options_title" = "Možnosti načrtovanja poti";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Optimizacija poti";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Samodejno prerazporedi vmesne postanke za učinkovitejšo pot.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Izogibaj se cestninam";
 
@@ -707,6 +754,15 @@
 "toll_road" = "Cestninska cesta";
 "unpaved_road" = "Makadamska cesta";
 "ferry_crossing" = "Prečkanje s trajektom";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Stopnice";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Vrata";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Dvižna zapornica";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Da";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Izberite Lokacijske storitve";
 "location_services_disabled_on_device_4" = "4. Vklopite Lokacijske storitve";
 "location_services_disabled_on_device_additional_message" = "Ali pa nadaljujte z uporabo Organic Maps brez lokacije";
-"book_button" = "Rezerviraj";
 "placepage_call_button" = "Kliči";
 "placepage_bookmark_name_hint" = "Ime zaznamka";
 "placepage_delete_bookmark_button" = "Izbriši zaznamek";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Onemogočim snemanje vaše nedavno prevožene poti?";
 "off_recent_track_background_button" = "Onemogoči";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Poglej";
 "recent_track_background_dialog_message" = "Organic Maps uporablja vašo lokacijo v ozadju za snemanje vaše nedavno prevožene poti.";
 "general_settings" = "Splošne nastavitve";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Priljubljeno";
 "hide_from_map" = "Skrij z zemljevida";
 "tags_loading_error_subtitle" = "Pri nalaganju oznak je prišlo do napake, poskusite znova";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Desno";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Dno";
 "trip_start" = "Gremo";
 "pick_destination" = "Cilj";
 "follow_my_position" = "Ponovno centriraj";
@@ -885,6 +931,15 @@
 "medicine" = "Medicina";
 "search_in_the_list" = "Išči na seznamu";
 "religious_places" = "Verski kraji";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Izberi";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Izberi vse";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Prekliči izbiro";
 "transit_not_found" = "Navigacija s podzemno železnico v tej regiji še ni na voljo";
 "dialog_pedestrian_route_is_long_header" = "Ni najdene poti s podzemno železnico";
 "dialog_pedestrian_route_is_long_message" = "Izberite začetno ali končno točko bližje postaji podzemne železnice";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Spust";
 "elevation_profile_min_elevation" = "Min. višina";
 "elevation_profile_max_elevation" = "Maks. višina";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Začnite se premikati, da vidite višinski profil";
 "isolines_toast_zooms_1_10" = "Povečajte za raziskovanje plastnic";
 "downloader_loading_ios" = "Prenašanje";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Izvozi vse zaznamke in sledi";
 "drive_through" = "Vožnja skozi";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Povečaj";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Pomanjšaj";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Povezava do menija";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Odpri v drugi aplikaciji";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Samopostrežba";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Spremeni barvo";
 
+/* Text for the hiding track. */
+"hide_track" = "Hide track";
+
+/* Text for the showing track. */
+"show_track" = "Show track";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Zemljevid";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Za uporabo te funkcije omogočite iCloud v nastavitvah naprave.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Omogoči";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Barva sledi je spremenjena";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Izberi na zemljevidu";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Začetek";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Cilj";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Spremeni začetek";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Spremeni cilj";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Spremeni postanek";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Doseženo največje število postankov";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Premikajte in povečujte zemljevid, da namestite križec";

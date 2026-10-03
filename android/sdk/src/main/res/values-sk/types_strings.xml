@@ -221,6 +221,7 @@
     <string name="type.building">Budova</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Adresa</string>
+    <string name="type.building.construction">Budova vo výstavbe</string>
     <string name="type.building.has_parts">Budova</string>
     <string name="type.building_part">Budova</string>
     <string name="type.building.garage">Garáž</string>
@@ -311,7 +312,7 @@
     <string name="type.cuisine.mediterranean">Stredomorská kuchyňa</string>
     <string name="type.cuisine.mexican">Mexická kuchyňa</string>
     <string name="type.cuisine.moroccan">Marocká kuchyňa</string>
-    <string name="type.cuisine.noodles">Rezance</string>
+    <string name="type.cuisine.noodle">Rezance</string>
     <string name="type.cuisine.oriental">Orientálna kuchyňa</string>
     <string name="type.cuisine.pancake">Lievance</string>
     <string name="type.cuisine.pasta">Cestoviny</string>
@@ -327,6 +328,7 @@
     <string name="type.cuisine.sausage">Klobása</string>
     <string name="type.cuisine.savory_pancakes">Palacinky na slano</string>
     <string name="type.cuisine.seafood">Morské plody</string>
+    <string name="type.cuisine.shawarma">Šawarma</string>
     <string name="type.cuisine.soba">Soba</string>
     <string name="type.cuisine.spanish">Španielska kuchyňa</string>
     <string name="type.cuisine.steak_house">Steak house</string>
@@ -552,6 +554,7 @@
     <string name="type.historic.castle.shiro">Japonský hrad</string>
     <string name="type.historic.castle.stately">Zámok</string>
     <string name="type.historic.city_gate">Mestská brána</string>
+    <string name="type.man_made.ceremonial_gate">Slávnostná brána</string>
     <string name="type.historic.citywalls">Mestský múr</string>
     <string name="type.historic.fort">Pevnosť</string>
     <string name="type.historic.gallows">Šibenica</string>
@@ -583,6 +586,7 @@
     <string name="type.landuse">Využitie pôdy</string>
     <string name="type.landuse.allotments">Záhradky</string>
     <string name="type.landuse.basin">Vodná nádrž</string>
+    <string name="type.landuse.basin.intermittent">Občasná vodná nádrž</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Cintorín</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
@@ -611,7 +615,6 @@
     <string name="type.landuse.quarry">Lom</string>
     <string name="type.landuse.railway">Priestory železnice</string>
     <string name="type.landuse.recreation_ground">Priestranstvo na rekreáciu</string>
-    <string name="type.landuse.reservoir">Voda</string>
     <string name="type.landuse.residential">Obytná zóna</string>
     <string name="type.landuse.retail">Obchodná zóna</string>
     <string name="type.landuse.salt_pond">Salina</string>
@@ -629,6 +632,7 @@
     <string name="type.leisure.ice_rink">Klzisko</string>
     <string name="type.leisure.marina">Marína</string>
     <string name="type.leisure.nature_reserve">Prírodná rezervácia</string>
+    <string name="type.leisure.bird_hide">Pozorovateľňa vtákov</string>
     <string name="type.leisure.outdoor_seating">Posedenie vonku</string>
     <string name="type.leisure.park">Park</string>
     <string name="type.leisure.park.no.access">Park</string>
@@ -707,13 +711,16 @@
     <string name="type.natural.water.lake">Jazero</string>
     <string name="type.natural.water.lock">Plavebná komora</string>
     <string name="type.natural.water.pond">Rybník</string>
-    <string name="type.natural.water.reservoir">Nádrž</string>
+    <string name="type.natural.water.reservoir">Priehradná nádrž</string>
     <string name="type.natural.water.basin">Vodná nádrž</string>
     <string name="type.natural.water.river">Rieka</string>
+    <string name="type.natural.water.intermittent">Občasná vodná plocha</string>
     <string name="type.natural.land">Pôda</string>
     <string name="type.natural.meadow">Lúka</string>
     <string name="type.natural.orchard">Sad</string>
     <string name="type.natural.peak">Hora</string>
+    <string name="type.natural.hill">Kopec</string>
+    <string name="type.natural.arch">Skalný oblúk</string>
     <string name="type.natural.saddle">Sedlo</string>
     <string name="type.natural.rock">Kameň</string>
     <string name="type.natural.scrub">Krovie</string>
@@ -723,6 +730,7 @@
     <string name="type.natural.tree_row">Stromoradie</string>
     <string name="type.natural.vineyard">Vinohrad</string>
     <string name="type.natural.volcano">Sopka</string>
+    <string name="type.natural.volcano.active">Aktívna sopka</string>
     <string name="type.natural.water">Voda</string>
     <string name="type.natural.wetland">Oblasť mokradí</string>
     <string name="type.natural.wetland.bog">Rašelinisko</string>
@@ -1239,6 +1247,18 @@
     <string name="type.sport.field_hockey">Pozemný hokej</string>
     <string name="type.sport.badminton">Bedminton</string>
     <string name="type.sport.pelota">Baskická pelota</string>
+    <string name="type.sport.boules">Pétanque</string>
+    <string name="type.sport.cycling">Cyklistika</string>
+    <string name="type.sport.four_square">Štyri štvorce</string>
+    <string name="type.sport.horse_racing">Dostihy</string>
+    <string name="type.sport.karting">Motokáry</string>
+    <string name="type.sport.motocross">Motokros</string>
+    <string name="type.sport.motor">Motoristický šport</string>
+    <string name="type.sport.netball">Netball</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Rugby</string>
+    <string name="type.sport.running">Beh</string>
+    <string name="type.sport.softball">Softbal</string>
     <string name="type.tourism">Turistika</string>
     <string name="type.tourism.aquarium">Akvárium</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1256,6 +1276,7 @@
     <string name="type.attraction.historic">Historická atrakcia</string>
     <string name="type.attraction.maze">Bludisko</string>
     <string name="type.attraction.roller_coaster">Horská dráha</string>
+    <string name="type.roller_coaster.track">Horská dráha</string>
     <string name="type.attraction.water_slide">Vodná šmýkačka</string>
     <string name="type.tourism.attraction.specified">Atrakcia</string>
     <string name="type.tourism.camp_site">Kemp</string>
@@ -1283,6 +1304,7 @@
     <string name="type.traffic_calming.bump">Spomaľovací prah</string>
     <string name="type.traffic_calming.hump">Spomaľovací prah</string>
     <string name="type.waterway">Vodný tok</string>
+    <string name="type.waterway.access_point">Prístupový bod k vodnej ceste</string>
     <string name="type.waterway.canal">Kanál</string>
     <string name="type.waterway.canal.tunnel">Tunel v kanáli</string>
     <string name="type.waterway.fish_pass">Rybovod</string>
@@ -1341,6 +1363,7 @@
     <string name="type.self_service.no">Žiadna samoobsluha</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Sociálne zariadenie</string>
+    <string name="type.amenity.stage">Javisko</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Vchod do pohotovostného oddelenia</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1364,4 +1387,5 @@
     <string name="type.craft.watchmaker">Hodinár</string>
     <string name="type.xmas_feature.market">Vianočný trh</string>
     <string name="type.xmas_feature.tree">Vianočný stromček</string>
+    <string name="type.amenity.hookah_lounge">Shisha bar</string>
 </resources>

@@ -1,46 +1,53 @@
 package app.organicmaps.widget.placepage.sections;
 
+import static app.organicmaps.editor.data.TimeFormatUtils.formatWeekdaysRange;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 import app.organicmaps.R;
 import app.organicmaps.editor.data.TimeFormatUtils;
 import app.organicmaps.sdk.bookmarks.data.MapObject;
 import app.organicmaps.sdk.bookmarks.data.Metadata;
 import app.organicmaps.sdk.editor.OpeningHours;
-import app.organicmaps.sdk.editor.data.Timespan;
+import app.organicmaps.sdk.editor.data.OpeningHoursInfo;
 import app.organicmaps.sdk.editor.data.Timetable;
-import app.organicmaps.util.ThemeUtils;
 import app.organicmaps.util.UiUtils;
-import app.organicmaps.utils.Utils;
 import app.organicmaps.widget.placepage.PlacePageUtils;
 import app.organicmaps.widget.placepage.PlacePageViewModel;
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
 import java.util.Calendar;
+import java.util.Date;
 
 public class PlacePageOpeningHoursFragment extends Fragment implements Observer<MapObject>
 {
   private View mFrame;
-  private TextView mTodayLabel;
-  private TextView mTodayOpenTime;
-  private TextView mTodayNonBusinessTime;
-  private RecyclerView mFullWeekOpeningHours;
-  private PlaceOpeningHoursAdapter mOpeningHoursAdapter;
+  private View mSchedulePreviewContainer;
+  private View mDropdownContent;
+  private TextView mTvSchedulePreviewOpenIndicator;
+  private TextView mTvSchedulePreviewDescription;
+  private TextView mTvSingleLineOpeningHours;
+  private LinearLayout mFullWeekOpeningHours;
+  private WeekScheduleBuilder mScheduleBuilder;
   private View dropDownIcon;
   private View mOhContainer;
   private boolean isOhExpanded;
+  private ValueAnimator mDropdownAnimator;
 
   private PlacePageViewModel mViewModel;
 
@@ -58,61 +65,19 @@ public class PlacePageOpeningHoursFragment extends Fragment implements Observer<
   {
     super.onViewCreated(view, savedInstanceState);
     mFrame = view;
-    mTodayLabel = view.findViewById(R.id.oh_today_label);
-    mTodayOpenTime = view.findViewById(R.id.oh_today_open_time);
-    mTodayNonBusinessTime = view.findViewById(R.id.oh_nonbusiness_time);
-    mFullWeekOpeningHours = view.findViewById(R.id.rw__full_opening_hours);
-    mOpeningHoursAdapter = new PlaceOpeningHoursAdapter();
-    mFullWeekOpeningHours.setAdapter(mOpeningHoursAdapter);
+    mFullWeekOpeningHours = view.findViewById(R.id.full_opening_hours);
+    mSchedulePreviewContainer = view.findViewById(R.id.schedule_preview_container);
+    mTvSchedulePreviewOpenIndicator = view.findViewById(R.id.tv__schedule_preview_open_indicator);
+    mTvSchedulePreviewDescription = view.findViewById(R.id.tv__schedule_preview_description);
+    mTvSingleLineOpeningHours = view.findViewById(R.id.tv__single_line_opening_hours);
+    mDropdownContent = view.findViewById(R.id.dropdown_content);
+    mScheduleBuilder = new WeekScheduleBuilder();
     dropDownIcon = view.findViewById(R.id.dropdown_icon);
-    mFullWeekOpeningHours.getLayoutParams().height = 0;
+    mDropdownContent.getLayoutParams().height = 0;
     UiUtils.hide(dropDownIcon);
     isOhExpanded = false;
     mOhContainer = mFrame.findViewById(R.id.oh_container);
-    var touchListener = new RecyclerView.OnItemTouchListener() {
-      @Override
-      public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e)
-      {
-        if (e.getAction() == MotionEvent.ACTION_UP)
-          expandOpeningHours();
-        return false;
-      }
-      @Override
-      public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e)
-      {}
-      @Override
-      public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept)
-      {}
-    };
-    mFullWeekOpeningHours.addOnItemTouchListener(touchListener);
-  }
-
-  private void refreshTodayNonBusinessTime(Timespan[] closedTimespans)
-  {
-    final String hoursClosedLabel = getResources().getString(R.string.editor_hours_closed);
-    if (closedTimespans == null || closedTimespans.length == 0)
-      UiUtils.clearTextAndHide(mTodayNonBusinessTime);
-    else
-      UiUtils.setTextAndShow(mTodayNonBusinessTime,
-                             TimeFormatUtils.formatNonBusinessTime(closedTimespans, hoursClosedLabel));
-  }
-
-  private void refreshTodayOpeningHours(String label, String openTime, @ColorInt int color)
-  {
-    UiUtils.setTextAndShow(mTodayLabel, label);
-    UiUtils.setTextAndShow(mTodayOpenTime, openTime);
-
-    mTodayLabel.setTextColor(color);
-    mTodayOpenTime.setTextColor(color);
-  }
-
-  private void refreshTodayOpeningHours(String label, @ColorInt int color)
-  {
-    UiUtils.setTextAndShow(mTodayLabel, label);
-    UiUtils.hide(mTodayOpenTime);
-
-    mTodayLabel.setTextColor(color);
-    mTodayOpenTime.setTextColor(color);
+    mFullWeekOpeningHours.setOnClickListener(v -> expandOpeningHours());
   }
 
   private void refreshOpeningHours(MapObject mapObject)
@@ -124,123 +89,149 @@ public class PlacePageOpeningHoursFragment extends Fragment implements Observer<
                                      TimeFormatUtils.formatTimetables(getResources(), ohStr, timetables));
       return true;
     });
-    final boolean isEmptyTT = (timetables == null || timetables.length == 0);
-    final int color = ThemeUtils.getColor(requireContext(), android.R.attr.textColorPrimary);
 
-    if (isEmptyTT)
+    resetWeeklyViewState();
+
+    final boolean noOhString = ohStr.isEmpty();
+    final OpeningHoursInfo ohInfo = getOpeningHoursInfoFromString(ohStr);
+    final boolean isEmptyTT = timetables == null || timetables.length == 0;
+
+    refreshSchedulePreview(ohInfo);
+
+    if (noOhString)
     {
-      resetWeeklyViewState();
-      // 'opening_hours' tag wasn't parsed either because it's empty or wrong format.
-      if (!ohStr.isEmpty())
-      {
-        UiUtils.show(mFrame);
-        refreshTodayOpeningHours(ohStr, color);
-        UiUtils.hide(mTodayNonBusinessTime);
-      }
-      else
-        UiUtils.hide(mFrame);
+      // no 'opening_hours' tag
+      UiUtils.hide(mFrame);
+    }
+    else if (ohInfo == null)
+    {
+      // couldn't read anything from 'opening_hours' tag
+      UiUtils.show(mFrame);
+      UiUtils.show(mSchedulePreviewContainer);
+      UiUtils.hide(mTvSchedulePreviewOpenIndicator);
+      UiUtils.setTextAndShow(mTvSchedulePreviewDescription, ohStr);
+    }
+    else if (isEmptyTT)
+    {
+      // couldn't extract timetables from 'opening_hours' tag
+      UiUtils.show(mFrame);
+      UiUtils.setTextAndShow(mTvSingleLineOpeningHours, ohStr);
+      enableDropdownContent();
     }
     else
     {
       UiUtils.show(mFrame);
-      final Resources resources = getResources();
-      if (timetables[0].isFullWeek())
+
+      if (!ohInfo.isTwentyFourSeven) // Show whole week time table, except if it's open 24/7
       {
-        resetWeeklyViewState();
-        final Timetable tt = timetables[0];
-        if (tt.isFullday)
-        {
-          refreshTodayOpeningHours(resources.getString(R.string.twentyfour_seven), color);
-          UiUtils.clearTextAndHide(mTodayNonBusinessTime);
-        }
-        else
-        {
-          refreshTodayOpeningHours(resources.getString(R.string.daily), tt.workingTimespan.toWideString(), color);
-          refreshTodayNonBusinessTime(tt.closedTimespans);
-        }
-      }
-      else
-      {
-        // Show whole week time table.
-        int firstDayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        mOpeningHoursAdapter.setTimetables(timetables, firstDayOfWeek);
-        if (isOhExpanded)
-        {
-          mFullWeekOpeningHours.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-          int newHeight = mFullWeekOpeningHours.getMeasuredHeight();
-          mFullWeekOpeningHours.getLayoutParams().height = newHeight;
-          mFullWeekOpeningHours.requestLayout();
-        }
-        UiUtils.show(dropDownIcon);
-        mOhContainer.setOnClickListener((v) -> expandOpeningHours());
-
-        // Show today's open time + non-business time.
-        boolean containsCurrentWeekday = false;
-        final int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        for (Timetable tt : timetables)
-        {
-          if (tt.containsWeekday(currentDay))
-          {
-            containsCurrentWeekday = true;
-            String openTime;
-
-            if (tt.isFullday)
-            {
-              String allDay = resources.getString(R.string.editor_time_allday);
-              openTime = Utils.unCapitalize(allDay);
-            }
-            else
-              openTime = tt.workingTimespan.toWideString();
-
-            refreshTodayOpeningHours(resources.getString(R.string.today), openTime, color);
-            refreshTodayNonBusinessTime(tt.closedTimespans);
-
-            break;
-          }
-        }
-
-        // Show that place is closed today.
-        if (!containsCurrentWeekday)
-        {
-          refreshTodayOpeningHours(resources.getString(R.string.day_off_today),
-                                   ContextCompat.getColor(requireContext(), R.color.base_red));
-          UiUtils.hide(mTodayNonBusinessTime);
-        }
+        UiUtils.show(mFullWeekOpeningHours);
+        int currentDayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        mScheduleBuilder.setTimetables(timetables, currentDayOfWeek);
+        populateWeekSchedule();
+        enableDropdownContent();
       }
     }
   }
 
+  private void populateWeekSchedule()
+  {
+    mFullWeekOpeningHours.removeAllViews();
+    final LayoutInflater inflater = LayoutInflater.from(requireContext());
+    for (final WeekScheduleBuilder.WeekScheduleData schedule : mScheduleBuilder.getWeekSchedule())
+    {
+      final View row = inflater.inflate(R.layout.place_page_opening_hours_item, mFullWeekOpeningHours, false);
+      bindScheduleRow(row, schedule);
+      mFullWeekOpeningHours.addView(row);
+    }
+  }
+
+  private void bindScheduleRow(@NonNull View row, @NonNull WeekScheduleBuilder.WeekScheduleData schedule)
+  {
+    final TextView weekdays = row.findViewById(R.id.tv__opening_hours_weekdays);
+    final TextView openTime = row.findViewById(R.id.tv__opening_hours_time);
+
+    final int style = schedule.isBold ? R.style.MwmTextAppearance_PlacePage : R.style.MwmTextAppearance_Body3;
+    TextViewCompat.setTextAppearance(weekdays, style);
+    TextViewCompat.setTextAppearance(openTime, style);
+
+    weekdays.setText(formatWeekdaysRange(schedule.startWeekDay, schedule.endWeekDay));
+    openTime.setText(formatOpenTime(schedule));
+  }
+
+  @NonNull
+  private String formatOpenTime(@NonNull WeekScheduleBuilder.WeekScheduleData schedule)
+  {
+    final Resources res = getResources();
+    if (schedule.isClosed)
+      return res.getString(R.string.day_off);
+    if (schedule.timetable.isFullday)
+      return res.getString(R.string.editor_time_allday);
+
+    final String shifts =
+        schedule.timetable.formatOpenShifts("\n", res.getString(R.string.noon), res.getString(R.string.midnight));
+    return shifts.isEmpty() ? res.getString(R.string.day_off) : shifts;
+  }
+
   private void expandOpeningHours()
   {
+    if (mDropdownAnimator != null)
+      mDropdownAnimator.cancel();
+
     int targetHeight, startHeight;
     if (!isOhExpanded)
     {
-      UiUtils.show(mFullWeekOpeningHours);
+      UiUtils.show(mDropdownContent);
       startHeight = 0;
-      mFullWeekOpeningHours.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-      targetHeight = mFullWeekOpeningHours.getMeasuredHeight();
+      targetHeight = measureDropdownContentHeight();
       dropDownIcon.animate().rotation(-180f).setDuration(200).start();
       isOhExpanded = true;
     }
     else
     {
-      startHeight = mFullWeekOpeningHours.getMeasuredHeight();
+      startHeight = measureDropdownContentHeight();
       targetHeight = 0;
       dropDownIcon.animate().rotation(0f).setDuration(200).start();
       isOhExpanded = false;
     }
-    mFullWeekOpeningHours.getLayoutParams().height = startHeight;
+    mDropdownContent.getLayoutParams().height = startHeight;
     final ValueAnimator va = ValueAnimator.ofInt(startHeight, targetHeight);
     va.setDuration(200);
     va.addUpdateListener(animation -> {
-      mFullWeekOpeningHours.getLayoutParams().height = (int) animation.getAnimatedValue();
-      mFullWeekOpeningHours.requestLayout();
-      if (mFrame.getParent() instanceof View)
-        ((View) mFrame.getParent()).requestLayout();
+      mDropdownContent.getLayoutParams().height = (int) animation.getAnimatedValue();
+      mDropdownContent.requestLayout();
+      requestParentLayout();
     });
+    // Snap to wrap_content once expanded: the measured height can fall short and there is no inner scroll.
+    if (isOhExpanded)
+      va.addListener(new AnimatorListenerAdapter() {
+        private boolean mCancelled;
+        @Override
+        public void onAnimationCancel(Animator animation)
+        {
+          mCancelled = true;
+        }
+        @Override
+        public void onAnimationEnd(Animator animation)
+        {
+          if (!mCancelled && isOhExpanded)
+            setDropdownContentWrapHeight();
+        }
+      });
+    mDropdownAnimator = va;
     va.start();
+  }
+
+  private void setDropdownContentWrapHeight()
+  {
+    mDropdownContent.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+    mDropdownContent.requestLayout();
+    requestParentLayout();
+  }
+
+  private void requestParentLayout()
+  {
+    if (mFrame.getParent() instanceof View)
+      ((View) mFrame.getParent()).requestLayout();
   }
 
   @Override
@@ -265,10 +256,151 @@ public class PlacePageOpeningHoursFragment extends Fragment implements Observer<
   }
   private void resetWeeklyViewState()
   {
-    isOhExpanded = false;
-    UiUtils.hide(mFullWeekOpeningHours);
+    if (!isOhExpanded)
+    {
+      dropDownIcon.setRotation(0f);
+      mOhContainer.setOnClickListener(null);
+    }
+
     UiUtils.hide(dropDownIcon);
-    dropDownIcon.setRotation(0f);
-    mOhContainer.setOnClickListener(null);
+    UiUtils.hide(mDropdownContent);
+    UiUtils.hide(mTvSingleLineOpeningHours);
+    UiUtils.hide(mFullWeekOpeningHours);
+    mFullWeekOpeningHours.removeAllViews();
+  }
+
+  private void enableDropdownContent()
+  {
+    UiUtils.show(mDropdownContent);
+    UiUtils.show(dropDownIcon);
+    mOhContainer.setOnClickListener((v) -> expandOpeningHours());
+
+    if (isOhExpanded)
+      setDropdownContentWrapHeight();
+  }
+
+  // Measure at the dropdown's own width so multi-line shifts wrap exactly as they render.
+  private int measureDropdownContentHeight()
+  {
+    final int width = mDropdownContent.getWidth() > 0 ? mDropdownContent.getWidth() : mFrame.getWidth();
+    mDropdownContent.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+    return mDropdownContent.getMeasuredHeight();
+  }
+
+  private OpeningHoursInfo getOpeningHoursInfoFromString(String ohStr)
+  {
+    final long currentTime = System.currentTimeMillis() / 1000L;
+    return OpeningHours.nativeGetOpeningHoursInfoFromString(ohStr, currentTime);
+  }
+
+  private void refreshSchedulePreview(OpeningHoursInfo ohInfo)
+  {
+    final long currentTime = System.currentTimeMillis() / 1000L;
+
+    if (ohInfo == null)
+    {
+      UiUtils.hide(mSchedulePreviewContainer);
+      return;
+    }
+
+    UiUtils.show(mSchedulePreviewContainer);
+
+    if (ohInfo.isTwentyFourSeven)
+    {
+      UiUtils.setTextAndShow(mTvSchedulePreviewOpenIndicator, getString(R.string.twentyfour_seven));
+      mTvSchedulePreviewOpenIndicator.setTextColor(ContextCompat.getColor(requireContext(), R.color.base_green));
+      UiUtils.hide(mTvSchedulePreviewDescription);
+    }
+    else if (ohInfo.state == OpeningHoursInfo.RuleState.Open)
+    {
+      String descriptionString;
+
+      if (ohInfo.nextTimeClosed == OpeningHoursInfo.TIME_NEVER) // Will stay open forever
+        descriptionString = "";
+      else
+      {
+        final long timeLeftMinutes = (ohInfo.nextTimeClosed - currentTime) / 60;
+
+        Date closeDate = new Date(ohInfo.nextTimeClosed * 1000L);
+        DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(requireContext());
+
+        if (timeLeftMinutes < 3 * 60) // Less than 3 hours
+          descriptionString = getString(R.string.closes_in, getTimeIntervalString(timeLeftMinutes)) + " • "
+                            + dateFormat.format(closeDate);
+        else if (timeLeftMinutes < 24 * 60) // Less than 24 hours
+          descriptionString = getString(R.string.closes_at, dateFormat.format(closeDate));
+        else
+          descriptionString = "";
+      }
+
+      UiUtils.setTextAndShow(mTvSchedulePreviewOpenIndicator, getString(R.string.editor_time_open));
+      mTvSchedulePreviewOpenIndicator.setTextColor(ContextCompat.getColor(requireContext(), R.color.base_green));
+
+      UiUtils.setTextAndHideIfEmpty(mTvSchedulePreviewDescription, descriptionString);
+    }
+    else // ohInfo.state == OpeningHoursInfo.RuleState.Closed
+    {
+      String descriptionString;
+
+      if (ohInfo.nextTimeOpen == OpeningHoursInfo.TIME_NEVER) // Will stay closed forever
+        descriptionString = "";
+      else
+      {
+        final long timeLeftMinutes = (ohInfo.nextTimeOpen - currentTime) / 60;
+
+        final Calendar nowCal = Calendar.getInstance();
+
+        Calendar openCal = Calendar.getInstance();
+        openCal.setTimeInMillis(ohInfo.nextTimeOpen * 1000L);
+
+        Date openDate = new Date(ohInfo.nextTimeOpen * 1000L);
+        DateFormat dateFormat = android.text.format.DateFormat.getTimeFormat(requireContext());
+
+        boolean willOpenToday = nowCal.get(Calendar.DAY_OF_YEAR) == openCal.get(Calendar.DAY_OF_YEAR)
+                             && nowCal.get(Calendar.YEAR) == openCal.get(Calendar.YEAR);
+
+        if (timeLeftMinutes < 3 * 60) // Less than 3 hours
+          descriptionString = getString(R.string.opens_in, getTimeIntervalString(timeLeftMinutes)) + " • "
+                            + dateFormat.format(openDate);
+        else if (willOpenToday) // Today
+          descriptionString = getString(R.string.opens_at, dateFormat.format(openDate));
+        else if (timeLeftMinutes < 24 * 60) // Less than 24 hours
+          descriptionString = getString(R.string.opens_tomorrow_at, dateFormat.format(openDate));
+        else if (timeLeftMinutes < 7 * 24 * 60) // Less than 1 week
+        {
+          final int openDay = openCal.get(Calendar.DAY_OF_WEEK);
+          final String openDayName = DateFormatSymbols.getInstance().getWeekdays()[openDay];
+          descriptionString = getString(R.string.opens_dayoftheweek_at, openDayName, dateFormat.format(openDate));
+        }
+        else
+          descriptionString = "";
+      }
+
+      UiUtils.setTextAndShow(mTvSchedulePreviewOpenIndicator, getString(R.string.closed_now));
+      mTvSchedulePreviewOpenIndicator.setTextColor(ContextCompat.getColor(requireContext(), R.color.base_red));
+
+      UiUtils.setTextAndHideIfEmpty(mTvSchedulePreviewDescription, descriptionString);
+    }
+  }
+
+  private String getTimeIntervalString(long minutes)
+  {
+    if (minutes >= 60)
+    {
+      if (minutes % 60 != 0)
+      {
+        return String.format("%d %s %d %s", minutes / 60, getString(R.string.hour), minutes % 60,
+                             getString(R.string.minute));
+      }
+      else
+      {
+        return String.format("%d %s", minutes / 60, getString(R.string.hour));
+      }
+    }
+    else
+    {
+      return String.format("%d %s", minutes % 60, getString(R.string.minute));
+    }
   }
 }

@@ -20,6 +20,11 @@ enum class Program
   TextStaticOutlinedGui,
   TextOutlinedGui,
   Area,
+  // Solid-fill patterns are background fills: keep them before programs that draw translucent geometry over them,
+  // see AreaPatterns_SolidFillsDrawBeforeTranslucentGeometry.
+  AreaStipple,
+  AreaSpeckle,
+  AreaGrid,
   AreaOutline,
   Area3d,
   Area3dOutline,
@@ -30,6 +35,7 @@ enum class Program
   TransparentArea,
   CapJoin,
   HatchingArea,
+  HatchingAreaDash,
   TexturingGui,
   Ruler,
   Accuracy,
@@ -95,7 +101,11 @@ inline std::string_view DebugPrint(Program p)
   case Program::DashedLine: return "DashedLine";
   case Program::PathSymbol: return "PathSymbol";
   case Program::TransparentArea: return "TransparentArea";
+  case Program::AreaStipple: return "AreaStipple";
+  case Program::AreaSpeckle: return "AreaSpeckle";
+  case Program::AreaGrid: return "AreaGrid";
   case Program::HatchingArea: return "HatchingArea";
+  case Program::HatchingAreaDash: return "HatchingAreaDash";
   case Program::TexturingGui: return "TexturingGui";
   case Program::Ruler: return "Ruler";
   case Program::Accuracy: return "Accuracy";

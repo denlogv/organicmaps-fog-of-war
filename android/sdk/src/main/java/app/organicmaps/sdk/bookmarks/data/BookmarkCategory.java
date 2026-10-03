@@ -2,6 +2,7 @@ package app.organicmaps.sdk.bookmarks.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -131,14 +132,14 @@ public final class BookmarkCategory implements Parcelable
     nativeSetDescription(mId, mDescription);
   }
 
-  public void setCategoryBookmarksColor(@PredefinedColors.Color int colorIndex)
+  public void setCategoryBookmarksColor(@ColorInt int color)
   {
-    nativeSetCategoryBookmarksColor(mId, colorIndex);
+    nativeSetCategoryBookmarksColor(mId, color);
   }
 
-  public void setCategoryTracksColor(@PredefinedColors.Color int colorIndex)
+  public void setCategoryTracksCustomColor(@ColorInt int color)
   {
-    nativeSetCategoryTracksColor(mId, colorIndex);
+    nativeSetCategoryTracksCustomColor(mId, color);
   }
 
   public long getBookmarkIdByPosition(int positionInCategory)
@@ -149,6 +150,24 @@ public final class BookmarkCategory implements Parcelable
   public long getTrackIdByPosition(int positionInCategory)
   {
     return nativeGetTrackIdByPosition(mId, positionInCategory);
+  }
+
+  /**
+   * Reads the whole category at once; a loop of {@link #getBookmarkIdByPosition(int)} would be quadratic.
+   */
+  @NonNull
+  public long[] getBookmarkIds()
+  {
+    return nativeGetBookmarkIds(mId);
+  }
+
+  /**
+   * @see #getBookmarkIds()
+   */
+  @NonNull
+  public long[] getTrackIds()
+  {
+    return nativeGetTrackIds(mId);
   }
 
   public boolean hasLastSortingType()
@@ -249,10 +268,16 @@ public final class BookmarkCategory implements Parcelable
   private static native void nativeSetCustomProperty(long catId, String key, String value);
   private static native boolean nativeIsEmpty(long catId);
 
-  private static native void nativeSetCategoryBookmarksColor(long catId, @PredefinedColors.Color int colorIndex);
-  private static native void nativeSetCategoryTracksColor(long catId, @PredefinedColors.Color int colorIndex);
+  private static native void nativeSetCategoryBookmarksColor(long catId, @ColorInt int color);
+  private static native void nativeSetCategoryTracksCustomColor(long catId, @ColorInt int color);
   private static native long nativeGetBookmarkIdByPosition(long catId, int position);
   private static native long nativeGetTrackIdByPosition(long catId, int position);
+
+  @NonNull
+  private static native long[] nativeGetBookmarkIds(long catId);
+
+  @NonNull
+  private static native long[] nativeGetTrackIds(long catId);
 
   private static native boolean nativeHasLastSortingType(long catId);
   @SortingType

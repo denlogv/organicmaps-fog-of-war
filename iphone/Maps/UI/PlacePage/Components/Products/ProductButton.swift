@@ -16,11 +16,10 @@ final class ProductButton: UIButton {
   private func setup(title: String, action _: @escaping () -> Void) {
     setStyleAndApply(.blueBackground)
     setTitle(title, for: .normal)
-    setTitleColor(.white, for: .normal)
-    titleLabel?.font = UIFont.regular14()
-    titleLabel?.allowsDefaultTighteningForTruncation = true
-    titleLabel?.adjustsFontSizeToFitWidth = true
-    titleLabel?.minimumScaleFactor = 0.5
+    setTitleColor(.whitePrimary, for: .normal)
+    titleLabel?.font = UIFont.regular14.dynamic
+    titleLabel?.adjustsFontForContentSizeCategory = true
+    titleLabel?.configureSingleLineAutoScaling()
     layer.setCornerRadius(.buttonDefaultSmall)
     layer.masksToBounds = true
     addTarget(self, action: #selector(buttonDidTap), for: .touchUpInside)

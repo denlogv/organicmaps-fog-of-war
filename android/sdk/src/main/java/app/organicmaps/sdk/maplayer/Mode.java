@@ -113,6 +113,23 @@ public enum Mode
     {
       Framework.nativeSetFogOfWarEnabled(isEnabled);
     }
+  },
+
+  SATELLITE {
+    @Override
+    public boolean isEnabled(@NonNull Context context)
+    {
+      return Framework.nativeIsBackgroundTilesEnabled();
+    }
+
+    @Override
+    public void setEnabled(@NonNull Context context, boolean isEnabled)
+    {
+      // Keep the configured URL / cache size / area opacity; only flip the on/off flag. With an empty
+      // URL the core stays inactive, so the UI layer opens the Satellite Imagery settings instead of
+      // calling this (see ToggleMapLayerFragment).
+      Framework.nativeSetBackgroundTilesEnabled(isEnabled);
+    }
   };
 
   public abstract boolean isEnabled(@NonNull Context context);

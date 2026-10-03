@@ -232,6 +232,7 @@
     <string name="type.building">Stavba</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Naslov</string>
+    <string name="type.building.construction">Stavba v gradnji</string>
     <string name="type.building.has_parts">Stavba</string>
     <string name="type.building_part">Stavba</string>
     <string name="type.building.garage">Garaža</string>
@@ -313,7 +314,7 @@
     <string name="type.cuisine.mediterranean">Sredozemska</string>
     <string name="type.cuisine.mexican">Mehiška</string>
     <string name="type.cuisine.moroccan">Maroška</string>
-    <string name="type.cuisine.noodles">Rezanci</string>
+    <string name="type.cuisine.noodle">Rezanci</string>
     <string name="type.cuisine.oriental">Vzhodnoazijska</string>
     <string name="type.cuisine.pancake">Palačinka</string>
     <string name="type.cuisine.pasta">Testenine</string>
@@ -328,6 +329,7 @@
     <string name="type.cuisine.sausage">Klobasa</string>
     <string name="type.cuisine.savory_pancakes">Slane palačinke</string>
     <string name="type.cuisine.seafood">Morska hrana</string>
+    <string name="type.cuisine.shawarma">Shawarma</string>
     <string name="type.cuisine.spanish">Španska</string>
     <string name="type.cuisine.steak_house">Zrezkarna</string>
     <string name="type.cuisine.sushi">Suši</string>
@@ -550,6 +552,7 @@
     <string name="type.historic.castle.shiro">Japonski grad</string>
     <string name="type.historic.castle.stately">Veličasten grad</string>
     <string name="type.historic.city_gate">Mestna vrata</string>
+    <string name="type.man_made.ceremonial_gate">Obredna vrata</string>
     <string name="type.historic.citywalls">Mestno obzidje</string>
     <string name="type.historic.fort">Utrdba</string>
     <string name="type.historic.gallows">Vislice</string>
@@ -580,7 +583,8 @@
     <string name="type.junction.roundabout">Krožišče</string>
     <string name="type.landuse">Raba zemljišč</string>
     <string name="type.landuse.allotments">Vrtički</string>
-    <string name="type.landuse.basin">Bazen</string>
+    <string name="type.landuse.basin">Vodni bazen</string>
+    <string name="type.landuse.basin.intermittent">Občasni vodni bazen</string>
     <string name="type.landuse.brownfield">Degradirano območje</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Pokopališče</string>
@@ -610,7 +614,6 @@
     <string name="type.landuse.quarry">Kamnolom</string>
     <string name="type.landuse.railway">Železniško območje</string>
     <string name="type.landuse.recreation_ground">Rekreacijsko območje</string>
-    <string name="type.landuse.reservoir">Zadrževalnik</string>
     <string name="type.landuse.residential">Stanovanjsko območje</string>
     <string name="type.landuse.retail">Trgovsko območje</string>
     <string name="type.landuse.salt_pond">Solni bazen</string>
@@ -629,6 +632,7 @@
     <string name="type.leisure.golf_course">Igrišče za golf</string>
     <string name="type.leisure.ice_rink">Drsališče</string>
     <string name="type.leisure.nature_reserve">Naravni rezervat</string>
+    <string name="type.leisure.bird_hide">Opazovalnica ptic</string>
     <string name="type.leisure.outdoor_seating">Sedenje na prostem</string>
     <string name="type.leisure.firepit">Kurišče</string>
     <string name="type.leisure.park.no.access">Zasebni park</string>
@@ -709,12 +713,15 @@
     <string name="type.natural.water.lock">Zapornica</string>
     <string name="type.natural.water.pond">Ribnik</string>
     <string name="type.natural.water.reservoir">Zadrževalnik</string>
-    <string name="type.natural.water.basin">Bazen</string>
+    <string name="type.natural.water.basin">Vodni bazen</string>
     <string name="type.natural.water.river">Reka</string>
+    <string name="type.natural.water.intermittent">Občasna vodna površina</string>
     <string name="type.natural.land">Zemljišče</string>
     <string name="type.natural.meadow">Travnik</string>
     <string name="type.natural.orchard">Sadovnjak</string>
     <string name="type.natural.peak">Vrh</string>
+    <string name="type.natural.hill">Hrib</string>
+    <string name="type.natural.arch">Skalni lok</string>
     <string name="type.natural.saddle">Gorsko sedlo</string>
     <string name="type.natural.rock">Skala</string>
     <string name="type.natural.scrub">Grmičevje</string>
@@ -724,6 +731,7 @@
     <string name="type.natural.tree_row">Drevored</string>
     <string name="type.natural.vineyard">Vinograd</string>
     <string name="type.natural.volcano">Vulkan</string>
+    <string name="type.natural.volcano.active">Aktivni vulkan</string>
     <string name="type.natural.water">Voda</string>
     <string name="type.natural.wetland">Mokrišče</string>
     <string name="type.natural.wetland.bog">Barje</string>
@@ -1257,6 +1265,18 @@
     <string name="type.sport.ice_hockey">Hokej na ledu</string>
     <string name="type.sport.field_hockey">Hokej na travi</string>
     <string name="type.sport.pelota">Baskovska pelota</string>
+    <string name="type.sport.boules">Balinanje</string>
+    <string name="type.sport.cycling">Kolesarstvo</string>
+    <string name="type.sport.four_square">Štirje kvadrati</string>
+    <string name="type.sport.horse_racing">Konjske dirke</string>
+    <string name="type.sport.karting">Karting</string>
+    <string name="type.sport.motocross">Motokros</string>
+    <string name="type.sport.motor">Avto-moto šport</string>
+    <string name="type.sport.netball">Netball</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Ragbi</string>
+    <string name="type.sport.running">Tek</string>
+    <string name="type.sport.softball">Softball</string>
     <string name="type.tourism">Turizem</string>
     <string name="type.tourism.aquarium">Akvarij</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1276,6 +1296,7 @@
     <string name="type.attraction.historic">Zgodovinska znamenitost</string>
     <string name="type.attraction.maze">Labirint</string>
     <string name="type.attraction.roller_coaster">Vlak smrti</string>
+    <string name="type.roller_coaster.track">Vlak smrti</string>
     <string name="type.attraction.water_slide">Vodni tobogan</string>
     <string name="type.tourism.attraction.specified">Znamenitost</string>
     <string name="type.tourism.camp_site">Kamp</string>
@@ -1304,6 +1325,7 @@
     <string name="type.traffic_calming.bump">Grbina</string>
     <string name="type.traffic_calming.hump">Grbina</string>
     <string name="type.waterway">Vodotok</string>
+    <string name="type.waterway.access_point">Dostopna točka do plovnih poti</string>
     <string name="type.waterway.canal">Kanal</string>
     <string name="type.waterway.canal.tunnel">Kanalski predor</string>
     <string name="type.waterway.fish_pass">Ribja steza</string>
@@ -1362,6 +1384,7 @@
     <string name="type.self_service.no">Ni samopostrežbe</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Socialna ustanova</string>
+    <string name="type.amenity.stage">Oder</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Vhod v urgentni oddelek</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:leisure=sports_hall -->

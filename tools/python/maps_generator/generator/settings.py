@@ -106,13 +106,8 @@ LOG_FILE_PATH = os.path.join(MAIN_OUT_PATH, "generation.log")
 # External resources section:
 PLANET_URL = DEFAULT_PLANET_URL
 PLANET_COASTS_URL = ""
-UGC_URL = ""
-HOTELS_URL = ""
-PROMO_CATALOG_CITIES_URL = ""
-PROMO_CATALOG_COUNTRIES_URL = ""
 POPULARITY_URL = ""
 SUBWAY_URL = ""
-TRANSIT_URL = ""
 NEED_BUILD_WORLD_ROADS = True
 FOOD_URL = ""
 FOOD_TRANSLATIONS_URL = ""
@@ -263,13 +258,8 @@ def init(default_settings_path: AnyStr):
     global PLANET_URL
     global PLANET_MD5_URL
     global PLANET_COASTS_URL
-    global UGC_URL
-    global HOTELS_URL
-    global PROMO_CATALOG_CITIES_URL
-    global PROMO_CATALOG_COUNTRIES_URL
     global POPULARITY_URL
     global SUBWAY_URL
-    global TRANSIT_URL
     global NEED_BUILD_WORLD_ROADS
     global FOOD_URL
     global UK_POSTCODES_URL
@@ -284,17 +274,8 @@ def init(default_settings_path: AnyStr):
     PLANET_COASTS_URL = cfg.get_opt_path(
         "External", "PLANET_COASTS_URL", PLANET_COASTS_URL
     )
-    UGC_URL = cfg.get_opt_path("External", "UGC_URL", UGC_URL)
-    HOTELS_URL = cfg.get_opt_path("External", "HOTELS_URL", HOTELS_URL)
-    PROMO_CATALOG_CITIES_URL = cfg.get_opt_path(
-        "External", "PROMO_CATALOG_CITIES_URL", PROMO_CATALOG_CITIES_URL
-    )
-    PROMO_CATALOG_COUNTRIES_URL = cfg.get_opt_path(
-        "External", "PROMO_CATALOG_COUNTRIES_URL", PROMO_CATALOG_COUNTRIES_URL
-    )
     POPULARITY_URL = cfg.get_opt_path("External", "POPULARITY_URL", POPULARITY_URL)
     SUBWAY_URL = cfg.get_opt("External", "SUBWAY_URL", SUBWAY_URL)
-    TRANSIT_URL = cfg.get_opt("External", "TRANSIT_URL", TRANSIT_URL)
     NEED_BUILD_WORLD_ROADS = cfg.get_opt("External", "NEED_BUILD_WORLD_ROADS", NEED_BUILD_WORLD_ROADS)
     FOOD_URL = cfg.get_opt("External", "FOOD_URL", FOOD_URL)
 

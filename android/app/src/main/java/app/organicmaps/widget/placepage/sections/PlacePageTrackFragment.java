@@ -11,7 +11,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import app.organicmaps.R;
 import app.organicmaps.sdk.bookmarks.data.BookmarkManager;
-import app.organicmaps.sdk.bookmarks.data.ElevationInfo;
 import app.organicmaps.sdk.bookmarks.data.MapObject;
 import app.organicmaps.sdk.bookmarks.data.Track;
 import app.organicmaps.util.UiUtils;
@@ -27,7 +26,6 @@ public class PlacePageTrackFragment extends Fragment
   @Nullable
   private Track mTrack;
   private ElevationProfileViewRenderer mElevationProfileViewRenderer;
-  private View mElevationProfileView;
 
   @Nullable
   @Override
@@ -43,8 +41,7 @@ public class PlacePageTrackFragment extends Fragment
   {
     super.onViewCreated(view, savedInstanceState);
 
-    mElevationProfileView = view.findViewById(R.id.elevation_profile);
-    mElevationProfileViewRenderer = new ElevationProfileViewRenderer(mElevationProfileView);
+    mElevationProfileViewRenderer = new ElevationProfileViewRenderer(view.findViewById(R.id.elevation_profile));
     mElevationProfileViewRenderer.setViewModel(mViewModel);
   }
 
@@ -67,45 +64,48 @@ public class PlacePageTrackFragment extends Fragment
   }
 
   @Override
-  public void onDestroy()
-  {
-    super.onDestroy();
-  }
-
-  @Override
   public void onChanged(@Nullable MapObject mapObject)
   {
     // MapObject could be something else than a Track if the user already has the place page
     // opened and clicks on a non-Track POI.
     // This callback would be called before the fragment had time to be destroyed
     if (mapObject == null || !mapObject.isTrack())
+    {
+      mTrack = null;
+      UiUtils.hide(requireView());
       return;
+    }
 
     Track track = (Track) mapObject;
     if (track.getElevationInfo() != null)
     {
-      mElevationProfileViewRenderer.render(track, track.getElevationInfo(), track.getTrackStatistics());
-      UiUtils.show(mElevationProfileView);
+      // The length changes when a part of the track is deleted, so the chart must be rebuilt for the same track id.
+      if (mTrack == null || mTrack.getTrackId() != track.getTrackId() || track.isRelationTrack()
+          || mTrack.getLength().mDistance != track.getLength().mDistance)
+        mElevationProfileViewRenderer.render(track, track.getElevationInfo(), track.getTrackStatistics());
+      UiUtils.show(requireView());
     }
     else
-      UiUtils.hide(mElevationProfileView);
+      UiUtils.hide(requireView());
     mTrack = track;
   }
 
   @Override
-  public void onElevationActivePointChanged()
+  public void onElevationActivePointChanged(long trackId, double distance)
   {
-    if (mTrack == null)
+    if (mTrack == null || mTrack.getTrackId() != trackId)
       return;
-    mElevationProfileViewRenderer.onChartElevationActivePointChanged();
-    final ElevationInfo.Point point = mTrack.getElevationActivePointCoordinates();
-    mTrack.setLat(point.getLatitude());
-    mTrack.setLon(point.getLongitude());
+    mElevationProfileViewRenderer.onChartElevationActivePointChanged(distance);
+    final double[] coords = mTrack.getElevationActivePointCoordinates();
+    mTrack.setLat(coords[0]);
+    mTrack.setLon(coords[1]);
   }
 
   @Override
-  public void onCurrentPositionChanged()
+  public void onCurrentPositionChanged(long trackId, double distance)
   {
-    mElevationProfileViewRenderer.onChartCurrentPositionChanged();
+    if (mTrack == null || mTrack.getTrackId() != trackId)
+      return;
+    mElevationProfileViewRenderer.onChartCurrentPositionChanged(distance);
   }
 }

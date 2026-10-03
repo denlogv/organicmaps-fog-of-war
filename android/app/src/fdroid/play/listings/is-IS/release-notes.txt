@@ -1,0 +1,14 @@
+• OSM-gögn frá 26. ágúst
+• NÝTT: fjölval fyrir bókamerki og ferla
+• NÝTT: fela staka ferla með augntákninu
+• NÝTT: Wikipedia-greinar á bengölsku, hindí, maratí, pólsku, tamílsku, telúgú og úrdú
+• Lagað hrun og frystingar
+• Fuglaskýlum, sviðum, hólum og bergbogum bætt við kortið
+• Betri deiling staða
+• Lagfæringar fyrir Android Auto
+• Lagað val á viðkomustöðum leiðar
+• Lagaður opnunartími
+• Betra leitarspjald
+• Lagaðar villur í OSM-ritlinum
+• Lagað hæðarrit
+…meira á omaps.org/news

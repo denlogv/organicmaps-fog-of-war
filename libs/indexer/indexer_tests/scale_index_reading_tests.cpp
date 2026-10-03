@@ -18,7 +18,6 @@
 
 #include "coding/files_container.hpp"
 #include "coding/mmap_reader.hpp"
-#include "coding/reader.hpp"
 
 #include "geometry/rect2d.hpp"
 
@@ -46,7 +45,7 @@ public:
     covering::CoveringGetter covering(rect, covering::ViewportWithLowLevels);
 
     vector<uint32_t> indices;
-    for (auto const & interval : covering.Get<RectId::DEPTH_LEVELS>(scaleForIntervals))
+    for (auto const & interval : covering.Get(scaleForIntervals))
     {
       index.ForEachInIntervalAndScale(interval.first, interval.second, scaleForZoomLevels,
                                       [&](uint64_t /* key */, uint32_t value) { indices.push_back(value); });
@@ -89,15 +88,10 @@ UNIT_CLASS_TEST(ScaleIndexReadingTest, Mmap)
 
   auto const path = id.GetInfo()->GetLocalFile().GetPath(MapFileType::Map);
 
-  FilesContainerR cont(path);
+  FilesContainerR cont(std::make_unique<MmapReader>(path));
   feature::DataHeader header(cont);
 
-  auto const offsetSize = cont.GetAbsoluteOffsetAndSize(INDEX_FILE_TAG);
-
-  MmapReader reader(path);
-  ReaderPtr<Reader> subReader(reader.CreateSubReader(offsetSize.first, offsetSize.second));
-
-  ScaleIndex<ReaderPtr<Reader>> index(subReader);
+  ScaleIndex index(cont.GetReader(INDEX_FILE_TAG));
 
   auto collectNames = [&](m2::RectD const & rect)
   { return CollectNames(id, index, header.GetLastScale(), header.GetLastScale(), rect); };

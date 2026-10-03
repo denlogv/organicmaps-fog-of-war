@@ -6,18 +6,6 @@ set(SRC
   approximate_string_match.hpp
   base/inverted_list.hpp
   base/mem_search_index.hpp
-  base/text_index/dictionary.hpp
-  base/text_index/header.cpp
-  base/text_index/header.hpp
-  base/text_index/mem.cpp
-  base/text_index/mem.hpp
-  base/text_index/merger.cpp
-  base/text_index/merger.hpp
-  base/text_index/postings.hpp
-  base/text_index/reader.hpp
-  base/text_index/text_index.cpp
-  base/text_index/text_index.hpp
-  base/text_index/utils.hpp
   bookmarks/data.cpp
   bookmarks/data.hpp
   bookmarks/processor.cpp
@@ -109,6 +97,10 @@ set(SRC
   mwm_context.hpp
   nested_rects_cache.cpp
   nested_rects_cache.hpp
+  irish_grid_coords_match.cpp
+  irish_grid_coords_match.hpp
+  os_grid_coords_match.cpp
+  os_grid_coords_match.hpp
   point_rect_matcher.hpp
   postcode_points.cpp
   postcode_points.hpp

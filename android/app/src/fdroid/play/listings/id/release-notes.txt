@@ -1,9 +1,11 @@
-• Data peta OSM per 10 Maret, Wikipedia per 1 Maret
-• Isoline elevasi yang lebih rinci untuk provinsi-provinsi di Tiongkok
-• Menambah deretan pepohonan, toko kulit, dan toko yang menjual barang keagamaan
-• Menambahkan dukungan untuk batas kecepatan bersyarat
-• Tanzania dibagi menjadi beberapa wilayah yang lebih kecil
-• Peningkatan tampilan jam buka bisnis
-• Memperbaiki beberapa kerusakan
-• Peningkatan terjemahan nama aplikasi dan negara
-omaps.org/id/news
+• Data OSM per 26 Agustus
+• BARU: pemilihan ganda untuk penanda dan jalur
+• BARU: sembunyikan masing-masing jalur dengan ikon mata
+• BARU: artikel Wikipedia dalam bahasa Bengali, Hindi, Marathi, Polandia, Tamil, Telugu, Urdu
+• Perbaikan crash dan macet
+• Ditambahkan ke peta: tempat pengamatan burung, panggung, bukit, dan lengkung batu alami
+• Berbagi tempat lebih baik
+• Perbaikan Android Auto
+• Perbaikan pemilihan perhentian rute
+• Perbaikan jam buka
+…selengkapnya di omaps.org/id/news

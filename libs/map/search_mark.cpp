@@ -46,6 +46,7 @@ enum SearchMarkPoint::SearchMarkType : uint8_t
   Bank,
   Fuel,
   ChargingStation,
+  Shop,
   ShopAlcohol,
   ShopButcher,
   ShopClothes,
@@ -74,6 +75,10 @@ enum SearchMarkPoint::SearchMarkType : uint8_t
   BicycleParkingCovered,
   BicycleRental,
   Airport,
+  ATM,
+  Bus,
+  Subway,
+  Monument,
 
   NotFound,  // Service value used in developer tools.
   Count
@@ -86,7 +91,6 @@ namespace
 df::ColorConstant const kColorConstant = "SearchmarkDefault";
 
 float const kVisitedSymbolOpacity = 0.7f;
-float const kOutOfFiltersSymbolOpacity = 0.4f;
 
 std::array<std::string, SearchMarkType::Count> const kSymbols = {
     "search-result",                          // Default.
@@ -120,6 +124,7 @@ std::array<std::string, SearchMarkType::Count> const kSymbols = {
     "search-result-bank",                     // Bank.
     "search-result-fuel",                     // Fuel.
     "search-result-charging_station",         // ChargingStation.
+    "search-result-shop",                     // Shop.
     "search-result-shop-alcohol",             // ShopAlcohol.
     "search-result-shop-butcher",             // ShopButcher.
     "search-result-shop-clothes",             // ShopClothes.
@@ -148,6 +153,10 @@ std::array<std::string, SearchMarkType::Count> const kSymbols = {
     "search-result-bicycle_parking-covered",  // BicycleParkingCovered.
     "search-result-bicycle_rental",           // BicycleRental.
     "search-result-airport",                  // Airport.
+    "search-result-atm",                      // ATM.
+    "search-result-bus",                      // Bus.
+    "search-result-subway",                   // Subway.
+    "search-result-monument",                 // Monument.
 
     "search-result-non-found",  // NotFound.
 };
@@ -178,12 +187,19 @@ public:
   }
 
 private:
+  struct Entry
+  {
+    std::vector<std::string_view> m_path;
+    SearchMarkType m_searchMarkType = SearchMarkType::Default;
+    bool m_subtree = false;
+  };
+
   using Type = std::pair<uint32_t, SearchMarkType>;
 
   SearchMarkTypeChecker()
   {
     auto const & c = classif();
-    std::pair<std::vector<std::string_view>, SearchMarkType> const table[] = {
+    Entry const table[] = {
         {{"amenity", "cafe"}, SearchMarkType::Cafe},
         {{"shop", "bakery"}, SearchMarkType::Bakery},
         {{"shop", "pastry"}, SearchMarkType::Bakery},
@@ -205,20 +221,19 @@ private:
         {{"tourism", "attraction"}, SearchMarkType::Attraction},
         {{"tourism", "viewpoint"}, SearchMarkType::Viewpoint},
         {{"historic", "fort"}, SearchMarkType::Remains},
-        {{"historic", "castle"}, SearchMarkType::Remains},
-        {{"historic", "castle", "castrum"}, SearchMarkType::Remains},
-        {{"historic", "castle", "fortified_church"}, SearchMarkType::Remains},
-        {{"historic", "castle", "fortress"}, SearchMarkType::Remains},
-        {{"historic", "castle", "hillfort"}, SearchMarkType::Remains},
-        {{"historic", "castle", "kremlin"}, SearchMarkType::Remains},
-        {{"historic", "castle", "manor"}, SearchMarkType::Remains},
-        {{"historic", "castle", "palace"}, SearchMarkType::Remains},
-        {{"historic", "castle", "shiro"}, SearchMarkType::Remains},
-        {{"historic", "castle", "defensive"}, SearchMarkType::Remains},
-        {{"historic", "castle", "stately"}, SearchMarkType::Remains},
+        {{"historic", "castle"}, SearchMarkType::Remains, true},
         {{"historic", "ruins"}, SearchMarkType::Remains},
         {{"historic", "city_gate"}, SearchMarkType::Remains},
         {{"historic", "archaeological_site"}, SearchMarkType::ArchaeologicalSite},
+        {{"historic", "monument"}, SearchMarkType::Monument},
+        // by intention ignore small plaque and stolperstein.
+        {{"historic", "memorial"}, SearchMarkType::Monument},
+        {{"historic", "memorial", "cross"}, SearchMarkType::Monument},
+        {{"historic", "memorial", "sculpture"}, SearchMarkType::Monument},
+        {{"historic", "memorial", "statue"}, SearchMarkType::Monument},
+        {{"historic", "memorial", "war_memorial"}, SearchMarkType::Monument},
+        {{"tourism", "artwork", "sculpture"}, SearchMarkType::Monument},
+        {{"tourism", "artwork", "statue"}, SearchMarkType::Monument},
         {{"tourism", "information"}, SearchMarkType::Information},
         {{"tourism", "information", "office"}, SearchMarkType::Information},
         {{"tourism", "information", "visitor_centre"}, SearchMarkType::Information},
@@ -231,11 +246,20 @@ private:
         {{"amenity", "charging_station"}, SearchMarkType::ChargingStation},
         {{"amenity", "charging_station", "bicycle"}, SearchMarkType::ChargingStation},
         {{"amenity", "charging_station", "motorcar"}, SearchMarkType::ChargingStation},
+        {{"shop", "mall"}, SearchMarkType::Shop},
+        {{"shop", "antiques"}, SearchMarkType::Shop},
+        {{"shop", "bag"}, SearchMarkType::Shop},
+        {{"shop", "baby_goods"}, SearchMarkType::Shop},
+        {{"shop", "watches"}, SearchMarkType::Shop},
+        {{"shop", "perfumery"}, SearchMarkType::Shop},
+        {{"shop", "second_hand"}, SearchMarkType::Shop},
+        {{"shop", "variety_store"}, SearchMarkType::Shop},
+        {{"shop", "art"}, SearchMarkType::Art},
         {{"shop", "alcohol"}, SearchMarkType::ShopAlcohol},
         {{"shop", "beverages"}, SearchMarkType::ShopAlcohol},
         {{"shop", "wine"}, SearchMarkType::ShopAlcohol},
         {{"shop", "butcher"}, SearchMarkType::ShopButcher},
-        {{"shop", "clothes"}, SearchMarkType::ShopClothes},
+        {{"shop", "clothes"}, SearchMarkType::ShopClothes, true},
         {{"shop", "confectionery"}, SearchMarkType::ShopConfectionery},
         {{"shop", "chocolate"}, SearchMarkType::ShopConfectionery},
         {{"craft", "confectionery"}, SearchMarkType::ShopConfectionery},
@@ -245,6 +269,7 @@ private:
         {{"shop", "farm"}, SearchMarkType::ShopConvenience},
         {{"shop", "health_food"}, SearchMarkType::ShopConvenience},
         {{"shop", "beauty"}, SearchMarkType::ShopBeauty},
+        {{"shop", "coffee"}, SearchMarkType::Cafe},
         {{"shop", "cosmetics"}, SearchMarkType::ShopBeauty},
         {{"shop", "department_store"}, SearchMarkType::ShopDepartmentStore},
         {{"shop", "gift"}, SearchMarkType::ShopGift},
@@ -277,6 +302,7 @@ private:
         {{"leisure", "ice_rink"}, SearchMarkType::Pitch},
         {{"leisure", "sports_centre"}, SearchMarkType::Pitch},
         {{"leisure", "sports_hall"}, SearchMarkType::Pitch},
+        {{"leisure", "dance"}, SearchMarkType::Pitch},
         {{"leisure", "swimming_pool"}, SearchMarkType::Swimming},
         {{"leisure", "water_park"}, SearchMarkType::Swimming},
         {{"amenity", "drinking_water"}, SearchMarkType::DrinkingWater},
@@ -295,12 +321,27 @@ private:
         {{"aeroway", "aerodrome"}, SearchMarkType::Airport},
         {{"aeroway", "aerodrome", "international"}, SearchMarkType::Airport},
         {{"aeroway", "terminal"}, SearchMarkType::Airport},
-
+        {{"amenity", "atm"}, SearchMarkType::ATM},
+        {{"highway", "bus_stop"}, SearchMarkType::Bus},
+        {{"amenity", "bus_station"}, SearchMarkType::Bus},
+        {{"railway", "station", "subway"}, SearchMarkType::Subway, true},
     };
 
     m_searchMarkTypes.reserve(std::size(table));
-    for (auto const & p : table)
-      m_searchMarkTypes.push_back({c.GetTypeByPath(p.first), p.second});
+
+    for (auto const & e : table)
+    {
+      auto const type = c.GetTypeByPath(e.m_path);
+      if (e.m_subtree)
+      {
+        c.ForEachInSubtree([this, searchMarkType = e.m_searchMarkType](uint32_t t)
+        { m_searchMarkTypes.push_back({t, searchMarkType}); }, type);
+      }
+      else
+      {
+        m_searchMarkTypes.push_back({type, e.m_searchMarkType});
+      }
+    }
 
     std::sort(m_searchMarkTypes.begin(), m_searchMarkTypes.end());
   }
@@ -318,11 +359,7 @@ SearchMarkType GetSearchMarkType(uint32_t type)
 SearchMarkPoint::SearchMarkPoint(m2::PointD const & ptOrg)
   : UserMark(ptOrg, UserMark::Type::SEARCH)
   , m_type(SearchMarkType::Default)
-  , m_isPreparing(false)
-  , m_hasSale(false)
-  , m_isSelected(false)
   , m_isVisited(false)
-  , m_isAvailable(true)
 {}
 
 m2::PointD SearchMarkPoint::GetPixelOffset() const
@@ -354,8 +391,6 @@ bool SearchMarkPoint::IsMarkAboveText() const
 
 float SearchMarkPoint::GetSymbolOpacity() const
 {
-  if (!m_isAvailable)
-    return kOutOfFiltersSymbolOpacity;
   return m_isVisited ? kVisitedSymbolOpacity : 1.0f;
 }
 
@@ -394,63 +429,12 @@ void SearchMarkPoint::SetNotFoundType()
   SetAttributeValue(m_type, SearchMarkType::NotFound);
 }
 
-#define SET_BOOL_ATTRIBUTE(dest, src) \
-  if (dest != src)                    \
-  {                                   \
-    dest = src;                       \
-    SetDirty();                       \
-  }
-
-void SearchMarkPoint::SetPreparing(bool isPreparing)
-{
-  SET_BOOL_ATTRIBUTE(m_isPreparing, isPreparing);
-}
-
-void SearchMarkPoint::SetSale(bool hasSale)
-{
-  SET_BOOL_ATTRIBUTE(m_hasSale, hasSale);
-}
-
-void SearchMarkPoint::SetSelected(bool isSelected)
-{
-  SET_BOOL_ATTRIBUTE(m_isSelected, isSelected);
-}
-
 void SearchMarkPoint::SetVisited(bool isVisited)
 {
-  SET_BOOL_ATTRIBUTE(m_isVisited, isVisited);
-}
-
-void SearchMarkPoint::SetAvailable(bool isAvailable)
-{
-  SET_BOOL_ATTRIBUTE(m_isAvailable, isAvailable);
-}
-
-#undef SET_BOOL_ATTRIBUTE
-
-void SearchMarkPoint::SetReason(std::string const & reason)
-{
-  SetAttributeValue(m_reason, reason);
-}
-
-bool SearchMarkPoint::IsSelected() const
-{
-  return m_isSelected;
-}
-
-bool SearchMarkPoint::IsAvailable() const
-{
-  return m_isAvailable;
-}
-
-std::string const & SearchMarkPoint::GetReason() const
-{
-  return m_reason;
-}
-
-bool SearchMarkPoint::HasReason() const
-{
-  return !m_reason.empty();
+  if (m_isVisited == isVisited)
+    return;
+  m_isVisited = isVisited;
+  SetDirty();
 }
 
 std::string const * SearchMarkPoint::GetSymbolName() const
@@ -526,144 +510,22 @@ std::optional<m2::PointD> SearchMarks::GetSize(std::string const & symbolName)
   return m2::PointD(it->second);
 }
 
-void SearchMarks::SetPreparingState(std::vector<FeatureID> const & features, bool isPreparing)
-{
-  if (features.empty())
-    return;
-
-  ProcessMarks([&features, isPreparing](SearchMarkPoint * mark) -> base::ControlFlow
-  {
-    ASSERT(std::is_sorted(features.cbegin(), features.cend()), ());
-    if (std::binary_search(features.cbegin(), features.cend(), mark->GetFeatureID()))
-      mark->SetPreparing(isPreparing);
-    return base::ControlFlow::Continue;
-  });
-}
-
-void SearchMarks::SetSales(std::vector<FeatureID> const & features, bool hasSale)
-{
-  if (features.empty())
-    return;
-
-  ProcessMarks([&features, hasSale](SearchMarkPoint * mark) -> base::ControlFlow
-  {
-    ASSERT(std::is_sorted(features.cbegin(), features.cend()), ());
-    if (std::binary_search(features.cbegin(), features.cend(), mark->GetFeatureID()))
-      mark->SetSale(hasSale);
-    return base::ControlFlow::Continue;
-  });
-}
-
-bool SearchMarks::IsThereSearchMarkForFeature(FeatureID const & featureId) const
-{
-  for (auto const markId : m_bmManager->GetUserMarkIds(UserMark::Type::SEARCH))
-    if (m_bmManager->GetUserMark(markId)->GetFeatureID() == featureId)
-      return true;
-  return false;
-}
-
-void SearchMarks::OnActivate(FeatureID const & featureId)
-{
-  m_selectedFeature = featureId;
-  m_visitedSearchMarks.erase(featureId);
-  ProcessMarks([&featureId](SearchMarkPoint * mark) -> base::ControlFlow
-  {
-    if (featureId != mark->GetFeatureID())
-      return base::ControlFlow::Continue;
-    mark->SetVisited(false);
-    mark->SetSelected(true);
-    return base::ControlFlow::Break;
-  });
-}
-
 void SearchMarks::OnDeactivate(FeatureID const & featureId)
 {
-  m_selectedFeature = {};
-  m_visitedSearchMarks.insert(featureId);
-  ProcessMarks([&featureId](SearchMarkPoint * mark) -> base::ControlFlow
+  ASSERT(m_bmManager, ());
+  for (auto const markId : m_bmManager->GetUserMarkIds(UserMark::Type::SEARCH))
   {
-    if (featureId != mark->GetFeatureID())
-      return base::ControlFlow::Continue;
-    mark->SetVisited(true);
-    mark->SetSelected(false);
-    return base::ControlFlow::Break;
-  });
-}
-
-/*
-void SearchMarks::SetUnavailable(SearchMarkPoint & mark, std::string const & reasonKey)
-{
-  {
-    std::scoped_lock<std::mutex> lock(m_lock);
-    m_unavailable.insert_or_assign(mark.GetFeatureID(), reasonKey);
-  }
-  mark.SetAvailable(false);
-  mark.SetReason(platform::GetLocalizedString(reasonKey));
-}
-
-void SearchMarks::SetUnavailable(std::vector<FeatureID> const & features,
-                                 std::string const & reasonKey)
-{
-  if (features.empty())
+    if (m_bmManager->GetMark<SearchMarkPoint>(markId)->GetFeatureID() != featureId)
+      continue;
+    m_visitedSearchMarks.insert(featureId);
+    m_bmManager->GetEditSession().GetMarkForEdit<SearchMarkPoint>(markId)->SetVisited(true);
     return;
-
-  ProcessMarks([this, &features, &reasonKey](SearchMarkPoint * mark) -> base::ControlFlow
-  {
-    ASSERT(std::is_sorted(features.cbegin(), features.cend()), ());
-    if (std::binary_search(features.cbegin(), features.cend(), mark->GetFeatureID()))
-      SetUnavailable(*mark, reasonKey);
-    return base::ControlFlow::Continue;
-  });
-}
-
-bool SearchMarks::IsUnavailable(FeatureID const & id) const
-{
-  std::scoped_lock<std::mutex> lock(m_lock);
-  return m_unavailable.find(id) != m_unavailable.cend();
-}
-*/
-
-void SearchMarks::SetVisited(FeatureID const & id)
-{
-  m_visitedSearchMarks.insert(id);
+  }
 }
 
 bool SearchMarks::IsVisited(FeatureID const & id) const
 {
   return m_visitedSearchMarks.find(id) != m_visitedSearchMarks.cend();
-}
-
-void SearchMarks::SetSelected(FeatureID const & id)
-{
-  m_selectedFeature = id;
-}
-
-bool SearchMarks::IsSelected(FeatureID const & id) const
-{
-  return id == m_selectedFeature;
-}
-
-void SearchMarks::ClearTrackedProperties()
-{
-  //  {
-  //    std::scoped_lock<std::mutex> lock(m_lock);
-  //    m_unavailable.clear();
-  //  }
-  m_selectedFeature = {};
-}
-
-void SearchMarks::ProcessMarks(std::function<base::ControlFlow(SearchMarkPoint *)> && processor) const
-{
-  if (m_bmManager == nullptr || processor == nullptr)
-    return;
-
-  auto editSession = m_bmManager->GetEditSession();
-  for (auto markId : m_bmManager->GetUserMarkIds(UserMark::Type::SEARCH))
-  {
-    auto * mark = editSession.GetMarkForEdit<SearchMarkPoint>(markId);
-    if (processor(mark) == base::ControlFlow::Break)
-      break;
-  }
 }
 
 void SearchMarks::UpdateMaxDimension()

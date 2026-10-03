@@ -4,11 +4,14 @@
 
 #include "kml/serdes.hpp"
 #include "kml/serdes_binary.hpp"
+#include "kml/serdes_binary_v8.hpp"
 #include "kml/serdes_common.hpp"
 
-#include "map/bookmark_helpers.hpp"
+#include "coding/text_storage.hpp"
 
 #include "indexer/classificator_loader.hpp"
+
+#include "geometry/mercator.hpp"
 
 #include "platform/platform.hpp"
 
@@ -50,7 +53,6 @@ kml::FileData GenerateKmlFileData()
 {
   kml::FileData result;
   result.m_deviceId = "AAAA";
-  result.m_serverId = "AAAA-BBBB-CCCC-DDDD";
 
   result.m_categoryData.m_name[kDefaultLang] = "Test category";
   result.m_categoryData.m_name[kRuLang] = "Тестовая категория";
@@ -76,7 +78,10 @@ kml::FileData GenerateKmlFileData()
   bookmarkData.m_name[kRuLang] = "Тестовая метка";
   bookmarkData.m_description[kDefaultLang] = "Test bookmark description";
   bookmarkData.m_description[kRuLang] = "Тестовое описание метки";
-  bookmarkData.m_featureTypes = {718, 715};
+
+  auto const & cl = classif();
+  bookmarkData.m_featureTypes = {cl.GetTypeByPath({"historic", "castle"}), cl.GetTypeByPath({"historic", "memorial"})};
+
   bookmarkData.m_customName[kDefaultLang] = "Мое любимое место";
   bookmarkData.m_customName[kEnLang] = "My favorite place";
   bookmarkData.m_color = {kml::PredefinedColor::Blue, 0};
@@ -89,7 +94,6 @@ kml::FileData GenerateKmlFileData()
   bookmarkData.m_nearestToponym = "12345";
   bookmarkData.m_minZoom = 10;
   bookmarkData.m_properties = {{"bm_property1", "value1"}, {"bm_property2", "value2"}, {"score", "5"}};
-  bookmarkData.m_compilations = {1, 2, 3, 4, 5};
   result.m_bookmarksData.emplace_back(std::move(bookmarkData));
 
   kml::TrackData trackData;
@@ -103,57 +107,12 @@ kml::FileData GenerateKmlFileData()
   trackData.m_timestamp = kml::TimestampClock::from_time_t(900);
 
   trackData.m_geometry.AddLine({{{45.9242, 56.8679}, 1}, {{45.2244, 56.2786}, 2}, {{45.1964, 56.9832}, 3}});
+  trackData.m_geometry.AddTimestamps({});
 
   trackData.m_visible = false;
   trackData.m_nearestToponyms = {"12345", "54321", "98765"};
   trackData.m_properties = {{"tr_property1", "value1"}, {"tr_property2", "value2"}};
   result.m_tracksData.emplace_back(std::move(trackData));
-
-  kml::CategoryData compilationData1;
-  compilationData1.m_compilationId = 1;
-  compilationData1.m_type = kml::CompilationType::Collection;
-  compilationData1.m_name[kDefaultLang] = "Test collection";
-  compilationData1.m_name[kRuLang] = "Тестовая коллекция";
-  compilationData1.m_description[kDefaultLang] = "Test collection description";
-  compilationData1.m_description[kRuLang] = "Тестовое описание коллекции";
-  compilationData1.m_annotation[kDefaultLang] = "Test collection annotation";
-  compilationData1.m_annotation[kEnLang] = "Test collection annotation";
-  compilationData1.m_imageUrl = "https://localhost/1234.png";
-  compilationData1.m_visible = true;
-  compilationData1.m_authorName = "Organic Maps";
-  compilationData1.m_authorId = "54321";
-  compilationData1.m_rating = 5.9;
-  compilationData1.m_reviewsNumber = 333;
-  compilationData1.m_lastModified = kml::TimestampClock::from_time_t(999);
-  compilationData1.m_accessRules = kml::AccessRules::Public;
-  compilationData1.m_tags = {"mountains", "ski"};
-  compilationData1.m_toponyms = {"8", "9"};
-  compilationData1.m_languageCodes = {1, 2, 8};
-  compilationData1.m_properties = {{"property1", "value1"}, {"property2", "value2"}};
-  result.m_compilationsData.push_back(std::move(compilationData1));
-
-  kml::CategoryData compilationData2;
-  compilationData2.m_compilationId = 4;
-  compilationData2.m_type = kml::CompilationType::Category;
-  compilationData2.m_name[kDefaultLang] = "Test category";
-  compilationData2.m_name[kRuLang] = "Тестовая категория";
-  compilationData2.m_description[kDefaultLang] = "Test category description";
-  compilationData2.m_description[kRuLang] = "Тестовое описание категории";
-  compilationData2.m_annotation[kDefaultLang] = "Test category annotation";
-  compilationData2.m_annotation[kEnLang] = "Test category annotation";
-  compilationData2.m_imageUrl = "https://localhost/134.png";
-  compilationData2.m_visible = false;
-  compilationData2.m_authorName = "Organic Maps";
-  compilationData2.m_authorId = "11111";
-  compilationData2.m_rating = 3.3;
-  compilationData2.m_reviewsNumber = 222;
-  compilationData2.m_lastModified = kml::TimestampClock::from_time_t(323);
-  compilationData2.m_accessRules = kml::AccessRules::Public;
-  compilationData2.m_tags = {"mountains", "bike"};
-  compilationData2.m_toponyms = {"10", "11"};
-  compilationData2.m_languageCodes = {1, 2, 8};
-  compilationData2.m_properties = {{"property1", "value1"}, {"property2", "value2"}};
-  result.m_compilationsData.push_back(std::move(compilationData2));
 
   return result;
 }
@@ -192,6 +151,7 @@ kml::FileData GenerateKmlFileDataForTrackWithTimestamps()
 // 1. Check text and binary deserialization from the prepared sources in memory.
 UNIT_TEST(Kml_Deserialization_Text_Bin_Memory)
 {
+  classificator::Load();
   UNUSED_VALUE(FormatBytesFromBuffer({}));
 
   kml::FileData dataFromText;
@@ -254,6 +214,8 @@ UNIT_TEST(Kml_Serialization_Text_Memory)
 // 3. Check binary serialization to the memory blob and compare with prepared data.
 UNIT_TEST(Kml_Serialization_Bin_Memory)
 {
+  classificator::Load();
+
   kml::FileData data;
   {
     kml::binary::DeserializerKml des(data);
@@ -278,6 +240,22 @@ UNIT_TEST(Kml_Serialization_Bin_Memory)
   }
 
   TEST_EQUAL(data, data2, ());
+}
+
+UNIT_TEST(Kml_Serialization_Bin_V8_Memory)
+{
+  classificator::Load();
+
+  kml::FileData data;
+  kml::binary::DeserializerKml(data).Deserialize(MemReader(kBinKmlV8.data(), kBinKmlV8.size()));
+
+  std::vector<uint8_t> buffer;
+  MemWriter sink(buffer);
+  kml::binary::SerializerKmlV8(data).Serialize(sink);
+
+  kml::FileData reloaded;
+  kml::binary::DeserializerKml(reloaded).Deserialize(MemReader(buffer.data(), buffer.size()));
+  TEST_EQUAL(reloaded, data, ());
 }
 
 // 4. Check deserialization from the text file.
@@ -315,6 +293,8 @@ UNIT_TEST(Kml_Deserialization_Text_File)
 // 5. Check deserialization from the binary file.
 UNIT_TEST(Kml_Deserialization_Bin_File)
 {
+  classificator::Load();
+
   std::string const kmbFile = base::JoinPath(GetPlatform().TmpDir(), "tmp.kmb");
   SCOPE_GUARD(fileGuard, std::bind(&FileWriter::DeleteFileX, kmbFile));
   TEST_NO_THROW(
@@ -349,7 +329,8 @@ UNIT_TEST(Kml_Deserialization_Bin_File)
 // The data in RAM must be completely equal to the data in binary file.
 UNIT_TEST(Kml_Serialization_Bin_File)
 {
-  auto data = GenerateKmlFileData();
+  classificator::Load();
+  auto const data = GenerateKmlFileData();
 
   std::string const kmbFile = base::JoinPath(GetPlatform().TmpDir(), "tmp.kmb");
   SCOPE_GUARD(fileGuard, std::bind(&FileWriter::DeleteFileX, kmbFile));
@@ -381,7 +362,7 @@ UNIT_TEST(Kml_Serialization_Text_File_Track_Without_Timestamps)
 {
   classificator::Load();
 
-  auto data = GenerateKmlFileDataForTrackWithoutTimestamps();
+  auto const data = GenerateKmlFileDataForTrackWithoutTimestamps();
 
   std::string const kmlFile = base::JoinPath(GetPlatform().TmpDir(), "tmp.kml");
   SCOPE_GUARD(fileGuard, std::bind(&FileWriter::DeleteFileX, kmlFile));
@@ -435,13 +416,14 @@ UNIT_TEST(Kml_Serialization_Text_File_Track_Without_Timestamps)
     ser.Serialize(sink);
   }
   TEST_EQUAL(dataFromFileBuffer, dataFromGeneratedFileBuffer, ());
+  TEST(dataFromFileBuffer.find("mwm:serverId") == std::string::npos, ());
 }
 
 UNIT_TEST(Kml_Serialization_Text_File_Tracks_With_Timestamps)
 {
   classificator::Load();
 
-  auto data = GenerateKmlFileDataForTrackWithTimestamps();
+  auto const data = GenerateKmlFileDataForTrackWithTimestamps();
 
   std::string const kmlFile = base::JoinPath(GetPlatform().TmpDir(), "tmp.kml");
   SCOPE_GUARD(fileGuard, std::bind(&FileWriter::DeleteFileX, kmlFile));
@@ -517,6 +499,121 @@ UNIT_TEST(Kml_Deserialization_From_Bin_V6_And_V7)
       },
       ());
   TEST_EQUAL(dataFromBinV6, dataFromBinV7, ());
+}
+
+namespace
+{
+std::string WrapKmlDoc(std::string const & body)
+{
+  return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+         "<kml xmlns=\"http://earth.google.com/kml/2.2\"><Document>" +
+         body + "</Document></kml>";
+}
+
+std::string PointPlacemark(std::string const & styleInner)
+{
+  return "<Placemark>" + styleInner + "<Point><coordinates>27.55,53.89</coordinates></Point></Placemark>";
+}
+
+kml::FileData ParseKmlText(std::string const & text)
+{
+  kml::FileData data;
+  kml::DeserializerKml des(data);
+  MemReader reader(text.c_str(), text.length());
+  des.Deserialize(reader);
+  return data;
+}
+
+void TestBinaryCollectionsDropped(std::vector<uint8_t> const & legacyData)
+{
+  classificator::Load();
+
+  kml::FileData data;
+  TEST_NO_THROW(
+      {
+        MemReader reader(legacyData.data(), legacyData.size());
+        kml::binary::DeserializerKml des(data);
+        des.Deserialize(reader);
+      },
+      ());
+
+  TEST_EQUAL(kml::GetDefaultStr(data.m_categoryData.m_name), "Category", ());
+  TEST_EQUAL(kml::GetDefaultStr(data.m_categoryData.m_description), "Category description", ());
+  TEST_EQUAL(data.m_bookmarksData.size(), 1, ());
+  TEST_EQUAL(kml::GetDefaultStr(data.m_bookmarksData[0].m_name), "Bookmark", ());
+  TEST_EQUAL(data.m_categoryData.m_unusedCompilationId, kml::kUnusedCompilationId, ());
+  TEST_EQUAL(data.m_categoryData.m_unusedCompilationType, kml::kUnusedCompilationType, ());
+  TEST(data.m_bookmarksData[0].m_unusedCompilations.empty(), ());
+
+  std::vector<uint8_t> serializedData;
+  TEST_NO_THROW(
+      {
+        MemWriter sink(serializedData);
+        kml::binary::SerializerKml ser(data);
+        ser.Serialize(sink);
+      },
+      ());
+  TEST_LESS(serializedData.size(), legacyData.size(), ());
+
+  kml::FileData roundTrippedData;
+  TEST_NO_THROW(
+      {
+        MemReader reader(serializedData.data(), serializedData.size());
+        kml::binary::DeserializerKml des(roundTrippedData);
+        des.Deserialize(reader);
+      },
+      ());
+  TEST_EQUAL(roundTrippedData, data, ());
+  TEST_EQUAL(roundTrippedData.m_categoryData.m_unusedCompilationId, kml::kUnusedCompilationId, ());
+  TEST_EQUAL(roundTrippedData.m_categoryData.m_unusedCompilationType, kml::kUnusedCompilationType, ());
+  TEST(roundTrippedData.m_bookmarksData[0].m_unusedCompilations.empty(), ());
+}
+}  // namespace
+
+// Collections (a MAPS.ME-only feature) are dropped on import: their content must not leak into the
+// enclosing category, and the bookmarks that referenced them must survive untouched.
+UNIT_TEST(Kml_Deserialization_Text_Drops_Collections)
+{
+  std::string const kmlWithCollections = WrapKmlDoc(
+      "<name>Category</name>"
+      "<description>Category description</description>"
+      "<visibility>1</visibility>"
+      "<ExtendedData xmlns:mwm=\"https://omaps.app\">"
+      "<mwm:name><mwm:lang code=\"default\">Category</mwm:lang></mwm:name>"
+      "<mwm:accessRules>Local</mwm:accessRules>"
+      "<mwm:tags><mwm:value>category tag</mwm:value></mwm:tags>"
+      "<mwm:compilation id=\"1\" type=\"Collection\">"
+      "<mwm:name><mwm:lang code=\"default\">Test collection</mwm:lang></mwm:name>"
+      "<mwm:accessRules>Public</mwm:accessRules>"
+      "<mwm:tags><mwm:value>collection tag</mwm:value></mwm:tags>"
+      "</mwm:compilation>"
+      "<mwm:compilation id=\"2\" type=\"Category\">"
+      "<mwm:name><mwm:lang code=\"default\">Test subcategory</mwm:lang></mwm:name>"
+      "</mwm:compilation>"
+      "</ExtendedData>"
+      "<Placemark>"
+      "<name>Bookmark</name>"
+      "<Point><coordinates>27.5,53.9</coordinates></Point>"
+      "<ExtendedData xmlns:mwm=\"https://omaps.app\">"
+      "<mwm:compilations>1,2</mwm:compilations>"
+      "</ExtendedData>"
+      "</Placemark>");
+
+  kml::FileData data;
+  TEST_NO_THROW(data = ParseKmlText(kmlWithCollections), ());
+
+  TEST_EQUAL(kml::GetDefaultStr(data.m_categoryData.m_name), "Category", ());
+  TEST_EQUAL(data.m_categoryData.m_accessRules, kml::AccessRules::Local, ());
+  TEST_EQUAL(data.m_categoryData.m_tags, std::vector<std::string>({"category tag"}), ());
+  TEST_EQUAL(data.m_bookmarksData.size(), 1, ());
+  TEST_EQUAL(kml::GetDefaultStr(data.m_bookmarksData[0].m_name), "Bookmark", ());
+  TEST(data.m_bookmarksData[0].m_unusedCompilations.empty(), ());
+}
+
+UNIT_TEST(Kml_Deserialization_Bin_Drops_Collections)
+{
+  TestBinaryCollectionsDropped(kBinKmlV8WithCollections);
+  TestBinaryCollectionsDropped(kBinKmlV9WithCollections);
 }
 
 UNIT_TEST(Kml_Deserialization_From_Bin_V7_And_V8)
@@ -616,6 +713,34 @@ UNIT_TEST(Kml_Deserialization_From_KMB_V8_And_V9MM)
   dataFromBinV8.m_tracksData[0].m_id =
       dataFromBinV9MM.m_tracksData[0].m_id;  // V8 and V9MM tracks have different IDs. Fix ID value manually.
   TEST_EQUAL(dataFromBinV8.m_tracksData, dataFromBinV9MM.m_tracksData, ());
+}
+
+UNIT_TEST(Kml_DecodeMaybeMillisSinceEpoch_Heuristic)
+{
+  using kml::binary::DecodeMaybeMillisSinceEpoch;
+
+  // Zero round-trips as zero (below 10^9 band -> /1000 -> 0).
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(0), 0u, ());
+
+  // Small test-fixture values: 800 seconds stored as 800000 ms should decode back to 800 s.
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(800000u), 800u, ());
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(1000u), 1u, ("Below 10^9 -> treat as ms"));
+
+  // Real-world post-2001 seconds (10^9 .. 10^12): Portugal.kmb bookmark 0 -> 2018-11-02.
+  constexpr uint64_t kBookmarkAsSeconds = 1541183839ULL;
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(kBookmarkAsSeconds), kBookmarkAsSeconds, ());
+
+  // Real-world post-2001 milliseconds (>= 10^12): Portugal.kmb bookmark 800 -> 2024-06-08.
+  constexpr uint64_t kBookmarkAsMillis = 1717852356329ULL;
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(kBookmarkAsMillis), kBookmarkAsMillis / 1000, ());
+
+  // Boundary values. 10^9 is treated as seconds; 10^9 - 1 as ms.
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(1'000'000'000ULL), 1'000'000'000ULL, ());
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(999'999'999ULL), 999'999ULL, ());
+
+  // 10^12 is treated as ms; 10^12 - 1 as seconds.
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(1'000'000'000'000ULL), 1'000'000'000ULL, ());
+  TEST_EQUAL(DecodeMaybeMillisSinceEpoch(999'999'999'999ULL), 999'999'999'999ULL, ());
 }
 
 UNIT_TEST(Kml_Deserialization_From_KMB_V9MM_With_MultiGeometry)
@@ -829,6 +954,33 @@ UNIT_TEST(Kml_Track_Points_And_Timestamps_Sizes_Mismatch)
   TEST_EQUAL(dataFromFile.m_tracksData.size(), 0, ());
 }
 
+UNIT_TEST(Kml_Track_With_Non_Monotonic_Timestamps)
+{
+  std::string_view constexpr input = R"(<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Placemark>
+    <name>Unordered</name>
+    <gx:Track>
+      <when>2001-06-02T00:18:15Z</when>
+      <when>2001-11-28T21:05:28Z</when>
+      <when>2001-06-02T03:26:55Z</when>
+      <gx:coord>-71.107628 42.430950 23</gx:coord>
+      <gx:coord>-71.109236 42.431240 27</gx:coord>
+      <gx:coord>-71.109942 42.434980 45</gx:coord>
+    </gx:Track>
+  </Placemark>
+</kml>)";
+
+  kml::FileData fData;
+  TEST_NO_THROW({ kml::DeserializerKml(fData).Deserialize(MemReader(input)); }, ());
+
+  TEST_EQUAL(fData.m_tracksData.size(), 1, ());
+  auto const & geom = fData.m_tracksData[0].m_geometry;
+  TEST_EQUAL(geom.m_lines.size(), 1, ());
+  TEST_EQUAL(geom.m_lines[0].size(), 3, ());
+  TEST(!geom.HasTimestamps(), ("Non-monotonic timestamps should be dropped"));
+}
+
 // https://github.com/organicmaps/organicmaps/issues/9290
 UNIT_TEST(Kml_Import_OpenTracks)
 {
@@ -978,4 +1130,307 @@ UNIT_TEST(SaveStringWithCDATA_AllInvalidBecomesEmpty)
 {
   // String of only invalid chars becomes empty after stripping.
   TEST_EQUAL(WriteCDATA(std::string("\x01\x02\x03\x1F")), "", ());
+}
+
+UNIT_TEST(ExportStringLanguageFallbacks)
+{
+  auto const kDeLang = StringUtf8Multilang::GetLangIndex("de");
+  auto const kRuLang = StringUtf8Multilang::GetLangIndex("ru");
+
+  kml::LocalizableString value{{kRuLang, "Русский"}, {kDeLang, "Deutsch"}};
+  TEST_EQUAL(kml::GetStringForExport(value), "Deutsch", ());
+
+  value[StringUtf8Multilang::kEnglishCode] = "English";
+  TEST_EQUAL(kml::GetStringForExport(value), "English", ());
+
+  value[StringUtf8Multilang::kInternationalCode] = "International";
+  TEST_EQUAL(kml::GetStringForExport(value), "International", ());
+
+  value[StringUtf8Multilang::kDefaultCode] = "Default";
+  TEST_EQUAL(kml::GetStringForExport(value), "Default", ());
+
+  // Empty preferred entries do not hide a usable lower-priority value.
+  value[StringUtf8Multilang::kDefaultCode].clear();
+  TEST_EQUAL(kml::GetStringForExport(value), "International", ());
+
+  // alt_name/old_name are OSM pseudo-names: a real language wins even with a higher code.
+  kml::LocalizableString const pseudo{{StringUtf8Multilang::kOldNameCode, "Old"},
+                                      {StringUtf8Multilang::kAltNameCode, "Alt"},
+                                      {StringUtf8Multilang::GetLangIndex("hi"), "हिन्दी"}};
+  TEST_EQUAL(kml::GetStringForExport(pseudo), "हिन्दी", ());
+
+  // ...but they are still better than exporting nothing.
+  kml::LocalizableString const onlyPseudo{{StringUtf8Multilang::kOldNameCode, "Old"},
+                                          {StringUtf8Multilang::kAltNameCode, "Alt"}};
+  TEST_EQUAL(kml::GetStringForExport(onlyPseudo), "Alt", ());
+}
+
+UNIT_TEST(DefaultLanguageBookmarkCustomNameFallback)
+{
+  auto const kDeLang = StringUtf8Multilang::GetLangIndex("de");
+  auto const kRuLang = StringUtf8Multilang::GetLangIndex("ru");
+
+  kml::BookmarkData bookmark;
+  bookmark.m_name[kml::kDefaultLang] = "Original name";
+  bookmark.m_customName[kRuLang] = "Любимое место";
+  bookmark.m_customName[kDeLang] = "Lieblingsort";
+  TEST_EQUAL(kml::GetPreferredBookmarkName(bookmark, "default"), "Lieblingsort", ());
+}
+
+namespace
+{
+std::string SerializeKmlText(kml::FileData & data)
+{
+  std::string buffer;
+  MemWriter<decltype(buffer)> sink(buffer);
+  kml::SerializerKml ser(data);
+  ser.Serialize(sink);
+  return buffer;
+}
+
+// Round-trips a one-bookmark file with the given color through text KML and returns the re-parsed
+// bookmark color.
+kml::ColorData RoundTripBookmarkColor(kml::ColorData const & color)
+{
+  kml::FileData data;
+  kml::BookmarkData bm;
+  bm.m_point = mercator::FromLatLon(53.89, 27.55);
+  bm.m_color = color;
+  data.m_bookmarksData.push_back(std::move(bm));
+
+  auto const text = SerializeKmlText(data);
+  auto const parsed = ParseKmlText(text);
+  TEST_EQUAL(parsed.m_bookmarksData.size(), 1, ());
+  return parsed.m_bookmarksData.front().m_color;
+}
+}  // namespace
+
+UNIT_TEST(Kml_Export_NameWithoutPreferredLanguage)
+{
+  kml::FileData data;
+  kml::BookmarkData bookmark;
+  bookmark.m_point = mercator::FromLatLon(53.89, 27.55);
+  bookmark.m_name[StringUtf8Multilang::GetLangIndex("ru")] = "Эрмитаж";
+  bookmark.m_name[StringUtf8Multilang::GetLangIndex("de")] = "Eremitage";
+  data.m_bookmarksData.push_back(std::move(bookmark));
+
+  TEST(SerializeKmlText(data).find("<name>Eremitage</name>") != std::string::npos, ());
+}
+
+UNIT_TEST(Kml_RoundTrip_PromotesFallbackToDefaultLanguage)
+{
+  auto const kDeLang = StringUtf8Multilang::GetLangIndex("de");
+  auto const kRuLang = StringUtf8Multilang::GetLangIndex("ru");
+
+  kml::FileData data;
+  data.m_categoryData.m_name[kDeLang] = "Kategorie";
+  data.m_categoryData.m_name[kRuLang] = "Категория";
+  data.m_categoryData.m_description[kDeLang] = "Kategoriebeschreibung";
+  data.m_categoryData.m_description[kRuLang] = "Описание категории";
+
+  kml::BookmarkData bookmark;
+  bookmark.m_point = mercator::FromLatLon(53.89, 27.55);
+  bookmark.m_name[kDeLang] = "Lesezeichen";
+  bookmark.m_name[kRuLang] = "Метка";
+  bookmark.m_description[kDeLang] = "Lesezeichenbeschreibung";
+  bookmark.m_description[kRuLang] = "Описание метки";
+  data.m_bookmarksData.push_back(std::move(bookmark));
+
+  kml::TrackData track;
+  track.m_name[kDeLang] = "Strecke";
+  track.m_name[kRuLang] = "Трек";
+  track.m_description[kDeLang] = "Streckenbeschreibung";
+  track.m_description[kRuLang] = "Описание трека";
+  track.m_layers.emplace_back();
+  track.m_geometry.AddLine({{{45.9242, 56.8679}, 1}, {{45.2244, 56.2786}, 2}});
+  track.m_geometry.AddTimestamps({});
+  data.m_tracksData.push_back(std::move(track));
+
+  auto const parsed = ParseKmlText(SerializeKmlText(data));
+  TEST_EQUAL(parsed.m_bookmarksData.size(), 1, ());
+  TEST_EQUAL(parsed.m_tracksData.size(), 1, ());
+
+  // Plain KML elements have no metadata that distinguishes a deterministic projection from an
+  // explicit default. The parser retains that projection as default and preserves both translations.
+  auto const promoted =
+      [=](kml::LocalizableString const & s, std::string const & expectedDe, std::string const & expectedRu)
+  {
+    TEST_EQUAL(s.size(), 3, ());
+    TEST_EQUAL(kml::GetDefaultStr(s), expectedDe, ());
+    TEST_EQUAL(s.at(kDeLang), expectedDe, ());
+    TEST_EQUAL(s.at(kRuLang), expectedRu, ());
+  };
+  promoted(parsed.m_categoryData.m_name, "Kategorie", "Категория");
+  promoted(parsed.m_categoryData.m_description, "Kategoriebeschreibung", "Описание категории");
+  promoted(parsed.m_bookmarksData.front().m_name, "Lesezeichen", "Метка");
+  promoted(parsed.m_bookmarksData.front().m_description, "Lesezeichenbeschreibung", "Описание метки");
+  promoted(parsed.m_tracksData.front().m_name, "Strecke", "Трек");
+  promoted(parsed.m_tracksData.front().m_description, "Streckenbeschreibung", "Описание трека");
+}
+
+UNIT_TEST(Kml_BookmarkColor_CustomRoundTrip)
+{
+  auto const custom = kml::MakeCustomBookmarkColorData(dp::Color(0x12, 0x34, 0x56, 0xFF));
+  auto const result = RoundTripBookmarkColor(custom);
+  TEST_EQUAL(result.m_predefinedColor, kml::PredefinedColor::None, ());
+  TEST_EQUAL(result.m_rgba, custom.m_rgba, ());
+}
+
+UNIT_TEST(Kml_BookmarkColor_PresetStaysPreset)
+{
+  // Presets now also emit <color> in their <Style>; the reader must still treat them as presets.
+  auto const result = RoundTripBookmarkColor({kml::PredefinedColor::Green, 0});
+  TEST_EQUAL(result.m_predefinedColor, kml::PredefinedColor::Green, ());
+  TEST_EQUAL(result.m_rgba, 0u, ());
+}
+
+UNIT_TEST(Kml_BookmarkColor_SharedCustomStyle)
+{
+  // Two bookmarks of the same custom color must share a single document-level <Style>.
+  kml::FileData data;
+  for (int i = 0; i < 2; ++i)
+  {
+    kml::BookmarkData bm;
+    bm.m_point = mercator::FromLatLon(53.89 + i * 0.01, 27.55);
+    bm.m_color = kml::MakeCustomBookmarkColorData(dp::Color(0x12, 0x34, 0x56, 0xFF));
+    data.m_bookmarksData.push_back(std::move(bm));
+  }
+  auto const text = SerializeKmlText(data);
+
+  std::string const styleId = "id=\"placemark-" + NumToHex(uint32_t{0x123456FF}) + "\"";
+  size_t count = 0;
+  for (size_t pos = text.find(styleId); pos != std::string::npos; pos = text.find(styleId, pos + 1))
+    ++count;
+  TEST_EQUAL(count, 1, ("A custom color must emit exactly one shared <Style>"));
+
+  auto const parsed = ParseKmlText(text);
+  TEST_EQUAL(parsed.m_bookmarksData.size(), 2, ());
+  for (auto const & bm : parsed.m_bookmarksData)
+  {
+    TEST_EQUAL(bm.m_color.m_predefinedColor, kml::PredefinedColor::None, ());
+    TEST_EQUAL(bm.m_color.m_rgba, 0x123456FFu, ());
+  }
+}
+
+UNIT_TEST(Kml_BookmarkColor_OldFormatPresetImport)
+{
+  // Old OM / 3rd-party KML: styleUrl to a preset, no <color>.
+  auto const data = ParseKmlText(WrapKmlDoc(PointPlacemark("<styleUrl>#placemark-blue</styleUrl>")));
+  TEST_EQUAL(data.m_bookmarksData.size(), 1, ());
+  TEST_EQUAL(data.m_bookmarksData.front().m_color.m_predefinedColor, kml::PredefinedColor::Blue, ());
+  TEST_EQUAL(data.m_bookmarksData.front().m_color.m_rgba, 0u, ());
+}
+
+UNIT_TEST(Kml_BookmarkColor_CustomImportVariants)
+{
+  uint32_t const kExpected = 0xF23456FFu;  // <color>FF5634F2</color> read as aabbggrr
+
+  // Inline placemark IconStyle, no styleUrl.
+  {
+    auto const data =
+        ParseKmlText(WrapKmlDoc(PointPlacemark("<Style><IconStyle><color>FF5634F2</color></IconStyle></Style>")));
+    auto const & c = data.m_bookmarksData.front().m_color;
+    TEST_EQUAL(c.m_predefinedColor, kml::PredefinedColor::None, ());
+    TEST_EQUAL(c.m_rgba, kExpected, ());
+  }
+
+  // Document-level custom style referenced by styleUrl.
+  {
+    auto const data = ParseKmlText(WrapKmlDoc("<Style id=\"c\"><IconStyle><color>FF5634F2</color></IconStyle></Style>" +
+                                              PointPlacemark("<styleUrl>#c</styleUrl>")));
+    auto const & c = data.m_bookmarksData.front().m_color;
+    TEST_EQUAL(c.m_predefinedColor, kml::PredefinedColor::None, ());
+    TEST_EQUAL(c.m_rgba, kExpected, ());
+  }
+
+  // StyleMap -> custom IconStyle style.
+  {
+    auto const data =
+        ParseKmlText(WrapKmlDoc("<Style id=\"c\"><IconStyle><color>FF5634F2</color></IconStyle></Style>"
+                                "<StyleMap id=\"m\"><Pair><key>normal</key><styleUrl>#c</styleUrl></Pair></StyleMap>" +
+                                PointPlacemark("<styleUrl>#m</styleUrl>")));
+    auto const & c = data.m_bookmarksData.front().m_color;
+    TEST_EQUAL(c.m_predefinedColor, kml::PredefinedColor::None, ());
+    TEST_EQUAL(c.m_rgba, kExpected, ());
+  }
+
+  // StyleMap -> preset must remain a preset.
+  {
+    auto const data = ParseKmlText(
+        WrapKmlDoc("<StyleMap id=\"m\"><Pair><key>normal</key><styleUrl>#placemark-red</styleUrl></Pair></StyleMap>" +
+                   PointPlacemark("<styleUrl>#m</styleUrl>")));
+    auto const & c = data.m_bookmarksData.front().m_color;
+    TEST_EQUAL(c.m_predefinedColor, kml::PredefinedColor::Red, ());
+    TEST_EQUAL(c.m_rgba, 0u, ());
+  }
+}
+
+UNIT_TEST(Kml_BookmarkColor_NoIconLineColorBleed)
+{
+  // A single style with BOTH IconStyle and LineStyle. A point bookmark must read the icon color
+  // (not the line color); a track must read the line color (not the icon color).
+  std::string const styles =
+      "<Style id=\"both\"><IconStyle><color>FF0000FF</color></IconStyle>"
+      "<LineStyle><color>FF00FF00</color></LineStyle></Style>";
+  std::string const pointBm = PointPlacemark("<styleUrl>#both</styleUrl>");
+  std::string const track =
+      "<Placemark><styleUrl>#both</styleUrl>"
+      "<LineString><coordinates>27.55,53.89 27.56,53.90</coordinates></LineString></Placemark>";
+  auto const data = ParseKmlText(WrapKmlDoc(styles + pointBm + track));
+
+  TEST_EQUAL(data.m_bookmarksData.size(), 1, ());
+  auto const & bmColor = data.m_bookmarksData.front().m_color;
+  TEST_EQUAL(bmColor.m_predefinedColor, kml::PredefinedColor::None, ());
+  TEST_EQUAL(bmColor.m_rgba, 0xFF0000FFu, ("Bookmark must use the icon color, not the line color"));
+
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  TEST(!data.m_tracksData.front().m_layers.empty(), ());
+  TEST_EQUAL(data.m_tracksData.front().m_layers.front().m_color.m_rgba, 0x00FF00FFu,
+             ("Track must use the line color, not the icon color"));
+}
+
+UNIT_TEST(Kml_BookmarkColor_ForcedOpaqueAndTransparent)
+{
+  // Alpha < FF is forced opaque.
+  {
+    auto const data =
+        ParseKmlText(WrapKmlDoc(PointPlacemark("<Style><IconStyle><color>0A0000FF</color></IconStyle></Style>")));
+    auto const & c = data.m_bookmarksData.front().m_color;
+    TEST_EQUAL(c.m_predefinedColor, kml::PredefinedColor::None, ());
+    TEST_EQUAL(c.m_rgba, 0xFF0000FFu, ());
+  }
+  // Fully transparent zero => no custom color => default preset.
+  {
+    auto const data =
+        ParseKmlText(WrapKmlDoc(PointPlacemark("<Style><IconStyle><color>00000000</color></IconStyle></Style>")));
+    auto const & c = data.m_bookmarksData.front().m_color;
+    TEST_EQUAL(c.m_predefinedColor, kml::PredefinedColor::Red, ());
+    TEST_EQUAL(c.m_rgba, 0u, ());
+  }
+}
+
+UNIT_TEST(Kml_BookmarkColor_KmbCustomRoundTrip)
+{
+  classificator::Load();
+  kml::FileData data;
+  kml::BookmarkData bm;
+  bm.m_point = mercator::FromLatLon(53.89, 27.55);
+  bm.m_color = kml::MakeCustomBookmarkColorData(dp::Color(0x12, 0x34, 0x56, 0xFF));
+  data.m_bookmarksData.push_back(std::move(bm));
+
+  std::vector<uint8_t> buffer;
+  {
+    kml::binary::SerializerKml ser(data);
+    MemWriter<decltype(buffer)> sink(buffer);
+    ser.Serialize(sink);
+  }
+  kml::FileData parsed;
+  {
+    kml::binary::DeserializerKml des(parsed);
+    MemReader reader(buffer.data(), buffer.size());
+    des.Deserialize(reader);
+  }
+  TEST_EQUAL(parsed.m_bookmarksData.size(), 1, ());
+  TEST_EQUAL(parsed.m_bookmarksData.front().m_color.m_predefinedColor, kml::PredefinedColor::None, ());
+  TEST_EQUAL(parsed.m_bookmarksData.front().m_color.m_rgba, 0x123456FFu, ());
 }

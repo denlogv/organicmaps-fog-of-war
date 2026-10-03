@@ -2,18 +2,15 @@
 
 @interface MWMEditorAddAdditionalNameTableViewCell ()
 
-@property(weak, nonatomic) id<MWMEditorAdditionalName> delegate;
+@property(weak, nonatomic) IBOutlet UILabel * label;
 
 @end
 
 @implementation MWMEditorAddAdditionalNameTableViewCell
 
-- (void)configWithDelegate:(id<MWMEditorAdditionalName>)delegate
+- (void)config
 {
-  self.delegate = delegate;
+  self.label.text = L(@"add_language");
 }
-- (IBAction)addLanguageTap
-{
-  [self.delegate editAdditionalNameLanguage:NSNotFound];
-}
+
 @end

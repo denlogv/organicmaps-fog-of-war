@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Atrakcje turystyczne";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Rozrywka";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Recykling";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Woda";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Nie określono jeszcze aktualnego położenia";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Hej, spójrz na mój znacznik w Organic Maps!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Jestem tutaj na mapie Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Zobacz moją aktualną lokalizację na mapie przy użyciu Organic Maps";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ w Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Miejsce w Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Otwórz w Organic Maps lub w przeglądarce";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Pobierz Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Otwórz w innej aplikacji";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "E-mail";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Długość";
 "share_my_location" = "Udostępnij aktualne położenie";
+"prefs_group_network" = "Sieć";
 "prefs_group_route" = "Nawigacja";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "Budynki 3D są wyłączone w trybie oszczędzania energii";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Zdjęcia satelitarne";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "Adres URL serwera";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Wprowadź prawidłowy adres URL z {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Rozmiar pamięci podręcznej (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Krycie obiektów powierzchniowych";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Źródła niestandardowych kafelków zapewniasz Ty. Korzystaj tylko z usług, do których masz uprawniony dostęp. Odpowiadasz za atrybucję, warunki licencji, klucze API, limity i ograniczenia użytkowania.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Komunikaty głosowe";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Język komunikatów";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Testuj wskazówki głosowe (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Aby pobrać głos wyższej jakości, otwórz aplikację Ustawienia i przejdź do Dostępność → VoiceOver → Mowa → Głos.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Automatyczne powiększanie";
 "placepage_distance" = "Dystans";
 "search_show_on_map" = "Wyświetl na mapie";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Ciemny";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Inny";
-
 /* Tex label above the Donate button */
 "donate_description" = "Podaruj darmowe mapy bez reklam milionom użytkowników!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Błąd wysyłania wiadomości";
-
-/* Settings item title */
-"pref_calibration_title" = "Kalibracja kompasu";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Dostępne";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "Dziś nieczynne";
 "day_off" = "Nieczynne";
+"midnight" = "Północ";
+"noon" = "Południe";
 "today" = "Dzisiaj";
 "opens_in" = "Otwarcie za %@";
 "closes_in" = "Zamknięcie za %@";
@@ -571,9 +607,6 @@
 "day" = "d";
 "second" = "s";
 "placepage_more_button" = "Więcej";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Edytuj zakładkę";
 "placepage_personal_notes_hint" = "Notatki osobiste (tekst lub html)";
 "editor_comment_hint" = "Komentarz…";
 "editor_reset_edits_message" = "Usunąć wszystkie lokalne zmiany?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Zarządzaj trasą";
 "button_plan" = "Zaplanuj";
 "placepage_remove_stop" = "Usuń postój";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Dodaj postój";
 "saved" = "Zapisano";
 "error_enter_correct_name" = "Wprowadź poprawną nazwę";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Ta nazwa jest już zajęta";
 "profile" = "Profil OpenStreetMap";
 "restore" = "Przywróć";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Prywatność";
 "privacy_policy" = "Polityka prywatności";
 "terms_of_use" = "Warunki użytkowania";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Jazda rowerem";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satelita";
 "button_layer_subway" = "Metro";
 "layers_title" = "Style i warstwy mapy";
 
@@ -687,9 +728,15 @@
 "bookmarks_text_placement_title" = "Nazwy zakładek na mapie";
 "bookmarks_text_placement_description" = "Jeśli zakładek jest zbyt wiele, wyświetlanie ich nazw na mapie może spowolnić działanie aplikacji.";
 "show_to_the_right" = "Pokaż po prawej stronie";
-"show_at_the_bottom" = "Pokaż na środku";
+"show_at_the_bottom" = "Pokaż na dole";
 "enable_logging_warning_message" = "Ta opcja zostaje włączona do zbierania danych działań w celach diagnostycznych. Pomaga to zespołowi zidentyfikować problemy z aplikacją. Włączaj opcję tylko na żądanie wsparcia technicznego Organic Maps.";
 "driving_options_title" = "Ustawienia nawigacji";
+
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Optymalizacja trasy";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Automatycznie zmienia kolejność postojów pośrednich, aby utworzyć bardziej efektywną trasę.";
 
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Unikaj płatnych dróg";
@@ -707,6 +754,15 @@
 "toll_road" = "Droga płatna";
 "unpaved_road" = "Droga gruntowa";
 "ferry_crossing" = "Przeprawa promowa";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Schody";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Brama";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Szlaban";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Tak";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Wybierz Usługi lokalizacji";
 "location_services_disabled_on_device_4" = "4. Włącz usługi lokalizacji";
 "location_services_disabled_on_device_additional_message" = "Lub kontynuuj korzystanie z Organic Maps bez lokalizacji";
-"book_button" = "Zarezerwuj";
 "placepage_call_button" = "Zadzwoń";
 "placepage_bookmark_name_hint" = "Nazwa zakładki";
 "placepage_delete_bookmark_button" = "Usuń zakładkę";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Wyłączyć rejestrowanie niedawno przebytej trasy?";
 "off_recent_track_background_button" = "Wyłącz";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Sprawdź";
 "recent_track_background_dialog_message" = "Organic Maps używa w tle geolokalizacji w celu rejestrowania niedawno przebytej trasy.";
 "general_settings" = "Ustawienia ogólne";
 
@@ -810,7 +862,7 @@
 "traffic_update_app_message" = "Aby wyświetlić dane o ruchu, należy zaktualizować aplikację.";
 "log_file_size" = "Rozmiar pliku dziennika: %@";
 "planning_route_remove_title" = "Przeciągnij tu, aby usunąć";
-"placepage_replace_stop" = "Replace Stop";
+"placepage_replace_stop" = "Zastąp przystanek";
 "start_from_my_position" = "Zacznij od";
 
 /* For iOS message 'alert_reauth_message' should be splitted in two parts: message + link. Here's first part */
@@ -831,12 +883,6 @@
 "popular_place" = "Popularne";
 "hide_from_map" = "Ukryj mapy";
 "tags_loading_error_subtitle" = "Wystąpił błąd podczas pobierania tagów, spróbuj ponownie";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Prawo";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Przycisk";
 "trip_start" = "Jedźmy";
 "pick_destination" = "Meta";
 "follow_my_position" = "Wyśrodkuj";
@@ -855,7 +901,7 @@
 "not_all_shown_bookmarks_carplay" = "Nie wszystkie zakładki są wyświetlane";
 "switch_to_phone_bookmarks_carplay" = "Przełącz się na telefon, aby zobaczyć wszystkie zakładki";
 "speedcams_alert_title_carplay_1" = "Kamery";
-"speedcams_alert_title_carplay_2" = "Info o kamerach";
+"speedcams_alert_title_carplay_2" = "Ostrzeżenia o fotoradarach";
 "download_map_carplay" = "Pobierz mapy do aplikacji Organic Maps na swoje urządzenie";
 "carplay_roundabout_exit" = "%@ zjazd";
 
@@ -885,6 +931,15 @@
 "medicine" = "Lecznictwo";
 "search_in_the_list" = "Wyszukaj na liście";
 "religious_places" = "Święte miejsca";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Zaznacz";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Zaznacz wszystko";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Odznacz wszystko";
 "transit_not_found" = "Nawigacja metrem nie jest jeszcze tutaj dostępna";
 "dialog_pedestrian_route_is_long_header" = "Nie znaleziono trasy metra";
 "dialog_pedestrian_route_is_long_message" = "Wybierz punkt początkowy lub końcowy trasy najbliżej do stacji metra";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Zejście";
 "elevation_profile_min_elevation" = "Min. wysokość";
 "elevation_profile_max_elevation" = "Maks. wysokość";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Zacznij się poruszać, aby zobaczyć profil wysokości";
 "isolines_toast_zooms_1_10" = "Powiększ mapę, aby zobaczyć poziomice";
 "downloader_loading_ios" = "Pobieranie";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Eksportuj wszystkie zakładki i ścieżki";
 "drive_through" = "Przejazd";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Powiększ";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Pomniejsz";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Link do menu";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Otwórz w innej aplikacji";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Samoobsługa";
@@ -1002,10 +1063,10 @@
 "placepage_delete_track_button" = "Usuń trasę";
 
 /* The track deletion confirmaion alert message. */
-"placepage_delete_track_confirmation_alert_message" = "Czy na pewno chce Pan/Pani usunąć ten utwór?";
+"placepage_delete_track_confirmation_alert_message" = "Czy na pewno chcesz usunąć ten ślad?";
 
 /* Placeholder for track name input on track edit screen */
-"placepage_track_name_hint" = "Nazwa trasy";
+"placepage_track_name_hint" = "Nazwa śladu";
 
 /* move track or bookmark from the list button text */
 "move" = "Przenieś";
@@ -1015,6 +1076,12 @@
 
 /* Text for the editing the Track's color button. */
 "change_color" = "Zmień kolor";
+
+/* Text for the hiding track. */
+"hide_track" = "Ukryj trasę";
+
+/* Text for the showing track. */
+"show_track" = "Pokaż trasę";
 
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Mapa";
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Aby korzystać z tej funkcji, włącz usługę iCloud w ustawieniach urządzenia.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Włącz";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Kolor tras zmieniony";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Wybierz na mapie";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Początek";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Cel";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Zmień początek";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Zmień cel";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Zmień postój";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Osiągnięto maksymalną liczbę postojów";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Przesuń i powiększ mapę, aby ustawić krzyżyk";

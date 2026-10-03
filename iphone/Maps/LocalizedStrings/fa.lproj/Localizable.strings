@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "منظره";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "سرگرمی";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "بازیافت";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "آب";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "مکان شما هنوز مشخص نشده است";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "سلام، مکان من را در Organic Maps بررسی کن!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "من اینجا در Organic Maps هستم";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "سلام، مکان فعلی من را روی نقشه Organic Maps بررسی کن!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ در Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "مکانی در Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "در Organic Maps یا مرورگر باز کنید";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Organic Maps را دریافت کنید";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "در یک برنامه دیگر باز کنید";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "ایمیل";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "طول";
 "share_my_location" = "هم‌رسانی موقعیت مکانی من";
+"prefs_group_network" = "شبکه";
 "prefs_group_route" = "مسیریابی";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "ساختمان های سه بعدی در حالت صرفه جویی در مصرف برق خاموش می شوند";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "تصاویر ماهواره‌ای";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "نشانی سرور";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "نشانی معتبری شامل {z}/{x}/{y} وارد کنید";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "اندازهٔ حافظهٔ نهان (مگابایت)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "کدری اشیای سطحی";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "منابع کاشی‌های سفارشی را شما فراهم می‌کنید. فقط از سرویس‌هایی استفاده کنید که اجازهٔ دسترسی به آن‌ها را دارید. شما مسئول ذکر منبع، شرایط مجوز، کلیدهای API، سهمیه‌ها و محدودیت‌های استفاده هستید.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "دستور العمل صوتی";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "زبان صوت";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "تست مسیرهای صوتی (TTS، تبدیل متن به گفتار)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "برای دانلود صدای باکیفیت‌تر، برنامه تنظیمات را باز کنید و به دسترس‌پذیری → VoiceOver → گفتار → صدا بروید.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "بزرگنمایی خودکار";
 "placepage_distance" = "مسافت";
 "search_show_on_map" = "مشاهده بر روی نقشه";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "تیره";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "بیشتر";
-
 /* Tex label above the Donate button */
 "donate_description" = "نقشه‌های رایگان و بدون تبلیغات را به میلیون‌ها کاربر هدیه دهید!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "خطا در ارسال ایمیل";
-
-/* Settings item title */
-"pref_calibration_title" = "تنظیم کردن قطب نما";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "موجود";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "شبانه روزی";
 "day_off_today" = "امروز تعطیل است";
 "day_off" = "تعطیل است";
+"midnight" = "نیمه‌شب";
+"noon" = "ظهر";
 "today" = "امروز";
 "opens_in" = "در %@ باز می‌شود";
 "closes_in" = "در %@ بسته می‌شود";
@@ -571,9 +607,6 @@
 "day" = "روز";
 "second" = "ثانیه";
 "placepage_more_button" = "بیشتر";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "ویرایش نشانک‌ها";
 "placepage_personal_notes_hint" = "یادداشت های شخصی (متن یا html)";
 "editor_comment_hint" = "دیدگاه…";
 "editor_reset_edits_message" = "آیا تغییرات محلی را نادیده می گیرید؟";
@@ -621,7 +654,9 @@
 "planning_route_manage_route" = "مدیریت مسیر";
 "button_plan" = "برنامه";
 "placepage_remove_stop" = "توقف را حذف کنید";
-"placepage_add_stop" = "اضافه کردن توقف";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "افزودن توقف";
 "saved" = "ذخیره شد";
 "error_enter_correct_name" = "لطفا نام صحیح را وارد کنید";
 "bookmark_lists" = "فهرست‌ها";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "این اسم قبلا انتخاب شده است";
 "profile" = "نمایه OpenStreetMap";
 "restore" = "بازیابی";
+
+/* Settings privacy group in settings screen */
+"privacy" = "حریم شخصی";
 "privacy_policy" = "سیاست حریم خصوصی";
 "terms_of_use" = "شرایط استفاده";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "دوچرخه‌سواری";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "ماهواره";
 "button_layer_subway" = "مترو";
 "layers_title" = "سبک ها و لایه های نقشه";
 
@@ -685,11 +726,17 @@
 
 /* Settings/Bookmark Text Placement */
 "bookmarks_text_placement_title" = "نام‌ها را روی نقشه نشانه‌گذاری کنید";
-"bookmarks_text_placement_description" = "If there are too many bookmarks, displaying their names on the map may slow down the app.";
-"show_to_the_right" = "Show to the right";
-"show_at_the_bottom" = "Show at the bottom";
+"bookmarks_text_placement_description" = "اگر نشانک‌ها زیاد باشند، نمایش نام آن‌ها روی نقشه ممکن است باعث کند شدن برنامه شود.";
+"show_to_the_right" = "در سمت راست نمایش دهید";
+"show_at_the_bottom" = "در پایین نمایش دهید";
 "enable_logging_warning_message" = "این گزینه ثبت گزارش را برای اهداف تشخیصی فعال می‌کند. برای کارکنان بخش پشتیبانی که مشکلات برنامه را عیب یابی می‌کنند، مفید باشد. این گزینه را تنها در صورت درخواست پشتیبانی Organic Maps فعال کنید.";
 "driving_options_title" = "گزینه‌های رانندگی";
+
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "بهینه‌سازی مسیر";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "توقف‌های میانی را به‌طور خودکار جابه‌جا می‌کند تا مسیر بهینه‌تری ایجاد شود.";
 
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "از جاده های عوارضی خودداری کنید";
@@ -707,6 +754,15 @@
 "toll_road" = "جاده دارای عوارض";
 "unpaved_road" = "جاده آسفالت نشده";
 "ferry_crossing" = "گذرگاه جاده‌ای";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "مسیر";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "دروازه";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "راهبند";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "بله";
@@ -788,8 +844,7 @@
 "location_services_disabled_on_device_2" = "2. Privacy را انتخاب کنید";
 "location_services_disabled_on_device_3" = "3. Location Services را انتخاب کنید";
 "location_services_disabled_on_device_4" = "4. Location Services را روشن کنید";
-"location_services_disabled_on_device_additional_message" = "یا به استفاده از نقشه های ارگانیک بدون موقعیت مکانی ادامه دهید";
-"book_button" = "رزرو";
+"location_services_disabled_on_device_additional_message" = "یا به استفاده از Organic Maps بدون موقعیت مکانی ادامه دهید";
 "placepage_call_button" = "تماس";
 "placepage_bookmark_name_hint" = "نام نشانک";
 "placepage_delete_bookmark_button" = "حذف نشانه";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "ضبط مسیر طی‌شده اخیر، غیرفعال شود؟";
 "off_recent_track_background_button" = "غیرفعال";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "بررسی کنید";
 "recent_track_background_dialog_message" = "Organic Maps از اطلاعات موقعیت مکانی شما در پس ضمینه برای ذخیره مسیر‌هایی که اخیرا سفر کرده اید استفاده می کند.";
 "general_settings" = "تنظیمات عمومی";
 
@@ -810,7 +862,7 @@
 "traffic_update_app_message" = "برای نمایش ترافیک باید اپلیکیشن را بروزرسانی کنید.";
 "log_file_size" = "اندازه فایل گزارش: %@";
 "planning_route_remove_title" = "برای حذف اینجا بکشید";
-"placepage_replace_stop" = "Replace Stop";
+"placepage_replace_stop" = "جایگزین Stop";
 "start_from_my_position" = "شروع از";
 
 /* For iOS message 'alert_reauth_message' should be splitted in two parts: message + link. Here's first part */
@@ -831,12 +883,6 @@
 "popular_place" = "مشهور";
 "hide_from_map" = "پنهان کردن از نقشه";
 "tags_loading_error_subtitle" = "هنگام بارگذاری برچسب خطایی رخ داد، لطفا دوباره امتحان کنید";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Right";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Bottom";
 "trip_start" = "برویم";
 "pick_destination" = "مقصد";
 "follow_my_position" = "نشان دادن مجدد در مرکز";
@@ -885,6 +931,15 @@
 "medicine" = "پزشکی";
 "search_in_the_list" = "جستجو در فهرست";
 "religious_places" = "اماکن مقدس";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "انتخاب";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "انتخاب همه";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "لغو انتخاب همه";
 "transit_not_found" = "راهنمای مترو در این منطقه هنوز دردسترس نیست";
 "dialog_pedestrian_route_is_long_header" = "مسیر مترو یافت نشد";
 "dialog_pedestrian_route_is_long_message" = "لطفا نقطه آغاز و پایان نزدیک تری به ایستگاه مترو انتخاب کنید";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "پایین آمدن";
 "elevation_profile_min_elevation" = "کم ارتفاع";
 "elevation_profile_max_elevation" = "بیش ارتفاع";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "برای دیدن نمایه ارتفاع حرکت را شروع کنید";
 "isolines_toast_zooms_1_10" = "برای بررسی خطوط تراز زوم کنید";
 "downloader_loading_ios" = "در حال دانلود";
 
@@ -941,10 +999,10 @@
 "app_tip_09" = "هدف اصلی ما ساختن نقشه هایی سریع، متمرکز بر حریم خصوصی و با کاربری آسان است که شما عاشق آن خواهید شد.";
 
 /* Text on the Android Auto or CarPlay placeholder screen that maps are displayed on the phone screen */
-"car_used_on_the_phone_screen" = "اکنون در حال استفاده از نقشه های ارگانیک در صفحه گوشی هستید";
+"car_used_on_the_phone_screen" = "شما اکنون در حال استفاده از Organic Maps بر روی صفحهٔ تلفن همراه هستید";
 
 /* Text on the phone placeholder screen that maps are displayed on the car screen */
-"car_used_on_the_car_screen" = "اکنون از نقشه های ارگانیک در صفحه ماشین استفاده می کنید";
+"car_used_on_the_car_screen" = "شما اکنون در حال استفاده از Organic Maps بر روی صفحهٔ خودرو هستید";
 
 /* Displayed on the phone screen. Button to display maps on the phone screen instead of a car */
 "car_continue_on_the_phone" = "با تلفن ادامه دهید";
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "صادر کردن همه نشانک‌ها و مسیرها";
 "drive_through" = "رانندگی از طریق";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "بزرگنمایی";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "کوچک نمایی";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "لینک منو";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "در یک برنامه دیگر باز کنید";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "سلف سرویس";
@@ -1016,11 +1077,17 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "تغییر رنگ";
 
+/* Text for the hiding track. */
+"hide_track" = "مخفی کردن مسیر";
+
+/* Text for the showing track. */
+"show_track" = "نمایش مسیر";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "نقشه";
 
 /* Message for the bug report alert. */
-"bugreport_alert_message" = "آیا می خواهید یک گزارش اشکال برای توسعه دهندگان ارسال کنید؟\nما به کاربران خود تکیه می کنیم زیرا نقشه های ارگانیک هیچ گونه اطلاعات خطا را به طور خودکار جمع آوری نمی کند. پیشاپیش از شما برای حمایت از نقشه های ارگانیک سپاسگزاریم!";
+"bugreport_alert_message" = "آیا مایلید گزارش باگ را برای توسعه‌دهندگان ارسال کنید؟ ما به کاربران خود اتکا می‌کنیم زیرا Organic Maps هیچ‌گونه اطلاعات خطایی را به‌طور خودکار جمع‌آوری نمی‌کند. پیشاپیش از حمایت شما از Organic Maps سپاسگزاریم!";
 
 /* Title for the "Enable iCloud Syncronization" alert. */
 "enable_icloud_synchronization_title" = "همگام سازی iCloud را فعال کنید";
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "لطفاً iCloud را در تنظیمات دستگاه خود فعال کنید تا از این ویژگی استفاده کنید.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "فعال کردن";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "رنگ مسیرها تغییر کرد";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "انتخاب از نقشه";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "نقطه شروع";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "مقصد";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "تغییر نقطه شروع";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "تغییر مقصد";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "تغییر توقف";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "حداکثر تعداد توقف‌ها رسیده است";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "نقشه را جابجا و بزرگنمایی کنید تا صلیب را قرار دهید";

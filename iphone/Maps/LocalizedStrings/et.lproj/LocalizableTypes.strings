@@ -87,7 +87,7 @@
 "type.amenity.internet_cafe" = "Internetikohvik";
 "type.amenity.kindergarten" = "Lasteaed";
 "type.amenity.library" = "Raamatukogu";
-"type.amenity.loading_dock" = "Laoestakaad";
+"type.amenity.loading_dock" = "Laadimisdokk";
 "type.amenity.luggage_locker" = "Pagasihoid";
 "type.amenity.marketplace" = "Turg";
 "type.amenity.motorcycle_parking" = "Mootorrataste parkla";
@@ -249,13 +249,14 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Aadress";
+"type.building.construction" = "Ehitatav hoone";
 "type.building.has_parts" = "Hoone";
 "type.building_part" = "Hooneosa";
 "type.building.garage" = "Garaaž";
 "type.building.train_station" = "Jaamahoone";
 "type.building.warehouse" = "Ladu";
 "type.cemetery.grave" = "Haud";
-"type.craft" = "Käsitöömeister";
+"type.craft" = "Käsitöö";
 "type.craft.beekeeper" = "Mesinik";
 "type.craft.blacksmith" = "Sepp";
 "type.craft.brewery" = "Väikepruulikoda";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Vahemere";
 "type.cuisine.mexican" = "Mehhiko";
 "type.cuisine.moroccan" = "Maroko";
-"type.cuisine.noodles" = "Nuudliroad";
+"type.cuisine.noodle" = "Nuudliroad";
 "type.cuisine.oriental" = "Kaug-Ida";
 "type.cuisine.pancake" = "Pannkoogid";
 "type.cuisine.pasta" = "Pasta";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Vorstid";
 "type.cuisine.savory_pancakes" = "Soolased pannkoogid";
 "type.cuisine.seafood" = "Mereannid";
+"type.cuisine.shawarma" = "Shawarma";
 "type.cuisine.soba" = "Jaapani soba-nuudlid";
 "type.cuisine.spanish" = "Hispaania";
 "type.cuisine.steak_house" = "Liharestoran";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Jaapani kindlusloss";
 "type.historic.castle.stately" = "Suur härrastemaja";
 "type.historic.city_gate" = "Linnavärav";
+"type.man_made.ceremonial_gate" = "Tseremoniaalne värav";
 "type.historic.citywalls" = "Linnamüür";
 "type.historic.fort" = "Kindlus";
 "type.historic.gallows" = "Võllas";
@@ -716,6 +719,7 @@
 "type.landuse" = "Maakasutus";
 "type.landuse.allotments" = "Aianduskrundid";
 "type.landuse.basin" = "Kogumisbassein";
+"type.landuse.basin.intermittent" = "Ajutine kogumisbassein";
 "type.landuse.brownfield" = "Pruunala";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Karjäär";
 "type.landuse.railway" = "Raudteekoridor";
 "type.landuse.recreation_ground" = "Puhkeala";
-"type.landuse.reservoir" = "Veehoidla";
 "type.landuse.residential" = "Elamuala";
 "type.landuse.retail" = "Jaekaubandusala";
 "type.landuse.salt_pond" = "Soolatiik";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Uisustaadion";
 "type.leisure.marina" = "Väikesadam";
 "type.leisure.nature_reserve" = "Looduskaitseala";
+"type.leisure.bird_hide" = "Linnuvaatlusvarje";
 "type.leisure.outdoor_seating" = "Istekohad õues";
 "type.leisure.firepit" = "Tulease";
 "type.leisure.park" = "Park";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "Veehoidla";
 "type.natural.water.basin" = "Kogumisbassein";
 "type.natural.water.river" = "Jõgi";
+"type.natural.water.intermittent" = "Ajutine veekogu";
 "type.natural.land" = "Maa";
 "type.natural.meadow" = "Heinamaa";
 "type.natural.orchard" = "Viljapuuaed";
 "type.natural.peak" = "Mäetipp";
+"type.natural.hill" = "Küngas";
+"type.natural.arch" = "Kivikaar";
 "type.natural.saddle" = "Mäesadul";
 "type.natural.rock" = "Kaljurahn";
 "type.natural.scrub" = "Võsa";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Puude rida";
 "type.natural.vineyard" = "Viinamarjaistandus";
 "type.natural.volcano" = "Vulkaan";
+"type.natural.volcano.active" = "Aktiivne vulkaan";
 "type.natural.water" = "Veekogu";
 "type.natural.wetland" = "Märgala";
 "type.natural.wetland.bog" = "Raba";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Maahoki";
 "type.sport.badminton" = "Sulgpall";
 "type.sport.pelota" = "Baski pelota";
+"type.sport.boules" = "Petank";
+"type.sport.cycling" = "Jalgrattasport";
+"type.sport.four_square" = "Neli ruutu";
+"type.sport.horse_racing" = "Hobuste võiduajamine";
+"type.sport.karting" = "Kardisõit";
+"type.sport.motocross" = "Motokross";
+"type.sport.motor" = "Mootorisport";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Ragbi";
+"type.sport.running" = "Jooks";
+"type.sport.softball" = "Softball";
 "type.tourism" = "Turism";
 "type.tourism.aquarium" = "Akvaarium";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Ajalooline vaatamisväärsus";
 "type.attraction.maze" = "Labürint";
 "type.attraction.roller_coaster" = "Ameerika mäed";
+"type.roller_coaster.track" = "Ameerika mäed";
 "type.attraction.water_slide" = "Vesiliug";
 "type.tourism.attraction.specified" = "Turismiatraktsioon";
 "type.tourism.camp_site" = "Kämpinguala";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Kiirusepiiraja";
 "type.traffic_calming.hump" = "Liikluskünnis";
 "type.waterway" = "Veetee";
+"type.waterway.access_point" = "Veetee juurdepääsupunkt";
 "type.waterway.canal" = "Kanal";
 "type.waterway.canal.tunnel" = "Kanal tunnelis";
 "type.waterway.fish_pass" = "Kalatrepp";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Sotsiaalasutus";
+"type.amenity.stage" = "Lava";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Erakorralise meditsiini osakonna sissepääs";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Kellassepp";
 "type.xmas_feature.market" = "Jõuluturg";
 "type.xmas_feature.tree" = "Jõulupuu";
+"type.amenity.hookah_lounge" = "Vesipiibu kohvik";

@@ -8,10 +8,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.os.ParcelCompat;
-import app.organicmaps.sdk.Framework;
 import app.organicmaps.sdk.routing.RoutePointInfo;
-import app.organicmaps.sdk.search.Popularity;
-import app.organicmaps.sdk.util.Constants;
 
 // TODO consider refactoring to remove hack with MapObject unmarshalling itself and Bookmark at the same time.
 @SuppressLint("ParcelCreator")
@@ -102,18 +99,18 @@ public class Bookmark extends MapObject
 
   public void setIconColor(@ColorInt int color)
   {
-    final int colorIndex = PredefinedColors.getPredefinedColorIndex(color);
-    mIcon = new Icon(colorIndex, mIcon.getType());
-    nativeSetColor(mBookmarkId, colorIndex);
+    mIcon = new Icon(color, mIcon.getType());
+    nativeSetColor(mBookmarkId, color);
   }
 
-  @PredefinedColors.Color
+  @ColorInt
   public int getColor()
   {
-    return mIcon.getColor();
+    return mIcon.argb();
   }
 
   @NonNull
+  @Override
   public String getDescription()
   {
     return mDescription;
@@ -129,12 +126,9 @@ public class Bookmark extends MapObject
     return info;
   }
 
-  static native int nativeSetColor(long bookmarkId, @PredefinedColors.Color int color);
+  static native void nativeSetColor(long bookmarkId, @ColorInt int color);
 
-  static native void nativeUpdateParams(long bookmarkId, @NonNull String name, @PredefinedColors.Color int color,
+  static native void nativeUpdateParams(long bookmarkId, @NonNull String name, @ColorInt int color,
                                         @NonNull String description);
   static native void nativeChangeCategory(long oldCatId, long newCatId, long bookmarkId);
-
-  @NonNull
-  private static native String nativeEncode2Ge0Url(long bookmarkId, boolean addName);
 }

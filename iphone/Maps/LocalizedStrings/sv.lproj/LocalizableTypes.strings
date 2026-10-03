@@ -26,7 +26,7 @@
 "type.amenity.atm" = "Bankomat";
 "type.amenity.bank" = "Bank";
 "type.amenity.bar" = "Bar";
-"type.amenity.bbq" = "Grill för barbecue";
+"type.amenity.bbq" = "Grillplats";
 "type.amenity.bench" = "Bänk";
 "type.amenity.bicycle_parking" = "Cykelparkering";
 "type.amenity.bicycle_parking.covered" = "Covered Bicycle Parking";
@@ -43,7 +43,7 @@
 "type.amenity.car_sharing" = "Samåkning";
 "type.amenity.car_wash" = "Biltvätt";
 "type.amenity.casino" = "Kasino";
-"type.amenity.gambling" = "Spelande";
+"type.amenity.gambling" = "Hasardspel";
 "type.leisure.adult_gaming_centre" = "Spelcenter för vuxna";
 "type.leisure.amusement_arcade" = "Arkad";
 "type.amenity.charging_station" = "Laddstation";
@@ -64,7 +64,7 @@
 "type.amenity.drinking_water" = "Dricksvatten";
 "type.drinking_water.yes" = "Dricksvatten";
 "type.amenity.driving_school" = "Körskola";
-"type.amenity.exhibition_centre" = "Mässa";
+"type.amenity.exhibition_centre" = "Utställningscentrum";
 "type.amenity.money_transfer" = "Pengaöverföring";
 "type.amenity.music_school" = "Musikskola";
 "type.amenity.language_school" = "Språkskola";
@@ -83,7 +83,7 @@
 "type.amenity.grave_yard.christian" = "Begravningsplats";
 "type.amenity.hospital" = "Sjukhus";
 "type.amenity.hunting_stand" = "Jakttorn";
-"type.amenity.ice_cream" = "Glasstånd";
+"type.amenity.ice_cream" = "Glassstånd";
 "type.amenity.internet_cafe" = "Internetkafé";
 "type.amenity.kindergarten" = "Förskola";
 "type.amenity.library" = "Bibliotek";
@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Adress";
+"type.building.construction" = "Byggnad under uppförande";
 "type.building.has_parts" = "Byggnad";
 "type.building_part" = "Byggnad";
 "type.building.garage" = "Garage";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Medelhavsmat";
 "type.cuisine.mexican" = "Mexikansk mat";
 "type.cuisine.moroccan" = "Marockansk mat";
-"type.cuisine.noodles" = "Nudlar";
+"type.cuisine.noodle" = "Nudlar";
 "type.cuisine.oriental" = "Orientalisk mat";
 "type.cuisine.pancake" = "Pannkaka";
 "type.cuisine.pasta" = "Pasta";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Korv";
 "type.cuisine.savory_pancakes" = "Fyllda pannkakor";
 "type.cuisine.seafood" = "Skaldjur";
+"type.cuisine.shawarma" = "Shawarma";
 "type.cuisine.soba" = "Sobanudlar";
 "type.cuisine.spanish" = "Spansk mat";
 "type.cuisine.steak_house" = "Stekhus";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Japanskt slott";
 "type.historic.castle.stately" = "Slott";
 "type.historic.city_gate" = "Stadsport";
+"type.man_made.ceremonial_gate" = "Ceremoniell port";
 "type.historic.citywalls" = "Stadsmur";
 "type.historic.fort" = "Fort";
 "type.historic.gallows" = "Galge";
@@ -716,6 +719,7 @@
 "type.landuse" = "Markanvändning";
 "type.landuse.allotments" = "Koloniträgdårdar";
 "type.landuse.basin" = "Vattenbassäng";
+"type.landuse.basin.intermittent" = "Periodisk vattenbassäng";
 "type.landuse.brownfield" = "Tidigare industriområde";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Stenbrott";
 "type.landuse.railway" = "Järnvägsfaciliteter";
 "type.landuse.recreation_ground" = "Strövområde";
-"type.landuse.reservoir" = "Vatten";
 "type.landuse.residential" = "Bostadsområde";
 "type.landuse.retail" = "Detaljhandelsområde";
 "type.landuse.salt_pond" = "Saltsjö";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Skridskobana";
 "type.leisure.marina" = "Småbåtshamn";
 "type.leisure.nature_reserve" = "Naturreservat";
+"type.leisure.bird_hide" = "Fågelgömsle";
 "type.leisure.outdoor_seating" = "Sittplatser utomhus";
 "type.leisure.firepit" = "Firepit";
 "type.leisure.park" = "Parken";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "Reservoar";
 "type.natural.water.basin" = "Vattenbassäng";
 "type.natural.water.river" = "Flod";
+"type.natural.water.intermittent" = "Periodiskt vattenområde";
 "type.natural.land" = "Landa";
 "type.natural.meadow" = "Äng";
 "type.natural.orchard" = "Fruktodling";
 "type.natural.peak" = "Bergstopp";
+"type.natural.hill" = "Kulle";
+"type.natural.arch" = "Stenbågen";
 "type.natural.saddle" = "Fjällsadel";
 "type.natural.rock" = "Bergart";
 "type.natural.scrub" = "Ruggen";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Trädrad";
 "type.natural.vineyard" = "Vingård";
 "type.natural.volcano" = "Vulkan";
+"type.natural.volcano.active" = "Aktiv vulkan";
 "type.natural.water" = "Vatten";
 "type.natural.wetland" = "Sumpmarken";
 "type.natural.wetland.bog" = "Myr";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Landhockey";
 "type.sport.badminton" = "Badminton";
 "type.sport.pelota" = "Baskisk pelota";
+"type.sport.boules" = "Boule";
+"type.sport.cycling" = "Cykling";
+"type.sport.four_square" = "Fyra rutor";
+"type.sport.horse_racing" = "Hästkapplöpning";
+"type.sport.karting" = "Gokart";
+"type.sport.motocross" = "Motocross";
+"type.sport.motor" = "Motorsport";
+"type.sport.netball" = "Nätboll";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Rugby";
+"type.sport.running" = "Löpning";
+"type.sport.softball" = "Softboll";
 "type.tourism" = "Turism";
 "type.tourism.aquarium" = "Akvarium";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Historisk sevärdhet";
 "type.attraction.maze" = "Labyrint";
 "type.attraction.roller_coaster" = "Berg- och dalbana";
+"type.roller_coaster.track" = "Berg- och dalbana";
 "type.attraction.water_slide" = "Vattenrutschbana";
 "type.tourism.attraction.specified" = "Attraktion";
 "type.tourism.camp_site" = "Campingplats";
@@ -1476,7 +1497,7 @@
 "type.tourism.hotel" = "Hotell";
 "type.tourism.information" = "Turistinformation";
 "type.tourism.information.board" = "Informationstavla";
-"type.tourism.information.guidepost" = "Vägledning";
+"type.tourism.information.guidepost" = "Vägvisare";
 "type.tourism.information.map" = "Turistkarta";
 "type.tourism.information.office" = "Turistcenter";
 "type.tourism.information.visitor_centre" = "Besökscentrum";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Fartgupp";
 "type.traffic_calming.hump" = "Fartbula";
 "type.waterway" = "Vattendrag";
+"type.waterway.access_point" = "Accesspunkt för vattenväg";
 "type.waterway.canal" = "Kanal";
 "type.waterway.canal.tunnel" = "Kanal";
 "type.waterway.fish_pass" = "Fiskstege";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Social anläggning";
+"type.amenity.stage" = "Scen";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Ingång till akutmottagning";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Urmakare";
 "type.xmas_feature.market" = "Julmarknad";
 "type.xmas_feature.tree" = "Julgran";
+"type.amenity.hookah_lounge" = "Shishabar";

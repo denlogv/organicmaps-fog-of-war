@@ -8,6 +8,8 @@
 
 #include "base/macros.hpp"
 
+#include <optional>
+
 namespace indexer
 {
 class MetadataDeserializer;
@@ -16,6 +18,8 @@ class MetadataDeserializer;
 namespace feature
 {
 class FeaturesOffsetsTable;
+class RelationReader;
+class RouteRelation;
 
 // This info is created once per FeaturesVector.
 class SharedLoadInfo
@@ -30,9 +34,10 @@ public:
   Reader GetGeometryReader(size_t ind) const;
   Reader GetTrianglesReader(size_t ind) const;
 
-  /// @param[in] RelT Can be RouteRelationBase (fast) or RouteRelation (with members).
-  template <class RelT>
-  RelT ReadRelation(uint32_t id) const;
+  feature::RelationReader ReadRelation(uint32_t id) const;
+
+  /// Convenience: read full RouteRelation (with members) at relation index @p index.
+  RouteRelation GetRelation(uint32_t id) const;
 
   serial::GeometryCodingParams const & GetDefGeometryCodingParams() const
   {
@@ -51,9 +56,10 @@ public:
 private:
   FilesContainerR const & m_cont;
   DataHeader const & m_header;
+  feature::FeaturesOffsetsTable const * const m_relTable;
+  std::optional<ModelReaderPtr> m_relsReader;
 
 public:
-  feature::FeaturesOffsetsTable const * m_relTable;
   indexer::MetadataDeserializer * m_metaDeserializer;
   feature::DatSectionHeader::Version m_version;
 

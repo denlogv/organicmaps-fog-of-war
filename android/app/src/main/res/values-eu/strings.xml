@@ -120,7 +120,7 @@
     <string name="category_hotel">Hotela</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">Turismoa</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">Entretenimendua</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">Kutxazain automatikoa</string>
@@ -142,7 +142,7 @@
     <string name="category_police">Polizia</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">Birziklapena</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">Ura</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">Karabanak</string>
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">Barkatu, mapa biltegiratzeko ezarpena desgaituta dago.</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">Mapak deskargatzen ari dira.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Ikusi nire uneko kokapena Organic Maps-en! %1$s edo %2$s Ez al duzu lineaz kanpoko maparik? Deskargatu hemendik: https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Begiratu nire markagailua Organic Maps-en!</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Ikusi nire uneko kokapena Organic Maps mapan!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">Kaixo:\n\nOrain hemen nago: %1$s. Egin klik esteka honetan %2$s edo %3$s honetan mapan ikusteko.\n\nEskerrik asko.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">Partekatu</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s Organic Maps-en</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Leku bat Organic Maps-en</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">Posta elektronikoa</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">3D eraikinak</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">3D eraikinak desgaituta daude energia aurrezteko moduan</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">Satelite-irudiak</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">Zerbitzariaren URLa</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">Sartu {z}/{x}/{y} duen baliozko URL bat</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">Cache-tamaina (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">Azalera-objektuen opakutasuna</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">Lauza-iturri pertsonalizatuak zuk hornitzen dituzu. Erabili soilik sarbidea baimenduta duzun zerbitzuak. Zu zara egiletza-aitortzaren, lizentzia-baldintzen, API gakoen, kuoten eta erabilera-mugen arduraduna.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">Ahots argibideak</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">Probatu ahots bidezko jarraibideak (TTS, Text-To-Speech)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">Egiaztatu bolumena edo sistemaren testu-ahotsaren ezarpenak ahotsa entzuten ez baduzu.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">Ez dago erabilgarri</string>
     <string name="pref_map_auto_zoom">Zoom automatikoa</string>
     <string name="placepage_distance">Distantzia</string>
@@ -371,6 +379,8 @@
     <string name="clear_search">Garbitu bilaketa historia</string>
     <!-- Place Page link to Wikipedia article (if map object has it). -->
     <string name="read_in_wikipedia">Wikipedia</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">wikipedia.org-eko artikulua</string>
     <!-- Place Page link to Wikimedia Commons. -->
     <string name="wikimedia_commons">Wikimedia Commons</string>
     <string name="p2p_your_location">Zure kokapena</string>
@@ -399,19 +409,15 @@
     <string name="editor_example_values">Adibide balioak</string>
     <string name="editor_correct_mistake">Konpondu akatsa</string>
     <string name="editor_add_select_location">Hautatu kokapena</string>
-    <string name="editor_report_problem_desription_1">Mesedez, deskribatu arazoa xehetasunez, OpenStreetMap komunitateak akatsa konpondu dezan.</string>
-    <string name="editor_report_problem_desription_2">Edo zuk zeuk egin hemen https://www.openstreetmap.org/ helbidean</string>
     <string name="editor_report_problem_send_button">Bidali</string>
-    <string name="editor_report_problem_title">Arazoa</string>
-    <string name="editor_report_problem_no_place_title">Tokia ez da existitzen</string>
-    <string name="editor_report_problem_under_construction_title">Mantentze lanetarako itxita</string>
-    <string name="editor_report_problem_duplicate_place_title">Toki bikoiztua</string>
     <string name="autodownload">Deskarga automatikoa</string>
     <!-- Place Page opening hours text -->
     <string name="daily">Egunero</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">Gaur atseden eguna</string>
     <string name="day_off">Itxita</string>
+    <string name="midnight">Gauerdia</string>
+    <string name="noon">Eguerdia</string>
     <string name="today">Gaur</string>
     <string name="opens_in">%s barru irekiko da</string>
     <string name="closes_in">%s barru itxiko da</string>
@@ -464,8 +470,6 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">Bertako hizkuntzan idatzita dagoenez</string>
     <string name="editor_edit_place_category_title">Kategoria</string>
-    <string name="detailed_problem_description">Arazoaren deskribapen zehatza</string>
-    <string name="editor_report_problem_other_title">Beste arazo bat</string>
     <string name="placepage_add_business_button">Gehitu aktibitatea</string>
     <string name="message_invalid_feature_position">Hemen ezin da objekturik jarri</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
@@ -486,7 +490,7 @@
     <!-- Title for OSM note section in the editor -->
     <string name="editor_other_info">OpenStreetMap-eko boluntarioentzako oharra (aukerakoa)</string>
     <!-- Hint of the input field in the OSM note section of the editor -->
-    <string name="editor_note_hint">Deskribatu mapan akatsak edo mapa organikoak erabiliz editatu ezin dena</string>
+    <string name="editor_note_hint">Deskribatu mapako akatsak edo editatu ezin diren gauzakOrganic Maps erabiliz.</string>
     <!-- Information about OSM at the top of the editing page -->
     <string name="editor_about_osm">Zure aldaketak <a href="https://wiki.openstreetmap.org/wiki/About_OpenStreetMap">OpenStreetMap</a> datu-base publikora kargatzen dira. Mesedez, ez gehitu informazio pertsonalik edo copyrightdun informaziorik.</string>
     <string name="editor_more_about_osm">OpenStreetMap-i buruzko informazio gehiago</string>
@@ -508,7 +512,7 @@
     <string name="day">e</string>
     <string name="second">s</string>
     <string name="placepage_more_button">Gehiago</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Editatu markagailua</string>
     <string name="placepage_personal_notes_hint">Ohar pertsonalak (testua edo html)</string>
     <string name="editor_comment_hint">Iruzkina…</string>
@@ -552,11 +556,7 @@
     <string name="mobile_data_description">Internet mugikorra behar da tokiei buruzko informazio zehatza bistaratzeko, hala nola argazkiak, prezioak eta iritziak.</string>
     <string name="mobile_data_option_never">Ez erabili inoiz</string>
     <string name="mobile_data_option_ask">Galdetu beti</string>
-    <string name="traffic_update_maps_text">Trafiko datuak bistaratzeko, mapak eguneratu behar dira.</string>
     <string name="big_font">Handitu letra tamaina mapan</string>
-    <string name="traffic_update_app">Eguneratu Organic Maps</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">Trafiko datuak ez daude eskuragarri</string>
     <string name="enable_logging">Historia gaitu</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">Iritzi orokorra</string>
@@ -565,14 +565,12 @@
     <string name="prefs_languages_information_off_link">Informazio gehiago lortzeko, ikusi gida hau.</string>
     <string name="transliteration_title">Latinezko transliterazioa</string>
     <string name="learn_more">Irakurri gehiago</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">Erabili bilaketa edo sakatu mapan ibilbidearen abiapuntua gehitzeko</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">Erabili bilaketa edo sakatu mapan helmuga puntu bat gehitzeko</string>
     <string name="planning_route_manage_route">Kudeatu ibilbidea</string>
     <string name="button_plan">Planifikatu</string>
     <string name="placepage_remove_stop">Kendu geltokia</string>
-    <string name="placepage_add_stop">Gehitu geltokia</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
+    <string name="placepage_add_stop">Gehitu geldialdia</string>
+    <string name="drag_to_reorder">Berrantolatu</string>
     <string name="saved">Gordeta</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">Hasi saioa OpenStreetMap-en zure mapen aldaketa guztiak automatikoki kargatzeko. Lortu informazio gehiago <a href="https://github.com/organicmaps/organicmaps/issues/6144">hemen</a>.</string>
@@ -620,6 +618,8 @@
     <string name="button_layer_hiking">Mendi-ibilaldiak</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">Txirrindularitza</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">Satelitea</string>
     <string name="button_layer_subway">Metroa</string>
     <string name="layers_title">Maparen estiloak eta geruzak</string>
     <string name="bookmarks_empty_list_title">Zerrenda hau hutsik dago</string>
@@ -658,6 +658,10 @@
     <string name="show_at_the_bottom">Erakutsi behean</string>
     <string name="enable_logging_warning_message">Aukera hau diagnostiko helburua duten erregistro ekintzetarako gaituta dago. Honek gure taldeari aplikazioarekin arazoak identifikatzen laguntzen dio. Gaitu aukera Organic Maps laguntzari eskatuta soilik.</string>
     <string name="driving_options_title">Bideratzeko aukerak</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Ibilbidearen optimizazioa</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Tarteko geldialdiak automatikoki berrantolatzen ditu ibilbide eraginkorragoa sortzeko.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">Bidesariak saihestea</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -672,6 +676,12 @@
     <string name="toll_road">Ordainpeko errepidea</string>
     <string name="unpaved_road">Asfaltatu gabeko errepidea</string>
     <string name="ferry_crossing">Ferry zeharkaldia</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">Eskailerak</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">Ate</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">Hesia</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">Bai</string>
     <!-- A generic "No" button in dialogs -->
@@ -706,7 +716,14 @@
     <string name="moreyear_ago_sorttype">Duela urtebete baino gehiago</string>
     <string name="near_me_sorttype">Nigandik gertu</string>
     <string name="others_sorttype">Beste batzuk</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">Orain itxita</string>
+    <string name="opens_tomorrow_at">Bihar %sean irekiko da</string>
+    <string name="opens_dayoftheweek_at">%1$sean %2$setan irekiko da</string>
+    <string name="opens_at">%setan irekiko da</string>
+    <string name="closes_at">%setan itxiko da</string>
     <string name="editor_add_select_category_all_subtitle">Kategoria guztiak</string>
+    <string name="placepage_replace_stop">Ordeztu geldialdia</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Janariak</string>
@@ -725,6 +742,12 @@
     <string name="medicine">Medikuntza</string>
     <string name="search_in_the_list">Bilatu zerrendan</string>
     <string name="religious_places">Erlijio guneak</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">Hautatu</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">Hautatu dena</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">Kendu hautapena</string>
     <string name="select_list">Hautatu zerrenda</string>
     <string name="button_layer_isolines">Sestra kurbak</string>
     <string name="isolines_activation_error_dialog">Sestra kurbak erabiltzeko, eguneratu edo deskargatu nahi duzun eremuko mapa</string>
@@ -819,15 +842,14 @@
     <string name="pref_tts_no_system_tts">Ahots-sintesiaren ezarpenak ez dira aurkitu. Ziur zure gailuak onartzen duela?</string>
     <string name="drive_through">Autoz hartzeko</string>
     <string name="clear_the_search">Garbitu bilaketa</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">Handitu</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">Txikiagotu</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">Menuaren esteka</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">Ikusi menua</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Ireki beste aplikazio batean</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Autozerbitzu</string>
     <string name="select_option">Hautatu aukera</string>
@@ -862,6 +884,28 @@
     <string name="share_track">Partekatu arrastoa</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Ezabatu %s?</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="one">%d hautatuta</item>
+        <item quantity="other">%d hautatuta</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="one">Ezabatu %d elementu?</item>
+        <item quantity="other">Ezabatu %d elementu?</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">Mugitu</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">Kolorea aldatu</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">Ezkutatu arrastoa</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">Erakutsi arrastoa</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">Zu</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -874,4 +918,38 @@
     <string name="toast_bookmarks_color_changed">Markagailuen kolorea aldatu da</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">Ibilbideen kolorea aldatu da</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">Espektroa</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">Irristagailuak</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">GORRIA</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">BERDEA</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">URDIN</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB Hex kolorea #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">Sarea</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">Ahots-bilaketa</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">Aukeratu mapan</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">Abiapuntua</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">Helmuga</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">Aldatu abiapuntua</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">Aldatu helmuga</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">Aldatu geldialdia</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">Geldialdien kopuru maximoa lortu da</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">Mugitu eta handitu mapa gurutzea kokatzeko</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Gelditu eta gorde</string>
 </resources>

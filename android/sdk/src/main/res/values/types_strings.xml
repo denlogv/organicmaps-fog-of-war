@@ -237,6 +237,7 @@
     <string name="type.building">Building</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Address</string>
+    <string name="type.building.construction">Building under construction</string>
     <string name="type.building.has_parts">Building</string>
     <string name="type.building_part">Building</string>
     <string name="type.building.garage">Garage</string>
@@ -327,7 +328,7 @@
     <string name="type.cuisine.mediterranean">Mediterranean</string>
     <string name="type.cuisine.mexican">Mexican</string>
     <string name="type.cuisine.moroccan">Moroccan</string>
-    <string name="type.cuisine.noodles">Noodles</string>
+    <string name="type.cuisine.noodle">Noodles</string>
     <string name="type.cuisine.oriental">East Asian</string>
     <string name="type.cuisine.pancake">Pancake</string>
     <string name="type.cuisine.pasta">Pasta</string>
@@ -343,6 +344,7 @@
     <string name="type.cuisine.sausage">Sausage</string>
     <string name="type.cuisine.savory_pancakes">Savory Pancakes</string>
     <string name="type.cuisine.seafood">Seafood</string>
+    <string name="type.cuisine.shawarma">Shawarma</string>
     <string name="type.cuisine.soba">Soba</string>
     <string name="type.cuisine.spanish">Spanish</string>
     <string name="type.cuisine.steak_house">Steak House</string>
@@ -572,6 +574,7 @@
     <string name="type.historic.castle.shiro">Japanese Castle</string>
     <string name="type.historic.castle.stately">Stately Castle</string>
     <string name="type.historic.city_gate">City Gate</string>
+    <string name="type.man_made.ceremonial_gate">Ceremonial Gate</string>
     <string name="type.historic.citywalls">City Wall</string>
     <string name="type.historic.fort">Fort</string>
     <string name="type.historic.gallows">Gallows</string>
@@ -631,6 +634,7 @@
     <string name="type.landuse">Landuse</string>
     <string name="type.landuse.allotments">Allotments</string>
     <string name="type.landuse.basin">Basin</string>
+    <string name="type.landuse.basin.intermittent">Intermittent Basin</string>
     <string name="type.landuse.brownfield">Brownfield</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Cemetery</string>
@@ -661,7 +665,6 @@
     <string name="type.landuse.quarry">Quarry</string>
     <string name="type.landuse.railway">Railway Premises</string>
     <string name="type.landuse.recreation_ground">Recreation Ground</string>
-    <string name="type.landuse.reservoir">Reservoir</string>
     <string name="type.landuse.residential">Residential Area</string>
     <string name="type.landuse.retail">Retail Area</string>
     <string name="type.landuse.salt_pond">Salt Pond</string>
@@ -683,6 +686,7 @@
     <string name="type.leisure.ice_rink">Ice Rink</string>
     <string name="type.leisure.marina">Marina</string>
     <string name="type.leisure.nature_reserve">Nature Reserve</string>
+    <string name="type.leisure.bird_hide">Bird Hide</string>
     <string name="type.leisure.outdoor_seating">Outdoor Seating</string>
     <string name="type.leisure.firepit">Firepit</string>
     <string name="type.leisure.park">Park</string>
@@ -773,10 +777,13 @@
     <string name="type.natural.water.reservoir">Reservoir</string>
     <string name="type.natural.water.basin">Basin</string>
     <string name="type.natural.water.river">River</string>
+    <string name="type.natural.water.intermittent">Intermittent Water</string>
     <string name="type.natural.land">Land</string>
     <string name="type.natural.meadow">Meadow</string>
     <string name="type.natural.orchard">Orchard</string>
     <string name="type.natural.peak">Peak</string>
+    <string name="type.natural.hill">Hill</string>
+    <string name="type.natural.arch">Rock Arch</string>
     <string name="type.natural.saddle">Mountain Saddle</string>
     <string name="type.natural.rock">Rock</string>
     <string name="type.natural.scrub">Scrub</string>
@@ -786,6 +793,7 @@
     <string name="type.natural.tree_row">Tree Row</string>
     <string name="type.natural.vineyard">Vineyard</string>
     <string name="type.natural.volcano">Volcano</string>
+    <string name="type.natural.volcano.active">Active Volcano</string>
     <string name="type.natural.water">Water</string>
     <string name="type.natural.wetland">Wetland</string>
     <string name="type.natural.wetland.bog">Bog</string>
@@ -1335,6 +1343,18 @@
     <string name="type.sport.field_hockey">Field Hockey</string>
     <string name="type.sport.badminton">Badminton</string>
     <string name="type.sport.pelota">Basque Pelota</string>
+    <string name="type.sport.boules">Boules</string>
+    <string name="type.sport.cycling">Cycling</string>
+    <string name="type.sport.four_square">Four Square</string>
+    <string name="type.sport.horse_racing">Horse Racing</string>
+    <string name="type.sport.karting">Karting</string>
+    <string name="type.sport.motocross">Motocross</string>
+    <string name="type.sport.motor">Motorsport</string>
+    <string name="type.sport.netball">Netball</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Rugby Union</string>
+    <string name="type.sport.running">Running</string>
+    <string name="type.sport.softball">Softball</string>
     <string name="type.tourism">Tourism</string>
     <string name="type.tourism.aquarium">Aquarium</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1354,6 +1374,7 @@
     <string name="type.attraction.historic">Historic attraction</string>
     <string name="type.attraction.maze">Maze</string>
     <string name="type.attraction.roller_coaster">Roller Coaster</string>
+    <string name="type.roller_coaster.track">Roller Coaster</string>
     <string name="type.attraction.water_slide">Water Slide</string>
     <string name="type.tourism.attraction.specified">Attraction</string>
     <string name="type.tourism.camp_site">Campground</string>
@@ -1385,6 +1406,7 @@
     <string name="type.traffic_calming.bump">Traffic Bump</string>
     <string name="type.traffic_calming.hump">Traffic Hump</string>
     <string name="type.waterway">Waterway</string>
+    <string name="type.waterway.access_point">Waterway Access Point</string>
     <string name="type.waterway.canal">Canal</string>
     <string name="type.waterway.canal.tunnel">Canal Tunnel</string>
     <string name="type.waterway.fish_pass">Fish Pass</string>
@@ -1443,6 +1465,7 @@
     <string name="type.self_service.no">No self-service</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Social Facility</string>
+    <string name="type.amenity.stage">Stage</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Emergency Ward Entrance</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1474,4 +1497,5 @@
     <string name="type.craft.watchmaker">Watchmaker</string>
     <string name="type.xmas_feature.market">Christmas Market</string>
     <string name="type.xmas_feature.tree">Christmas Tree</string>
+    <string name="type.amenity.hookah_lounge">Hookah Lounge</string>
 </resources>

@@ -19,9 +19,6 @@
 
 #include "drape/pointers.hpp"
 
-#include "geometry/point2d.hpp"
-#include "geometry/point_with_altitude.hpp"
-
 #include "base/thread_checker.hpp"
 
 #include <chrono>
@@ -29,6 +26,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -165,6 +163,16 @@ public:
   }
   void FollowRoute();
   void CloseRouting(bool removeRoutePoints);
+
+  /// \brief Activate alternative |idx| (typically triggered by tapping its ETA balloon).
+  /// Returns false if the index is out of range or already active. Re-renders the drape so
+  /// the newly-active variant is highlighted and the previously-active becomes the alternative.
+  bool SwapActiveAlternative(size_t idx);
+
+  /// \brief Hit-tests |mercator| against the alternative-route polylines. If one is closer than
+  /// a tap-area threshold (kTapPixels * |mercatorPerPixel|), swaps it to active and returns true.
+  /// No-op when navigation is active (alts aren't drawn then) or there are no alternatives.
+  bool TryTapOnAlternativeRoute(m2::PointD const & mercator, double mercatorPerPixel);
   void GetRouteFollowingInfo(routing::FollowingInfo & info) const { m_routingSession.GetRouteFollowingInfo(info); }
 
   TransitRouteInfo GetTransitRouteInfo() const;
@@ -187,15 +195,12 @@ public:
   /// If not, it returns an empty string.
   std::string GetTurnNotificationsLocale() const { return m_routingSession.GetTurnNotificationsLocale(); }
   // @return polyline of the route.
-  routing::FollowedPolyline const & GetRoutePolyline() const
-  {
-    return m_routingSession.GetRouteForTests()->GetFollowedPolyline();
-  }
+  m2::PolylineD const & GetRoutePolyline() const { return m_routingSession.GetRoute()->GetPoly(); }
   // @return generated turns on the route.
   std::vector<routing::turns::TurnItem> GetTurnsOnRouteForTests() const
   {
     std::vector<routing::turns::TurnItem> turns;
-    m_routingSession.GetRouteForTests()->GetTurnsForTesting(turns);
+    m_routingSession.GetRoute()->GetTurnsForTesting(turns);
     return turns;
   }
 
@@ -209,13 +214,25 @@ public:
   /// will not return previous data, only newer.
   void GenerateNotifications(std::vector<std::string> & notifications, bool announceStreets);
 
-  void AddRoutePoint(RouteMarkData && markData, bool reorderIntermediatePoints = true);
-  void ContinueRouteToPoint(RouteMarkData && markData);
+  /// Appends an intermediate stop before the finish, ignoring markData.m_intermediateIndex; Start/Finish replace the
+  /// existing endpoint instead. A new stop is dropped at capacity, except when it takes over an existing My Position
+  /// mark. optimize places only the new stop at the predicted position (needs both endpoints, ignored in Ruler mode,
+  /// still applied while following). Returns false when a new point cannot be added at capacity.
+  bool AddRoutePoint(RouteMarkData && markData, bool optimize);
+  /// Replaces an existing slot without optimization. If the target is gone, adds the point normally; otherwise the
+  /// target slot's current type overrides markData.
+  void ReplaceRoutePoint(RouteMarkType type, size_t intermediateIndex, RouteMarkData && markData);
+  /// Reorders stops after the last passed mark in place, keeping endpoints, passed marks, and earlier stops fixed.
+  /// Returns whether the order changed; the caller rebuilds. No-op while following, in Ruler mode, or without
+  /// both endpoints.
+  bool OptimizeRoutePoints();
+  bool ContinueRouteToPoint(RouteMarkData && markData);
   std::vector<RouteMarkData> GetRoutePoints() const;
   size_t GetRoutePointsCount() const;
   void RemoveRoutePoint(RouteMarkType type, size_t intermediateIndex = 0);
   void RemoveRoutePoints();
   void RemoveIntermediateRoutePoints();
+  void RemovePassedRoutePoints();
   void MoveRoutePoint(size_t currentIndex, size_t targetIndex);
   void MoveRoutePoint(RouteMarkType currentType, size_t currentIntermediateIndex, RouteMarkType targetType,
                       size_t targetIntermediateIndex);
@@ -227,8 +244,8 @@ public:
 
   void CheckLocationForRouting(location::GpsInfo const & info);
   void CallRouteBuilded(routing::RouterResultCode code, storage::CountriesSet const & absentCountries);
-  void OnBuildRouteReady(routing::Route const & route, routing::RouterResultCode code);
-  void OnRebuildRouteReady(routing::Route const & route, routing::RouterResultCode code);
+  void OnBuildRouteReady(routing::RoutesResult const & result, routing::RouterResultCode code);
+  void OnRebuildRouteReady(routing::RoutesResult const & result, routing::RouterResultCode code);
   void OnNeedMoreMaps(uint64_t routeId, storage::CountriesSet const & absentCountries);
   void OnRemoveRoute(routing::RouterResultCode code);
   void OnRoutePointPassed(RouteMarkType type, size_t intermediateIndex);
@@ -246,40 +263,12 @@ public:
   /// false otherwise.
   bool HasRouteAltitude() const;
 
-  struct DistanceAltitude
-  {
-    std::vector<double> m_distances;
-    geometry::Altitudes m_altitudes;
-
-    size_t GetSize() const
-    {
-      ASSERT_EQUAL(m_distances.size(), m_altitudes.size(), ());
-      return m_distances.size();
-    }
-
-    // Default altitudeDeviation ~ sqrt(2).
-    void Simplify(double altitudeDeviation = 1.415);
-
-    /// \brief Generates 4 bytes per point image (RGBA) and put the data to |imageRGBAData|.
-    /// \param width is width of chart shall be generated in pixels.
-    /// \param height is height of chart shall be generated in pixels.
-    /// \param imageRGBAData is bits of result image in RGBA.
-    /// \returns If there is valid route info and the chart was generated returns true
-    /// and false otherwise. If the method returns true it is guaranteed that the size of
-    /// |imageRGBAData| is not zero.
-    bool GenerateRouteAltitudeChart(uint32_t width, uint32_t height, std::vector<uint8_t> & imageRGBAData) const;
-
-    /// \param totalAscent is total ascent of the route in meters.
-    /// \param totalDescent is total descent of the route in meters.
-    void CalculateAscentDescent(uint32_t & totalAscentM, uint32_t & totalDescentM) const;
-
-    friend std::string DebugPrint(DistanceAltitude const & da);
-  };
-
-  /// \brief Fills altitude of current route points and distance in meters form the beginning
-  /// of the route point based on the route in RoutingSession.
   /// \return False if current route is invalid or doesn't have altitudes.
-  bool GetRouteAltitudesAndDistancesM(DistanceAltitude & da) const;
+  bool GetRouteElevationInfo(ElevationInfo & ei) const;
+
+  /// \brief Interpolates a point along the current route polyline at the given distance from start.
+  /// \return Nullopt if the route is invalid.
+  std::optional<m2::PointD> GetRoutePointAtDistance(double distanceMeters) const;
 
   uint32_t OpenRoutePointsTransaction();
   void ApplyRoutePointsTransaction(uint32_t transactionId);
@@ -305,9 +294,6 @@ public:
 private:
   void SetRouterImpl(routing::RouterType type);
 
-  /// \returns true if the route has warnings.
-  bool InsertRoute(routing::Route const & route);
-
   struct RoadInfo
   {
     RoadInfo() = default;
@@ -318,12 +304,40 @@ private:
     FeatureID m_featureId;
     double m_distance = 0.0;
   };
-  using RoadWarningsCollection = std::map<routing::RoutingOptions::Road, std::vector<RoadInfo>>;
+  using RoadWarningsCollection = std::map<RoadWarningMarkType, std::vector<RoadInfo>>;
 
-  using GetMwmIdFn = std::function<MwmSet::MwmId(routing::NumMwmId numMwmId)>;
+  MwmSet::MwmId GetMwmId(routing::NumMwmId numMwmId) const;
+
+  /// \brief Renders every route in |result| via drape subroutes. The active alternative
+  /// (result.m_activeIdx) is drawn with normal styling; the rest are dimmed. Also creates
+  /// road-warning marks for the active route.
+  /// \returns true if the active route has an avoidable warning (toll/ferry/dirty) on a car route,
+  /// i.e. one that should surface the "driving options" affordance (RouterResultCode::HasWarnings).
+  bool InsertRoute(routing::RoutesResult const & result);
+
+  // Helper: build drape subroutes for a single route. |isActive| controls styling
+  // (alternatives are dimmed). |roadWarnings| is appended for every route (active and alternatives)
+  // so warning marks of all routes are shown together.
+  void InsertSingleRoute(routing::RouteBase const & route, bool isActive, double depthOffset,
+                         std::shared_ptr<TransitRouteDisplay> const & transitRouteDisplay,
+                         RoadWarningsCollection & roadWarnings);
+
+  // Linear warnings (toll/ferry/dirty/steps): a span of the route sharing the same road type.
   void CollectRoadWarnings(std::vector<routing::RouteSegment> const & segments, m2::PointD const & startPt,
-                           double baseDistance, GetMwmIdFn const & getMwmIdFn, RoadWarningsCollection & roadWarnings);
+                           double baseDistance, RoadWarningsCollection & roadWarnings);
+  // Point warnings (gate/lift_gate): barrier nodes precomputed on the routing thread and stored in
+  // the route (see routing::RouteBase::GetWarnings); here we just map them to mark types.
+  void CollectRoadPointWarnings(routing::RouteBase const & route, RoadWarningsCollection & roadWarnings);
   void CreateRoadWarningMarks(RoadWarningsCollection && roadWarnings);
+
+  // Creates an ETA balloon (RouteAltMark) at the midpoint of each route variant in |result|.
+  // Active variant uses the route palette; alternatives use a dimmer palette.
+  void CreateRouteAltMarks(routing::RoutesResult const & result);
+
+  // Synchronously remove the alternative-route subroutes from drape and clear the alt ETA
+  // balloons. Used when entering navigation mode (FollowRoute) so the alts drawn at build
+  // time disappear immediately. The active route is left untouched.
+  void ClearAlternativeRoutes();
 
   /// \returns false if the location could not be matched to the route and should be matched to the
   /// road graph. Otherwise returns true.
@@ -333,7 +347,9 @@ private:
 
   void SetPointsFollowingMode(bool enabled);
 
-  void ReorderIntermediatePoints();
+  /// Places |added| among the unpassed stops, keeping their relative order, or re-inserts all of them if it is null.
+  /// Returns whether any stop index changed.
+  bool ReorderIntermediatePoints(RoutePointsLayout & layout, RouteMarkPoint const * added);
 
   m2::RectD ShowPreviewSegments(std::vector<RouteMarkData> const & routePoints);
   void HidePreviewSegments();

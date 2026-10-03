@@ -1,13 +1,29 @@
 @objc(MWMThemeManager)
 final class ThemeManager: NSObject {
   private static let instance = ThemeManager()
+  private var isNightMode = false
 
   override private init() {
     super.init()
+    NotificationCenter.default.addObserver(self,
+                                           selector: #selector(contentSizeCategoryDidChange),
+                                           name: UIContentSizeCategory.didChangeNotification,
+                                           object: nil)
   }
 
   private func update(theme: MWMTheme) {
-    updateSystemUserInterfaceStyle(theme)
+    // CarPlay may override the user preference with its own light/dark style.
+    var effectivePreference = theme
+    if CarPlayService.shared.isCarplayActivated {
+      let carPlayStyle = CarPlayService.shared.interfaceStyle()
+      switch carPlayStyle {
+      case .light: effectivePreference = .day
+      case .dark: effectivePreference = .night
+      default: break
+      }
+    }
+
+    updateSystemUserInterfaceStyle(effectivePreference)
 
     let actualTheme: MWMTheme = { theme in
       let isVehicleRouting = MWMRouter.isRoutingActive() && (MWMRouter.type() == .vehicle)
@@ -23,34 +39,32 @@ final class ThemeManager: NSObject {
       @unknown default:
         fatalError()
       }
-    }(theme)
+    }(effectivePreference)
 
-    let nightMode = UIColor.isNightMode()
-    let newNightMode: Bool = { theme in
-      switch theme {
-      case .day: fallthrough
-      case .vehicleDay: return false
-      case .night: fallthrough
-      case .vehicleNight: return true
-      case .auto: assertionFailure(); return false
-      @unknown default:
-        fatalError()
-      }
-    }(actualTheme)
+    let newNightMode = actualTheme == .night || actualTheme == .vehicleNight
 
     FrameworkHelper.setTheme(actualTheme)
-    if nightMode != newNightMode || StyleManager.shared.hasTheme() == false {
-      UIColor.setNightMode(newNightMode)
-      if newNightMode {
-        StyleManager.shared.setTheme(MainTheme(type: .dark, colors: NightColors(), fonts: Fonts()))
-      } else {
-        StyleManager.shared.setTheme(MainTheme(type: .light, colors: DayColors(), fonts: Fonts()))
-      }
+
+    if !StyleManager.shared.hasTheme() {
+      isNightMode = newNightMode
+      StyleManager.shared.setTheme(MainTheme())
+    } else if isNightMode != newNightMode {
+      // Re-apply styles for non-dynamic properties (CGColor, themed images).
+      isNightMode = newNightMode
+      StyleManager.shared.update()
     }
   }
 
   @objc static func invalidate() {
+    // On macOS, UIKit keeps delivering appearance/trait changes while the app terminates,
+    // after applicationWillTerminate: has destroyed the C++ Framework. Skip theming to avoid
+    // calling GetFramework() on a destroyed singleton (which trips its CHECK and aborts).
+    guard !FrameworkHelper.isFrameworkDestroyed() else { return }
     instance.update(theme: Settings.theme())
+  }
+
+  @objc private func contentSizeCategoryDidChange() {
+    StyleManager.shared.update()
   }
 
   private func updateSystemUserInterfaceStyle(_ theme: MWMTheme) {

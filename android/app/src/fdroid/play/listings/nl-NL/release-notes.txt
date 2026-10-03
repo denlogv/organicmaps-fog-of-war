@@ -1,9 +1,11 @@
-• OSM-kaartgegevens vanaf 10 maart, Wikipedia vanaf 1 maart
-• Meer gedetailleerde hoogte-isolijnen voor Chinese provincies
-• Rijen bomen, leerwinkels en winkels die religieuze goederen verkopen toegevoegd
-• Ondersteuning toegevoegd voor voorwaardelijke snelheidslimieten
-• Tanzania opgesplitst in kleinere regio's
-• Verbeterde weergave van openingstijden van bedrijven
-• Verschillende crashes opgelost
-• Verbeterde vertalingen van app- en landnamen
-omaps.org/nl/news
+• OSM-gegevens per 26 augustus
+• NIEUW: meervoudige selectie voor bladwijzers en tracks
+• NIEUW: afzonderlijke tracks verbergen met het oogpictogram
+• NIEUW: Wikipedia-artikelen in het Bengaals, Hindi, Marathi, Pools, Tamil, Telugu en Urdu
+• Crashes en vastlopers hersteld
+• Vogelkijkhutten, podia, heuvels en rotsbogen toegevoegd aan de kaart
+• Beter delen van plaatsen
+• Correcties voor Android Auto
+• Selectie van routestops hersteld
+• Openingstijden hersteld
+…meer op omaps.org/nl/news

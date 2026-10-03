@@ -222,14 +222,6 @@ class PathProvider:
         return self.intermediate_data_path
 
     @property
-    def transit_path_experimental(self) -> AnyStr:
-        return (
-            os.path.join(self.intermediate_data_path, "transit_from_gtfs")
-            if settings.TRANSIT_URL
-            else ""
-        )
-
-    @property
     def world_roads_path(self) -> AnyStr:
         return (
             os.path.join(self.intermediate_data_path, "world_roads.txt")
@@ -258,40 +250,8 @@ class PathProvider:
         return os.path.join(self.mwm_path, "packed_polygons.bin")
 
     @property
-    def localads_path(self) -> AnyStr:
-        return os.path.join(self.build_path, f"localads_{self.mwm_version}")
-
-    @property
-    def types_path(self) -> AnyStr:
-        return os.path.join(self.user_resource_path, "types.txt")
-
-    @property
-    def external_resources_path(self) -> AnyStr:
-        return os.path.join(self.mwm_path, "external_resources.txt")
-
-    @property
     def id_to_wikidata_path(self) -> AnyStr:
         return os.path.join(self.intermediate_data_path, "id_to_wikidata.csv")
-
-    @property
-    def wiki_url_path(self) -> AnyStr:
-        return os.path.join(self.intermediate_data_path, "wiki_urls.txt")
-
-    @property
-    def ugc_path(self) -> AnyStr:
-        return os.path.join(self.intermediate_data_path, "ugc_db.sqlite3")
-
-    @property
-    def hotels_path(self) -> AnyStr:
-        return os.path.join(self.intermediate_data_path, "hotels.csv")
-
-    @property
-    def promo_catalog_cities_path(self) -> AnyStr:
-        return os.path.join(self.intermediate_data_path, "promo_catalog_cities.json")
-
-    @property
-    def promo_catalog_countries_path(self) -> AnyStr:
-        return os.path.join(self.intermediate_data_path, "promo_catalog_countries.json")
 
     @property
     def popularity_path(self) -> AnyStr:
@@ -333,7 +293,7 @@ class PathProvider:
 
     @property
     def counties_txt_path(self) -> AnyStr:
-        return os.path.join(self.mwm_path, "countries.txt")
+        return os.path.join(self.mwm_path, "countries.json")
 
     @property
     def user_resource_path(self) -> AnyStr:

@@ -1,10 +1,15 @@
 #include "testing/testing.hpp"
 
-#include "geometry/mercator.hpp"
-
-#include <sstream>
-#include "coding/string_utf8_multilang.hpp"
 #include "kml/serdes_geojson.hpp"
+
+#include "base/timer.hpp"
+#include "indexer/classificator.hpp"
+#include "indexer/classificator_loader.hpp"
+
+#include "geometry/mercator.hpp"
+#include "geometry/point_with_altitude.hpp"
+
+#include "coding/string_utf8_multilang.hpp"
 
 namespace geojson_tests
 {
@@ -180,9 +185,9 @@ UNIT_TEST(GeoJson_Parse_basic_2)
 
   TEST_EQUAL(dataFromText.m_bookmarksData.size(), 1, ());
   auto const bookmark = dataFromText.m_bookmarksData.front();
-  // We don't have PredefinedColor::Black option. So fallback to the closest one Brown
-  auto const brownColor = kml::ColorData{.m_predefinedColor = kml::PredefinedColor::Brown, .m_rgba = 0x00000FF};
-  TEST_EQUAL(bookmark.m_color, brownColor, ());
+  // A hex marker-color imports as an explicit custom color (no Black preset exists anyway).
+  auto const customBlack = kml::ColorData{.m_predefinedColor = kml::PredefinedColor::None, .m_rgba = 0x000000FF};
+  TEST_EQUAL(bookmark.m_color, customBlack, ());
   TEST_EQUAL(kml::GetDefaultStr(bookmark.m_name), "Hello GeoJson", ());
   TEST(bookmark.m_point.EqualDxDy(mercator::FromLatLon(50.46385629798317, 30.568097444337525), 0.000001), ());
 }
@@ -198,7 +203,7 @@ UNIT_TEST(GeoJson_Parse_UMapOptions)
         "name": "UMap Test Point",
         "_umap_options": {
           "iconClass": "Drop",
-          "color": "MediumSeaGreen",
+          "color": "#1A2B3C",
           "weight": 4,
           "opacity": 0.8,
           "customProperty": "should be preserved"
@@ -237,6 +242,11 @@ UNIT_TEST(GeoJson_Parse_UMapOptions)
   TEST_EQUAL(dataFromText.m_bookmarksData.size(), 1, ());
   auto const & bookmark = dataFromText.m_bookmarksData.front();
   TEST_EQUAL(kml::GetDefaultStr(bookmark.m_name), "UMap Test Point", ());
+
+  // The point color must be read from _umap_options.color (an explicit custom color), not from a
+  // top-level "color" property which UMap points do not carry.
+  TEST_EQUAL(bookmark.m_color.m_predefinedColor, kml::PredefinedColor::None, ());
+  TEST_EQUAL(bookmark.m_color.m_rgba, 0x1A2B3CFFu, ());
 
   // Check that _umap_options is stored as JSON string
   auto const umapOptionsIt = bookmark.m_properties.find("_umap_options");
@@ -379,7 +389,7 @@ UNIT_TEST(GeoJson_Writer_Simple)
         ]
       },
       "properties": {
-        "name": "Marcador de prueba",
+        "name": "Mi lugar favorito",
         "marker-color": "blue",
         "description": "Test bookmark description"
       }
@@ -391,15 +401,18 @@ UNIT_TEST(GeoJson_Writer_Simple)
         "coordinates": [
           [
             45.25,
-            47
+            47,
+            1
           ],
           [
             45.5,
-            48
+            48,
+            2
           ],
           [
             45.75,
-            49
+            49,
+            3
           ]
         ]
       },
@@ -416,15 +429,18 @@ UNIT_TEST(GeoJson_Writer_Simple)
         "coordinates": [
           [
             30.1,
-            22
+            22,
+            1
           ],
           [
             30.2,
-            23
+            23,
+            2
           ],
           [
             30.3,
-            24
+            24,
+            3
           ]
         ]
       },
@@ -455,33 +471,40 @@ UNIT_TEST(GeoJson_Writer_MultiTrack)
           [
             [
               45.25,
-              47
+              47,
+              1
             ],
             [
               45.5,
-              48
+              48,
+              2
             ],
             [
               45.75,
-              49
+              49,
+              3
             ]
           ],
           [
             [
               45.95,
-              49.2
+              49.2,
+              1
             ],
             [
               46.15,
-              49.4
+              49.4,
+              2
             ],
             [
               46.4,
-              49.6
+              49.6,
+              3
             ],
             [
               46.55,
-              49.8
+              49.8,
+              4
             ]
           ]
         ]
@@ -505,7 +528,7 @@ UNIT_TEST(GeoJson_Writer_MultiTrack)
 UNIT_TEST(GeoJson_Writer_Simple_Minimized)
 {
   // clang-format off
-  std::string_view constexpr expected_geojson = R"({"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[13.39712,52.48982]},"properties":{"name":"Marcador de prueba","marker-color":"blue","description":"Test bookmark description"}}]})";
+  std::string_view constexpr expected_geojson = R"({"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[13.39712,52.48982]},"properties":{"name":"Mi lugar favorito","marker-color":"blue","description":"Test bookmark description"}}]})";
   // clang-format on
 
   kml::FileData const testData = GenerateKmlFileData();
@@ -529,7 +552,7 @@ UNIT_TEST(GeoJson_Writer_UMap)
         ]
       },
       "properties": {
-        "name": "Marcador de prueba",
+        "name": "Mi lugar favorito",
         "marker-color": "blue",
         "description": "Test bookmark description",
         "_umap_options": {
@@ -548,15 +571,18 @@ UNIT_TEST(GeoJson_Writer_UMap)
         "coordinates": [
           [
             45.25,
-            47
+            47,
+            1
           ],
           [
             45.5,
-            48
+            48,
+            2
           ],
           [
             45.75,
-            49
+            49,
+            3
           ]
         ]
       },
@@ -579,15 +605,18 @@ UNIT_TEST(GeoJson_Writer_UMap)
         "coordinates": [
           [
             30.1,
-            22
+            22,
+            1
           ],
           [
             30.2,
-            23
+            23,
+            2
           ],
           [
             30.3,
-            24
+            24,
+            3
           ]
         ]
       },
@@ -650,7 +679,7 @@ UNIT_TEST(GeoJson_Writer_UMap_Invalid_Json)
         ]
       },
       "properties": {
-        "name": "Marcador de prueba",
+        "name": "Mi lugar favorito",
         "marker-color": "blue",
         "description": "Test bookmark description"
       }
@@ -741,14 +770,16 @@ kml::FileData GenerateKmlFileData()
 
   kml::FileData result;
   result.m_deviceId = "AAAA";
-  result.m_serverId = "AAAA-BBBB-CCCC-DDDD";
 
   kml::BookmarkData bookmarkData;
   bookmarkData.m_name[kDefaultLang] = "Marcador de prueba";
   bookmarkData.m_name[kEnLang] = "Test bookmark";
   bookmarkData.m_description[kDefaultLang] = "Test bookmark description";
   bookmarkData.m_description[kEsLang] = "Descripción del marcador de prueba";
-  bookmarkData.m_featureTypes = {718, 715};
+
+  auto const & cl = classif();
+  bookmarkData.m_featureTypes = {cl.GetTypeByPath({"historic", "castle"}), cl.GetTypeByPath({"historic", "memorial"})};
+
   bookmarkData.m_customName[kDefaultLang] = "Mi lugar favorito";
   bookmarkData.m_customName[kEnLang] = "My favorite place";
   bookmarkData.m_color = {kml::PredefinedColor::Blue, 0};
@@ -829,6 +860,746 @@ kml::FileData GenerateKmlFileDataWithMultiTrack()
   result.m_tracksData.emplace_back(std::move(trackData));
 
   return result;
+}
+
+UNIT_TEST(GeoJson_Parse_Elevation)
+{
+  // Mixed 2D/3D: the 2D point gets kDefaultAltitudeMeters (0), not kInvalidAltitude,
+  // because other points in the same line carry Z — preserving the elevation chart.
+  std::string_view constexpr inputMixed = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Track with Z"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [8.5417, 47.3769, 410],
+          [8.5418, 47.3770, 411],
+          [8.5419, 47.3771]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const mixed = LoadGeojsonFromString(inputMixed);
+  TEST_EQUAL(mixed.m_tracksData.size(), 1, ());
+  auto const & line = mixed.m_tracksData[0].m_geometry.m_lines[0];
+  TEST_EQUAL(line.size(), 3, ());
+  TEST_EQUAL(line[0].GetAltitude(), 410, ());
+  TEST_EQUAL(line[1].GetAltitude(), 411, ());
+  // 2D point in a mixed line gets kDefaultAltitudeMeters (sea level) to preserve
+  // the elevation chart — it does NOT get kInvalidAltitude.
+  TEST_EQUAL(line[2].GetAltitude(), geometry::kDefaultAltitudeMeters, ());
+
+  // All-2D line: every point gets kInvalidAltitude (no elevation data at all).
+  std::string_view constexpr inputAllFlat = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[8.0, 47.0], [8.1, 47.1]]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const flat = LoadGeojsonFromString(inputAllFlat);
+  TEST_EQUAL(flat.m_tracksData.size(), 1, ());
+  for (auto const & pt : flat.m_tracksData[0].m_geometry.m_lines[0])
+    TEST_EQUAL(pt.GetAltitude(), geometry::kInvalidAltitude, ());
+}
+
+UNIT_TEST(GeoJson_Writer_Elevation_Mixed)
+{
+  // A track where some points have kInvalidAltitude — Z should still be emitted
+  // with 0 used in place of kInvalidAltitude, so all three coordinates are 3-element.
+  kml::FileData fileData;
+  kml::TrackData track;
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.0, 8.0), 100},
+                            {mercator::FromLatLon(47.1, 8.1), geometry::kInvalidAltitude},
+                            {mercator::FromLatLon(47.2, 8.2), 200}});
+  track.m_geometry.AddTimestamps({});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  // Parse the output and verify each coordinate has 3 elements with the right Z value.
+  auto const json = SaveToGeoJsonString(fileData, true);
+  kml::FileData const parsed = LoadGeojsonFromString(json);
+  TEST_EQUAL(parsed.m_tracksData.size(), 1, ());
+  auto const & line = parsed.m_tracksData[0].m_geometry.m_lines[0];
+  TEST_EQUAL(line.size(), 3, ());
+  TEST_EQUAL(line[0].GetAltitude(), 100, ());
+  TEST_EQUAL(line[1].GetAltitude(), 0, ());  // kInvalidAltitude fallback → 0
+  TEST_EQUAL(line[2].GetAltitude(), 200, ());
+}
+
+UNIT_TEST(GeoJson_Writer_Elevation_AllInvalid)
+{
+  // When all altitudes are kInvalidAltitude, Z must not be emitted.
+  kml::FileData fileData;
+  kml::TrackData track;
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.0, 8.0), geometry::kInvalidAltitude},
+                            {mercator::FromLatLon(47.1, 8.1), geometry::kInvalidAltitude}});
+  track.m_geometry.AddTimestamps({});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  // Round-trip: parse exported JSON back and verify no Z values came through.
+  kml::FileData parsed = LoadGeojsonFromString(SaveToGeoJsonString(fileData, true));
+  TEST_EQUAL(parsed.m_tracksData.size(), 1, ());
+  auto const & line = parsed.m_tracksData[0].m_geometry.m_lines[0];
+  for (auto const & pt : line)
+    TEST_EQUAL(pt.GetAltitude(), geometry::kInvalidAltitude, ());
+}
+
+// --- Timestamp tests ---
+
+UNIT_TEST(GeoJson_Parse_Timestamps)
+{
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Recorded track",
+        "time": "2026-05-31T12:34:56Z",
+        "coordTimes": [
+          "2026-05-31T12:34:56Z",
+          "2026-05-31T12:35:01Z",
+          "2026-05-31T12:35:06Z"
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [8.5417, 47.3769, 410],
+          [8.5418, 47.3770, 411],
+          [8.5419, 47.3771, 412]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  auto const & track = data.m_tracksData[0];
+  TEST(track.m_geometry.HasTimestamps(), ());
+  TEST(track.m_geometry.HasTimestampsFor(0), ());
+  auto const & timestamps = track.m_geometry.m_timestamps[0];
+  TEST_EQUAL(timestamps.size(), 3, ());
+  TEST_EQUAL(timestamps[0], base::StringToTimestamp("2026-05-31T12:34:56Z"), ());
+  TEST_EQUAL(timestamps[1], base::StringToTimestamp("2026-05-31T12:35:01Z"), ());
+  TEST_EQUAL(timestamps[2], base::StringToTimestamp("2026-05-31T12:35:06Z"), ());
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_Formats)
+{
+  // Verify all required timestamp formats parse correctly. Kept in monotonic non-decreasing
+  // order so they survive import sanitation (see GeoJson_Parse_Timestamps_NonMonotonic).
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": [
+          "2017-01-01T10:00:00-0700",
+          "2017-06-02T00:00:00",
+          "2022-10-10T21:21:49.168Z",
+          1748691296,
+          1748691297.5
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [8.0, 47.0], [8.1, 47.1], [8.2, 47.2], [8.3, 47.3], [8.4, 47.4]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  auto const & timestamps = data.m_tracksData[0].m_geometry.m_timestamps[0];
+  TEST_EQUAL(timestamps.size(), 5, ());
+  TEST_EQUAL(timestamps[0], base::StringToTimestamp("2017-01-01T10:00:00-07:00"), ());
+  TEST_EQUAL(timestamps[1], base::StringToTimestamp("2017-06-02T00:00:00"), ());
+  TEST_EQUAL(timestamps[2], base::StringToTimestamp("2022-10-10T21:21:49Z"), ());  // ms dropped
+  TEST_EQUAL(timestamps[3], static_cast<time_t>(1748691296), ());
+  TEST_EQUAL(timestamps[4], static_cast<time_t>(1748691297), ());  // float truncated
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_AltSources)
+{
+  // Falls back to "times" then "coordinateProperties.times" when "coordTimes" absent.
+  time_t const kT0 = base::StringToTimestamp("2020-01-01T00:00:00Z");
+  time_t const kT1 = base::StringToTimestamp("2020-01-01T00:00:01Z");
+
+  auto const testSource = [&](std::string_view src)
+  {
+    std::string input = R"({"type":"FeatureCollection","features":[{"type":"Feature","properties":{)";
+    input += std::string(src);
+    input += R"(},"geometry":{"type":"LineString","coordinates":[[8.0,47.0],[8.1,47.1]]}}]})";
+    kml::FileData data = LoadGeojsonFromString(input);
+    TEST_EQUAL(data.m_tracksData.size(), 1, ());
+    TEST(data.m_tracksData[0].m_geometry.HasTimestamps(), ());
+    auto const & ts = data.m_tracksData[0].m_geometry.m_timestamps[0];
+    TEST_EQUAL(ts.size(), 2, ());
+    TEST_EQUAL(ts[0], kT0, ());
+    TEST_EQUAL(ts[1], kT1, ());
+  };
+
+  testSource(R"("times":["2020-01-01T00:00:00Z","2020-01-01T00:00:01Z"])");
+  testSource(R"("coordinateProperties":{"times":["2020-01-01T00:00:00Z","2020-01-01T00:00:01Z"]})");
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_CountMismatch)
+{
+  // When coordTimes count != coordinate count, timestamps must be discarded.
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": ["2026-05-31T12:34:56Z", "2026-05-31T12:35:01Z"]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[8.0, 47.0], [8.1, 47.1], [8.2, 47.2]]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  TEST(!data.m_tracksData[0].m_geometry.HasTimestamps(), ());
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_MultiLine)
+{
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": [
+          ["2026-05-31T12:34:56Z", "2026-05-31T12:35:01Z"],
+          ["2026-05-31T12:40:00Z", "2026-05-31T12:40:05Z", "2026-05-31T12:40:10Z"]
+        ]
+      },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [[8.0, 47.0], [8.1, 47.1]],
+          [[8.2, 47.2], [8.3, 47.3], [8.4, 47.4]]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  auto const & geom = data.m_tracksData[0].m_geometry;
+  TEST_EQUAL(geom.m_lines.size(), 2, ());
+  TEST(geom.HasTimestampsFor(0), ());
+  TEST(geom.HasTimestampsFor(1), ());
+  TEST_EQUAL(geom.m_timestamps[0].size(), 2, ());
+  TEST_EQUAL(geom.m_timestamps[1].size(), 3, ());
+  TEST_EQUAL(geom.m_timestamps[0][0], base::StringToTimestamp("2026-05-31T12:34:56Z"), ());
+  TEST_EQUAL(geom.m_timestamps[1][2], base::StringToTimestamp("2026-05-31T12:40:10Z"), ());
+}
+
+UNIT_TEST(GeoJson_Writer_Timestamps)
+{
+  std::string_view constexpr expected = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.5417,
+            47.3769,
+            410
+          ],
+          [
+            8.5418,
+            47.377,
+            411
+          ],
+          [
+            8.5419,
+            47.3771,
+            412
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Recorded track",
+        "stroke": "red",
+        "time": "2026-05-31T12:34:56Z",
+        "coordTimes": [
+          "2026-05-31T12:34:56Z",
+          "2026-05-31T12:35:01Z",
+          "2026-05-31T12:35:06Z"
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData fileData;
+  kml::TrackData track;
+  kml::SetDefaultStr(track.m_name, "Recorded track");
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.3769, 8.5417), 410},
+                            {mercator::FromLatLon(47.3770, 8.5418), 411},
+                            {mercator::FromLatLon(47.3771, 8.5419), 412}});
+  track.m_geometry.AddTimestamps({base::StringToTimestamp("2026-05-31T12:34:56Z"),
+                                  base::StringToTimestamp("2026-05-31T12:35:01Z"),
+                                  base::StringToTimestamp("2026-05-31T12:35:06Z")});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  TEST_EQUAL(SaveToGeoJsonString(fileData), expected, ());
+}
+
+UNIT_TEST(GeoJson_Writer_Timestamps_MultiLine)
+{
+  std::string_view constexpr expected = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              8.5417,
+              47.3769,
+              410
+            ],
+            [
+              8.5418,
+              47.377,
+              411
+            ]
+          ],
+          [
+            [
+              8.5419,
+              47.3771,
+              412
+            ],
+            [
+              8.542,
+              47.3772,
+              413
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Multi-segment track",
+        "stroke": "red",
+        "time": "2026-05-31T12:34:56Z",
+        "coordTimes": [
+          [
+            "2026-05-31T12:34:56Z",
+            "2026-05-31T12:35:01Z"
+          ],
+          [
+            "2026-05-31T12:40:00Z",
+            "2026-05-31T12:40:05Z"
+          ]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData fileData;
+  kml::TrackData track;
+  kml::SetDefaultStr(track.m_name, "Multi-segment track");
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine(
+      {{mercator::FromLatLon(47.3769, 8.5417), 410}, {mercator::FromLatLon(47.3770, 8.5418), 411}});
+  track.m_geometry.AddTimestamps(
+      {base::StringToTimestamp("2026-05-31T12:34:56Z"), base::StringToTimestamp("2026-05-31T12:35:01Z")});
+  track.m_geometry.AddLine(
+      {{mercator::FromLatLon(47.3771, 8.5419), 412}, {mercator::FromLatLon(47.3772, 8.5420), 413}});
+  track.m_geometry.AddTimestamps(
+      {base::StringToTimestamp("2026-05-31T12:40:00Z"), base::StringToTimestamp("2026-05-31T12:40:05Z")});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  TEST_EQUAL(SaveToGeoJsonString(fileData), expected, ());
+}
+
+UNIT_TEST(GeoJson_RoundTrip_Timestamps)
+{
+  // Import a track with elevation + timestamps, export, re-import — must be lossless.
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Round-trip track",
+        "stroke": "red",
+        "coordTimes": ["2026-05-31T12:34:56Z", "2026-05-31T12:35:01Z", "2026-05-31T12:35:06Z"]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[8.5417, 47.3769, 410], [8.5418, 47.377, 411], [8.5419, 47.3771, 412]]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const first = LoadGeojsonFromString(input);
+  auto const json = SaveToGeoJsonString(first);
+  kml::FileData const second = LoadGeojsonFromString(json);
+
+  TEST_EQUAL(second.m_tracksData.size(), 1, ());
+  auto const & geom1 = first.m_tracksData[0].m_geometry;
+  auto const & geom2 = second.m_tracksData[0].m_geometry;
+  TEST_EQUAL(geom1.m_lines[0].size(), geom2.m_lines[0].size(), ());
+  for (size_t i = 0; i < geom1.m_lines[0].size(); ++i)
+    TEST_EQUAL(geom1.m_lines[0][i].GetAltitude(), geom2.m_lines[0][i].GetAltitude(), ());
+  TEST_EQUAL(geom1.m_timestamps[0], geom2.m_timestamps[0], ());
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_MultiLine_SkipsEmptySegments)
+{
+  // lineIdx must track position in the coordTimes array by geometry index,
+  // not by the count of non-empty lines pushed. If the first geometry segment
+  // is empty, the second segment's timestamps must come from coordTimes[1].
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": [
+          [],
+          ["2026-05-31T12:40:00Z", "2026-05-31T12:40:05Z"]
+        ]
+      },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [],
+          [[8.2, 47.2], [8.3, 47.3]]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  auto const & geom = data.m_tracksData[0].m_geometry;
+  TEST_EQUAL(geom.m_lines.size(), 1, ());  // empty segment skipped
+  TEST(geom.HasTimestampsFor(0), ());
+  TEST_EQUAL(geom.m_timestamps[0].size(), 2, ());
+  TEST_EQUAL(geom.m_timestamps[0][0], base::StringToTimestamp("2026-05-31T12:40:00Z"), ());
+  TEST_EQUAL(geom.m_timestamps[0][1], base::StringToTimestamp("2026-05-31T12:40:05Z"), ());
+}
+
+UNIT_TEST(GeoJson_Writer_Timestamps_InvalidTimestamp)
+{
+  // INVALID_TIME_STAMP entries must be emitted as JSON null, not "INVALID_TIME_STAMP".
+  // The "time" property must be skipped when the first timestamp is invalid.
+  kml::FileData fileData;
+  kml::TrackData track;
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.0, 8.0), geometry::kInvalidAltitude},
+                            {mercator::FromLatLon(47.1, 8.1), geometry::kInvalidAltitude},
+                            {mercator::FromLatLon(47.2, 8.2), geometry::kInvalidAltitude}});
+  track.m_geometry.AddTimestamps(
+      {base::INVALID_TIME_STAMP, base::StringToTimestamp("2026-05-31T12:35:01Z"), base::INVALID_TIME_STAMP});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  auto const json = SaveToGeoJsonString(fileData, true);
+  TEST(json.find("INVALID_TIME_STAMP") == std::string::npos, ());
+  TEST(json.find("null") != std::string::npos, ());
+  // "time" property must not appear since first timestamp is invalid.
+  TEST(json.find("\"time\"") == std::string::npos, ());
+  // The valid middle timestamp must still appear in coordTimes.
+  TEST(json.find("2026-05-31T12:35:01Z") != std::string::npos, ());
+}
+
+UNIT_TEST(GeoJson_Writer_Timestamps_MultiLine_InvalidTimestamp)
+{
+  // Multiline: first valid timestamp is on line 1, not line 0.
+  // "time" must be set to line 1's first valid timestamp via find_if.
+  kml::FileData fileData;
+  kml::TrackData track;
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.0, 8.0), geometry::kInvalidAltitude},
+                            {mercator::FromLatLon(47.1, 8.1), geometry::kInvalidAltitude}});
+  track.m_geometry.AddTimestamps({base::INVALID_TIME_STAMP, base::INVALID_TIME_STAMP});
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.2, 8.2), geometry::kInvalidAltitude},
+                            {mercator::FromLatLon(47.3, 8.3), geometry::kInvalidAltitude}});
+  track.m_geometry.AddTimestamps(
+      {base::StringToTimestamp("2026-05-31T13:00:00Z"), base::StringToTimestamp("2026-05-31T13:00:05Z")});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  auto const json = SaveToGeoJsonString(fileData, true);
+  TEST(json.find("INVALID_TIME_STAMP") == std::string::npos, ());
+  // "time" comes from line 1's first valid timestamp.
+  TEST(json.find("\"time\"") != std::string::npos, ());
+  TEST(json.find("2026-05-31T13:00:00Z") != std::string::npos, ());
+}
+
+UNIT_TEST(GeoJson_RoundTrip_Timestamps_MultiLine)
+{
+  // Full round-trip for a MultiLineString with timestamps on both lines.
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "stroke": "blue",
+        "coordTimes": [
+          ["2026-05-31T10:00:00Z", "2026-05-31T10:00:05Z"],
+          ["2026-05-31T11:00:00Z", "2026-05-31T11:00:10Z", "2026-05-31T11:00:20Z"]
+        ]
+      },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [[8.0, 47.0, 400], [8.1, 47.1, 401]],
+          [[8.2, 47.2, 500], [8.3, 47.3, 501], [8.4, 47.4, 502]]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const first = LoadGeojsonFromString(input);
+  kml::FileData const second = LoadGeojsonFromString(SaveToGeoJsonString(first));
+
+  TEST_EQUAL(second.m_tracksData.size(), 1, ());
+  auto const & geom1 = first.m_tracksData[0].m_geometry;
+  auto const & geom2 = second.m_tracksData[0].m_geometry;
+  TEST_EQUAL(geom2.m_lines.size(), 2, ());
+  TEST_EQUAL(geom2.m_lines[0].size(), 2, ());
+  TEST_EQUAL(geom2.m_lines[1].size(), 3, ());
+  TEST_EQUAL(geom2.m_lines[0][0].GetAltitude(), 400, ());
+  TEST_EQUAL(geom2.m_lines[1][2].GetAltitude(), 502, ());
+  TEST_EQUAL(geom1.m_timestamps[0], geom2.m_timestamps[0], ());
+  TEST_EQUAL(geom1.m_timestamps[1], geom2.m_timestamps[1], ());
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_NonMonotonic)
+{
+  // Non-monotonic coordTimes are dropped on import (downstream duration math assumes sorted),
+  // mirroring KML import. The geometry is preserved.
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": ["2026-05-31T12:35:06Z", "2026-05-31T12:34:56Z", "2026-05-31T12:35:01Z"]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[8.0, 47.0], [8.1, 47.1], [8.2, 47.2]]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  TEST_EQUAL(data.m_tracksData[0].m_geometry.m_lines[0].size(), 3, ());  // geometry kept
+  TEST(!data.m_tracksData[0].m_geometry.HasTimestamps(), ());            // timestamps dropped
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_InvalidEntry)
+{
+  // coordTimes count matches the coordinates, but one entry is null: the whole line's
+  // timestamps are dropped so no INVALID_TIME_STAMP reaches downstream writers/stats.
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": ["2026-05-31T12:34:56Z", null, "2026-05-31T12:35:06Z"]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[8.0, 47.0], [8.1, 47.1], [8.2, 47.2]]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  TEST_EQUAL(data.m_tracksData[0].m_geometry.m_lines[0].size(), 3, ());
+  TEST(!data.m_tracksData[0].m_geometry.HasTimestamps(), ());
+}
+
+UNIT_TEST(GeoJson_Parse_Timestamps_MultiLine_PartialSanitized)
+{
+  // One line has valid sorted timestamps, the other is non-monotonic: only the bad line's
+  // timestamps are dropped, leaving a track with timestamps on some lines only.
+  std::string_view constexpr input = R"({
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "coordTimes": [
+          ["2026-05-31T12:00:00Z", "2026-05-31T12:00:05Z"],
+          ["2026-05-31T12:10:10Z", "2026-05-31T12:10:00Z"]
+        ]
+      },
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [[8.0, 47.0], [8.1, 47.1]],
+          [[8.2, 47.2], [8.3, 47.3]]
+        ]
+      }
+    }
+  ]
+})";
+
+  kml::FileData const data = LoadGeojsonFromString(input);
+  TEST_EQUAL(data.m_tracksData.size(), 1, ());
+  auto const & geom = data.m_tracksData[0].m_geometry;
+  TEST_EQUAL(geom.m_lines.size(), 2, ());
+  TEST(geom.HasTimestampsFor(0), ());   // first line kept
+  TEST(!geom.HasTimestampsFor(1), ());  // second line (non-monotonic) dropped
+  TEST_EQUAL(geom.m_timestamps[0].size(), 2, ());
+}
+
+UNIT_TEST(GeoJson_Writer_Elevation_AllDefault)
+{
+  // A track whose points all carry the default sea-level altitude (0) has no real elevation,
+  // so the writer must NOT emit a Z coordinate (otherwise every flat track would be bloated
+  // with z=0). Proven by round-trip: a 2D export re-imports as kInvalidAltitude.
+  kml::FileData fileData;
+  kml::TrackData track;
+  track.m_layers = {{5.0, {kml::PredefinedColor::Red, 0}}};
+  track.m_geometry.AddLine({{mercator::FromLatLon(47.0, 8.0), geometry::kDefaultAltitudeMeters},
+                            {mercator::FromLatLon(47.1, 8.1), geometry::kDefaultAltitudeMeters}});
+  track.m_geometry.AddTimestamps({});
+  fileData.m_tracksData.emplace_back(std::move(track));
+
+  kml::FileData const parsed = LoadGeojsonFromString(SaveToGeoJsonString(fileData, true));
+  TEST_EQUAL(parsed.m_tracksData.size(), 1, ());
+  for (auto const & pt : parsed.m_tracksData[0].m_geometry.m_lines[0])
+    TEST_EQUAL(pt.GetAltitude(), geometry::kInvalidAltitude, ());
+}
+
+// Exports a single bookmark and returns the value of its "name" property, or nullopt if the
+// property is absent. Parses the result instead of scraping the raw Json so that escaped string
+// content is compared correctly.
+std::optional<std::string> ExportedName(kml::BookmarkData bookmark)
+{
+  bookmark.m_point = mercator::FromLatLon(52.48982, 13.39712);
+  kml::FileData fileData;
+  fileData.m_bookmarksData.push_back(std::move(bookmark));
+
+  auto const json = SaveToGeoJsonString(fileData, true /* minimize */);
+  kml::geojson::GeoJsonData exported;
+  auto const error = glz::read_json(exported, json);
+  TEST(!error, (glz::format_error(error, json)));
+  TEST_EQUAL(exported.features.size(), 1, (json));
+
+  auto const & properties = exported.features.front().properties;
+  auto const name = properties.find("name");
+  if (name == properties.end())
+    return std::nullopt;
+  TEST(name->second.is_string(), (json));
+  return name->second.get_string();
+}
+
+UNIT_TEST(GeoJson_Writer_CustomName)
+{
+  // A name typed by the user lives in m_customName, while m_name keeps the auto-generated one
+  // (for a bookmark saved at the current position it is the creation date). Exporting m_name
+  // only would replace the user's name with that date, see issue #13237.
+  kml::BookmarkData bookmark;
+  bookmark.m_name[kml::kDefaultLangCode] = "28 July 2026 at 20:14";
+  bookmark.m_customName[kml::kDefaultLangCode] = "Скважина 12";
+  TEST_EQUAL(ExportedName(bookmark), "Скважина 12", ());
+
+  // Multiple custom translations still win when none uses default/int_name/en.
+  auto const kDeLang = StringUtf8Multilang::GetLangIndex("de");
+  auto const kRuLang = StringUtf8Multilang::GetLangIndex("ru");
+  kml::BookmarkData localizedCustom;
+  localizedCustom.m_name[kml::kDefaultLangCode] = "Original name";
+  localizedCustom.m_customName[kRuLang] = "Любимое место";
+  localizedCustom.m_customName[kDeLang] = "Lieblingsort";
+  TEST_EQUAL(ExportedName(localizedCustom), "Lieblingsort", ());
+
+  // Json-special characters survive the round trip unchanged.
+  kml::BookmarkData escaped;
+  escaped.m_customName[kml::kDefaultLangCode] = "The \"quoted\" \\\\ place";
+  TEST_EQUAL(ExportedName(escaped), "The \"quoted\" \\\\ place", ());
+}
+
+UNIT_TEST(GeoJson_Writer_NameWithoutDefaultLanguage)
+{
+  auto const kEnLang = StringUtf8Multilang::kEnglishCode;
+  auto const kRuLang = StringUtf8Multilang::GetLangIndex("ru");
+
+  // A POI tagged with name:ru/name:en only (no plain name) has no default-language entry.
+  kml::BookmarkData bookmark;
+  bookmark.m_name[kRuLang] = "Эрмитаж";
+  bookmark.m_name[kEnLang] = "Hermitage";
+  TEST_EQUAL(ExportedName(bookmark), "Hermitage", ());
+
+  // The only available name is exported regardless of its language.
+  kml::BookmarkData single;
+  single.m_name[kRuLang] = "Эрмитаж";
+  TEST_EQUAL(ExportedName(single), "Эрмитаж", ());
+
+  // With several non-preferred translations, use the lowest stable language code instead of
+  // dropping the name. "de" has a lower StringUtf8Multilang code than "ru".
+  auto const kDeLang = StringUtf8Multilang::GetLangIndex("de");
+  kml::BookmarkData multiple;
+  multiple.m_name[kRuLang] = "Эрмитаж";
+  multiple.m_name[kDeLang] = "Eremitage";
+  TEST_EQUAL(ExportedName(multiple), "Eremitage", ());
+}
+
+UNIT_TEST(GeoJson_Writer_NameFallbacks)
+{
+  classificator::Load();
+
+  // Nameless bookmarks are exported with their localized type, as KML and GPX do. In tests
+  // platform::GetLocalizedTypeName() is the identity, so the readable type name is written as is.
+  kml::BookmarkData typed;
+  typed.m_featureTypes = {classif().GetTypeByPath({"historic", "castle"})};
+  TEST_EQUAL(ExportedName(typed), "historic-castle", ());
+
+  // Nothing to export at all: the property is omitted instead of being empty.
+  TEST(!ExportedName({}), ());
 }
 
 }  // namespace geojson_tests

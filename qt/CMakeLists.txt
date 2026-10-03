@@ -7,6 +7,8 @@ set(SRC
   about.hpp
   bookmark_dialog.cpp
   bookmark_dialog.hpp
+  bookmark_export.cpp
+  bookmark_export.hpp
   build_style/build_common.cpp
   build_style/build_common.h
   build_style/build_drules.cpp
@@ -78,12 +80,12 @@ target_link_libraries(${PROJECT_NAME}
 
 if (BUILD_DESIGNER)
   target_link_libraries(${PROJECT_NAME} PRIVATE generator)
-  set(BUNDLE_NAME "OMaps.Designer")
+  set(BUNDLE_NAME "OrganicMaps.Designer")
   set(BUNDLE_DISPLAY_NAME "Organic Maps Designer")
   set(BUNDLE_ICON designer.icns)
 else()
-  set(BUNDLE_NAME "OMaps")
-  set(BUNDLE_DISPLAY_NAME "Organic Maps Desktop")
+  set(BUNDLE_NAME "OrganicMaps")
+  set(BUNDLE_DISPLAY_NAME "Organic Maps")
   set(BUNDLE_ICON mac.icns)
 endif()
 
@@ -94,66 +96,53 @@ set(BUNDLE_EXECUTABLE ${BUNDLE_NAME})
 set(BUNDLE_FOLDER ${CMAKE_BINARY_DIR}/${BUNDLE_NAME}.app)
 set(RESOURCES_FOLDER ${BUNDLE_FOLDER}/Contents/Resources)
 set(DATA_DIR ${OMIM_ROOT}/data)
+set(RUNTIME_RESOURCES_FILE "${CMAKE_CURRENT_SOURCE_DIR}/runtime_resources.txt")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${RUNTIME_RESOURCES_FILE}")
+file(STRINGS "${RUNTIME_RESOURCES_FILE}" RUNTIME_RESOURCES)
 
 function(copy_resources)
-  execute_process(COMMAND mkdir -p ${RESOURCES_FOLDER})
   foreach(file ${ARGN})
-    execute_process(
-      COMMAND cp -r ${DATA_DIR}/${file} ${RESOURCES_FOLDER}
-    )
+    file(COPY "${DATA_DIR}/${file}" DESTINATION "${RESOURCES_FOLDER}")
   endforeach()
 endfunction()
 
-copy_resources(
-  countries-strings
-  fonts
-  symbols
-  welcome.html
+# The bundle resources are only read on macOS, the other platforms resolve the data directory at run time.
+if (PLATFORM_MAC)
+  copy_resources(${RUNTIME_RESOURCES})
+  if (NOT WITH_SYSTEM_PROVIDED_3PARTY)
+    copy_resources(icudt78l.dat)
+  endif()
+  file(COPY ${PROJECT_SOURCE_DIR}/res/mac/${BUNDLE_ICON} DESTINATION ${RESOURCES_FOLDER})
+endif()
 
-  categories.txt
-  categories_cuisines.txt
-  classificator.txt
-  colors.txt
-  copyright.html
-  countries.txt
-  drules_proto_default_light.bin
-  drules_proto_default_dark.bin
-  drules_proto_outdoors_light.bin
-  drules_proto_outdoors_dark.bin
-  drules_proto_vehicle_light.bin
-  drules_proto_vehicle_dark.bin
-  editor.config
-  packed_polygons.bin
-  patterns.txt
-  transit_colors.txt
-  types.txt
-  World.mwm
-  WorldCoasts.mwm
-)
+if (PLATFORM_WIN)
+  set(OMIM_WINDOWS_ICON "${CMAKE_CURRENT_SOURCE_DIR}/res/windows/windows.ico")
+  configure_file(res/windows/windows.rc.in "${CMAKE_CURRENT_BINARY_DIR}/windows.rc" @ONLY)
+  target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/windows.rc")
 
-install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
-install(DIRECTORY ${OMIM_ROOT}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/share/organicmaps/)
+  if (NOT OMIM_WINDOWS_DISTRIBUTION STREQUAL "development")
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE ON)
+  endif()
+endif()
+
+if (PLATFORM_WIN AND NOT OMIM_WINDOWS_DISTRIBUTION STREQUAL "development")
+  install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION . CONFIGURATIONS Release COMPONENT WindowsRuntime)
+  if (NOT TARGET Qt6::windeployqt)
+    message(FATAL_ERROR "The selected Qt installation has no Qt6::windeployqt target")
+  endif()
+  get_target_property(OMIM_WINDEPLOYQT_EXECUTABLE Qt6::windeployqt LOCATION)
+  configure_file("${OMIM_ROOT}/cmake/windows/StageWindowsRuntime.cmake.in"
+                 "${CMAKE_CURRENT_BINARY_DIR}/StageWindowsRuntime.cmake" @ONLY)
+  install(CODE "include(\"${CMAKE_CURRENT_BINARY_DIR}/StageWindowsRuntime.cmake\")" COMPONENT WindowsRuntime)
+else()
+  install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
+  install(DIRECTORY ${OMIM_ROOT}/data DESTINATION share/organicmaps/)
+endif()
 
 if (PLATFORM_LINUX)
-  install(FILES ${OMIM_ROOT}/packaging/app.organicmaps.desktop.metainfo.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/metainfo/)
-  install(FILES ${OMIM_ROOT}/qt/res/linux/app.organicmaps.desktop.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications/)
-  install(FILES ${OMIM_ROOT}/qt/res/logo.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/512x512/apps/ RENAME organicmaps.png)
-endif()
-
-if (NOT WITH_SYSTEM_PROVIDED_3PARTY)
-  copy_resources(icudt78l.dat)
-endif()
-
-if (PLATFORM_MAC)
-  if (BUILD_DESIGNER)
-    execute_process(
-        COMMAND cp ${PROJECT_SOURCE_DIR}/res/mac/designer.icns ${RESOURCES_FOLDER}
-    )
-  else ()
-    execute_process(
-        COMMAND cp ${PROJECT_SOURCE_DIR}/res/mac/mac.icns ${RESOURCES_FOLDER}
-    )
-  endif ()
+  install(FILES ${OMIM_ROOT}/packaging/app.organicmaps.desktop.metainfo.xml DESTINATION share/metainfo/)
+  install(FILES ${OMIM_ROOT}/qt/res/linux/app.organicmaps.desktop.desktop DESTINATION share/applications/)
+  install(FILES ${OMIM_ROOT}/qt/res/logo.png DESTINATION share/icons/hicolor/512x512/apps/ RENAME organicmaps.png)
 endif()
 
 if (PLATFORM_MAC)
@@ -172,11 +161,7 @@ if (PLATFORM_MAC)
   )
 endif()
 
-if (PLATFORM_WIN)
-  target_sources(${PROJECT_NAME} PRIVATE res/windows/windows.rc)
-endif()
-
-if (BUILD_DESIGNER)
+if (PLATFORM_MAC AND BUILD_DESIGNER)
   execute_process(
     COMMAND cp -rf ${OMIM_ROOT}/data/symbols/mdpi/light/ ${OMIM_ROOT}/data/symbols/mdpi/design/
     COMMAND cp -rf ${OMIM_ROOT}/data/symbols/hdpi/light/ ${OMIM_ROOT}/data/symbols/hdpi/design/
@@ -184,14 +169,13 @@ if (BUILD_DESIGNER)
     COMMAND cp -rf ${OMIM_ROOT}/data/symbols/xxhdpi/light/ ${OMIM_ROOT}/data/symbols/xxhdpi/design/
     COMMAND cp -rf ${OMIM_ROOT}/data/symbols/6plus/light/ ${OMIM_ROOT}/data/symbols/6plus/design/
     COMMAND cp -rf ${OMIM_ROOT}/data/symbols/xxxhdpi/light/ ${OMIM_ROOT}/data/symbols/xxxhdpi/design/
-    COMMAND cp -f ${OMIM_ROOT}/data/drules_proto_default_light.bin ${OMIM_ROOT}/data/drules_proto_default_design.bin
     COMMAND cp -f ${OMIM_ROOT}/data/colors.txt ${OMIM_ROOT}/data/colors_design.txt
     COMMAND cp -f ${OMIM_ROOT}/data/patterns.txt ${OMIM_ROOT}/data/patterns_design.txt
   )
 
   copy_resources(
     colors_design.txt
-    drules_proto_default_design.bin
+    drules_design.bin
     mapcss-dynamic.txt
     mapcss-mapping.csv
     patterns_design.txt
@@ -209,7 +193,6 @@ if (BUILD_DESIGNER)
     COMMAND cp -rf ${OMIM_ROOT}/tools/kothic ${RESOURCES_FOLDER}/kothic/
     COMMAND cp -f ${OMIM_ROOT}/tools/python/stylesheet/drules_info.py ${RESOURCES_FOLDER}/kothic/src/
     COMMAND cp -rf ${OMIM_ROOT}/tools/python/stylesheet/ ${RESOURCES_FOLDER}/kothic/src/
-    COMMAND cp -f ${OMIM_ROOT}/3party/protobuf/protobuf-3.3.0-py2.7.egg ${RESOURCES_FOLDER}/kothic/
   )
 
   # Generate DMG
@@ -238,7 +221,7 @@ if (BUILD_DESIGNER)
   set(CPACK_DMG_VOLUME_NAME ${BUNDLE_NAME})
   set(CPACK_PACKAGE_ICON ${PROJECT_SOURCE_DIR}/res/mac/designer.icns)
   include(CPack)
-elseif (BUILD_STANDALONE)
+elseif (PLATFORM_MAC AND BUILD_STANDALONE)
   add_custom_command(TARGET desktop POST_BUILD
     COMMAND "${QT_PATH}/bin/macdeployqt" ${BUNDLE_FOLDER}
     COMMAND ${Python3_EXECUTABLE} "${OMIM_ROOT}/tools/macdeployqtfix/macdeployqtfix.py" -q -nl ${BUNDLE_FOLDER}/Contents/MacOS/${BUNDLE_NAME} ${QT_PATH}
@@ -249,3 +232,5 @@ elseif (BUILD_STANDALONE)
 endif()
 
 add_subdirectory(qt_common)
+
+omim_add_test_subdirectory(qt_tests)

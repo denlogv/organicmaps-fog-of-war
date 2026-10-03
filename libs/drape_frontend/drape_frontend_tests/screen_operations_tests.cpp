@@ -1,5 +1,6 @@
 #include "testing/testing.hpp"
 
+#include "drape_frontend/drape_frontend_tests/visual_params_fixture.hpp"
 #include "drape_frontend/navigator.hpp"
 #include "drape_frontend/screen_operations.hpp"
 #include "drape_frontend/tile_key.hpp"
@@ -7,9 +8,13 @@
 
 #include "geometry/mercator.hpp"
 #include "geometry/screenbase.hpp"
+#include "geometry/transformations.hpp"
+
+#include "base/math.hpp"
 
 namespace screen_operations_tests
 {
+using df::test_support::VisualParamsFixture;
 
 // -- WrapTileX ----------------------------------------------------------------
 
@@ -194,14 +199,23 @@ UNIT_TEST(NormalizeScreenOriginX_WrapNegative)
 
 // -- CheckMinScale ------------------------------------------------------------
 
-UNIT_TEST(CheckMinScale_YOnly)
+UNIT_TEST(CheckMinScale_WithinBounds)
 {
-  // Viewport wider than world in X but within Y — should pass (X unconstrained).
+  ScreenBase screen;
+  screen.OnSize(0, 0, 800, 600);
+  screen.SetFromRect(m2::AnyRectD(m2::RectD(-50, -30, 50, 30)));
+
+  TEST(df::CheckMinScale(screen), ("Within world bounds should pass"));
+}
+
+UNIT_TEST(CheckMinScale_XExceeded)
+{
+  // Viewport wider than world in X — should fail (would show duplicate copies).
   ScreenBase screen;
   screen.OnSize(0, 0, 2000, 100);
   screen.SetFromRect(m2::AnyRectD(m2::RectD(-400, -50, 400, 50)));
 
-  TEST(df::CheckMinScale(screen), ("X wider than world should be OK"));
+  TEST(!df::CheckMinScale(screen), ("X wider than world should fail"));
 }
 
 UNIT_TEST(CheckMinScale_YExceeded)
@@ -271,8 +285,6 @@ UNIT_TEST(ShrinkInto_DoesNotClampX)
 
 UNIT_TEST(ScaleInto_ScalesForY)
 {
-  df::VisualParams::Init(1.0, 1024);
-
   ScreenBase screen;
   screen.OnSize(0, 0, 800, 600);
   // Screen with Y exceeding world bounds.
@@ -286,12 +298,27 @@ UNIT_TEST(ScaleInto_ScalesForY)
   TEST_GREATER_OR_EQUAL(clip.minY(), worldR.minY() - 1e-5, ());
 }
 
+UNIT_TEST(ScaleInto_ClampsXWidth)
+{
+  ScreenBase screen;
+  screen.OnSize(0, 0, 2000, 100);
+  // Viewport wider than world; center off the canonical range to verify X
+  // position is preserved (no panning).
+  screen.SetFromRect(m2::AnyRectD(m2::RectD(-300, -10, 100, 10)));
+  double const orgXBefore = screen.GetOrg().x;
+
+  df::ScaleInto(screen, df::GetWorldRect());
+
+  m2::RectD const clip = screen.ClipRect();
+  m2::RectD const & worldR = df::GetWorldRect();
+  TEST_LESS_OR_EQUAL(clip.SizeX(), worldR.SizeX() + 1e-5, ());
+  TEST_ALMOST_EQUAL_ABS(screen.GetOrg().x, orgXBefore, 1e-5, ());
+}
+
 // -- ShrinkAndScaleInto -------------------------------------------------------
 
 UNIT_TEST(ShrinkAndScaleInto_ClampsXWidth)
 {
-  df::VisualParams::Init(1.0, 1024);
-
   ScreenBase screen;
   screen.OnSize(0, 0, 2000, 100);
   // Viewport wider than world.
@@ -306,8 +333,6 @@ UNIT_TEST(ShrinkAndScaleInto_ClampsXWidth)
 
 UNIT_TEST(ShrinkAndScaleInto_ClampsY)
 {
-  df::VisualParams::Init(1.0, 1024);
-
   ScreenBase screen;
   screen.OnSize(0, 0, 800, 600);
   screen.SetFromRect(m2::AnyRectD(m2::RectD(-50, 100, 50, 200)));
@@ -322,9 +347,8 @@ UNIT_TEST(ShrinkAndScaleInto_ClampsY)
 
 // -- Navigator DoDrag (antimeridian wrapping) ----------------------------------
 
-UNIT_TEST(Navigator_DoDrag_HorizontalUnbounded)
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_DoDrag_HorizontalUnbounded)
 {
-  df::VisualParams::Init(1.0, 1024);
   df::Navigator navigator;
 
   navigator.OnSize(800, 600);
@@ -342,9 +366,21 @@ UNIT_TEST(Navigator_DoDrag_HorizontalUnbounded)
   TEST_GREATER(navigator.Screen().GetOrg().x, 170.0, ());
 }
 
-UNIT_TEST(Navigator_DoDrag_VerticalClamped)
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_SetFromRect_ClampsWideX)
 {
-  df::VisualParams::Init(1.0, 1024);
+  df::Navigator navigator;
+  navigator.OnSize(800, 600);
+
+  // Programmatic SetFromRect with rect wider than the world.
+  navigator.SetFromRect(m2::AnyRectD(m2::RectD(-400, -100, 400, 100)));
+
+  m2::RectD const clip = navigator.Screen().ClipRect();
+  m2::RectD const & worldR = df::GetWorldRect();
+  TEST_LESS_OR_EQUAL(clip.SizeX(), worldR.SizeX() + 1e-5, ());
+}
+
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_DoDrag_VerticalClamped)
+{
   df::Navigator navigator;
 
   navigator.OnSize(800, 600);
@@ -361,6 +397,189 @@ UNIT_TEST(Navigator_DoDrag_VerticalClamped)
   m2::RectD const clip = navigator.Screen().ClipRect();
   m2::RectD const & worldR = df::GetWorldRect();
   TEST_LESS_OR_EQUAL(clip.maxY(), worldR.maxY() + 1e-5, ());
+}
+
+// -- Navigator perspective gesture tracking -----------------------------------
+// Verify that two-finger Scale and Rotate keep the geo point under each finger
+// glued to that finger, including when auto-perspective recomputes
+// m_3dAngleX / m_PixelRect mid-step.
+
+namespace
+{
+// Build a navigator zoomed in enough for auto-perspective to engage.
+df::Navigator MakePerspectiveNavigator(int w, int h)
+{
+  df::Navigator nav;
+  nav.OnSize(w, h);
+
+  // m_Scale = 1.25e-5 global/px → perspective angle ~14.5° (auto range is < 1.7e-5).
+  double const perspectiveScale = nav.Screen().GetStartPerspectiveScale() * 0.6;
+
+  double const hx = 0.5 * w * perspectiveScale;
+  double const hy = 0.5 * h * perspectiveScale;
+  nav.SetFromRect(m2::AnyRectD(m2::RectD(-hx, -hy, hx, hy)));
+  nav.Enable3dMode();
+  nav.SetAutoPerspective(true);
+
+  TEST_GREATER(nav.Screen().GetRotationAngle(), math::DegToRad(10.0), ());
+  TEST(nav.Screen().isPerspective(), ());
+  return nav;
+}
+
+// Geo point currently under a finger at the given P3d position.
+m2::PointD GeoUnderFinger(df::Navigator const & nav, m2::PointD const & p3d)
+{
+  return nav.PtoG(nav.P3dtoP(p3d));
+}
+
+bool PointsClose(m2::PointD const & a, m2::PointD const & b, double eps)
+{
+  return (a - b).Length() < eps;
+}
+}  // namespace
+
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_PerspectiveScale_KeepsFingersOnSameGeoPoints)
+{
+  df::Navigator nav = MakePerspectiveNavigator(800, 600);
+
+  // Two fingers on a horizontal line, centered near the middle of the screen.
+  m2::PointD const pt1(300, 400);
+  m2::PointD const pt2(500, 400);
+
+  m2::PointD const g1Before = GeoUnderFinger(nav, pt1);
+  m2::PointD const g2Before = GeoUnderFinger(nav, pt2);
+  double const fingerSpan = (g2Before - g1Before).Length();
+  TEST_GREATER(fingerSpan, 0.0, ());
+
+  // Spread fingers (zoom in) by ~1.1x with no rotation. A small step keeps the
+  // auto-perspective angle change small; large per-step jumps leave a
+  // visible residual on the non-anchor finger which is unrealistic for real
+  // gestures (touch events fire every ~10 ms).
+  m2::PointD const newPt1(290, 400);
+  m2::PointD const newPt2(510, 400);
+
+  nav.StartScale(pt1, pt2);
+  nav.DoScale(newPt1, newPt2);
+  nav.StopScale(newPt1, newPt2);
+
+  m2::PointD const g1After = GeoUnderFinger(nav, newPt1);
+  m2::PointD const g2After = GeoUnderFinger(nav, newPt2);
+
+  // Finger 1 is the explicit MatchGandP3d anchor — exact to numerical noise.
+  TEST(PointsClose(g1After, g1Before, 1e-4 * fingerSpan), (g1Before, g1After));
+  // Finger 2 tracks via the 2D similarity; the small auto-perspective shift
+  // mid-step leaves a sub-3% residual on finger 2.
+  TEST(PointsClose(g2After, g2Before, 0.03 * fingerSpan), (g2Before, g2After));
+}
+
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_PerspectiveRotate_KeepsFingersOnSameGeoPoints)
+{
+  df::Navigator nav = MakePerspectiveNavigator(800, 600);
+
+  m2::PointD const screenCenter(400, 400);
+  double const radius = 100.0;
+  m2::PointD const pt1(screenCenter.x - radius, screenCenter.y);
+  m2::PointD const pt2(screenCenter.x + radius, screenCenter.y);
+
+  m2::PointD const g1Before = GeoUnderFinger(nav, pt1);
+  m2::PointD const g2Before = GeoUnderFinger(nav, pt2);
+  double const fingerSpan = (g2Before - g1Before).Length();
+  TEST_GREATER(fingerSpan, 0.0, ());
+
+  // Rotate the finger pair around its midpoint by 30° (above the 10° threshold
+  // so DoScale flips IsRotatingDuringScale to true).
+  auto const T = math::Shift(
+      math::Rotate(math::Shift(math::Identity<double, 3>(), -screenCenter), math::DegToRad(30.0)), screenCenter);
+  m2::PointD const newPt1 = pt1 * T;
+  m2::PointD const newPt2 = pt2 * T;
+
+  nav.StartScale(pt1, pt2);
+  nav.DoScale(newPt1, newPt2);
+  nav.StopScale(newPt1, newPt2);
+
+  TEST(nav.IsRotatingDuringScale(), ("Rotation threshold should have tripped"));
+
+  m2::PointD const g1After = GeoUnderFinger(nav, newPt1);
+  m2::PointD const g2After = GeoUnderFinger(nav, newPt2);
+
+  // Pure rotation keeps m_Scale stable, so perspective parameters don't move —
+  // both fingers should anchor tightly.
+  TEST(PointsClose(g1After, g1Before, 1e-4 * fingerSpan), (g1Before, g1After));
+  TEST(PointsClose(g2After, g2Before, 0.02 * fingerSpan), (g2Before, g2After));
+}
+
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_PerspectiveRotate_LargeAngle_TracksOffPivotFinger)
+{
+  df::Navigator nav = MakePerspectiveNavigator(800, 600);
+
+  // Vertical finger pair — the two fingers sit at very different perspective
+  // depths, so the 2D similarity from CalcTransform cannot pin both. The test
+  // requires per-finger P3dtoP plus the explicit MatchGandP3d anchor on finger 1.
+  m2::PointD const screenCenter(400, 300);
+  m2::PointD const pt1(screenCenter.x, screenCenter.y + 150);  // foreground
+  m2::PointD const pt2(screenCenter.x, screenCenter.y - 150);  // toward horizon
+
+  m2::PointD const g1Before = GeoUnderFinger(nav, pt1);
+  m2::PointD const g2Before = GeoUnderFinger(nav, pt2);
+  double const fingerSpan = (g2Before - g1Before).Length();
+  TEST_GREATER(fingerSpan, 0.0, ());
+
+  auto const T = math::Shift(
+      math::Rotate(math::Shift(math::Identity<double, 3>(), -screenCenter), math::DegToRad(90.0)), screenCenter);
+  m2::PointD const newPt1 = pt1 * T;
+  m2::PointD const newPt2 = pt2 * T;
+
+  nav.StartScale(pt1, pt2);
+  nav.DoScale(newPt1, newPt2);
+  nav.StopScale(newPt1, newPt2);
+
+  TEST(nav.IsRotatingDuringScale(), ("Rotation threshold should have tripped"));
+
+  m2::PointD const g1After = GeoUnderFinger(nav, newPt1);
+  m2::PointD const g2After = GeoUnderFinger(nav, newPt2);
+
+  // Finger 1 always anchored exactly.
+  TEST(PointsClose(g1After, g1Before, 1e-4 * fingerSpan), (g1Before, g1After));
+  // Finger 2 must stay close even though the two fingers straddle very different perspective depths.
+  TEST(PointsClose(g2After, g2Before, 0.1 * fingerSpan), (g2Before, g2After));
+}
+
+UNIT_CLASS_TEST(VisualParamsFixture, Navigator_PerspectiveScaleAndRotate_KeepsBothFingersAnchored)
+{
+  df::Navigator nav = MakePerspectiveNavigator(800, 600);
+
+  // Asymmetric pair: finger 2 noticeably above finger 1 (closer to the
+  // horizon). The per-finger P3dtoP path matters here — a single linearizing
+  // offset centered at finger 1 leaves a large drift on finger 2.
+  m2::PointD const pt1(320, 500);
+  m2::PointD const pt2(520, 200);
+
+  m2::PointD const g1Before = GeoUnderFinger(nav, pt1);
+  m2::PointD const g2Before = GeoUnderFinger(nav, pt2);
+  double const fingerSpan = (g2Before - g1Before).Length();
+  TEST_GREATER(fingerSpan, 0.0, ());
+
+  // ~15° rotation + ~1.05x scale around the midpoint, both within the
+  // rotation-threshold's scaling bound (1/1.2..1.2).
+  double constexpr kScale = 1.05;
+  m2::PointD const mid = (pt1 + pt2) / 2.0;
+  auto const T = math::Shift(
+      math::Scale(math::Rotate(math::Shift(math::Identity<double, 3>(), -mid), math::DegToRad(15.0)), kScale, kScale),
+      mid);
+  m2::PointD const newPt1 = pt1 * T;
+  m2::PointD const newPt2 = pt2 * T;
+
+  nav.StartScale(pt1, pt2);
+  nav.DoScale(newPt1, newPt2);
+  nav.StopScale(newPt1, newPt2);
+
+  m2::PointD const g1After = GeoUnderFinger(nav, newPt1);
+  m2::PointD const g2After = GeoUnderFinger(nav, newPt2);
+
+  // Finger 1 is the MatchGandP3d anchor — exact to numerical noise.
+  TEST(PointsClose(g1After, g1Before, 1e-4 * fingerSpan), (g1Before, g1After));
+  // Finger 2 stays close because each touch is mapped through P3dtoP individually before CalcTransform.
+  TEST(PointsClose(g2After, g2Before, 0.05 * fingerSpan), (g2Before, g2After));
 }
 
 }  // namespace screen_operations_tests

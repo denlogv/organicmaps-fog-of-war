@@ -4,10 +4,14 @@
 #import "MWMTypes.h"
 
 @class MWMMapSearchResult;
+@class PlacePageTrackSelectionData;
 @class TrackInfo;
 @class ElevationProfileData;
 
-typedef NS_ENUM(NSUInteger, MWMZoomMode) { MWMZoomModeIn = 0, MWMZoomModeOut };
+typedef NS_ENUM(NSUInteger, MWMZoomMode) {
+  MWMZoomModeIn = 0,
+  MWMZoomModeOut
+};
 
 typedef NS_ENUM(NSInteger, ProductsPopupCloseReason) {
   ProductsPopupCloseReasonClose,
@@ -29,9 +33,7 @@ typedef void (^TrackRecordingUpdatedHandler)(TrackInfo * _Nonnull trackInfo);
 + (void)saveTrackRecordingWithName:(nonnull NSString *)name;
 + (BOOL)isTrackRecordingEnabled;
 + (BOOL)isTrackRecordingEmpty;
-/// Returns current track recording elevation info.
-/// If the track recording is not in progress, returns empty ElevationProfileData.
-+ (ElevationProfileData * _Nonnull)trackRecordingElevationInfo;
++ (ElevationProfileData * _Nullable)trackRecordingElevationInfo;
 
 @end
 
@@ -51,15 +53,20 @@ NS_SWIFT_NAME(FrameworkHelper)
 
 + (void)processFirstLaunch:(BOOL)hasLocation;
 + (void)setVisibleViewport:(CGRect)rect scaleFactor:(CGFloat)scale;
++ (void)setMapFontScaleFactor:(double)scaleFactor;
 + (void)setTheme:(MWMTheme)theme;
 + (MWMDayTime)daytimeAtLocation:(nullable CLLocation *)location;
 + (void)createFramework;
+/// Returns YES after the C++ Framework was destroyed during app termination.
++ (BOOL)isFrameworkDestroyed;
 + (MWMMarkID)invalidBookmarkId;
 + (MWMMarkGroupID)invalidCategoryId;
 + (void)zoomMap:(MWMZoomMode)mode;
 + (void)moveMap:(UIOffset)offset;
 + (void)scrollMapToDistanceX:(double)x andY:(double)y;
 + (void)deactivateMapSelection;
++ (void)showRouteTransit:(uint32_t)relId;
++ (NSString *)activeTransitRouteRef;
 + (void)switchMyPositionMode;
 + (void)stopLocationFollow;
 + (NSArray<NSString *> *)obtainLastSearchQueries;
@@ -70,10 +77,18 @@ NS_SWIFT_NAME(FrameworkHelper)
                inputLocale:(NSString *)locale
                 completion:(SearchInDownloaderCompletions)completion;
 + (BOOL)canEditMapAtViewportCenter;
++ (BOOL)canEditMapAtMercatorPoint:(CGPoint)point;
++ (void)startChoosePositionModeWithEnableBounds:(BOOL)enableBounds
+                        initialMercatorPosition:(nullable NSValue *)initialMercatorPosition
+                           shouldChangeViewport:(BOOL)shouldChangeViewport;
++ (void)stopChoosePositionMode;
++ (CGPoint)mercatorViewportCenter;
+/// Returns a formatted nearby address, or nil when none is available.
++ (nullable NSString *)addressAtMercatorPoint:(CGPoint)point NS_SWIFT_NAME(address(at:));
 + (void)showOnMap:(MWMMarkGroupID)categoryId;
 + (void)showBookmark:(MWMMarkID)bookmarkId;
 + (void)showTrack:(MWMTrackID)trackId;
-+ (void)saveRouteAsTrack;
++ (void)selectTrackCandidate:(PlacePageTrackSelectionData *)trackSelection;
 + (void)updatePlacePageData;
 + (void)updateAfterDeleteBookmark;
 + (int)currentZoomLevel;

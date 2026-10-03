@@ -92,12 +92,10 @@ public:
   // Fills info for the country by id.
   void GetRegionInfo(CountryId const & countryId, CountryInfo & info) const;
 
-  // Fills limit rects of the USA:
-  // 0 - continental part
-  // 1 - Alaska
-  // 2 - Hawaii
-  void CalcUSALimitRect(m2::RectD rects[3]) const;
-
+  /// @note These functions return non-wrapped (crossig antimeridian) rect in general case.
+  /// @see CountryDef::IsIntersectOrInside.
+  /// @todo Review all usages.
+  /// @{
   // Calculates the limit rect for all countries whose names start with |prefix|.
   m2::RectD CalcLimitRect(std::string const & prefix) const;
 
@@ -105,6 +103,7 @@ public:
   // Returns the bounding box in mercator coordinates if |countryId| is a country id of
   // a non-expandable node and zero rect otherwise.
   m2::RectD GetLimitRectForLeaf(CountryId const & leafCountryId) const;
+  /// @}
 
   // Returns identifiers for all regions matching to |affiliation|.
   virtual void GetMatchedRegions(std::string const & affiliation, RegionIdVec & regions) const;
@@ -143,7 +142,7 @@ protected:
 class CountryInfoReader : public CountryInfoGetter
 {
 public:
-  /// \returns CountryInfoReader/CountryInfoGetter based on countries.txt and packed_polygons.bin.
+  /// \returns CountryInfoReader/CountryInfoGetter based on countries.json and packed_polygons.bin.
   static std::unique_ptr<CountryInfoReader> CreateCountryInfoReader(Platform const & platform);
   static std::unique_ptr<CountryInfoGetter> CreateCountryInfoGetter(Platform const & platform);
 
@@ -169,7 +168,7 @@ protected:
 
   mutable base::Cache<uint32_t, std::vector<m2::RegionD>> m_polyCache;
   mutable base::Cache<uint32_t, std::vector<m2::PointD>> m_trgCache;
-  mutable std::mutex m_polyMutex, m_trgMutex;
+  mutable std::mutex m_readerMutex;
 };
 
 // This class allows users to get info about very simply rectangular

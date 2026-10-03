@@ -2,6 +2,7 @@
 
 #import "OpeningHours.h"
 #import "PlacePagePhone.h"
+#import "PlacePageRoute.h"
 
 #import <CoreApi/StringUtils+Core.h>
 
@@ -11,6 +12,8 @@
 #include "indexer/validate_and_format_contacts.hpp"
 
 #include "map/place_page_info.hpp"
+
+#include "drape/color.hpp"
 
 using namespace place_page;
 using namespace osm;
@@ -36,9 +39,29 @@ NSString * GetLocalizedMetadataValueString(MapObject::MetadataID metaID, std::st
     if (!cuisines.empty())
       _cuisine = ToNSString(cuisines);
 
-    auto const routeRefs = rawData.FormatRouteRefs();
-    if (!routeRefs.empty())
-      _routeRefs = ToNSString(routeRefs);
+    auto const & rawRoutes = rawData.GetRoutes();
+    if (!rawRoutes.empty())
+    {
+      NSMutableArray<PlacePageRoute *> * routes = [NSMutableArray arrayWithCapacity:rawRoutes.size()];
+      for (auto const & r : rawRoutes)
+      {
+        // Empty color means the relation has no colour tag — leave UIColor nil.
+        UIColor * uiColor = nil;
+        if (r.m_color.GetARGB() != 0)
+        {
+          uiColor = [UIColor colorWithRed:r.m_color.GetRedF()
+                                    green:r.m_color.GetGreenF()
+                                     blue:r.m_color.GetBlueF()
+                                    alpha:r.m_color.GetAlphaF()];
+        }
+        [routes addObject:[PlacePageRoute routeWithRef:ToNSString(r.m_ref)
+                                                  from:ToNSString(r.m_from)
+                                                    to:ToNSString(r.m_to)
+                                                 relId:r.m_relID
+                                                 color:uiColor]];
+      }
+      _routes = [routes copy];
+    }
 
     /// @todo Refactor PlacePageInfoData to have a map of simple string properties.
     using MetadataID = MapObject::MetadataID;
@@ -68,6 +91,7 @@ NSString * GetLocalizedMetadataValueString(MapObject::MetadataID metaID, std::st
         break;
       }
       case MetadataID::FMD_WEBSITE: _website = ToNSString(value); break;
+      case MetadataID::FMD_HERITAGE_WEBSITE: _heritageWebsite = ToNSString(value); break;
       case MetadataID::FMD_WIKIPEDIA: _wikipedia = ToNSString(value); break;
       case MetadataID::FMD_WIKIMEDIA_COMMONS: _wikimediaCommons = ToNSString(value); break;
       case MetadataID::FMD_EMAIL:
@@ -111,14 +135,13 @@ NSString * GetLocalizedMetadataValueString(MapObject::MetadataID metaID, std::st
     _atm = rawData.HasAtm() ? NSLocalizedStringFromTable(@"type.amenity.atm", @"LocalizableTypes", nil) : nil;
 
     _address = rawData.GetSecondarySubtitle().empty() ? nil : @(rawData.GetSecondarySubtitle().c_str());
-    _coordFormats = @[
-      @(rawData.GetFormattedCoordinate(place_page::CoordinatesFormat::LatLonDMS).c_str()),
-      @(rawData.GetFormattedCoordinate(place_page::CoordinatesFormat::LatLonDecimal).c_str()),
-      @(rawData.GetFormattedCoordinate(place_page::CoordinatesFormat::OLCFull).c_str()),
-      @(rawData.GetFormattedCoordinate(place_page::CoordinatesFormat::OSMLink).c_str()),
-      @(rawData.GetFormattedCoordinate(place_page::CoordinatesFormat::UTM).c_str()),
-      @(rawData.GetFormattedCoordinate(place_page::CoordinatesFormat::MGRS).c_str())
-    ];
+    // Built in id order, so the array index equals the stable format id that the Swift VC persists.
+    // An unavailable format (OS Grid outside Great Britain, UTM/MGRS near the poles) is an empty
+    // string; the Swift VC skips empties and shows the next available format.
+    NSMutableArray<NSString *> * coordFormats = [NSMutableArray array];
+    for (auto const format : place_page::AllCoordinateFormats())
+      [coordFormats addObject:@(rawData.GetFormattedCoordinate(format).c_str())];
+    _coordFormats = [coordFormats copy];
   }
   return self;
 }

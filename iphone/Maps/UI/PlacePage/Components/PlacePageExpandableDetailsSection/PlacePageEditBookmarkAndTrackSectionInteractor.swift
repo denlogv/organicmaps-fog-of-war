@@ -36,8 +36,8 @@ final class PlacePageEditBookmarkAndTrackSectionInteractor: PlacePageExpandableD
     switch event {
     case .viewDidLoad:
       return []
-    case .didTapIcon:
-      showColorPicker()
+    case .didTapIcon(let anchor):
+      showColorPicker(anchor: anchor)
       return []
     case .didTapTitle:
       showGroupPicker()
@@ -64,15 +64,15 @@ final class PlacePageEditBookmarkAndTrackSectionInteractor: PlacePageExpandableD
 
     switch data {
     case .bookmark(let bookmarkData):
-      iconColor = bookmarkData.color.color
+      iconColor = bookmarkData.color
       category = bookmarkData.bookmarkCategory
       description = bookmarkData.bookmarkDescription
       isHtmlDescription = bookmarkData.isHtmlDescription
     case .track(let trackData):
-      iconColor = trackData.color ?? UIColor.buttonRed()
+      iconColor = trackData.color ?? .buttonRed
       category = trackData.trackCategory
       description = trackData.trackDescription
-      isHtmlDescription = false
+      isHtmlDescription = trackData.isHtmlDescription
     }
 
     let editColorImage = circleImageForColor(iconColor, frameSize: 28, diameter: 22, iconName: "ic_bm_none")
@@ -85,15 +85,15 @@ final class PlacePageEditBookmarkAndTrackSectionInteractor: PlacePageExpandableD
     ])
   }
 
-  private func showColorPicker() {
+  private func showColorPicker(anchor: UIView?) {
     guard let data, let view = presenter.view else { return }
     switch data {
     case .bookmark(let bookmarkData):
-      ColorPicker.shared.present(from: view, pickerType: .bookmarkColorPicker(bookmarkData.color)) { [weak self] color in
+      ColorPicker.shared.present(from: view, anchor: anchor, currentColor: bookmarkData.color) { [weak self] color in
         self?.update(color: color)
       }
     case .track(let trackData):
-      ColorPicker.shared.present(from: view, pickerType: .defaultColorPicker(trackData.color ?? .buttonRed())) { [weak self] color in
+      ColorPicker.shared.present(from: view, anchor: anchor, currentColor: trackData.color ?? .buttonRed) { [weak self] color in
         self?.update(color: color)
       }
     }
@@ -102,16 +102,13 @@ final class PlacePageEditBookmarkAndTrackSectionInteractor: PlacePageExpandableD
   private func showGroupPicker() {
     guard let data else { return }
     let groupId: MWMMarkGroupID
-    let groupName: String?
     switch data {
     case .bookmark(let bookmarkData):
       groupId = bookmarkData.bookmarkGroupId
-      groupName = bookmarkData.bookmarkCategory
     case .track(let trackData):
       groupId = trackData.groupId
-      groupName = trackData.trackCategory
     }
-    let groupViewController = SelectBookmarkGroupViewController(groupName: groupName ?? "", groupId: groupId)
+    let groupViewController = SelectBookmarkGroupViewController(groupId: groupId)
     let navigationController = UINavigationController(rootViewController: groupViewController)
     groupViewController.delegate = self
     presenter.view?.present(navigationController, animated: true, completion: nil)
@@ -121,7 +118,7 @@ final class PlacePageEditBookmarkAndTrackSectionInteractor: PlacePageExpandableD
     guard let data else { return }
     switch data {
     case .bookmark(let bookmarkData):
-      delegate?.didUpdate(color: color ?? bookmarkData.color.color, category: category ?? bookmarkData.bookmarkGroupId, for: data)
+      delegate?.didUpdate(color: color ?? bookmarkData.color, category: category ?? bookmarkData.bookmarkGroupId, for: data)
     case .track(let trackData):
       delegate?.didUpdate(color: color ?? trackData.color!, category: category ?? trackData.groupId, for: data)
     }

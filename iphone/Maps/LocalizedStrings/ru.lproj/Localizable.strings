@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Достопримечательности";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Развлечения";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Переработка";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Вода";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Ваше местоположение ещё не определено";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Проверь мою метку на карте Organic Maps!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Я здесь на карте Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Проверь моё текущее местоположение на карте Organic Maps!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ в Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Место в Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Открыть в Organic Maps или браузере";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Скачать Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Открыть в другом приложении";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "Электронная почта";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Длина";
 "share_my_location" = "Поделиться местоположением";
+"prefs_group_network" = "Сеть";
 "prefs_group_route" = "Навигация";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D-здания отключаются в режиме энергосбережения";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Спутниковые снимки";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "URL сервера";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Введите корректный URL с {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Размер кэша (МБ)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Непрозрачность площадных объектов";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Источники пользовательских тайлов предоставляете вы. Используйте только сервисы, к которым у вас есть доступ. Вы несёте ответственность за указание авторства, условия лицензии, API-ключи, квоты и ограничения использования.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Голосовые инструкции";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Язык подсказок";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Протестировать голосовые подсказки (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Чтобы загрузить голос более высокого качества, откройте приложение Настройки и перейдите в Универсальный доступ → VoiceOver → Речь → Голос.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Автозум";
 "placepage_distance" = "Расстояние";
 "search_show_on_map" = "Посмотреть на карте";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Темное";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Другой";
-
 /* Tex label above the Donate button */
 "donate_description" = "Подарите миллионам пользователей бесплатные карты без рекламы!";
 
@@ -377,7 +414,7 @@
 "report_incorrect_map_bug" = "Сообщить или исправить неправильные данные на карте";
 
 /* Button in the About screen */
-"volunteer" = "Cтать волонтёром";
+"volunteer" = "Стать волонтёром";
 
 /* "Social media" section header in the About screen */
 "follow_us" = "Подписывайтесь и пишите нам:";
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Ошибка при отправлении письма";
-
-/* Settings item title */
-"pref_calibration_title" = "Калибровка компаса";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Доступные";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "Круглосуточно";
 "day_off_today" = "Сегодня закрыто";
 "day_off" = "Закрыто";
+"midnight" = "Полночь";
+"noon" = "Полдень";
 "today" = "Сегодня";
 "opens_in" = "Открывается через %@";
 "closes_in" = "Закроется через %@";
@@ -571,11 +607,8 @@
 "day" = "д";
 "second" = "с";
 "placepage_more_button" = "Ещё";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Редактировать метку";
 "placepage_personal_notes_hint" = "Примечание (текст или html)";
-"editor_comment_hint" = "Коментарий…";
+"editor_comment_hint" = "Комментарий…";
 "editor_reset_edits_message" = "Сбросить все локальные правки?";
 "editor_reset_edits_button" = "Сбросить";
 "editor_remove_place_message" = "Удалить добавленный вами объект?";
@@ -594,7 +627,7 @@
 /* Dialog before publishing the modifications to the public map. */
 "editor_share_to_all_dialog_message_1" = "Убедитесь, что вы не ввели личные данные.";
 "editor_share_to_all_dialog_message_2" = "Редакторы OpenStreetMap проверят изменения и свяжутся с вами, если у них возникнут вопросы.";
-"navigation_stop_button" = "Cтоп";
+"navigation_stop_button" = "Стоп";
 
 /* For the first routing */
 "accept" = "Принять";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Изменить маршрут";
 "button_plan" = "Построить";
 "placepage_remove_stop" = "Удалить остановку";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Добавить остановку";
 "saved" = "Сохранено";
 "error_enter_correct_name" = "Пожалуйста, введите название правильно";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Такое имя уже занято";
 "profile" = "Профиль OpenStreetMap";
 "restore" = "Восстановить";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Приватность";
 "privacy_policy" = "Политика конфиденциальности";
 "terms_of_use" = "Условия использования";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Веломаршруты";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Спутник";
 "button_layer_subway" = "Метро";
 "layers_title" = "Стили и слои карты";
 
@@ -687,9 +728,15 @@
 "bookmarks_text_placement_title" = "Названия меток на карте";
 "bookmarks_text_placement_description" = "Если меток очень много, отображение их названий на карте может замедлить работу приложения.";
 "show_to_the_right" = "Справа";
-"show_at_the_bottom" = "Под меткой";
+"show_at_the_bottom" = "Снизу";
 "enable_logging_warning_message" = "Данная настройка включается для записи действий в целях диагностики, чтобы помочь нашей команде выявить проблемы с приложением. Временно включайте эту настройку только для отправки детальной информации о найденной вами проблеме в приложении через кнопку \"Сообщить о проблеме\".";
 "driving_options_title" = "Настройки объезда";
+
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Оптимизация маршрута";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Автоматически переставляет промежуточные остановки для построения более эффективного маршрута.";
 
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Избегать платных дорог";
@@ -707,6 +754,15 @@
 "toll_road" = "Платная дорога";
 "unpaved_road" = "Грунтовая дорога";
 "ferry_crossing" = "Паромная переправа";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Лестница";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Ворота";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Шлагбаум";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Да";
@@ -785,11 +841,10 @@
 
 /* iOS Dialog for the case when the location permission is not granted; you might find the exact wording for your language here: https://support.apple.com/en-us/102647 (replace 'en-us' in URL with your language/region) */
 "location_services_disabled_3" = "3. Выберите «При использовании программы»";
-"location_services_disabled_on_device_2" = "2. Выберите Конфидециальность";
+"location_services_disabled_on_device_2" = "2. Выберите Конфиденциальность";
 "location_services_disabled_on_device_3" = "3. Выберите Службы геолокации";
 "location_services_disabled_on_device_4" = "4. Включите Службы геолокации";
 "location_services_disabled_on_device_additional_message" = "Или продолжите использование Organic Maps без определения местоположения";
-"book_button" = "Забронировать";
 "placepage_call_button" = "Позвонить";
 "placepage_bookmark_name_hint" = "Название метки";
 "placepage_delete_bookmark_button" = "Удалить метку";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Выключить запись недавно пройденого пути?";
 "off_recent_track_background_button" = "Выключить";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Посмотри";
 "recent_track_background_dialog_message" = "Organic Maps использует вашу геопозицию в фоновом режиме для записи недавно пройденного пути.";
 "general_settings" = "Общие настройки";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Популярно";
 "hide_from_map" = "Скрыть с карты";
 "tags_loading_error_subtitle" = "Во время загрузки тегов произошла ошибка, пожалуйста, попробуйте ещё раз";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Справа";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Снизу";
 "trip_start" = "Поехали";
 "pick_destination" = "Цель";
 "follow_my_position" = "Отцентровать";
@@ -885,6 +931,15 @@
 "medicine" = "Медицина";
 "search_in_the_list" = "Искать в списке";
 "religious_places" = "Святые места";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Выбрать";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Выбрать все";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Отменить выбор";
 "transit_not_found" = "Навигация на метро ещё недоступна в данном регионе";
 "dialog_pedestrian_route_is_long_header" = "Маршрут метро не найден";
 "dialog_pedestrian_route_is_long_message" = "Выберите начальную или конечную точку маршрута ближе к станции метро";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Спуск";
 "elevation_profile_min_elevation" = "Мин. высота";
 "elevation_profile_max_elevation" = "Макс. высота";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Начните движение, чтобы увидеть профиль высоты";
 "isolines_toast_zooms_1_10" = "Увеличьте карту, чтобы увидеть изолинии";
 "downloader_loading_ios" = "Загрузка";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Экспортировать все метки и треки";
 "drive_through" = "С окошком для водителей";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Приблизить";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Отдалить";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Ссылка на меню";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Открыть в другом приложении";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Самообслуживание";
@@ -979,7 +1040,7 @@
 
 /* Message for the toast when saving the track recording is finished but nothing to save. */
 "track_recording_toast_nothing_to_save" = "Трек пуст - нечего сохранять";
-"edit_track" = "Редактировать маршрут";
+"edit_track" = "Редактировать трек";
 "elevation_profile_diff_level" = "Уровень сложности";
 "elevation_profile_diff_level_easy" = "Лёгкий";
 "elevation_profile_diff_level_moderate" = "Умеренный";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Изменить цвет";
 
+/* Text for the hiding track. */
+"hide_track" = "Скрыть трек";
+
+/* Text for the showing track. */
+"show_track" = "Показать трек";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Карта";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Чтобы воспользоваться этой функцией, включите iCloud в настройках своего устройства.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Включить";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Цвет треков изменён";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Выбрать на карте";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Откуда";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Куда";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Изменить начало";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Изменить пункт назначения";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Изменить остановку";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Достигнуто максимальное количество остановок";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Перемещайте и масштабируйте карту, чтобы установить крестик";

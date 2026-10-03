@@ -166,15 +166,15 @@ void RemoveDuplicatingLinear(std::vector<RankerResult> & results)
 
 bool IsCountryOrCity(ftypes::LocalityType type)
 {
-  using namespace ftypes;
-
   switch (type)
   {
-  case LocalityType::Country:
-  case LocalityType::City:
-  case LocalityType::Town: return true;
+    using enum ftypes::LocalityType;
+  case Country:  // fallthrough
+  case City:     // fallthrough
+  case Town: return true;
+  default: return false;
   }
-  return false;
+  UNREACHABLE();
 }
 
 }  // namespace
@@ -395,15 +395,6 @@ private:
     return ft;
   }
 
-  bool GetExactAddress(FeatureType & ft, m2::PointD const & center, ReverseGeocoder::Address & addr) const
-  {
-    if (m_reverseGeocoder.GetExactAddress(ft, addr, true /* placeAsStreet */))
-      return true;
-
-    m_reverseGeocoder.GetNearbyAddress(center, 0.0 /* maxDistanceM */, addr, true /* placeAsStreet */);
-    return addr.IsValid();
-  }
-
   // For the best performance, incoming ids should be sorted by id.first (mwm file id).
   std::unique_ptr<FeatureType> LoadFeature(FeatureID const & id, m2::PointD & center, std::string & name,
                                            std::string & country)
@@ -422,12 +413,13 @@ private:
     center = feature::GetCenter(*ft);
     m_ranker.GetBestMatchName(*ft, name);
 
-    // Use brand instead of empty result name.
+    // Use brand instead of empty result name. If no brand try to use operator.
     if (!m_isViewportMode && name.empty())
     {
-      std::string_view brand = (*ft).GetMetadata(feature::Metadata::FMD_BRAND);
-      if (!brand.empty())
+      if (auto const brand = ft->GetMetadata(feature::Metadata::FMD_BRAND); !brand.empty())
         name = platform::GetLocalizedBrandName(std::string{brand});
+      else if (auto const op = ft->GetMetadata(feature::Metadata::FMD_OPERATOR); !op.empty())
+        name = op;
     }
 
     /// @todo Ensure that we actually need to get and assign address here? Needed for the ranking?
@@ -444,7 +436,7 @@ private:
         return ft;
 
       ReverseGeocoder::Address addr;
-      if (GetExactAddress(*ft, center, addr))
+      if (m_reverseGeocoder.GetFeatureAddress(*ft, addr))
       {
         std::unique_ptr<FeatureType> streetFeature;
 
@@ -780,6 +772,10 @@ Result Ranker::MakeResult(RankerResult const & rankerResult, bool needAddress, b
   case RankerResult::Type::LatLon: res.SetType(Result::Type::LatLon); break;
   case RankerResult::Type::Postcode: res.SetType(Result::Type::Postcode); break;
   }
+
+  // Coordinates and postcodes are parsed from the query as is.
+  bool const isFeature = res.GetResultType() == Result::Type::Feature;
+  res.SetErrorsMade(isFeature ? rankerResult.GetRankingInfo().m_errorsMade : ErrorsMade(0));
 
   if (needHighlighting)
     HighlightResult(m_params.m_query.m_tokens, m_params.m_query.m_prefix, res);

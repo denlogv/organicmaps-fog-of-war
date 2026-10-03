@@ -11,6 +11,7 @@ class PlacePageInteractor: NSObject {
   private let bookmarksManager = BookmarksManager.shared()
   private let trackRecordingManager = TrackRecordingManager.shared
   private var placePageData: PlacePageData
+  private weak var trackDeletionConfirmationDialog: UIAlertController?
 
   init(data: PlacePageData) {
     placePageData = data
@@ -37,8 +38,11 @@ class PlacePageInteractor: NSObject {
         return
       }
       updatePlacePage()
-    case .track:
+    case .track, .relationTrack:
       guard let trackData = placePageData.trackData, bookmarksManager.hasTrack(trackData.trackId) else {
+        if let trackDeletionConfirmationDialog {
+          trackDeletionConfirmationDialog.dismiss(animated: true)
+        }
         presenter?.close()
         return
       }
@@ -50,7 +54,10 @@ class PlacePageInteractor: NSObject {
 
   private func subscribeOnTrackActivePointUpdatesIfNeeded() {
     unsubscribeFromTrackActivePointUpdates()
-    guard placePageData.objectType == .track, let trackData = placePageData.trackData else { return }
+    let isActivePointTrackingEnabled = placePageData.objectType == .track || placePageData.objectType == .relationTrack
+    guard isActivePointTrackingEnabled, let trackData = placePageData.trackData else {
+      return
+    }
     bookmarksManager.setElevationActivePointChanged(trackData.trackId) { [weak self] distance in
       self?.trackActivePointPresenter?.updateActivePointDistance(distance)
       trackData.updateActivePointDistance(distance)
@@ -103,6 +110,10 @@ extension PlacePageInteractor: PlacePageInfoViewControllerDelegate {
     MWMPlacePageManagerHelper.openWebsite(placePageData)
   }
 
+  func didPressHeritageWebsite() {
+    MWMPlacePageManagerHelper.openHeritageWebsite(placePageData)
+  }
+
   func didPressWebsiteMenu() {
     MWMPlacePageManagerHelper.openWebsiteMenu(placePageData)
   }
@@ -140,6 +151,10 @@ extension PlacePageInteractor: PlacePageInfoViewControllerDelegate {
     let message = String(format: L("copied_to_clipboard"), content)
     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     presenter?.showToast(message)
+  }
+
+  func didSelectPublicTransportRoute(scrollAnchor: UIView) {
+    presenter?.scrollToReveal(scrollAnchor)
   }
 
   func didPressOpenInApp(from sourceView: UIView) {
@@ -194,11 +209,10 @@ extension PlacePageInteractor: PlacePageOSMContributionViewControllerDelegate {
 extension PlacePageInteractor: PlacePageEditBookmarkOrTrackViewControllerDelegate {
   func didUpdate(color: UIColor, category: MWMMarkGroupID, for data: PlacePageEditData) {
     switch data {
-    case .bookmark(let bookmarkData):
-      let bookmarkColor = BookmarkColor.bookmarkColor(from: color) ?? bookmarkData.color
+    case .bookmark:
       MWMPlacePageManagerHelper.updateBookmark(placePageData,
                                                title: placePageData.previewData.title,
-                                               color: bookmarkColor,
+                                               color: color,
                                                category: category)
     case .track:
       MWMPlacePageManagerHelper.updateTrack(placePageData,
@@ -223,10 +237,6 @@ extension PlacePageInteractor: PlacePageEditBookmarkOrTrackViewControllerDelegat
 extension PlacePageInteractor: ActionBarViewControllerDelegate {
   func actionBar(_: ActionBarViewController, didPressButton type: ActionBarButtonType) {
     switch type {
-    case .booking:
-      MWMPlacePageManagerHelper.book(placePageData)
-    case .bookingSearch:
-      MWMPlacePageManagerHelper.searchBookingHotels(placePageData)
     case .bookmark:
       if placePageData.bookmarkData != nil {
         MWMPlacePageManagerHelper.removeBookmark(placePageData)
@@ -245,8 +255,6 @@ extension PlacePageInteractor: ActionBarViewControllerDelegate {
       }
     case .download:
       startMapDownloading()
-    case .opentable:
-      fatalError("Opentable is not supported and will be deleted")
     case .routeAddStop, .routeReplaceStop:
       MWMPlacePageManagerHelper.routeAddStop(placePageData)
     case .routeFrom:
@@ -264,7 +272,10 @@ extension PlacePageInteractor: ActionBarViewControllerDelegate {
     case .more:
       fatalError("More button should've been handled in ActionBarViewContoller")
     case .track:
-      guard placePageData.trackData != nil else { return }
+      guard let trackId = placePageData.trackData?.trackId, bookmarksManager.hasTrack(trackId) else {
+        presenter?.close()
+        return
+      }
       showTrackDeletionConfirmationDialog()
     case .saveTrackRecording:
       trackRecordingManager.stopAndSave { [weak self] result in
@@ -313,6 +324,7 @@ extension PlacePageInteractor: ActionBarViewControllerDelegate {
     let cancelAction = UIAlertAction(title: L("cancel"), style: .cancel)
     alert.addAction(deleteAction)
     alert.addAction(cancelAction)
+    trackDeletionConfirmationDialog = alert
     presenter?.showAlert(alert)
   }
 
@@ -346,13 +358,9 @@ extension PlacePageInteractor: ActionBarViewControllerDelegate {
 // MARK: - ElevationProfileViewControllerDelegate
 
 extension PlacePageInteractor: ElevationProfileViewControllerDelegate {
-  func openDifficultyPopup() {
-    MWMPlacePageManagerHelper.openElevationDifficultPopup(placePageData)
-  }
-
-  func updateMapPoint(_ point: CLLocationCoordinate2D, distance: Double) {
+  func updateMapPoint(distance: Double) {
     guard let trackData = placePageData.trackData, trackData.elevationProfileData?.isTrackRecording == false else { return }
-    bookmarksManager.setElevationActivePoint(point, distance: distance, trackId: trackData.trackId)
+    bookmarksManager.setElevationActivePointDistance(distance, trackId: trackData.trackId)
     placePageData.trackData?.updateActivePointDistance(distance)
   }
 }
@@ -366,6 +374,10 @@ extension PlacePageInteractor: PlacePageHeaderViewControllerDelegate {
 
   func previewDidPressExpand() {
     presenter?.showNextStop()
+  }
+
+  func previewDidSelectTrackCandidate(_ track: PlacePageTrackSelectionData) {
+    FrameworkHelper.selectTrackCandidate(track)
   }
 
   func previewDidPressShare(from sourceView: UIView) {
@@ -432,9 +444,22 @@ extension PlacePageInteractor: BookmarksObserver {
     updatePlacePageIfNeeded()
   }
 
+  func onBookmarksDeleted(_ bookmarkIds: [NSNumber]) {
+    if let bookmarkId = placePageData.bookmarkData?.bookmarkId,
+       bookmarkIds.contains(NSNumber(value: bookmarkId)) {
+      FrameworkHelper.updateAfterDeleteBookmark()
+    }
+  }
+
   func onBookmarksCategoryDeleted(_ groupId: MWMMarkGroupID) {
-    guard let bookmarkGroupId = placePageData.bookmarkData?.bookmarkGroupId else { return }
-    if bookmarkGroupId == groupId {
+    if placePageData.bookmarkData?.bookmarkGroupId == groupId || placePageData.trackData?.groupId == groupId {
+      presenter?.close()
+    }
+  }
+
+  func onTracksDeleted(_ trackIds: [NSNumber]) {
+    if let trackId = placePageData.trackData?.trackId,
+       trackIds.contains(NSNumber(value: trackId)) {
       presenter?.close()
     }
   }

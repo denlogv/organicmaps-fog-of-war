@@ -1,6 +1,7 @@
 #import "MWMFrameworkHelper.h"
 #import "ElevationProfileData+Core.h"
 #import "MWMMapSearchResult+Core.h"
+#import "PlacePageTrackSelectionData+Core.h"
 #import "Product+Core.h"
 #import "ProductsConfiguration+Core.h"
 #import "TrackInfo+Core.h"
@@ -41,6 +42,11 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
   CGFloat const x1 = x0 + rect.size.width * scale;
   CGFloat const y1 = y0 + rect.size.height * scale;
   GetFramework().SetVisibleViewport(m2::RectD(x0, y0, x1, y1));
+}
+
++ (void)setMapFontScaleFactor:(double)scaleFactor
+{
+  GetFramework().SetFontScaleFactor(scaleFactor);
 }
 
 + (void)setTheme:(MWMTheme)theme
@@ -91,6 +97,11 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
   UNUSED_VALUE(GetFramework());
 }
 
++ (BOOL)isFrameworkDestroyed
+{
+  return IsFrameworkDestroyed();
+}
+
 + (MWMMarkID)invalidBookmarkId
 {
   return kml::kInvalidMarkId;
@@ -134,6 +145,16 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
 + (void)deactivateMapSelection
 {
   GetFramework().DeactivateMapSelection();
+}
+
++ (void)showRouteTransit:(uint32_t)relId
+{
+  GetFramework().ShowRouteTransit(relId);
+}
+
++ (NSString *)activeTransitRouteRef
+{
+  return @(GetFramework().GetActiveTransitRouteRef().c_str());
 }
 
 + (void)switchMyPositionMode
@@ -183,8 +204,49 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
 
 + (BOOL)canEditMapAtViewportCenter
 {
-  auto const & f = GetFramework();
-  return f.CanEditMapForPosition(f.GetViewportCenter());
+  return [self canEditMapAtMercatorPoint:[self mercatorViewportCenter]];
+}
+
++ (BOOL)canEditMapAtMercatorPoint:(CGPoint)point
+{
+  return GetFramework().CanEditMapForPosition(m2::PointD(point.x, point.y));
+}
+
++ (void)startChoosePositionModeWithEnableBounds:(BOOL)enableBounds
+                        initialMercatorPosition:(NSValue *)initialMercatorPosition
+                           shouldChangeViewport:(BOOL)shouldChangeViewport
+{
+  m2::PointD position;
+  m2::PointD const * optionalPosition = nullptr;
+  if (initialMercatorPosition)
+  {
+    CGPoint const point = initialMercatorPosition.CGPointValue;
+    position = {point.x, point.y};
+    optionalPosition = &position;
+  }
+
+  auto & framework = GetFramework();
+  framework.EnableChoosePositionMode(true /* enable */, enableBounds, optionalPosition, shouldChangeViewport);
+  framework.BlockTapEvents(true);
+}
+
++ (void)stopChoosePositionMode
+{
+  auto & framework = GetFramework();
+  framework.EnableChoosePositionMode(false /* enable */, false /* enableBounds */, nullptr /* optionalPosition */);
+  framework.BlockTapEvents(false);
+}
+
++ (CGPoint)mercatorViewportCenter
+{
+  auto const center = GetFramework().GetViewportCenter();
+  return CGPointMake(center.x, center.y);
+}
+
++ (NSString *)addressAtMercatorPoint:(CGPoint)point
+{
+  auto const address = GetFramework().GetAddressAtPoint(m2::PointD(point.x, point.y)).FormatAddress();
+  return address.empty() ? nil : @(address.c_str());
 }
 
 + (void)showOnMap:(MWMMarkGroupID)categoryId
@@ -202,9 +264,9 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
   GetFramework().ShowTrack(trackId);
 }
 
-+ (void)saveRouteAsTrack
++ (void)selectTrackCandidate:(PlacePageTrackSelectionData *)trackSelection
 {
-  GetFramework().SaveRoute();
+  GetFramework().SelectTrackCandidate(trackSelection.trackId, trackSelection.relationId);
 }
 
 + (void)updatePlacePageData
@@ -215,6 +277,10 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
 + (void)updateAfterDeleteBookmark
 {
   auto & frm = GetFramework();
+  // A batch deletion may already have closed the Place Page.
+  if (!frm.HasPlacePageInfo())
+    return;
+
   auto buildInfo = frm.GetCurrentPlacePageInfo().GetBuildInfo();
   buildInfo.m_match = place_page::BuildInfo::Match::FeatureOnly;
   buildInfo.m_userMarkId = kml::kInvalidMarkId;
@@ -268,8 +334,11 @@ static Framework::ProductsPopupCloseReason ConvertProductPopupCloseReasonToCore(
   return GetFramework().IsTrackRecordingEmpty();
 }
 
-+ (ElevationProfileData * _Nonnull)trackRecordingElevationInfo
++ (ElevationProfileData * _Nullable)trackRecordingElevationInfo
 {
+  if (GetFramework().IsTrackRecordingEmpty())
+    return nil;
+
   return [[ElevationProfileData alloc] initWithElevationInfo:GetFramework().GetTrackRecordingElevationInfo()];
 }
 

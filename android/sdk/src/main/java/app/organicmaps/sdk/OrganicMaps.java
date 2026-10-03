@@ -11,7 +11,6 @@ import app.organicmaps.sdk.bookmarks.data.Icon;
 import app.organicmaps.sdk.downloader.Android7RootCertificateWorkaround;
 import app.organicmaps.sdk.editor.OsmOAuth;
 import app.organicmaps.sdk.location.LocationHelper;
-import app.organicmaps.sdk.location.LocationProviderFactory;
 import app.organicmaps.sdk.location.SensorHelper;
 import app.organicmaps.sdk.maplayer.isolines.IsolinesManager;
 import app.organicmaps.sdk.maplayer.subway.SubwayManager;
@@ -93,8 +92,7 @@ public final class OrganicMaps implements DefaultLifecycleObserver
   }
 
   public OrganicMaps(@NonNull Context context, @NonNull String flavor, @NonNull String applicationId, int versionCode,
-                     @NonNull String versionName, @NonNull String fileProviderAuthority,
-                     @NonNull LocationProviderFactory locationProviderFactory)
+                     @NonNull String versionName)
   {
     mFlavor = flavor;
     mVersionName = versionName;
@@ -109,7 +107,7 @@ public final class OrganicMaps implements DefaultLifecycleObserver
     Logger.d(TAG, "Settings path = " + settingsPath);
     nativeSetSettingsDir(settingsPath);
 
-    Config.init(mContext, mPreferences, mFlavor, applicationId, versionCode, mVersionName, fileProviderAuthority);
+    Config.init(mPreferences, mFlavor, applicationId, versionCode, mVersionName);
     OsmOAuth.init(mPreferences);
     SharedPropertiesUtils.init(mPreferences);
     LogsManager.INSTANCE.initFileLogging(mContext, mPreferences);
@@ -119,7 +117,7 @@ public final class OrganicMaps implements DefaultLifecycleObserver
     Icon.loadDefaultIcons(mContext.getResources(), mContext.getPackageName());
 
     mSensorHelper = new SensorHelper(mContext);
-    mLocationHelper = new LocationHelper(mContext, mSensorHelper, locationProviderFactory);
+    mLocationHelper = new LocationHelper(mContext, mSensorHelper);
     mIsolinesManager = new IsolinesManager();
     mSubwayManager = new SubwayManager(mContext);
 
@@ -229,8 +227,12 @@ public final class OrganicMaps implements DefaultLifecycleObserver
     nativeAddLocalization("core_my_places", mContext.getString(R.string.core_my_places));
     nativeAddLocalization("core_my_position", mContext.getString(R.string.core_my_position));
     nativeAddLocalization("core_placepage_unknown_place", mContext.getString(R.string.core_placepage_unknown_place));
+    nativeAddLocalization("open_in_app", mContext.getString(R.string.open_in_app));
     nativeAddLocalization("postal_code", mContext.getString(R.string.postal_code));
     nativeAddLocalization("wifi", mContext.getString(R.string.category_wifi));
+    nativeAddLocalization("share_my_position", mContext.getString(R.string.share_my_position));
+    nativeAddLocalization("share_open_in_om_or_browser", mContext.getString(R.string.share_open_in_om_or_browser));
+    nativeAddLocalization("share_get_om", mContext.getString(R.string.share_get_om));
   }
 
   private static native void nativeSetSettingsDir(String settingsPath);

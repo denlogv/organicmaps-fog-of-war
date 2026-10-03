@@ -1,12 +1,9 @@
 #include "drape_frontend/read_metaline_task.hpp"
-
 #include "drape_frontend/map_data_provider.hpp"
-#include "drape_frontend/metaline_manager.hpp"
 
 #include "indexer/feature_decl.hpp"
 
 #include "coding/files_container.hpp"
-#include "coding/reader_wrapper.hpp"
 #include "coding/varint.hpp"
 
 #include "defines.hpp"
@@ -16,6 +13,8 @@
 #include <set>
 #include <vector>
 
+namespace df
+{
 namespace
 {
 struct MetalineData
@@ -28,16 +27,16 @@ std::vector<MetalineData> ReadMetalinesFromFile(MwmSet::MwmId const & mwmId)
 {
   try
   {
+    FilesContainerR cont(mwmId.GetInfo()->GetLocalFile().GetPath(MapFileType::Map));
+    ReaderSource src(cont.GetReader(METALINES_FILE_TAG));
+
     std::vector<MetalineData> model;
-    ModelReaderPtr reader =
-        FilesContainerR(mwmId.GetInfo()->GetLocalFile().GetPath(MapFileType::Map)).GetReader(METALINES_FILE_TAG);
-    ReaderSrc src(reader.GetPtr());
     auto const version = ReadPrimitiveFromSource<uint8_t>(src);
-    if (version == 1)
+    if (version == kMetaLinesSectionVersion)
     {
       for (auto metalineIndex = ReadVarUint<uint32_t>(src); metalineIndex > 0; --metalineIndex)
       {
-        MetalineData data{};
+        MetalineData data;
         for (auto i = ReadVarUint<uint32_t>(src); i > 0; --i)
         {
           auto const fid = ReadVarInt<int32_t>(src);
@@ -121,8 +120,6 @@ std::vector<m2::PointD> MergePoints(std::map<FeatureID, std::vector<m2::PointD>>
 }
 }  // namespace
 
-namespace df
-{
 ReadMetalineTask::ReadMetalineTask(MapDataProvider & model, MwmSet::MwmId const & mwmId)
   : m_model(model)
   , m_mwmId(mwmId)
@@ -131,6 +128,10 @@ ReadMetalineTask::ReadMetalineTask(MapDataProvider & model, MwmSet::MwmId const 
 
 void ReadMetalineTask::Run()
 {
+  /// @todo Naive check for now. Should refactor with MwmHandle lock here.
+  if (!m_mwmId.IsAlive() || !m_mwmId.GetInfo()->IsRegistered())
+    return;
+
   auto metalines = ReadMetalinesFromFile(m_mwmId);
   for (auto & metaline : metalines)
   {

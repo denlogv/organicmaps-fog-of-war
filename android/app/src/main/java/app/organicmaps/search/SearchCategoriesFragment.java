@@ -3,7 +3,7 @@ package app.organicmaps.search;
 import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import app.organicmaps.R;
 import app.organicmaps.base.BaseMwmRecyclerFragment;
 
@@ -14,6 +14,7 @@ public class SearchCategoriesFragment
   public void onViewCreated(View view, Bundle savedInstanceState)
   {
     super.onViewCreated(view, savedInstanceState);
+    ViewCompat.setOnApplyWindowInsetsListener(getRecyclerView(), null);
     getAdapter().updateCategories(this);
 
     ((SearchFragment) getParentFragment()).setRecyclerScrollListener(getRecyclerView());

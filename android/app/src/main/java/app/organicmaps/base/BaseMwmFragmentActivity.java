@@ -19,9 +19,7 @@ import androidx.fragment.app.FragmentManager;
 import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
 import app.organicmaps.SplashActivity;
-import app.organicmaps.sdk.util.Config;
 import app.organicmaps.sdk.util.log.Logger;
-import app.organicmaps.util.RtlUtils;
 import java.util.Objects;
 
 public abstract class BaseMwmFragmentActivity extends AppCompatActivity
@@ -40,12 +38,12 @@ public abstract class BaseMwmFragmentActivity extends AppCompatActivity
   @Override
   protected final void onCreate(@Nullable Bundle savedInstanceState)
   {
+    EdgeToEdge.enable(this, getStatusBarStyle());
     super.onCreate(savedInstanceState);
-    EdgeToEdge.enable(this, SystemBarStyle.dark(Color.TRANSPARENT));
-    RtlUtils.manageRtl(this);
     if (!MwmApplication.from(this).getOrganicMaps().arePlatformAndCoreInitialized())
     {
       final Intent intent = Objects.requireNonNull(getIntent());
+      prepareIntentForCoreRestart(intent, savedInstanceState);
       intent.setComponent(new ComponentName(this, SplashActivity.class));
       startActivity(intent);
       finish();
@@ -53,6 +51,28 @@ public abstract class BaseMwmFragmentActivity extends AppCompatActivity
     }
 
     onSafeCreate(savedInstanceState);
+  }
+
+  /**
+   * Preserves activity-specific state when a restored activity must restart the core through
+   * {@link SplashActivity}. The new activity created after initialization does not receive this
+   * instance's saved state.
+   * <p>
+   * Staying silent means "the state of this intent is unknown", which lets {@link SplashActivity}
+   * guess. Override whenever this screen's intent can carry a payload that MwmActivity acts on.
+   */
+  protected void prepareIntentForCoreRestart(@NonNull Intent intent, @Nullable Bundle savedInstanceState) {}
+
+  /**
+   * Status-bar style passed to {@link EdgeToEdge#enable}. The default uses light (white)
+   * icons, which contrast with the dark {@code ?colorPrimary} toolbar that most activities show
+   * behind the transparent status bar. Override in activities whose status bar overlays a
+   * different background (e.g. the map surface).
+   */
+  @NonNull
+  protected SystemBarStyle getStatusBarStyle()
+  {
+    return SystemBarStyle.dark(Color.TRANSPARENT);
   }
 
   /**

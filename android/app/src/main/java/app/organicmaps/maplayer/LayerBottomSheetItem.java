@@ -68,6 +68,10 @@ public class LayerBottomSheetItem
       drawableResId = R.drawable.ic_layers_outdoors;
       buttonTextResource = R.string.button_layer_fog_of_war;
       break;
+    case SATELLITE:
+      drawableResId = R.drawable.ic_layers_satellite;
+      buttonTextResource = R.string.button_layer_satellite;
+      break;
     }
     return new LayerBottomSheetItem(drawableResId, buttonTextResource, mode, layerItemClickListener);
   }

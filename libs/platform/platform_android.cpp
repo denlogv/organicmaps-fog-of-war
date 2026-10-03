@@ -2,6 +2,7 @@
 #include "platform/measurement_utils.hpp"
 #include "platform/platform.hpp"
 #include "platform/platform_unix_impl.hpp"
+#include "platform/preferred_languages.hpp"
 #include "platform/settings.hpp"
 
 #include "coding/zip_reader.hpp"
@@ -11,9 +12,15 @@
 #include "base/string_utils.hpp"
 #include "base/thread.hpp"
 
+#include "defines.hpp"
+
+#include <algorithm>
 #include <memory>
+#include <ranges>
 #include <regex>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -109,9 +116,12 @@ std::unique_ptr<ModelReader> Platform::GetReader(std::string const & file, std::
       ASSERT_EQUAL(file.find("assets/"), std::string::npos, ());
       try
       {
-        return make_unique<ZipFileReader>(m_resourcesDir, "assets/" + file, logPageSize, logPageCount);
+        return ZipFileReader::CreateModelReader(m_resourcesDir, "assets/" + file, logPageSize, logPageCount);
       }
-      catch (Reader::OpenException const & e)
+      // Catch std::exception, not just Reader::OpenException: inflating a compressed asset can throw
+      // std::bad_alloc (low-memory devices), which must fall through to FileAbsentException rather than
+      // terminate. RootException derives from std::exception, so locate/open failures are still caught.
+      catch (std::exception const & e)
       {
         LOG(LWARNING, ("Can't get reader:", e.what()));
       }
@@ -155,16 +165,6 @@ void Platform::GetFilesByRegExp(std::string const & directory, std::string const
     pl::EnumerateFilesByRegExp(directory, regexp, res);
 }
 
-int Platform::VideoMemoryLimit() const
-{
-  return 10 * 1024 * 1024;
-}
-
-int Platform::PreCachingDepth() const
-{
-  return 3;
-}
-
 bool Platform::GetFileSizeByName(std::string const & fileName, uint64_t & size) const
 {
   try
@@ -200,24 +200,57 @@ void Platform::SetupMeasurementSystem() const
 void Platform::GetSystemFontNames(FilesList & res) const
 {
   bool wasRoboto = false;
+  bool hasCJK = false;
+
+  // Android 5–6 ship per-variant CJK files (one face each, ~1 MB metrics cache each). Collect
+  // candidates during enumeration, then register exactly one — the best fallback for the user's
+  // preferred variant. Android 7+ uses NotoSansCJK-Regular.ttc instead; that is handled in
+  // GlyphManager via TTC face index selection.
+  languages::CJKResolver const cjk;
+  using CJKCandidate = std::pair<std::string, languages::CJKResolver::Variant>;
+  std::vector<CJKCandidate> cjkCandidates;
 
   std::string const path = "/system/fonts/";
   pl::EnumerateFiles(path, [&](char const * entry)
   {
     std::string name(entry);
-    if (name != "Roboto-Medium.ttf" && name != "Roboto-Regular.ttf")
+    if (name == "Roboto-Medium.ttf" || name == "Roboto-Regular.ttf")
     {
-      if (!name.starts_with("NotoNaskh") && !name.starts_with("NotoSans"))
-        return;
-
-      if (name.find("-Regular") == std::string::npos)
-        return;
-    }
-    else
       wasRoboto = true;
+      res.push_back(path + name);
+      return;
+    }
+
+    if (auto const variant = languages::CJKResolver::FromFontFileName(name))
+    {
+      cjkCandidates.emplace_back(path + name, *variant);
+      return;
+    }
+
+    if (!name.starts_with("NotoNaskh") && !name.starts_with("NotoSans"))
+      return;
+
+    if (name.find("-Regular") == std::string::npos)
+      return;
+
+    if (languages::CJKResolver::IsCJKContainerFileName(name))
+      hasCJK = true;
 
     res.push_back(path + name);
   });
+
+  // Android 5–6 devices ship at most one per-variant file, so the fallback only fires in
+  // unusual configurations.
+  for (auto const want : cjk.FallbackChain())
+  {
+    auto const it = std::ranges::find(cjkCandidates, want, &CJKCandidate::second);
+    if (it != cjkCandidates.end())
+    {
+      res.push_back(it->first);
+      hasCJK = true;
+      break;
+    }
+  }
 
   if (!wasRoboto)
   {
@@ -225,17 +258,26 @@ void Platform::GetSystemFontNames(FilesList & res) const
     if (IsFileExistsByFullPath(droidSans))
       res.push_back(std::move(droidSans));
   }
+
+  // Legacy SC fallback for pre-Lollipop AOSP and vendor builds that ship neither the Pan-CJK TTC
+  // nor any per-variant Noto file. Skip when a CJK font was already registered to avoid loading
+  // a redundant ~1 MB glyph-metrics cache.
+  if (!hasCJK)
+  {
+    std::string droidFallback = path + "DroidSansFallback.ttf";
+    if (IsFileExistsByFullPath(droidFallback))
+      res.push_back(std::move(droidFallback));
+  }
 }
 
 // static
 time_t Platform::GetFileCreationTime(std::string const & path)
 {
+  // Note: Android's plain stat() does not expose birth time. Using st_atim as an approximation
+  // is a pre-existing behavior quirk; statx would require API >= 30 (current minSdk is 21).
   struct stat st;
   if (0 == stat(path.c_str(), &st))
     return st.st_atim.tv_sec;
-
-  LOG(LERROR, ("GetFileCreationTime stat failed for", path, "with error", strerror(errno)));
-  // TODO(AB): Refactor to return std::optional<time_t>.
   return 0;
 }
 
@@ -245,9 +287,6 @@ time_t Platform::GetFileModificationTime(std::string const & path)
   struct stat st;
   if (0 == stat(path.c_str(), &st))
     return st.st_mtim.tv_sec;
-
-  LOG(LERROR, ("GetFileModificationTime stat failed for", path, "with error", strerror(errno)));
-  // TODO(AB): Refactor to return std::optional<time_t>.
   return 0;
 }
 

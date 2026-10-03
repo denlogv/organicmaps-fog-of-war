@@ -47,6 +47,8 @@
     <string name="auto">Automatique</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">Bâtiments en 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Non disponible</string>
     <!-- Text in menu -->
     <string name="help">Aide</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -58,7 +60,7 @@
 
     <!-- SECTION: Strings for downloading map from search -->
     <string name="categories">Catégories</string>
-    <string name="search_not_found">Désolé, je n\'ai rien trouvé.</string>
+    <string name="search_not_found">Oups, aucun résultat trouvé.</string>
     <string name="search_history_text">Accédez rapidement aux dernières recherches.</string>
     <string name="p2p_start">Démarrer</string>
     <!-- Text for allday switch. -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Ouvert</string>
     <string name="twentyfour_seven">24/24 et 7/7</string>
     <string name="day_off_today">Fermé aujourd\'hui</string>
+    <string name="midnight">Minuit</string>
+    <string name="noon">Midi</string>
     <string name="opens_in">Ouvert dans %s</string>
     <string name="closes_in">Fermé dans %s</string>
     <string name="closed">Fermé</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Éviter les ferries</string>
     <string name="avoid_motorways">Éviter les autoroutes</string>
     <string name="unable_to_calc_alert_title">Impossible de calculer l\'itinéraire</string>
+    <string name="trip_finished">Vous êtes arrivé !</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Trier les signets</string>
     <!-- Android -->
