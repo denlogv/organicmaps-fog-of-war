@@ -6,7 +6,9 @@
 
 namespace
 {
-uint32_t const kMarkIdTypeBitsCount = 4;
+uint32_t constexpr kMarkIdTypeBitsCount = 4;
+static_assert(UserMark::USER_MARK_TYPES_COUNT <= (1 << kMarkIdTypeBitsCount));
+
 std::string const kLastBookmarkId = "LastBookmarkId";
 std::string const kLastTrackId = "LastTrackId";
 std::string const kLastBookmarkCategoryId = "LastBookmarkCategoryId";
@@ -86,19 +88,12 @@ bool UserMarkIdStorage::CheckIds(kml::FileData const & fileData) const
     if (t.m_id != kml::kInvalidTrackId && t.m_id > m_initialLastTrackId)
       return false;
 
-  for (auto const & c : fileData.m_compilationsData)
-    if (c.m_id != kml::kInvalidMarkGroupId && c.m_id > m_initialLastCategoryId)
-      return false;
-
   // No one corner case. Check passed.
   return true;
 }
 
 kml::MarkId UserMarkIdStorage::GetNextUserMarkId(UserMark::Type type)
 {
-  static_assert(UserMark::Type::USER_MARK_TYPES_COUNT <= (1 << kMarkIdTypeBitsCount),
-                "Not enough bits for user mark type.");
-
   auto const typeBits = static_cast<uint64_t>(type) << (sizeof(kml::MarkId) * 8 - kMarkIdTypeBitsCount);
   if (type == UserMark::Type::BOOKMARK)
   {

@@ -1,48 +1,53 @@
 @objc @objcMembers class DeepLinkHandler: NSObject {
   static let shared = DeepLinkHandler()
 
-  private(set) var isLaunchedByDeeplink = false
-  private(set) var isLaunchedByUniversalLink = false
+  private(set) var isLaunchedByDeepLink = false
+  private(set) var hasPendingColdLaunchDeepLink = false
   private(set) var url: URL?
 
   override private init() {
     super.init()
   }
 
-  func applicationDidFinishLaunching(_ options: [UIApplication.LaunchOptionsKey: Any]? = nil) {
-    if let launchDeeplink = options?[UIApplication.LaunchOptionsKey.url] as? URL {
-      isLaunchedByDeeplink = true
-      url = launchDeeplink
-    }
+  /// Keeps the last link received during a cold launch. It is handled by handleDeepLinkAndReset()
+  /// once the map is ready, because the place page and viewport animations need an initialized map.
+  func prepareForColdLaunch(url: URL) {
+    isLaunchedByDeepLink = true
+    hasPendingColdLaunchDeepLink = true
+    self.url = url
   }
 
-  func applicationDidOpenUrl(_ url: URL) -> Bool {
-    // File reading should be processed synchronously to avoid permission issues (the Files app will close the file for reading when the application:openURL:options returns).
+  func prepareForColdLaunch(universalLink: URL) {
+    guard let url = convertUniversalLink(universalLink) else { return }
+    prepareForColdLaunch(url: url)
+  }
+
+  func applicationDidOpenUrl(_ url: URL, openInPlace: Bool = false) -> Bool {
+    // Files must be imported synchronously: the security-scoped access granted for the URL ends when
+    // the scene delegate returns.
     if url.isFileURL {
-      return handleFileImport(url: url)
+      return handleFileImport(url: url, openInPlace: openInPlace)
     }
 
-    // On the cold start, isLaunchedByDeeplink is set and handleDeepLink() call is delayed
-    // until the map view will be fully initialized.
-    guard !isLaunchedByDeeplink else { return true }
+    self.url = url
+    // Set before handling: handleDeepLink() opens the screen that reads getInAppFeatureHighlightData().
+    isLaunchedByDeepLink = true
+
+    // A link arriving before the map is ready supersedes the previous pending link.
+    guard !hasPendingColdLaunchDeepLink else { return true }
 
     // On the hot start, link can be processed immediately.
-    self.url = url
     return handleDeepLink(url: url)
   }
 
   func applicationDidReceiveUniversalLink(_ universalLink: URL) -> Bool {
-    // Convert http(s)://omaps.app/ENCODEDCOORDS/NAME to om://ENCODEDCOORDS/NAME
-    url = URL(string: universalLink.absoluteString
-      .replacingOccurrences(of: "http://omaps.app", with: "om:/")
-      .replacingOccurrences(of: "https://omaps.app", with: "om:/"))
-    isLaunchedByUniversalLink = true
-    return handleDeepLink(url: url!)
+    guard let url = convertUniversalLink(universalLink) else { return false }
+    return applicationDidOpenUrl(url)
   }
 
   func reset() {
-    isLaunchedByDeeplink = false
-    isLaunchedByUniversalLink = false
+    isLaunchedByDeepLink = false
+    hasPendingColdLaunchDeepLink = false
     url = nil
   }
 
@@ -53,33 +58,71 @@
   }
 
   func getInAppFeatureHighlightData() -> DeepLinkInAppFeatureHighlightData? {
-    guard isLaunchedByUniversalLink || isLaunchedByDeeplink, let url else { return nil }
-    reset()
+    guard isLaunchedByDeepLink, let url else { return nil }
+    // Highlight the feature once, but keep the URL: goBack() still reads getBackUrl() from it.
+    isLaunchedByDeepLink = false
     return DeepLinkInAppFeatureHighlightData(DeepLinkParser.parseAndSetApiURL(url))
   }
 
   func handleDeepLinkAndReset() -> Bool {
-    if let url {
-      let result = handleDeepLink(url: url)
-      reset()
-      return result
+    guard let url else {
+      LOG(.error, "handleDeepLink is called with nil URL")
+      return false
     }
-    LOG(.error, "handleDeepLink is called with nil URL")
-    return false
+
+    let handled = handleDeepLink(url: url)
+    reset()
+    return handled
   }
 
-  private func handleFileImport(url: URL) -> Bool {
-    LOG(.info, "handleFileImport: \(url)")
+  private func handleFileImport(url: URL, openInPlace: Bool) -> Bool {
+    LOG(.info, "handleFileImport: \(url), openInPlace: \(openInPlace)")
+    guard openInPlace else {
+      DeepLinkParser.addBookmarksFile(url, isTemporaryFile: true)
+      return true
+    }
+
+    let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+    defer {
+      if shouldStopAccessing {
+        url.stopAccessingSecurityScopedResource()
+      }
+    }
+
     let fileCoordinator = NSFileCoordinator()
     var error: NSError?
+    var copyError: Error?
     fileCoordinator.coordinate(readingItemAt: url, options: [], error: &error) { fileURL in
-      DeepLinkParser.addBookmarksFile(fileURL)
+      do {
+        try DeepLinkParser.addBookmarksFile(copyFileToTemporaryDirectory(fileURL), isTemporaryFile: true)
+      } catch {
+        copyError = error
+      }
     }
     if let error {
       LOG(.error, "Failed to read file: \(error)")
     }
-    reset()
-    return true
+    if let copyError {
+      LOG(.error, "Failed to copy file for import: \(copyError)")
+    }
+    return error == nil && copyError == nil
+  }
+
+  private func convertUniversalLink(_ universalLink: URL) -> URL? {
+    // Convert http(s)://omaps.app/ENCODEDCOORDS/NAME to om://ENCODEDCOORDS/NAME.
+    URL(string: universalLink.absoluteString
+      .replacingOccurrences(of: "http://omaps.app", with: "om:/")
+      .replacingOccurrences(of: "https://omaps.app", with: "om:/"))
+  }
+
+  private func copyFileToTemporaryDirectory(_ url: URL) throws -> URL {
+    let temporaryDirectory = FileManager.default.temporaryDirectory
+      .appendingPathComponent("FileImports/\(UUID().uuidString)", isDirectory: true)
+    try FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+
+    let localCopyURL = temporaryDirectory.appendingPathComponent(url.lastPathComponent)
+    try FileManager.default.copyItem(at: url, to: localCopyURL)
+    return localCopyURL
   }
 
   private func handleDeepLink(url: URL) -> Bool {

@@ -47,6 +47,8 @@
     <string name="auto">Auto</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">3D-Gebäude</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Nicht verfügbar</string>
     <!-- Text in menu -->
     <string name="help">Hilfe</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,12 +68,14 @@
     <string name="editor_time_open">Geöffnet</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">Heute geschlossen</string>
+    <string name="midnight">Mitternacht</string>
+    <string name="noon">Mittag</string>
     <string name="opens_in">Öffnet in %s</string>
     <string name="closes_in">Schließt in %s</string>
     <string name="closed">Geschlossen</string>
     <string name="minute">min</string>
     <string name="big_font">Schrift auf der Karte vergrößern</string>
-    <string name="transliteration_title">Transliteration ins Lateinische</string>
+    <string name="transliteration_title">Transliteration ins lateinische Alphabet</string>
     <!-- this text will be shown in application notification preferences opposite checkbox which enable/disable downloader notifications. Devices on Android 8+ are affected. -->
     <string name="notification_channel_downloader">Karten werden geladen</string>
     <string name="driving_options_title">Routenbeschränkungen</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Fähren vermeiden</string>
     <string name="avoid_motorways">Autobahnen vermeiden</string>
     <string name="unable_to_calc_alert_title">Route kann nicht berechnet werden</string>
+    <string name="trip_finished">Du bist angekommen!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Lesezeichen sortieren</string>
     <!-- Android -->

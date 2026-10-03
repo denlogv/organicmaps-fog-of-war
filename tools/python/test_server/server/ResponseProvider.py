@@ -1,11 +1,38 @@
 from __future__ import print_function
 
-import jsons
 import logging
 import os
 
+from urllib.parse import unquote
+
 # Should match size defined in platform/platform_tests/downloader_tests/downloader_test.cpp
 BIG_FILE_SIZE = 47684
+
+# Synthetic map files served under /unit_tests/maps/<version>/<name>.mwm, which is the URL
+# shape platform::GetFileDownloadUrl() produces. The bytes depend only on the file name, so
+# libs/storage/storage_tests/storage_download_tests.cpp reproduces them to fill "s" and "h"
+# in its countries JSON. Keep the two generators identical: a mismatch shows up as a map
+# integrity failure rather than as a server error.
+# Sizes are 2.00-2.25 MB, i.e. 4-5 of the downloader's 512 KB chunks, so an interrupted
+# download always leaves a partial file to resume from.
+SYNTHETIC_MWM_PREFIX = "/unit_tests/maps/"
+SYNTHETIC_MWM_BASE_SIZE = 2 * 1024 * 1024
+
+
+def synthetic_mwm_seed(file_name):
+    return sum(file_name.encode("utf-8")) % 256
+
+
+def synthetic_mwm_size(file_name):
+    return SYNTHETIC_MWM_BASE_SIZE + 1024 * synthetic_mwm_seed(file_name)
+
+
+def synthetic_mwm_content(file_name):
+    seed = synthetic_mwm_seed(file_name)
+    size = synthetic_mwm_size(file_name)
+    # content[i] == (i + seed) % 256, built by tiling one period instead of per-byte.
+    period = bytes((i + seed) % 256 for i in range(256))
+    return (period * (size // 256 + 1))[:size]
 
 
 class Payload:
@@ -128,33 +155,17 @@ class ResponseProvider:
         self.chunk_requested()
         url = self.strip_query(url)
         try:
-            return {
+            handler = {
                 "/unit_tests/1.txt": self.test1,
                 "/unit_tests/notexisting_unittest": self.test_404,
                 "/unit_tests/permanent": self.test_301,
                 "/unit_tests/47kb.file": self.test_47_kb,
-                # Following two URIs are used to test downloading failures on different platforms.
-                "/unit_tests/mac/1234/Uruguay.mwm": self.test_404,
-                "/unit_tests/linux/1234/Uruguay.mwm": self.test_404,
+                # Used to test a failing map download; the rest of /unit_tests/maps/ is served
+                # as a synthetic mwm below.
+                "/unit_tests/maps/1234/Uruguay.mwm": self.test_404,
                 "/ping": self.pong,
                 "/kill": self.kill,
                 "/id": self.my_id,
-                "/partners/time": self.partners_time,
-                "/partners/price": self.partners_price,
-                "/booking/hotelAvailability": self.partners_hotel_availability,
-                "/booking/deals": self.partners_hotels_with_deals,
-                "/booking/blockAvailability": self.partners_block_availability,
-                "/partners/taxi_info": self.partners_yandex_taxi_info,
-                "/partners/get-offers-in-bbox/": self.partners_rent_nearby,
-                "/partners/CalculateByCoords": self.partners_calculate_by_coords,
-                "/gallery/v2/search/": self.promo_gallery_city,
-                "/single/empty/gallery/v2/search/": self.promo_gallery_city_single_empty,
-                "/single/gallery/v2/search/": self.promo_gallery_city_single,
-                "/partners/oauth/token": self.freenow_auth_token,
-                "/partners/service-types": self.freenow_service_types,
-                "/gallery/v2/map": self.guides_on_map_gallery,
-                "/partners/get_supported_tariffs": self.citymobil_supported_tariffs,
-                "/partners/calculate_price": self.citymobil_calculate_price,
                 "/unit_tests/echo_headers": self.echo_headers,
                 "/unit_tests/echo_cookies": self.echo_cookies,
                 "/unit_tests/timeout": self.test_timeout,
@@ -167,7 +178,18 @@ class ResponseProvider:
                 "/unit_tests/basic_auth": self.test_basic_auth,
                 "/unit_tests/set_cookies_lowercase": self.test_set_cookies_lowercase,
                 "/unit_tests/set_cookies_uppercase": self.test_set_cookies_uppercase,
-            }.get(url, self.test_404)()
+                # Segment-mode (ReceivedFileSegment) failure routes.
+                # SEGMENT_TEST_TOTAL_SIZE (1000) is the advertised total file size.
+                "/unit_tests/segment/ignore_range": self.test_segment_ignore_range,
+                "/unit_tests/segment/missing_content_range": self.test_segment_missing_content_range,
+                "/unit_tests/segment/short_body": self.test_segment_short_body,
+                "/unit_tests/segment/overflow_body": self.test_segment_overflow_body,
+                "/unit_tests/segment/unknown_total": self.test_segment_unknown_total,
+                "/unit_tests/segment/ok": self.test_segment_ok,
+            }.get(url)
+            if handler is None and url.startswith(SYNTHETIC_MWM_PREFIX):
+                return self.synthetic_mwm(unquote(url[url.rfind("/") + 1:]))
+            return (handler or self.test_404)()
         except Exception as e:
             logging.error("test_server: Can't build server response", exc_info=e)
             return self.test_404()
@@ -226,6 +248,14 @@ class ResponseProvider:
         }
 
 
+    def synthetic_mwm(self, file_name):
+        content = synthetic_mwm_content(file_name)
+        self.check_byterange(len(content))
+        headers = self.chunked_response_header(len(content))
+
+        return Payload(self.trim_message(content), self.response_code, headers)
+
+
     def test_47_kb(self):
         self.check_byterange(BIG_FILE_SIZE)
         headers = self.chunked_response_header(BIG_FILE_SIZE)
@@ -242,56 +272,6 @@ class ResponseProvider:
 
         return bytes(message)
 
-
-    # Partners_api_tests
-    def partners_time(self):
-        return Payload(jsons.PARTNERS_TIME)
-
-
-    def partners_price(self):
-        return Payload(jsons.PARTNERS_PRICE)
-
-    def partners_hotel_availability(self):
-        return Payload(jsons.HOTEL_AVAILABILITY)
-
-    def partners_hotels_with_deals(self):
-        return Payload(jsons.HOTELS_WITH_DEALS)
-
-    def partners_block_availability(self):
-        return Payload(jsons.BLOCK_AVAILABILITY)
-
-    def partners_yandex_taxi_info(self):
-        return Payload(jsons.PARTNERS_TAXI_INFO)
-
-    def partners_rent_nearby(self):
-        return Payload(jsons.PARTNERS_RENT_NEARBY)
-
-    def partners_calculate_by_coords(self):
-        return Payload(jsons.PARTNERS_CALCULATE_BY_COORDS)
-
-    def promo_gallery_city(self):
-        return Payload(jsons.PROMO_GALLERY_CITY)
-
-    def promo_gallery_city_single_empty(self):
-        return Payload(jsons.PROMO_GALLERY_CITY_SINGLE_EMPTY)
-
-    def promo_gallery_city_single(self):
-        return Payload(jsons.PROMO_GALLERY_CITY_SINGLE)
-
-    def freenow_auth_token(self):
-        return Payload(jsons.FREENOW_AUTH_TOKEN)
-
-    def freenow_service_types(self):
-        return Payload(jsons.FREENOW_SERVICE_TYPES)
-
-    def guides_on_map_gallery(self):
-        return Payload(jsons.GUIDES_ON_MAP_GALLERY)
-
-    def citymobil_supported_tariffs(self):
-        return Payload(jsons.CITYMOBIL_SUPPORTED_TARIFFS)
-
-    def citymobil_calculate_price(self):
-        return Payload(jsons.CITYMOBIL_CALCULATE_PRICE)
 
     def echo_headers(self):
         """Return request headers as key:value lines so tests can verify custom headers."""
@@ -318,7 +298,7 @@ class ResponseProvider:
         return Payload("Forbidden", response_code=403)
 
     def test_redirect_to_1txt(self):
-        return Payload("", 301, {"Location": "http://localhost:34568/unit_tests/1.txt"})
+        return Payload("", 301, {"Location": "http://localhost:24568/unit_tests/1.txt"})
 
     def test_set_cookies(self):
         return Payload("ok", 200, {"Set-Cookie": "session=abc123; Path=/"})
@@ -347,6 +327,59 @@ class ResponseProvider:
     def test_set_cookies_uppercase(self):
         """Return Set-Cookie with all-uppercase header name."""
         return Payload("ok", 200, {"SET-COOKIE": "upper=yes; Path=/"})
+
+    # --- Segment-mode (ReceivedFileSegment) failure-injection routes. ---
+    # These routes exist to test HttpClient::SetReceivedFileSegment error handling.
+    # SEGMENT_TEST_TOTAL_SIZE must match the value in http_client_test.cpp.
+    SEGMENT_TEST_TOTAL_SIZE = 1000
+    SEGMENT_TEST_RANGE_END = 99  # Inclusive end of the test range (100 bytes: 0-99).
+
+    def segment_test_body(self, size):
+        """Returns a deterministic byte sequence of the given size (values 0,1,2,...,255,0,...)."""
+        return bytes(i % 256 for i in range(size))
+
+    def test_segment_ignore_range(self):
+        """Always returns 200 OK with the full file body, ignoring any Range header.
+        Simulates a mis-configured mirror that doesn't honor partial requests.
+        Segment-mode clients must detect this and fail with kInconsistentFileSize
+        before any byte is written to the target file."""
+        body = self.segment_test_body(self.SEGMENT_TEST_TOTAL_SIZE)
+        return Payload(body, 200, {})
+
+    def test_segment_missing_content_range(self):
+        """Returns 206 Partial Content but WITHOUT a Content-Range header.
+        Spec violation per RFC 7233 §4.1 - segment-mode clients must reject this."""
+        body = self.segment_test_body(self.SEGMENT_TEST_RANGE_END + 1)
+        return Payload(body, 206, {})
+
+    def test_segment_short_body(self):
+        """Returns 206 with Content-Range advertising 100 bytes (0-99/1000), but the
+        body has only 50 bytes. Tests segment-underflow detection at finish."""
+        body = self.segment_test_body(50)
+        return Payload(body, 206, {"Content-Range": "bytes 0-{end}/{total}".format(
+            end=self.SEGMENT_TEST_RANGE_END, total=self.SEGMENT_TEST_TOTAL_SIZE)})
+
+    def test_segment_overflow_body(self):
+        """Returns 206 with Content-Range advertising 100 bytes (0-99/1000), but the
+        body has 150 bytes. Tests segment-overflow detection (abort mid-stream)."""
+        body = self.segment_test_body(150)
+        return Payload(body, 206, {"Content-Range": "bytes 0-{end}/{total}".format(
+            end=self.SEGMENT_TEST_RANGE_END, total=self.SEGMENT_TEST_TOTAL_SIZE)})
+
+    def test_segment_unknown_total(self):
+        """Returns 206 with Content-Range: bytes 0-99/* and a correct 100-byte body.
+        RFC 7233 allows "*" for unknown total, but segment-mode clients that supply
+        an expected total must reject it (different file version / mirror drift)."""
+        body = self.segment_test_body(self.SEGMENT_TEST_RANGE_END + 1)
+        return Payload(body, 206, {"Content-Range": "bytes 0-{end}/*".format(end=self.SEGMENT_TEST_RANGE_END)})
+
+    def test_segment_ok(self):
+        """Returns 206 with correct Content-Range and exact byte count. Happy-path
+        reference. Honors the Range header like test1/test_47_kb via chunk_requested()."""
+        body = self.segment_test_body(self.SEGMENT_TEST_TOTAL_SIZE)
+        self.check_byterange(self.SEGMENT_TEST_TOTAL_SIZE)
+        headers = self.chunked_response_header(self.SEGMENT_TEST_TOTAL_SIZE)
+        return Payload(self.trim_message(body), self.response_code, headers)
 
     def kill(self):
         logging.debug("Kill called in ResponseProvider")

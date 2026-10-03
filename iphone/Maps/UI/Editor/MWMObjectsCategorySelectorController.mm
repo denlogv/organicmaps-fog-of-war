@@ -1,4 +1,5 @@
 #import "MWMObjectsCategorySelectorController.h"
+#import "MWMAlertViewController.h"
 #import "MWMAuthorizationCommon.h"
 #import "MWMEditorViewController.h"
 #import "MWMKeyboard.h"
@@ -19,9 +20,11 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
                                                     UITableViewDelegate,
                                                     UITableViewDataSource,
                                                     MWMKeyboardObserver>
-{}
+{
+  m2::PointD m_createdPosition;
+  EditableMapObject m_createdObject;
+}
 
-@property(weak, nonatomic) IBOutlet UITableView * tableView;
 @property(nonatomic) UISearchController * searchViewController;
 
 @property(nonatomic) NSString * selectedType;
@@ -44,7 +47,6 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
 {
   [super viewDidLoad];
   self.isSearch = NO;
-  [self configTable];
   [self configNavBar];
   [self configSearchBar];
   [self configEmptySearchResultsDisclaimer];
@@ -52,14 +54,14 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
   self.dataSource = [[MWMObjectsCategorySelectorDataSource alloc] init];
 }
 
-- (void)configTable
-{
-  [self.tableView registerClass:[MWMTableViewCell class] forCellReuseIdentifier:[UITableViewCell className]];
-}
-
 - (void)setSelectedCategory:(std::string const &)type
 {
   self.selectedType = @(type.c_str());
+}
+
+- (void)setCreatedPosition:(m2::PointD const &)position
+{
+  m_createdPosition = position;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle
@@ -82,14 +84,10 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
   self.navigationItem.hidesSearchBarWhenScrolling = YES;
   self.navigationItem.searchController = self.searchViewController;
   if (@available(iOS 26.0, *))
-  {
     // The search bar will appear at the bottom of the iPhone screen and cannot be hidden.
     self.navigationItem.hidesSearchBarWhenScrolling = YES;
-  }
   else
-  {
     self.navigationItem.hidesSearchBarWhenScrolling = NO;
-  }
 }
 
 - (void)configEmptySearchResultsDisclaimer
@@ -103,10 +101,11 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
 
   UILabel * titleLabel = [[UILabel alloc] init];
   titleLabel.text = L(@"editor_category_unsuitable_title");
-  titleLabel.font = [UIFont boldSystemFontOfSize:20];
   titleLabel.textAlignment = NSTextAlignmentCenter;
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  titleLabel.font = [UIFont bold17];
+  titleLabel.font = UIFont.bold17.dynamic;
+  titleLabel.adjustsFontForContentSizeCategory = YES;
+  titleLabel.numberOfLines = 0;
 
   UITextView * subtitleTextView = [[UITextView alloc] init];
   subtitleTextView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -114,6 +113,7 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
   subtitleTextView.scrollEnabled = NO;
   subtitleTextView.backgroundColor = [UIColor clearColor];
   subtitleTextView.textContainerInset = UIEdgeInsetsZero;
+  subtitleTextView.adjustsFontForContentSizeCategory = YES;
 
   NSString * subtitleHTML = L(@"editor_category_unsuitable_text");
   NSData * htmlData = [subtitleHTML dataUsingEncoding:NSUnicodeStringEncoding];
@@ -137,7 +137,7 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
     NSMutableAttributedString * mutableAttributedText =
         [[NSMutableAttributedString alloc] initWithAttributedString:attributedText];
     [mutableAttributedText
-        addAttributes:@{NSForegroundColorAttributeName: textColor, NSFontAttributeName: UIFont.regular14}
+        addAttributes:@{NSForegroundColorAttributeName: textColor, NSFontAttributeName: UIFont.regular14.dynamic}
                 range:NSMakeRange(0, mutableAttributedText.length)];
     subtitleTextView.attributedText = mutableAttributedText;
     subtitleTextView.textAlignment = NSTextAlignmentCenter;
@@ -157,13 +157,6 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
   ]];
 }
 
-- (void)onDone
-{
-  if (!self.selectedType)
-    return;
-  [self performSegueWithIdentifier:kToEditorSegue sender:nil];
-}
-
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
   if (![segue.identifier isEqualToString:kToEditorSegue])
@@ -173,8 +166,7 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
   }
   MWMEditorViewController * dest = static_cast<MWMEditorViewController *>(segue.destinationViewController);
   dest.isCreating = YES;
-  auto const object = self.createdObject;
-  [dest setEditableMapObject:object];
+  [dest setEditableMapObject:m_createdObject];
 }
 
 #pragma mark - MWMKeyboard
@@ -195,22 +187,27 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
 
 #pragma mark - Create object
 
-- (EditableMapObject)createdObject
+- (BOOL)createObject
 {
-  EditableMapObject emo;
-  auto & f = GetFramework();
   auto const type = classif().GetTypeByReadableObjectName(self.selectedType.UTF8String);
-  if (!f.CreateMapObject(f.GetViewportCenter(), type, emo))
-    NSAssert(false, @"This call should never fail, because IsPointCoveredByDownloadedMaps is "
-                    @"always called before!");
-  return emo;
+  if (GetFramework().CreateMapObject(m_createdPosition, type, m_createdObject))
+    return YES;
+
+  // The position was checked when the user confirmed it, but the map under it can be updated or
+  // deleted while the category is being picked. No other category can succeed at the same point,
+  // so return to the map instead of leaving the user on a dead-end list.
+  __weak auto weakSelf = self;
+  [self.alertController presentIncorrectFeaturePositionAlertWithOkBlock:^{
+    [weakSelf.navigationController popToRootViewControllerAnimated:YES];
+  }];
+  return NO;
 }
 
 #pragma mark - UITableView
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-  auto cell = [tableView dequeueReusableCellWithCellClass:[UITableViewCell class] indexPath:indexPath];
+  UITableViewCell * cell = [tableView dequeueDefaultCellForIndexPath:indexPath];
   NSString * type;
   if (!self.isSearch && indexPath.section == 0 && [self.dataSource recentCategoriesListSize] > 0)
   {
@@ -223,10 +220,8 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
     type = [self.dataSource getType:indexPath.row];
   }
 
-  if ([type isEqualToString:self.selectedType])
-    cell.accessoryType = UITableViewCellAccessoryCheckmark;
-  else
-    cell.accessoryType = UITableViewCellAccessoryNone;
+  cell.accessoryType =
+      [type isEqualToString:self.selectedType] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
   return cell;
 }
 
@@ -236,13 +231,16 @@ NSString * const kToEditorSegue = @"CategorySelectorToEditorSegue";
     self.selectedType = [self.dataSource getRecentCategoriesType:indexPath.row];
   else
     self.selectedType = [self.dataSource getType:indexPath.row];
+
+  if (![self createObject])
+    return;
+
   [self.dataSource addToRecentCategories:self.selectedType];
 
   id<MWMObjectsCategorySelectorDelegate> delegate = self.delegate;
   if (delegate)
   {
-    auto const object = self.createdObject;
-    [delegate reloadObject:object];
+    [delegate reloadObject:m_createdObject];
     [self goBack];
   }
   else

@@ -11,7 +11,11 @@ typedef NS_ENUM(NSUInteger, SearchTextSource) {
   SearchTextSourceDeeplink
 };
 
-typedef NS_ENUM(NSUInteger, SearchMode) { SearchModeEverywhere, SearchModeViewport, SearchModeEverywhereAndViewport };
+typedef NS_ENUM(NSUInteger, SearchMode) {
+  SearchModeEverywhere,
+  SearchModeViewport,
+  SearchModeEverywhereAndViewport
+};
 
 @class SearchResult;
 @class SearchQuery;
@@ -22,9 +26,12 @@ typedef NS_ENUM(NSUInteger, SearchMode) { SearchModeEverywhere, SearchModeViewpo
 + (void)removeObserver:(id<MWMSearchObserver>)observer;
 
 + (void)saveQuery:(SearchQuery *)query;
-+ (void)searchQuery:(SearchQuery *)query;
+// Returns NO if no search has started, e.g. for a debug command.
++ (BOOL)searchQuery:(SearchQuery *)query;
 
 + (void)showResultAtIndex:(NSUInteger)index;
+// Applies the search results viewport policy, see Framework::UpdateViewport().
++ (void)updateViewportWithResults;
 + (SearchMode)searchMode;
 + (void)setSearchMode:(SearchMode)mode;
 
@@ -42,6 +49,7 @@ NS_SWIFT_NAME(Search)
 
 + (NSUInteger)suggestionsCount;
 + (NSUInteger)resultsCount;
++ (NSString *)query;
 
 - (instancetype)init __attribute__((unavailable("call +manager instead")));
 - (instancetype)copy __attribute__((unavailable("call +manager instead")));

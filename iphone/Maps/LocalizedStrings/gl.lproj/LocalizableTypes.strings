@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Dirección";
+"type.building.construction" = "Edificio en construción";
 "type.building.has_parts" = "Edificio";
 "type.building_part" = "Edificio";
 "type.building.garage" = "Garaxe";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Mediterránea";
 "type.cuisine.mexican" = "Mexicana";
 "type.cuisine.moroccan" = "Marroquí";
-"type.cuisine.noodles" = "Fideos";
+"type.cuisine.noodle" = "Fideos";
 "type.cuisine.oriental" = "Oriental";
 "type.cuisine.pancake" = "Tortitas";
 "type.cuisine.pasta" = "Pastas";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Salchichas";
 "type.cuisine.savory_pancakes" = "Tortitas salgadas";
 "type.cuisine.seafood" = "Mariscos";
+"type.cuisine.shawarma" = "Shawarma";
 "type.cuisine.soba" = "Soba";
 "type.cuisine.spanish" = "Española";
 "type.cuisine.steak_house" = "Asador";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Castillo xaponés";
 "type.historic.castle.stately" = "Castillo";
 "type.historic.city_gate" = "Portón da cidade";
+"type.man_made.ceremonial_gate" = "Porta Cerimonial";
 "type.historic.citywalls" = "Muralla";
 "type.historic.fort" = "Forte";
 "type.historic.gallows" = "Forca";
@@ -715,7 +718,8 @@
 "type.junction.roundabout" = "Rotonda";
 "type.landuse" = "Uso do adoito";
 "type.landuse.allotments" = "Horto urbano";
-"type.landuse.basin" = "Cuenca";
+"type.landuse.basin" = "Cunca";
+"type.landuse.basin.intermittent" = "Cunca intermitente";
 "type.landuse.brownfield" = "Solar abandonado";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Canteira";
 "type.landuse.railway" = "Instalacións ferroviarias";
 "type.landuse.recreation_ground" = "Área recreativa";
-"type.landuse.reservoir" = "Encoro";
 "type.landuse.residential" = "Zona residencial";
 "type.landuse.retail" = "Zona comercial";
 "type.landuse.salt_pond" = "Salina";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Pisa de patinaxe";
 "type.leisure.marina" = "Mariña";
 "type.leisure.nature_reserve" = "Reserva natural";
+"type.leisure.bird_hide" = "Observatorio de aves";
 "type.leisure.outdoor_seating" = "Asentos ao aire libre";
 "type.leisure.firepit" = "Fogar (para cacharela)";
 "type.leisure.park" = "Parque";
@@ -867,12 +871,15 @@
 "type.natural.water.lock" = "Esclusa";
 "type.natural.water.pond" = "Estanque";
 "type.natural.water.reservoir" = "Encoro";
-"type.natural.water.basin" = "Cuenca";
+"type.natural.water.basin" = "Cunca";
 "type.natural.water.river" = "Río";
+"type.natural.water.intermittent" = "Corpo de auga intermitente";
 "type.natural.land" = "Terra";
 "type.natural.meadow" = "Prado";
 "type.natural.orchard" = "Horto froiteiro";
 "type.natural.peak" = "Cima";
+"type.natural.hill" = "Colina";
+"type.natural.arch" = "Arco rochoso";
 "type.natural.saddle" = "Colado";
 "type.natural.rock" = "Roca";
 "type.natural.scrub" = "Matogueiras";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Fila de árbores";
 "type.natural.vineyard" = "Viña";
 "type.natural.volcano" = "Volcán";
+"type.natural.volcano.active" = "Volcán activo";
 "type.natural.water" = "Corpo de auga";
 "type.natural.wetland" = "Terrea pantanoso";
 "type.natural.wetland.bog" = "Turbera";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Hóckey sobre céspede";
 "type.sport.badminton" = "Bádminton";
 "type.sport.pelota" = "Pelota vasca";
+"type.sport.boules" = "Petanca";
+"type.sport.cycling" = "Ciclismo";
+"type.sport.four_square" = "Catro cadrados";
+"type.sport.horse_racing" = "Carreiras de cabalos";
+"type.sport.karting" = "Karting";
+"type.sport.motocross" = "Motocross";
+"type.sport.motor" = "Deportes de motor";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Rugby";
+"type.sport.running" = "Carreira";
+"type.sport.softball" = "Sóftbol";
 "type.tourism" = "Turismo";
 "type.tourism.aquarium" = "Acuario";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Atracción histórica";
 "type.attraction.maze" = "Labirinto";
 "type.attraction.roller_coaster" = "Montaña rusa";
+"type.roller_coaster.track" = "Montaña rusa";
 "type.attraction.water_slide" = "Tobogán acuático";
 "type.tourism.attraction.specified" = "Atracción turística";
 "type.tourism.camp_site" = "Paraxe de campamento";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Banda redutora";
 "type.traffic_calming.hump" = "Resalte";
 "type.waterway" = "Curso de auga";
+"type.waterway.access_point" = "Punto de acceso á vía navegable";
 "type.waterway.canal" = "Canle";
 "type.waterway.canal.tunnel" = "Túnel de canle";
 "type.waterway.fish_pass" = "Escaleira de peces";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Servizo social";
+"type.amenity.stage" = "Escenario";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Entrada a urxencias";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Watchmaker";
 "type.xmas_feature.market" = "Christmas Market";
 "type.xmas_feature.tree" = "Christmas Tree";
+"type.amenity.hookah_lounge" = "Hookah Lounge";

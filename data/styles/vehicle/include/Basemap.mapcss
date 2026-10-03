@@ -193,7 +193,6 @@ area|z0-[natural=water],
 area|z0-[waterway=dock],
 area|z0-[landuse=salt_pond],
 area|z12-[landuse=basin],
-area|z12-[landuse=reservoir],
 {fill-opacity: 1;}
 
 area|z11-[natural=wetland],
@@ -212,9 +211,13 @@ area|z0-[natural=water][!tunnel],
 area|z0-[landuse=salt_pond],
 area|z0-[waterway=dock],
 area|z12-[landuse=basin],
-area|z12-[landuse=reservoir],
 area|z13-[leisure=swimming_pool],
 {fill-color: @water;}
+
+/* Dotted with the stipple, see drape_frontend/stylist.cpp */
+area|z0-[natural=water][intermittent=yes],
+area|z12-[landuse=basin][intermittent=yes],
+{fill-color: @water_intermittent;}
 
 area|z0-[natural=water][water=ditch],
 area|z0-[natural=water][water=drain],
@@ -446,6 +449,10 @@ area|z16-[building],
 area|z16-[building:part],
 area|z16-[waterway=dam],
 {fill-color: @building0;fill-opacity: 0.55;casing-width: 1;casing-color: @building_border0;}
+
+/* Building under construction is rendered like landuse=construction (industrial). */
+area|z15-[building=construction],
+{fill-color: @industrial; fill-opacity: 1; casing-width: 0;}
 
 
 /* 8.3 Barriers, cliffs */

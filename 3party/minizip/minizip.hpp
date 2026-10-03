@@ -1,7 +1,12 @@
 #pragma once
 
-#include "3party/minizip/src/unzip.h"
-#include "3party/minizip/src/zip.h"
+// minizip-ng's compat/{unzip,zip}.h pull in <zlib-ng.h> whenever it is on the include path (Arch's zlib-ng package
+// ships /usr/include/zlib-ng.h), which then clashes with the zlib-compat zlib.h we link against. Including it here
+// first defines ZLIB_H_/ZLIB_H and short-circuits that probe.
+#include "zlib.h"
+
+#include "3party/minizip-ng/compat/unzip.h"
+#include "3party/minizip-ng/compat/zip.h"
 
 #include <array>
 #include <cstdint>

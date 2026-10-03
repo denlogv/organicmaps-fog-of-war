@@ -22,9 +22,7 @@ QString GetStyleStatistics(QString const & mapcssMappingFile, QString const & dr
   if (!QFile(drulesFile).exists())
     throw std::runtime_error("drawing-rules file does not exist at " + drulesFile.toStdString());
 
-  // Add path to the protobuf EGG in the PROTOBUF_EGG_PATH environment variable.
   QProcessEnvironment env{QProcessEnvironment::systemEnvironment()};
-  env.insert("PROTOBUF_EGG_PATH", GetProtobufEggPath());
 
   // Run the script.
   return ExecProcess("python",
@@ -40,7 +38,7 @@ QString GetCurrentStyleStatistics()
 {
   QString const resourceDir = GetPlatform().ResourcesDir().c_str();
   QString const mappingPath = JoinPathQt({resourceDir, "mapcss-mapping.csv"});
-  QString const drulesPath = JoinPathQt({resourceDir, "drules_proto_design.bin"});
+  QString const drulesPath = JoinPathQt({resourceDir, "drules_design.bin"});
   return GetStyleStatistics(mappingPath, drulesPath);
 }
 }  // namespace build_style

@@ -76,8 +76,6 @@ private:
   void CheckAndCorrectTimestamps();
 
   FileData & m_data;
-  CategoryData m_compilationData;
-  CategoryData * m_categoryData;  // never null
 
   std::vector<std::string> m_tags;
   GeometryType m_geometryType;
@@ -88,7 +86,6 @@ private:
   std::string m_name;
   std::string m_description;
   std::string m_comment;
-  PredefinedColor m_predefinedColor;
   geometry::PointWithAltitude m_org;
 
   double m_lat;
@@ -98,7 +95,6 @@ private:
 
   MultiGeometry::LineT m_line;
   MultiGeometry::TimeT m_timestamps;
-  std::string m_customName;
   void ParseName(std::string const & value, std::string const & prevTag);
   void ParseDescription(std::string const & value, std::string const & prevTag);
   void ParseAltitude(std::string const & value);

@@ -17,18 +17,18 @@
 namespace routing
 {
 class Route;
+class RoutesResult;
 
 /// Routing possible statuses enumeration.
-/// \warning  this enum has JNI mirror!
-/// \see android/src/app/organicmaps/maps/routing/ResultCodesHelper.java
-// TODO(bykoianko): Items become obsolete now should be removed from the enum.
+/// \warning  this enum is mirrored by value in Java and Objective-C/Swift!
+/// \see android/sdk/src/main/java/app/organicmaps/sdk/routing/ResultCodes.java
+/// \see iphone/Maps/Core/Framework/ProxyObjects/Routing/MWMRouterResultCode.h
+/// Values 3 and 4 are retired, do not reuse or renumber the rest.
 enum class RouterResultCode
 {
   NoError = 0,
   Cancelled = 1,
   NoCurrentPosition = 2,
-  InconsistentMWMandRoute = 3,
-  RouteFileNotExist = 4,
   StartPointNotFound = 5,
   EndPointNotFound = 6,
   PointsInDifferentMWM = 7,
@@ -76,10 +76,10 @@ using CheckpointCallback = std::function<void(size_t passedCheckpointIdx)>;
 using NeedMoreMapsCallback = std::function<void(uint64_t, std::set<std::string> const &)>;
 using PointCheckCallback = std::function<void(ms::LatLon const &)>;
 using ProgressCallback = std::function<void(float)>;
-using ReadyCallback = std::function<void(Route const &, RouterResultCode)>;
-using ReadyCallbackOwnership = std::function<void(std::shared_ptr<Route>, RouterResultCode)>;
+using ReadyCallback = std::function<void(RoutesResult const &, RouterResultCode)>;
+using ReadyCallbackOwnership = std::function<void(std::shared_ptr<RoutesResult>, RouterResultCode)>;
 using RemoveRouteCallback = std::function<void(RouterResultCode)>;
-using RouteCallback = std::function<void(Route const &)>;
+using RouteCallback = std::function<void(RoutesResult const &)>;
 using ChangeSessionStateCallback = std::function<void(SessionState previous, SessionState current)>;
 using SpeedCameraShowCallback = std::function<void(m2::PointD const & point, double cameraSpeedKmPH)>;
 using SpeedCameraClearCallback = std::function<void()>;
@@ -92,8 +92,6 @@ inline std::string ToString(RouterResultCode code)
   case RouterResultCode::NoError: return "NoError";
   case RouterResultCode::Cancelled: return "Cancelled";
   case RouterResultCode::NoCurrentPosition: return "NoCurrentPosition";
-  case RouterResultCode::InconsistentMWMandRoute: return "InconsistentMWMandRoute";
-  case RouterResultCode::RouteFileNotExist: return "RouteFileNotExist";
   case RouterResultCode::StartPointNotFound: return "StartPointNotFound";
   case RouterResultCode::EndPointNotFound: return "EndPointNotFound";
   case RouterResultCode::PointsInDifferentMWM: return "PointsInDifferentMWM";

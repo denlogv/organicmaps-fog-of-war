@@ -1,23 +1,50 @@
-• Date cartografice OSM la data de 10 martie
-• Date Wikipedia la data de 1 martie
-• S-a adăugat suport pentru limite de viteză condiționate
-• Izolinii de altitudine mai detaliate pentru provinciile chineze
-• S-au adăugat magazine de pielărie și magazine care vând articole religioase
-• S-au adăugat rânduri de copaci
-• S-au adăugat platforme de transport public fără stații de autobuz în apropiere
-• S-a remediat calculul progresului descărcării țării
-• S-a împărțit Tanzania în regiuni mai mici
-• S-a adăugat istoricul categoriilor utilizate recent în Editor
-• Îmbunătățit glisarea în sus pe ecranul de planificare a traseului
-• Remediat poziția riglei pentru CarPlay
-• Remediate mai multe blocări, îmbunătățită stabilitatea și performanța
+## Harta și locuri
 
-### Traduceri
+• Date OpenStreetMap actualizate la 26 august 2026
+• Articole Wikipedia actualizate în arabă, bengaleză, chineză, engleză, franceză, germană, hindi, italiană, japoneză, coreeană, marathi, poloneză, portugheză, rusă, spaniolă, tamilă, telugu, turcă și urdu
+• Au fost adăugate pe hartă observatoare de păsări, scene, dealuri și arcuri de piatră, precum și o nouă pictogramă pentru roci
+• S-a modificat dimensiunea pictogramelor pentru vârfuri, peșteri și pasuri montane
+• Ariile protejate, parcurile naționale și zonele umede sunt acum afișate în nuanțe mai deschise
+• S-au remediat numeroase probleme care duceau la afișarea incorectă a programului de funcționare
+• Setările au fost reorganizate în secțiunile „General”, „Hartă”, „Navigare”, „Rețea” și „Intimitate”
+• S-a eliminat setarea de calibrare a busolei, deoarece calibrarea se realizează acum automat
+• S-au remediat problemele legate de busolă care puteau determina săgeata poziției curente să indice o direcție greșită sau să se blocheze
+• Punctul corespunzător este afișat acum pe hartă în timp ce trageți cu degetul peste profilul de altitudine în previzualizarea unui traseu pe jos sau cu bicicleta
+• S-au remediat blocarea aplicației și o problemă care, ocazional, ducea la ignorarea atingerilor și a gesturilor
 
-• Îmbunătățite descrierile țărilor
-• Aplicate remedieri în limba română de la Eugen Dedu
-• Actualizate numele țărilor
-• Actualizate traducerile de la colaboratorii Weblate
-• Remediată traducerea în limba ucraineană
+## Partajare, locuri preferate și trasee
 
-Mulțumim tuturor celor care contribuie, donează și susțin Organic Maps! Haideți să construim împreună cele mai bune hărți!
+• NOU: s-a adăugat selecția multiplă în listele Locuri preferate și Trasee, cu acțiuni în bloc pentru ștergerea, mutarea și schimbarea culorii elementelor selectate, plus „Selectează tot” și „Deselectează tot”
+• S-a adăugat suportul pentru AirDrop la partajarea locurilor
+• Partajarea unui loc, a unui loc preferat sau a poziției curente trimite acum un link lizibil cu informații utile
+• Locurile preferate exportate își păstrează acum numele și descrierile originale
+• Listele partajate de locuri preferate folosesc acum numele afișat în locul numelui intern al fișierului
+• S-a remediat o problemă de afișare a graficului de altitudine care putea apărea imediat după începerea înregistrării unui traseu
+• S-a restabilit selectorul de culoare personalizată în fereastra pop-up a paletei de culori
+• S-a remediat afișarea descrierilor HTML atunci când se selectează un loc preferat pe hartă
+
+## Calcularea traseului și navigare
+
+• NOU: s-a adăugat un panou CarPlay și s-au remediat mai multe probleme legate de CarPlay
+• S-a remediat activarea stilului hărții de navigare auto
+• Atingerea unei opriri sau a unui reper de pe traseu îl deschide acum corect, în loc să comute între traseele planificate
+• Traseele de transport public sunt acum calculate mai rapid
+• S-au corectat instrucțiuni de viraj greșite
+• S-a remediat un punct de pornire incorect după recalcularea unui traseu
+• La calcularea traseului, drumurile din laterit sunt considerate acum drumuri cu suprafață neasfaltată de calitate slabă
+• Drumurile etichetate cu access=unknown sunt tratate acum ca drumuri cu acces privat sau cu acces permis doar către destinație
+
+## Editorul OpenStreetMap
+
+• S-a remediat o eroare care provoca blocarea aplicației la finalizarea în fundal a unei încărcări în OpenStreetMap
+• Golirea câmpului „Program de funcționare” nu mai lasă dezactivate butoanele „Salvează” și „Gata”
+• Încărcările care eșuează parțial sunt acum reluate, în loc să fie raportate ca fiind complet reușite
+
+## Traduceri
+
+• S-au adăugat instrucțiuni vocale în armeană și laotiană
+• S-au actualizat secțiunile Ajutor/Întrebări frecvente (FAQ) și s-a adăugat traducerea în limba japoneză
+• S-a corectat traducerea în limba japoneză a expresiei „Închis acum”
+• S-au îmbunătățit traducerile în chineză ale termenilor „traseu” și „dezactivare”
+
+Consultați notele de lansare detaliate la https://omaps.org/news/

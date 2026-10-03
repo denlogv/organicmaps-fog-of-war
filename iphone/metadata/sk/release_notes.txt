@@ -1,23 +1,50 @@
-• Mapové údaje OSM k 10. marcu
-• Údaje z Wikipédie k 1. marcu
-• Pridaná podpora podmienených rýchlostných obmedzení
-• Podrobnejšie izolinie nadmorskej výšky pre čínske provincie
-• Pridané kožiarne a obchody s náboženskými predmetmi
-• Pridané rady stromov
-• Pridané nástupišťa verejnej dopravy bez blízkych autobusových zastávok
-• Opravené výpočty priebehu sťahovania krajín
-• Rozdelenie Tanzánie na menšie regióny
-• Pridaná história nedávno použitých kategórií v editore
-• Vylepšené potiahnutie nahor na obrazovke plánovania trasy
-• Opravená poloha pravítka pre CarPlay
-• Opravených niekoľko zlyhaní, vylepšená stabilita a výkon
+## Mapa a miesta
 
-### Preklady
+• Aktualizované údaje OpenStreetMap k 26. augustu 2026
+• Aktualizované články na Wikipédii v arabčine, bengálčine, čínštine, angličtine, francúzštine, nemčine, hindčine, taliančine, japončine, kórejčine, maráthčine, poľštine, portugalčine, ruštine, španielčine, tamilčine, telugčine, turečtine a urdčine
+• Na mapu boli pridané pozorovateľne vtákov, javiská, kopce a skalné oblúky, ako aj nová ikona pre skaly
+• Upravila sa veľkosť ikon vrcholov, jaskýň a horských priesmykov
+• Chránené územia, národné parky a mokrade sú teraz zobrazené vo svetlejších odtieňoch
+• Bolo opravených mnoho chýb, ktoré spôsobovali nesprávne zobrazenie otváracích hodín
+• Nastavenia boli usporiadané do sekcií „Všeobecné“, „Mapa“, „Navigácia“, „Sieť“ a „Súkromie“
+• Bolo odstránené nastavenie kalibrácie kompasu, pretože kalibrácia sa teraz vykonáva automaticky
+• Boli opravené problémy s kompasom, ktoré mohli spôsobiť, že šípka aktuálnej polohy ukazovala nesprávnym smerom alebo sa zasekla
+• Príslušný bod sa teraz zobrazuje na mape, keď ťaháte prstom po výškovom profile v náhľade pešej alebo cyklistickej trasy
+• Opravilo sa zamrznutie aplikácie a problém, ktorý občas spôsoboval, že sa ťuknutia a gestá ignorovali
 
-• Vylepšené popisy krajín
-• Použité rumunské opravy od Eugena Dedu
-• Aktualizované názvy krajín
-• Aktualizované preklady od prispievateľov Weblate
-• Opravený ukrajinský preklad
+## Zdieľanie, záložky a trasy
 
-Ďakujeme všetkým, ktorí prispievajú, darujú a podporujú Organic Maps! Spoločne vytvoríme najlepšie mapy!
+• NOVINKA: do zoznamov záložiek a trás bol pridaný hromadný výber s hromadnými akciami na vymazanie, presun a zmenu farby vybraných položiek, ako aj možnosti „Vybrať všetko“ a „Zrušiť výber“
+• Pridaná podpora AirDrop na zdieľanie miest
+• Pri zdieľaní miesta, záložky alebo aktuálnej polohy sa teraz odošle čitateľný odkaz s užitočnými informáciami
+• Exportované záložky si teraz zachovávajú pôvodné názvy a popisy
+• Zdieľané zoznamy záložiek teraz používajú zobrazený názov namiesto interného názvu súboru
+• Bol opravený problém so zobrazením grafu nadmorskej výšky, ktorý sa mohol vyskytnúť ihneď po spustení zaznamenávania trasy
+• Bol obnovený výber vlastnej farby v rozbaľovacom okne farebnej palety
+• Opravilo sa zobrazenie popisov v HTML pri výbere záložky na mape
+
+## Plánovanie trás a navigácia
+
+• NOVINKA: pridaný ovládací panel pre CarPlay a opravené viaceré problémy s CarPlay
+• Opravila sa aktivácia štýlu mapy pre automobilovú navigáciu
+• Ťuknutím na zastávku alebo značku trasy sa táto položka teraz správne otvorí namiesto prepínania medzi naplánovanými trasami
+• Trasy verejnej dopravy sa teraz plánujú rýchlejšie
+• Opravené nesprávne pokyny na odbočenie
+• Opravil sa nesprávny počiatočný bod po prepočítaní trasy
+• Cesty z lateritu sa teraz pri plánovaní trasy považujú za cesty s nekvalitným nespevneným povrchom
+• Cesty označené tagom access=unknown sa teraz spracúvajú ako cesty so súkromným prístupom alebo s prístupom len k cieľu
+
+## Editor OpenStreetMap
+
+• Opravený pád aplikácie po dokončení odosielania údajov do OpenStreetMap na pozadí
+• Vymazanie poľa s otváracími hodinami už nespôsobuje deaktiváciu tlačidiel „Uložiť“ alebo „Hotovo“
+• Čiastočne neúspešné odoslania sa teraz opakujú namiesto toho, aby sa nahlásili ako úplne úspešné
+
+## Preklady
+
+• Pridané hlasové povely v arménčine a laoštine
+• Aktualizovaná Nápoveda/Často kladené otázky (FAQ), pridaný japonský preklad
+• Opravil sa japonský preklad výrazu „Teraz zatvorené“
+• Boli vylepšené čínske preklady slov „trasa“ a „vypnúť“
+
+Podrobné poznámky k vydaniu nájdete na stránke https://omaps.org/news/

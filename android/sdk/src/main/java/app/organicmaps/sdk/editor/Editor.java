@@ -1,8 +1,8 @@
 package app.organicmaps.sdk.editor;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
 import app.organicmaps.sdk.Framework;
 import app.organicmaps.sdk.bookmarks.data.Metadata;
 import app.organicmaps.sdk.editor.data.FeatureCategory;
@@ -46,16 +46,28 @@ public final class Editor
   public static final int UPLOAD_RESULT_ERROR = 1;
   public static final int UPLOAD_RESULT_NOTHING_TO_UPLOAD = 2;
 
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({UPLOAD_FAILED_NOT_AUTHORIZED, UPLOAD_RESULT_SUCCESS, UPLOAD_RESULT_ERROR, UPLOAD_RESULT_NOTHING_TO_UPLOAD})
+  public @interface UploadResult
+  {}
+
+  public interface UploadListener
+  {
+    /** Called once on a core network thread if a map edits upload starts, else synchronously on the calling thread. */
+    @Keep
+    void onUploadComplete(@UploadResult int result);
+  }
+
   /**
-   * Blocks the calling thread until the upload completes.
-   * @return one of UPLOAD_RESULT_* constants, or -1 if not authorized.
+   * Notes upload independently; the listener reports only the map edits upload.
+   * @param listener receives an {@link UploadResult} code.
    */
-  @WorkerThread
-  public static int uploadChanges()
+  public static void uploadChanges(@NonNull UploadListener listener)
   {
     if (OsmOAuth.isAuthorized())
-      return nativeUploadChanges(OsmOAuth.getAuthToken(), Config.getVersionName(), Config.getApplicationId());
-    return UPLOAD_FAILED_NOT_AUTHORIZED;
+      nativeUploadChanges(OsmOAuth.getAuthToken(), Config.getVersionName(), Config.getApplicationId(), listener);
+    else
+      listener.onUploadComplete(UPLOAD_FAILED_NOT_AUTHORIZED);
   }
 
   public static native boolean nativeShouldShowEditPlace();
@@ -132,8 +144,8 @@ public final class Editor
   public static native boolean nativeIsNameValid(String name);
 
   public static native boolean nativeHasSomethingToUpload();
-  @WorkerThread
-  private static native int nativeUploadChanges(String oauthToken, String appVersion, String appId);
+  private static native void nativeUploadChanges(String oauthToken, String appVersion, String appId,
+                                                 UploadListener listener);
 
   public static native void nativeClearLocalEdits();
 
@@ -156,15 +168,23 @@ public final class Editor
   public static native void nativeAddToRecentCategories(@NonNull String type);
 
   /**
-   * Creates new object on the map. Places it in the center of current viewport.
+   * Creates new object on the map at the given lat/lon. Capture the point with
+   * {@link Framework#nativeGetScreenRectCenter()} at the moment the user confirms
+   * the position; do not pass live viewport coordinates here, otherwise the point
+   * can drift between the position check and creation.
    * {@link Framework#nativeIsDownloadedMapAtScreenCenter()} should be called before
    * to check whether new feature can be created on the map.
+   *
+   * @return false if a new feature cannot be created at the given point.
    */
-  public static void createMapObject(FeatureCategory category)
+  public static boolean createMapObject(FeatureCategory category, double lat, double lon)
   {
-    nativeCreateMapObject(category.getType());
+    if (!nativeCreateMapObject(category.getType(), lat, lon))
+      return false;
+    nativeAddToRecentCategories(category.getType());
+    return true;
   }
-  public static native void nativeCreateMapObject(@NonNull String type);
+  public static native boolean nativeCreateMapObject(@NonNull String type, double lat, double lon);
   public static native void nativeCreateNote(String text);
   public static native void nativePlaceDoesNotExist(@NonNull String comment);
   public static native void nativeRollbackMapObject();

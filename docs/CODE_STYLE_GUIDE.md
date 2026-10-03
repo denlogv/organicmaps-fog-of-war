@@ -4,7 +4,7 @@ Read the code, and follow the existing style as much as possible.
 
 ## ClangFormat
 
-For C++, Java and Objective C/C++ code we use [clang-format](http://clang.llvm.org/docs/ClangFormat.html) of version 22 or later.
+For C++, Java and Objective C/C++ code we use [clang-format](http://clang.llvm.org/docs/ClangFormat.html) version 23.
 
 ### Installation
 
@@ -13,21 +13,29 @@ For C++, Java and Objective C/C++ code we use [clang-format](http://clang.llvm.o
 - Ubuntu 24:
    ```bash
    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-   echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main' | sudo tee /etc/apt/sources.list.d/ llvm-toolchain-noble-22.list
+   echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-23 main' | sudo tee /etc/apt/sources.list.d/llvm-toolchain-noble-23.list
    sudo apt-get update
-   sudo apt-get install -y clang-format-22  # Run it as clang-format-22
+   sudo apt-get install -y clang-format-23  # Run it as clang-format-23
    ```
+- Any OS, pinned to an exact version: `pip install clang-format==23.1.0`
 
-Make sure that clang-format is in your PATH.
+Make sure that clang-format 23.x is in your PATH. The formatting scripts reject other major versions to prevent
+formatting differences between local development and CI. Homebrew and MSYS2 track the current LLVM release, so
+use the pinned `pip` package (or `brew install llvm@23`, binary in `$(brew --prefix llvm@23)/bin`) once they
+move ahead of 23.
 
 ### Usage
 
 - Configuration is in `.clang-format`
 - Set up a `git commit` hook (see below) for automatic formatting of changed files
-- To manually format a file run `clang-format -i file` (`clang-format-22` for Ubuntu)
+- To manually format a file run `clang-format -i file` (`clang-format-23` for Ubuntu)
 - To format all files in the repository run `tools/unix/clang-format.sh`
 - To format changes added to commit run `git clang-format`
 - To format already committed changes run `git clang-format HEAD~1`
+
+`git clang-format` runs whichever `clang-format` is first in PATH and does not check its version, unlike
+`tools/unix/clang-format.sh` and the commit hook. Pass `--binary clang-format-23` if you have several versions
+installed.
 
 ### ClangFormat in Android Studio
 
@@ -56,6 +64,52 @@ Make sure that swiftformat is in your PATH.
 - Run `swiftformat <somefile.swift>` to format a single file
 - Set up a `git commit` hook (see below) for automatic formatting of changed files
 
+## Kotlin Style
+
+We are using [ktlint](https://pinterest.github.io/ktlint/) for Kotlin code formatting.
+
+### Installation
+
+The canonical ktlint version is pinned in `android/gradle/libs.versions.toml`
+(field `ktlint`). CI installs that exact version; please match it locally to
+avoid formatting drift between your machine and the `code-style-check-kotlin`
+job.
+
+- macOS: `brew install ktlint` (then verify `ktlint --version` matches the pinned version)
+- Other platforms: download the pinned version from [GitHub Releases](https://github.com/pinterest/ktlint/releases)
+
+Make sure that ktlint is in your PATH.
+
+### Usage
+
+- Configuration is in `android/.editorconfig`
+- Run `ktlint --format <somefile.kt>` to format a single file
+- To format all Kotlin files in the repository run `tools/unix/ktlint_format.sh`
+- Set up a `git commit` hook (see below) for automatic formatting of changed files
+
+## Kotlin Static Analysis (detekt)
+
+We use [detekt](https://detekt.dev/) for Kotlin static analysis: naming conventions, complexity, code smells, and potential bugs.
+
+### Installation
+
+The canonical detekt version is pinned in `android/gradle/libs.versions.toml`
+(field `detekt`). CI installs that exact version; please match it locally.
+
+- Download the matching version from [GitHub Releases](https://github.com/detekt/detekt/releases) (`detekt-cli-<version>-all.jar`)
+- Or run via Gradle (no local install needed): `cd android && ./gradlew :app:detektCheck`
+
+### Usage
+
+- Configuration is in `android/detekt.yml`
+- Run `cd android && ./gradlew :app:detektCheck` to check the `app` module
+- Run `cd android && ./gradlew detektCheck` to check all Kotlin-enabled modules
+
+### Key rules
+
+- Hungarian notation (`m` prefix) is forbidden for private properties: use `_camelCase` for backing fields, `camelCase` for regular properties
+- Formatting rules are handled by ktlint, not detekt (no overlap)
+
 ## Python Style
 
 Follow the existing style in Python files as much as possible. We'll add a more detailed guide later.
@@ -65,11 +119,11 @@ Follow the existing style in Python files as much as possible. We'll add a more 
 Run `git config core.hooksPath tools/hooks` to set up the pre-commit hook.
 
 After that, every time you commit, the hook will automatically format your
-`.java`, `.swift`, `.cpp`, `.hpp`, `.m`, `.mm`, `.h`, and `.cc` code according to the project's style rules.
+`.java`, `.kt`, `.swift`, `.cpp`, `.hpp`, `.m`, `.mm`, `.h`, and `.cc` code according to the project's style rules.
 
 You can bypass the auto-formatting with `git commit --no-verify` if necessary.
 
-To configure the formatting style, edit `.clang-format` and `.swiftformat` in the project root.
+To configure the formatting style, edit `.clang-format`, `.swiftformat` in the project root, and `android/.editorconfig` for Kotlin.
 
 To configure which files are formatted, edit `tools/hooks/format-config.bash`
 
@@ -84,6 +138,7 @@ To configure which files are formatted, edit `tools/hooks/format-config.bash`
 - Cover your code with unit tests. See examples for existing libraries
 - Ask if you have any questions
 - If you don't have enough time to make it right, or see a potential issue, leave a `// TODO(DeveloperInitialsOrNickname): need to fix it` comment
+- Use brief comments only for unobvious changes, describing rationale that is not immediately clear from the code
 
 ### Useful links
 

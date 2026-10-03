@@ -4,19 +4,21 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 namespace df
 {
-using ColorConstant = std::string;
+using ColorConstant = std::string_view;
 
-inline std::string const kTransitColorPrefix = "transit_";
-inline std::string const kTransitTextPrefix = "text_";
-inline std::string const kTransitLinePrefix = "line_";
+std::string_view constexpr kTransitLineColorPrefix = "transit_line_";
+std::string_view constexpr kTransitTextColorPrefix = "transit_text_";
 
 dp::Color GetColorConstant(ColorConstant const & constant);
-std::map<std::string, dp::Color> const & GetTransitClearColors();
+
+using ColorsMapT = std::map<std::string, dp::Color, std::less<>>;
+ColorsMapT const & GetTransitClearColors();
 void LoadTransitColors();
 
-ColorConstant GetTransitColorName(ColorConstant const & localName);
-ColorConstant GetTransitTextColorName(ColorConstant const & localName);
+std::string GetTransitColorName(ColorConstant const & localName);
+std::string GetTransitTextColorName(ColorConstant const & localName);
 }  //  namespace df

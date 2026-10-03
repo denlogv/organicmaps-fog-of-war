@@ -38,8 +38,11 @@ std::string_view DebugPrint(Message::Type msgType)
   case Message::Type::SelectObject: return "SelectObject";
   case Message::Type::CheckSelectionGeometry: return "CheckSelectionGeometry";
   case Message::Type::FlushSelectionGeometry: return "FlushSelectionGeometry";
+  case Message::Type::SetSelectionLines: return "SetSelectionLines";
+  case Message::Type::BuildSelectionLines: return "BuildSelectionLines";
   case Message::Type::AddSubroute: return "AddSubroute";
   case Message::Type::RemoveSubroute: return "RemoveSubroute";
+  case Message::Type::RemoveAlternativeSubroutes: return "RemoveAlternativeSubroutes";
   case Message::Type::PrepareSubrouteArrows: return "PrepareSubrouteArrows";
   case Message::Type::CacheSubrouteArrows: return "CacheSubrouteArrows";
   case Message::Type::FlushSubroute: return "FlushSubroute";
@@ -97,6 +100,9 @@ std::string_view DebugPrint(Message::Type msgType)
   case Message::Type::ClearAllTransitSchemeData: return "ClearAllTransitSchemeData";
   case Message::Type::RegenerateTransitScheme: return "RegenerateTransitScheme";
   case Message::Type::FlushTransitScheme: return "FlushTransitScheme";
+  case Message::Type::ShowRouteTransit: return "ShowRouteTransit";
+  case Message::Type::HideRouteTransit: return "HideRouteTransit";
+  case Message::Type::SetTransitSchemeMinZoom: return "SetTransitSchemeMinZoom";
   case Message::Type::ShowDebugInfo: return "ShowDebugInfo";
   case Message::Type::NotifyRenderThread: return "NotifyRenderThread";
   case Message::Type::NotifyGraphicsReady: return "NotifyGraphicsReady";
@@ -104,9 +110,10 @@ std::string_view DebugPrint(Message::Type msgType)
   case Message::Type::OnEnterBackground: return "OnEnterBackground";
   case Message::Type::Arrow3dRecache: return "Arrow3dRecache";
   case Message::Type::VisualScaleChanged: return "VisualScaleChanged";
+  case Message::Type::AddTileBackgroundImage: return "AddTileBackgroundImage";
   case Message::Type::SetTileBackgroundData: return "SetTileBackgroundData";
   case Message::Type::SetTileBackgroundMode: return "SetTileBackgroundMode";
-  case Message::Type::AssignTileBackgroundTexture: return "AssignTileBackgroundTexture";
+  case Message::Type::AssignTileBackgroundImage: return "AssignTileBackgroundImage";
   }
   UNREACHABLE();
 }

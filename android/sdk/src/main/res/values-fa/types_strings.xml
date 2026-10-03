@@ -197,6 +197,7 @@
     <string name="type.building">ساختمان</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">آدرس</string>
+    <string name="type.building.construction">ساختمان در حال ساخت</string>
     <string name="type.building.has_parts">ساختمان</string>
     <string name="type.building_part">ساختمان</string>
     <string name="type.building.garage">گاراژ</string>
@@ -278,6 +279,7 @@
     <string name="type.cuisine.lebanese">لبنانی</string>
     <string name="type.cuisine.sausage">سوسیس</string>
     <string name="type.cuisine.seafood">غذای دریایی</string>
+    <string name="type.cuisine.shawarma">شاورما</string>
     <string name="type.cuisine.soba">سوبا­­</string>
     <string name="type.cuisine.spanish">اسپانیایی</string>
     <string name="type.cuisine.steak_house">خانه استیک</string>
@@ -503,6 +505,7 @@
     <string name="type.historic.castle.shiro">قلعه ژاپنی</string>
     <string name="type.historic.castle.stately">گردشگری</string>
     <string name="type.historic.city_gate">دروازه شهر</string>
+    <string name="type.man_made.ceremonial_gate">دروازهٔ تشریفاتی</string>
     <string name="type.historic.citywalls">دیوار شهر</string>
     <string name="type.historic.fort">دژ</string>
     <string name="type.historic.gallows">چوبه دار</string>
@@ -535,6 +538,7 @@
     <string name="type.junction.roundabout">دوربرگردان</string>
     <string name="type.landuse.allotments">قسمت ها</string>
     <string name="type.landuse.basin">حوضه آب</string>
+    <string name="type.landuse.basin.intermittent">حوضه آب موقت</string>
     <string name="type.landuse.brownfield">توسعه یافته</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">قبرستان</string>
@@ -554,7 +558,6 @@
     <string name="type.landuse.grass">چمن زار</string>
     <string name="type.landuse.landfill">دفن گاه زباله</string>
     <string name="type.landuse.railway">محدوده راه آهن</string>
-    <string name="type.landuse.reservoir">اب</string>
     <string name="type.landuse.salt_pond">نمک‌زار</string>
     <string name="type.leisure.dog_park">محدوده مخصوص سگ</string>
     <string name="type.leisure.fitness_centre">باشگاه بدنسازی</string>
@@ -564,6 +567,7 @@
     <string name="type.leisure.garden.residential">گردشگری</string>
     <string name="type.leisure.golf_course">زمین گلف</string>
     <string name="type.leisure.hackerspace">فضای هکرها</string>
+    <string name="type.leisure.bird_hide">مخفیگاه پرنده‌نگری</string>
     <string name="type.leisure.outdoor_seating">نشستن در فضای باز</string>
     <string name="type.leisure.park">پارک</string>
     <string name="type.leisure.park.no.access">پارک</string>
@@ -579,6 +583,8 @@
     <string name="type.leisure.stadium">استادیوم</string>
     <string name="type.leisure.swimming_pool">استخرشنا</string>
     <string name="type.leisure.swimming_pool.private">استخرشنا</string>
+    <string name="type.leisure.track">پیست ورزشی</string>
+    <string name="type.leisure.track.area">پیست ورزشی</string>
     <string name="type.leisure.water_park">گردشگری</string>
     <string name="type.man_made.breakwater">موج شکن</string>
     <string name="type.man_made.cairn">سنگ چین</string>
@@ -643,10 +649,13 @@
     <string name="type.natural.water.reservoir">مخزن</string>
     <string name="type.natural.water.basin">حوضه آب</string>
     <string name="type.natural.water.river">رودخانه</string>
+    <string name="type.natural.water.intermittent">پهنه آبی موقت</string>
     <string name="type.natural.land">خشکی</string>
     <string name="type.natural.meadow">چمنزار</string>
     <string name="type.natural.orchard">باغ میوه</string>
     <string name="type.natural.peak">قله</string>
+    <string name="type.natural.hill">تپه</string>
+    <string name="type.natural.arch">کمان سنگی</string>
     <string name="type.natural.saddle">زین کوه</string>
     <string name="type.natural.rock">سنگ</string>
     <string name="type.natural.scrub">بوته زار</string>
@@ -656,6 +665,7 @@
     <string name="type.natural.tree_row">ردیف درخت</string>
     <string name="type.natural.vineyard">تاکستان</string>
     <string name="type.natural.volcano">اتشفشان</string>
+    <string name="type.natural.volcano.active">آتشفشان فعال</string>
     <string name="type.natural.water">پهنه آبی</string>
     <string name="type.natural.wetland">ناحیه تالابی</string>
     <string name="type.natural.wetland.bog">خلاش</string>
@@ -1191,6 +1201,18 @@
     <string name="type.sport.field_hockey">ﻦﻤﭼ ﯼﻭﺭ ﯽﮐﺎﻫ</string>
     <string name="type.sport.badminton">ﻥﻮﺘﻨﯿﻣﺪﺑ</string>
     <string name="type.sport.pelota">ﯽﮑﺳﺎﺑ ﯼﺎﺗﻮﻠﭘ</string>
+    <string name="type.sport.boules">بولز</string>
+    <string name="type.sport.cycling">دوچرخه‌سواری</string>
+    <string name="type.sport.four_square">چهار مربع</string>
+    <string name="type.sport.horse_racing">اسب‌دوانی</string>
+    <string name="type.sport.karting">کارتینگ</string>
+    <string name="type.sport.motocross">موتورکراس</string>
+    <string name="type.sport.motor">ورزش‌های موتوری</string>
+    <string name="type.sport.netball">نتبال</string>
+    <string name="type.sport.pickleball">پیکل‌بال</string>
+    <string name="type.sport.rugby_union">راگبی ۱۵ نفره</string>
+    <string name="type.sport.running">دویدن</string>
+    <string name="type.sport.softball">سافت‌بال</string>
     <string name="type.tourism.aquarium">آکواریوم</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
     <string name="type.tourism.alpine_hut">اقامتگاه کوهستانی</string>
@@ -1207,6 +1229,7 @@
     <string name="type.attraction.historic">جاذبه تاریخی</string>
     <string name="type.attraction.maze">ماز</string>
     <string name="type.attraction.roller_coaster">ترن هوایی</string>
+    <string name="type.roller_coaster.track">ترن هوایی</string>
     <string name="type.attraction.water_slide">سرسره آبی</string>
     <string name="type.tourism.attraction.specified">گردشگری</string>
     <string name="type.tourism.camp_site">محل چادر زنی</string>
@@ -1232,6 +1255,7 @@
     <string name="type.tourism.wilderness_hut">کلبه‌ی صحرایی</string>
     <string name="type.tourism.zoo">گردشگری</string>
     <string name="type.tourism.zoo.petting">باغ وحش پتینگ</string>
+    <string name="type.waterway.access_point">نقطه دسترسی به آبراهه</string>
     <string name="type.waterway.canal">کانال اب</string>
     <string name="type.waterway.canal.tunnel">کانال اب</string>
     <string name="type.waterway.fish_pass">نردبان ماهی</string>
@@ -1263,6 +1287,7 @@
     <string name="type.self_service.no">بدون سلف سرویس</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">تسهیلات اجتماعی</string>
+    <string name="type.amenity.stage">صحنه</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">ورودی بخش اورژانس</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1286,4 +1311,5 @@
     <string name="type.craft.watchmaker">ساعت ساز</string>
     <string name="type.xmas_feature.market">بازار کریسمس</string>
     <string name="type.xmas_feature.tree">درخت کریسمس</string>
+    <string name="type.amenity.hookah_lounge">قلیان‌سرا</string>
 </resources>

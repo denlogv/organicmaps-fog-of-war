@@ -12,7 +12,9 @@ extension UISearchBar {
   }
 
   @objc override func sw_didMoveToWindow() {
-    guard MapsAppDelegate.theApp().window === window else {
+    // A nil app window (a CarPlay-first launch, or a disconnected phone scene) must not match a
+    // view that is leaving the hierarchy: nil === nil is true.
+    guard let appWindow = MapsAppDelegate.theApp().window, appWindow === window else {
       sw_didMoveToWindow()
       return
     }
@@ -47,8 +49,9 @@ class UISearchBarRenderer: UIViewRenderer {
     if let backgroundColor = style.backgroundColor {
       searchTextField.backgroundColor = backgroundColor
     }
-    if let font = style.font {
-      searchTextField.font = font
+    if let fontStyle = style.fontStyle {
+      searchTextField.font = fontStyle.font
+      searchTextField.adjustsFontForContentSizeCategory = fontStyle.isDynamic
     }
     if let fontColor = style.fontColor {
       searchTextField.textColor = fontColor
@@ -62,9 +65,10 @@ class UISearchBarRenderer: UIViewRenderer {
       control.setImage(clearButtonImage, for: .clear, state: .normal)
     }
     if let barTintColor = style.barTintColor {
+      let traits = control.window?.traitCollection ?? control.traitCollection
       let position = control.delegate?.position?(for: control) ?? control.barPosition
-      control.setBackgroundImage(barTintColor.getImage(), for: position, barMetrics: .defaultPrompt)
-      control.setBackgroundImage(barTintColor.getImage(), for: position, barMetrics: .default)
+      control.setBackgroundImage(barTintColor.getImage(traits), for: position, barMetrics: .defaultPrompt)
+      control.setBackgroundImage(barTintColor.getImage(traits), for: position, barMetrics: .default)
       control.backgroundColor = barTintColor
     }
     if let fontColorDetailed = style.fontColorDetailed {

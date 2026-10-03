@@ -11,7 +11,7 @@ import androidx.car.app.ScreenManager;
 import androidx.car.app.notification.CarPendingIntent;
 import app.organicmaps.api.Const;
 import app.organicmaps.car.CarAppServiceBase;
-import app.organicmaps.car.screens.INavigationScreen;
+import app.organicmaps.car.screens.NavigationScreen;
 import app.organicmaps.car.screens.search.SearchScreen;
 import app.organicmaps.intent.GoogleAssistantIntentHandler;
 import app.organicmaps.sdk.Framework;
@@ -83,7 +83,7 @@ public final class IntentUtils
   public static PendingIntent createSearchIntent(@NonNull CarContext context, @NonNull String query)
   {
     final String uri = "geo:0,0?q=" + query.replace(" ", "+");
-    final ComponentName component = CarAppServiceManifestReader.getCarAppServiceClass(context);
+    final ComponentName component = new ComponentName(context, CarAppServiceBase.getCarServiceClass());
     final Intent intent = new Intent().setComponent(component).setData(Uri.parse(uri));
     return CarPendingIntent.getCarApp(context, 0, intent, 0);
   }
@@ -130,11 +130,11 @@ public final class IntentUtils
       screenManager.popToRoot();
       screenManager.push(builder.build());
       return;
-    case RequestType.ROUTE: Logger.e(TAG, "Route API is not supported by Android Auto: " + uri); return;
-    case RequestType.CROSSHAIR: Logger.e(TAG, "Crosshair API is not supported by Android Auto: " + uri); return;
-    case RequestType.MENU: Logger.e(TAG, "Menu API is not supported by Android Auto: " + uri); return;
-    case RequestType.SETTINGS: Logger.e(TAG, "Settings API is not supported by Android Auto: " + uri); return;
-    case RequestType.OAUTH2: Logger.e(TAG, "OAuth2 API is not supported by Android Auto: " + uri);
+    case RequestType.ROUTE: Logger.w(TAG, "Route API is not supported by Android Auto: " + uri); return;
+    case RequestType.CROSSHAIR: Logger.w(TAG, "Crosshair API is not supported by Android Auto: " + uri); return;
+    case RequestType.MENU: Logger.w(TAG, "Menu API is not supported by Android Auto: " + uri); return;
+    case RequestType.SETTINGS: Logger.w(TAG, "Settings API is not supported by Android Auto: " + uri); return;
+    case RequestType.OAUTH2: Logger.w(TAG, "OAuth2 API is not supported by Android Auto: " + uri);
     }
   }
 
@@ -150,8 +150,8 @@ public final class IntentUtils
       final Screen top = screenManager.getTop();
       if (!displayManager.isCarDisplayUsed())
         displayManager.changeDisplay(DisplayType.Car);
-      if (!(top instanceof INavigationScreen))
-        screenManager.popTo(INavigationScreen.MARKER);
+      if (!(top instanceof NavigationScreen))
+        screenManager.popTo(NavigationScreen.MARKER);
     }
   }
 

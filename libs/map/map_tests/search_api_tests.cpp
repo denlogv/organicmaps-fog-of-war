@@ -12,7 +12,6 @@
 
 #include "map/bookmarks_search_params.hpp"
 #include "map/search_api.hpp"
-#include "map/search_product_info.hpp"
 #include "map/viewport_search_params.hpp"
 
 #include "storage/country_info_getter.hpp"
@@ -133,6 +132,42 @@ UNIT_CLASS_TEST(SearchAPITest, MultipleViewportsRequests)
   future1.wait();
 }
 
+UNIT_CLASS_TEST(SearchAPITest, ViewportPastAntimeridian)
+{
+  TestCafe cafe1(m2::PointD(0, 0), "cafe 1", "en");
+  TestCafe cafe2(m2::PointD(0.5, 0.5), "cafe 2", "en");
+  TestCafe cafe3(m2::PointD(10, 10), "cafe 3", "en");
+
+  auto const id = BuildCountry("Wonderland", [&](TestMwmBuilder & builder)
+  {
+    builder.Add(cafe1);
+    builder.Add(cafe2);
+    builder.Add(cafe3);
+  });
+
+  promise<void> promise;
+  auto future = promise.get_future();
+
+  ViewportSearchParams params;
+  params.m_query = "cafe ";
+  params.m_inputLocale = "en";
+  params.m_onCompleted = [&](Results const & results)
+  {
+    TEST(!results.IsEndedCancelled(), ());
+    if (!results.IsEndMarker())
+      return;
+
+    Rules const rules = {ExactMatch(id, cafe1), ExactMatch(id, cafe2)};
+    TEST(MatchResults(m_dataSource, rules, results), ());
+    promise.set_value();
+  };
+
+  // The map scrolled past the antimeridian reports the viewport shifted by the whole world.
+  m_api.OnViewportChanged(m2::RectD(359, -1, 361, 1));
+  m_api.SearchInViewport(params);
+  future.wait();
+}
+
 UNIT_CLASS_TEST(SearchAPITest, Cancellation)
 {
   TestCafe cafe(m2::PointD(0, 0), "cafe", "en");
@@ -149,7 +184,7 @@ UNIT_CLASS_TEST(SearchAPITest, Cancellation)
     promise<void> promise;
     auto future = promise.get_future();
 
-    params.m_onResults = [&](Results const & results, vector<ProductInfo> const &)
+    params.m_onResults = [&](Results const & results)
     {
       TEST(!results.IsEndedCancelled(), ());
 
@@ -175,7 +210,7 @@ UNIT_CLASS_TEST(SearchAPITest, Cancellation)
 
     params.m_timeout = chrono::seconds(-1);
 
-    params.m_onResults = [&](Results const & results, vector<ProductInfo> const &)
+    params.m_onResults = [&](Results const & results)
     {
       // The deadline has fired but Search API does not expose it.
       TEST(!results.IsEndedCancelled(), ());
@@ -198,18 +233,18 @@ UNIT_CLASS_TEST(SearchAPITest, Cancellation)
 
 UNIT_CLASS_TEST(SearchAPITest, BookmarksSearch)
 {
-  vector<BookmarkInfo> marks;
+  // BookmarkInfo stores a non-owning pointer, so each entry needs its own BookmarkData.
+  vector<kml::BookmarkData> data(3);
+  kml::SetDefaultStr(data[0].m_name, "R&R dinner");
+  kml::SetDefaultStr(data[0].m_description, "They've got a cherry pie there that'll kill ya!");
+  kml::SetDefaultStr(data[1].m_name, "Silver Mustang Casino");
+  kml::SetDefaultStr(data[1].m_description, "Joyful place, owners Bradley and Rodney are very friendly!");
+  kml::SetDefaultStr(data[2].m_name, "Great Northern Hotel");
+  kml::SetDefaultStr(data[2].m_description, "Clean place with a reasonable price");
 
-  kml::BookmarkData data;
-  kml::SetDefaultStr(data.m_name, "R&R dinner");
-  kml::SetDefaultStr(data.m_description, "They've got a cherry pie there that'll kill ya!");
-  marks.emplace_back(0, data);
-  kml::SetDefaultStr(data.m_name, "Silver Mustang Casino");
-  kml::SetDefaultStr(data.m_description, "Joyful place, owners Bradley and Rodney are very friendly!");
-  marks.emplace_back(1, data);
-  kml::SetDefaultStr(data.m_name, "Great Northern Hotel");
-  kml::SetDefaultStr(data.m_description, "Clean place with a reasonable price");
-  marks.emplace_back(2, data);
+  vector<BookmarkInfo> marks;
+  for (kml::MarkId i = 0; i < data.size(); ++i)
+    marks.emplace_back(i, &data[i]);
   m_api.EnableIndexingOfBookmarksDescriptions(true);
   m_api.EnableIndexingOfBookmarkGroup(10, true /* enable */);
   m_api.OnBookmarksCreated(marks);

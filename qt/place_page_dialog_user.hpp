@@ -1,16 +1,21 @@
 #pragma once
 
-#include <QtWidgets/QDialog>
+#include "qt/place_page_dialog_common.hpp"
 
 namespace place_page
 {
 class Info;
 }
 
-class PlacePageDialogUser : public QDialog
+namespace qt
+{
+class DrawWidget;
+}
+
+class PlacePageDialogUser : public PlacePageDialogCommon
 {
   Q_OBJECT
 
 public:
-  PlacePageDialogUser(QWidget * parent, place_page::Info const & info);
+  PlacePageDialogUser(QWidget * parent, qt::DrawWidget * drawWidget, place_page::Info const & info);
 };

@@ -47,6 +47,8 @@
     <string name="auto">Samodejno</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">3D zgradbe</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Ni na voljo</string>
     <!-- Text in menu -->
     <string name="help">Pomoč</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Odprto</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">Danes zaprto</string>
+    <string name="midnight">Polnoč</string>
+    <string name="noon">Poldne</string>
     <string name="opens_in">Odpira se čez %s</string>
     <string name="closes_in">Zapira se čez %s</string>
     <string name="closed">Zaprto</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Izogibaj se trajektom</string>
     <string name="avoid_motorways">Izogibaj se avtocestam</string>
     <string name="unable_to_calc_alert_title">Poti ni mogoče izračunati</string>
+    <string name="trip_finished">Prispeli ste!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Razvrsti zaznamke</string>
     <!-- Android -->

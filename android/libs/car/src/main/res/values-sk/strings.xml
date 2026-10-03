@@ -47,6 +47,8 @@
     <string name="auto">Automaticky</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">3D budovy</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Nie je k dispozícii</string>
     <!-- Text in menu -->
     <string name="help">Nápoveda</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Otvorené</string>
     <string name="twentyfour_seven">Deň a noc</string>
     <string name="day_off_today">Dnes deň voľna</string>
+    <string name="midnight">Polnoc</string>
+    <string name="noon">Poludnie</string>
     <string name="opens_in">Otvoria o %s</string>
     <string name="closes_in">Zatvoria o %s</string>
     <string name="closed">Zatvorené</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Vyhnúť sa prechodom na trajekte</string>
     <string name="avoid_motorways">Vyhnúť sa diaľniciam</string>
     <string name="unable_to_calc_alert_title">Nepodarilo sa vypočítať trasu</string>
+    <string name="trip_finished">Prišli ste do cieľa!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Zoradiť záložky</string>
     <!-- Android -->

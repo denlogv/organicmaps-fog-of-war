@@ -120,7 +120,7 @@
     <string name="category_hotel">ホテル</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">観光</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">エンターテイメント</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">ATM</string>
@@ -142,7 +142,7 @@
     <string name="category_police">警察</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">リサイクル</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">水</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">RV用</string>
@@ -171,16 +171,12 @@
     <string name="cant_change_this_setting">恐れ入りますが、マップストレージ設定が無効になっています。</string>
     <!-- Alert message that downloading is in progress. -->
     <string name="downloading_is_active">ダウンロード中です</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Organic Maps で私の現在地が見れます！%1$s または %2$s オフラインマップはまだインストールしていないですか？ここからダウンロード： https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Organic Mapsでピン情報を確認</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Organic Mapsで現在地を確認</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">私の現在地はここ: %1$s\n\nリンクをクリックすると詳細がマップに表示されます。\n\n%2$s\n\n%3$s</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">共有</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s - Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Organic Mapsの場所</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">Eメール</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">3Dビル</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">省電力モードで建物の 3D 表示がオフになっている</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">衛星画像</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">サーバーのURL</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">{z}/{x}/{y} を含む有効なURLを入力してください</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">キャッシュサイズ (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">面オブジェクトの不透明度</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">カスタムタイルのソースはご自身で用意するものです。アクセスが許可されているサービスのみを使用してください。帰属表示、ライセンス条件、APIキー、クォータ、利用制限についてはご自身の責任となります。</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">音声指示</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">音声案内をテストする（TTS、Text-To-Speech）</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">音声が聞こえない場合は、音量またはシステムの音声合成設定を確認する。</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">利用不可</string>
     <string name="pref_map_auto_zoom">自動ズーム</string>
     <string name="placepage_distance">距離</string>
@@ -371,6 +379,8 @@
     <string name="clear_search">検索履歴を消去</string>
     <!-- Place Page link to Wikipedia article (if map object has it). -->
     <string name="read_in_wikipedia">ウィキペディア</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">wikipedia.org の記事</string>
     <!-- Place Page link to Wikimedia Commons. -->
     <string name="wikimedia_commons">ウィキメディア・コモンズ</string>
     <string name="p2p_your_location">現在位置</string>
@@ -399,19 +409,15 @@
     <string name="editor_example_values">値の例</string>
     <string name="editor_correct_mistake">間違いの訂正</string>
     <string name="editor_add_select_location">場所を選択</string>
-    <string name="editor_report_problem_desription_1">OpenStreetMapコミュニティがエラーを修正できるように、問題の詳細を説明してください。</string>
-    <string name="editor_report_problem_desription_2">または、このURLでご自身で修正してください https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">送信</string>
-    <string name="editor_report_problem_title">問題</string>
-    <string name="editor_report_problem_no_place_title">この場所は存在しません</string>
-    <string name="editor_report_problem_under_construction_title">メンテナンスのため使えません</string>
-    <string name="editor_report_problem_duplicate_place_title">重複している場所</string>
     <string name="autodownload">自動ダウンロード</string>
     <!-- Place Page opening hours text -->
     <string name="daily">毎日</string>
     <string name="twentyfour_seven">昼と夜</string>
     <string name="day_off_today">本日終業</string>
     <string name="day_off">終業</string>
+    <string name="midnight">午前0時</string>
+    <string name="noon">正午</string>
     <string name="today">今日は</string>
     <string name="opens_in">あと %s に営業</string>
     <string name="closes_in">あと %s に閉店</string>
@@ -464,8 +470,6 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">現地の言葉でこう書かれている。</string>
     <string name="editor_edit_place_category_title">カテゴリ</string>
-    <string name="detailed_problem_description">問題の詳細な説明</string>
-    <string name="editor_report_problem_other_title">異なる問題</string>
     <string name="placepage_add_business_button">ビジネスを追加</string>
     <string name="message_invalid_feature_position">ここにはオブジェクトを配置できません</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
@@ -496,7 +500,7 @@
     <!-- To indicate the operator of ATMs, bicycle rentals, electric vehicle charging stations… -->
     <string name="operator">運営者: %s</string>
     <string name="editor_category_unsuitable_title">適切なカテゴリーが見つからない？</string>
-    <string name="editor_category_unsuitable_text">つまり、町、道路、湖、建物の輪郭などは追加できない。そのようなカテゴリーは<a href="https://www.openstreetmap.org">OpenStreetMap.org</a>に直接追加してほしい。私たちの<a href="https://organicmaps.app/faq/editing/advanced-map-editing">ガイド</a>のステップバイステップの詳細な手順をチェックする。</string>
+    <string name="editor_category_unsuitable_text">Organic Maps このアプリでは、シンプルな地点カテゴリのみを追加できます。つまり、町、道路、湖、建物の輪郭などは追加できません。そのようなカテゴリは、<a href="https://www.openstreetmap.org">OpenStreetMap.org</a>に直接追加してください。詳細な手順については、<a href="https://organicmaps.app/faq/editing/advanced-map-editing">ガイド</a>をご確認ください。</string>
     <string name="downloader_no_downloaded_maps_title">マップをダウンロードしていません</string>
     <string name="downloader_no_downloaded_maps_message">ロケーションの検索とオフラインナビゲートのためにマップをダウンロードしてください。</string>
     <string name="current_location_unknown_error_title">現在地は不明です。</string>
@@ -508,7 +512,7 @@
     <string name="day">日</string>
     <string name="second">秒</string>
     <string name="placepage_more_button">さらに詳しく</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">ブックマークを編集</string>
     <string name="placepage_personal_notes_hint">パーソナルメモ（テキストまたはHTML）</string>
     <string name="editor_comment_hint">コメント…</string>
@@ -552,11 +556,7 @@
     <string name="mobile_data_description">モバイル通信は場所、写真、価格やレビューのような詳細情報を表示するのに必要です。</string>
     <string name="mobile_data_option_never">使用しない</string>
     <string name="mobile_data_option_ask">常に確認</string>
-    <string name="traffic_update_maps_text">交通データを表示するには、地図を更新する必要があります。</string>
     <string name="big_font">地図上のフォントサイズを大きくする</string>
-    <string name="traffic_update_app">Organic Maps をアップデートしてください</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">交通データは利用できません</string>
     <string name="enable_logging">ログを有効化</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">一般的なフィードバック</string>
@@ -565,14 +565,12 @@
     <string name="prefs_languages_information_off_link">詳細については、このガイドをご確認ください。</string>
     <string name="transliteration_title">ラテン文字への翻字</string>
     <string name="learn_more">詳細情報</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">検索を使うか、地図上をタップしてルートの出発点を追加する</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">検索を使うか、地図上をタップして目的地を追加する</string>
     <string name="planning_route_manage_route">ルートを編集</string>
     <string name="button_plan">プラン</string>
     <string name="placepage_remove_stop">停留所を削除</string>
-    <string name="placepage_add_stop">中間地点を追加</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
+    <string name="placepage_add_stop">経由地を追加</string>
+    <string name="drag_to_reorder">並べ替え</string>
     <string name="saved">保存</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">すべてのマップ編集を自動的にアップロードするには、OpenStreetMapにログインしてください。詳しくは <a href="https://github.com/organicmaps/organicmaps/issues/6144">こちら</a>.</string>
@@ -619,6 +617,8 @@
     <string name="button_layer_hiking">ハイキング</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">サイクリング</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">衛星</string>
     <string name="button_layer_subway">地下鉄</string>
     <string name="layers_title">マップのスタイルとレイヤー</string>
     <string name="bookmarks_empty_list_title">このリストは空です</string>
@@ -657,6 +657,10 @@
     <string name="show_at_the_bottom">下部に表示</string>
     <string name="enable_logging_warning_message">このオプションは診断目的でのデータ記録を有効にします。これはこのアプリケーションのトラブルシューティングを担当する当社のサポートスタッフの助けになります。このオプションはOrganic Mapsにリクエストされた場合にのみ有効にしてください。</string>
     <string name="driving_options_title">経路オプション</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">経路の最適化</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">より効率的な経路になるよう、中間地点を自動的に並べ替えます。</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">有料道路を避ける</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -671,6 +675,12 @@
     <string name="toll_road">有料道路</string>
     <string name="unpaved_road">未舗装道路</string>
     <string name="ferry_crossing">フェリー</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">階段</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">ゲート</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">ブームバリア</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">はい</string>
     <!-- A generic "No" button in dialogs -->
@@ -705,7 +715,14 @@
     <string name="moreyear_ago_sorttype">1年以上前</string>
     <string name="near_me_sorttype">近隣</string>
     <string name="others_sorttype">その他</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">営業時間外</string>
+    <string name="opens_tomorrow_at">明日の %s から営業</string>
+    <string name="opens_dayoftheweek_at">%1$s の %2$s から営業</string>
+    <string name="opens_at">%s から営業</string>
+    <string name="closes_at">%s に閉店</string>
     <string name="editor_add_select_category_all_subtitle">全てのカテゴリ</string>
+    <string name="placepage_replace_stop">リプレースストップ</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">食べ物</string>
@@ -724,6 +741,12 @@
     <string name="medicine">医薬品</string>
     <string name="search_in_the_list">リスト内で検索</string>
     <string name="religious_places">礼拝所</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">選択</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">すべて選択</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">選択を解除</string>
     <string name="select_list">リストを選択</string>
     <string name="button_layer_isolines">地形</string>
     <string name="isolines_activation_error_dialog">地形レイヤーを使用するには、このエリアのマップを更新もしくはダウンロードしてください</string>
@@ -790,7 +813,7 @@
     <!-- Text on the Android Auto or CarPlay placeholder screen that maps are displayed on the phone screen -->
     <string name="car_used_on_the_phone_screen">端末の画面でOrganic Mapsを使用している</string>
     <!-- Text on the phone placeholder screen that maps are displayed on the car screen -->
-    <string name="car_used_on_the_car_screen">あなたは今、車の画面でオーガニック・マップを使用している</string>
+    <string name="car_used_on_the_car_screen">現在、車の画面でOrganic Mapsをご利用中です</string>
     <!-- Displayed on the phone screen. Android Auto connected -->
     <string name="aa_connected_title">アンドロイド・オートに接続している</string>
     <!-- Displayed on the phone screen. Button to display maps on the phone screen instead of a car -->
@@ -798,7 +821,7 @@
     <!-- Displayed on the Android Auto or CarPlay screen. Button to display maps on the car screen instead of a phone. Must be no more than 18 symbols! -->
     <string name="car_continue_in_the_car">車のスクリーンへ</string>
     <!-- Ask user to grant location permissions -->
-    <string name="aa_location_permissions_request">オーガニック・マップは位置情報へのアクセスを必要とする。安全になったら、携帯電話の通知をチェックしよう。</string>
+    <string name="aa_location_permissions_request">Organic Maps 位置情報のアクセスが必要です。安全な場所にいる際は、スマートフォンの通知をご確認ください。</string>
     <!-- Notification title for permission request from AA. -->
     <string name="aa_request_permission_notification">このアプリはあなたの許可を必要とする</string>
     <!-- Grant Permissions button. -->
@@ -816,15 +839,14 @@
     <string name="pref_tts_no_system_tts">音声合成の設定が見つからなかった。</string>
     <string name="drive_through">ドライブスルー</string>
     <string name="clear_the_search">検索をクリアする</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">ズームイン</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">ズームアウト</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">メニューリンク</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">メニューを見る</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">別のアプリで開く</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">セルフサービス</string>
     <string name="select_option">オプションを選択する</string>
@@ -859,6 +881,26 @@
     <string name="share_track">シェアトラック</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">を削除しますか %s？</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="other">%d件選択中</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="other">%d件を削除しますか？</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">移動</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">色を変える</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">ルートを非表示</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">ルートを表示</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">現在地</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
@@ -871,4 +913,38 @@
     <string name="toast_bookmarks_color_changed">ブックマークの色が変更されました</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">トラックの色が変更されました</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">スペクトル</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">スライダー</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">赤</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">グリーン</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">青</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB 16進カラー #.</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">グリッド</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">音声検索</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">地図上で選択</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">出発地</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">目的地</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">出発地を変更</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">目的地を変更</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">経由地を変更</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">経由地の最大数に達しました</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">地図を移動・拡大縮小して、十字を配置してください</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">停止して保存</string>
 </resources>

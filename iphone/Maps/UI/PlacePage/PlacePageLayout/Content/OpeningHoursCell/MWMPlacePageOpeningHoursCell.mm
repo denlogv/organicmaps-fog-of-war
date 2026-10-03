@@ -15,16 +15,11 @@ using WeekDayView = MWMPlacePageOpeningHoursDayView *;
 
 @property(weak, nonatomic) IBOutlet WeekDayView currentDay;
 @property(weak, nonatomic) IBOutlet UIView * middleSeparator;
-@property(weak, nonatomic) IBOutlet UIView * weekDaysView;
+@property(weak, nonatomic) IBOutlet UIStackView * weekDaysView;
 @property(weak, nonatomic) IBOutlet UIImageView * expandImage;
 @property(weak, nonatomic) IBOutlet UIButton * toggleButton;
 
 @property(weak, nonatomic) IBOutlet UILabel * openTime;
-@property(weak, nonatomic) IBOutlet NSLayoutConstraint * openTimeLeadingOffset;
-@property(weak, nonatomic) IBOutlet NSLayoutConstraint * openTimeTrailingOffset;
-
-@property(weak, nonatomic) IBOutlet NSLayoutConstraint * weekDaysViewHeight;
-@property(nonatomic) CGFloat weekDaysViewEstimatedHeight;
 
 @property(weak, nonatomic) id<MWMPlacePageOpeningHoursCellProtocol> delegate;
 
@@ -87,7 +82,6 @@ WeekDayView getWeekDayView()
   BOOL const isHidden = !self.isExpanded;
   self.middleSeparator.hidden = isHidden;
   self.weekDaysView.hidden = isHidden;
-  [cd invalidate];
 }
 
 - (void)processSchedule
@@ -98,8 +92,11 @@ WeekDayView getWeekDayView()
   BOOL haveCurrentDay = NO;
   size_t timeTablesCount = timeTableSet.Size();
   self.haveExpandSchedule = (timeTablesCount > 1 || !timeTableSet.GetUnhandledDays().empty());
-  self.weekDaysViewEstimatedHeight = 0.0;
-  [self.weekDaysView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+  for (UIView * view in self.weekDaysView.arrangedSubviews)
+  {
+    [self.weekDaysView removeArrangedSubview:view];
+    [view removeFromSuperview];
+  }
   for (size_t idx = 0; idx < timeTablesCount; ++idx)
   {
     auto tt = timeTableSet.Get(idx);
@@ -133,10 +130,8 @@ WeekDayView getWeekDayView()
     if (self.isExpanded)
       [self addClosedDays];
   }
-  self.openTimeTrailingOffset.priority =
-      delegate.forcedButton ? UILayoutPriorityDefaultHigh : UILayoutPriorityDefaultLow;
-  self.weekDaysViewHeight.constant = ceil(self.weekDaysViewEstimatedHeight);
-  [self alignTimeOffsets];
+  [self setNeedsLayout];
+  [self layoutIfNeeded];
 }
 
 - (void)addCurrentDay:(ui::TimeTableSet::Proxy)timeTable
@@ -180,7 +175,7 @@ WeekDayView getWeekDayView()
 {
   WeekDayView wd = getWeekDayView();
   wd.currentDay = NO;
-  wd.frame = {{0, self.weekDaysViewEstimatedHeight}, {self.weekDaysView.width, 0}};
+  wd.translatesAutoresizingMaskIntoConstraints = NO;
   [wd setLabelText:stringFromOpeningDays(timeTable.GetOpeningDays()) isRed:NO];
   if (timeTable.IsTwentyFourHours())
   {
@@ -193,9 +188,7 @@ WeekDayView getWeekDayView()
     [wd setOpenTimeText:stringFromTimeSpan(timeTable.GetOpeningTime())];
     [wd setBreaks:arrayFromClosedTimes(timeTable.GetExcludeTime())];
   }
-  [wd invalidate];
-  [self.weekDaysView addSubview:wd];
-  self.weekDaysViewEstimatedHeight += wd.viewHeight;
+  [self.weekDaysView addArrangedSubview:wd];
 }
 
 - (void)addClosedDays
@@ -205,36 +198,11 @@ WeekDayView getWeekDayView()
     return;
   WeekDayView wd = getWeekDayView();
   wd.currentDay = NO;
-  wd.frame = {{0, self.weekDaysViewEstimatedHeight}, {self.weekDaysView.width, 0}};
+  wd.translatesAutoresizingMaskIntoConstraints = NO;
   [wd setLabelText:stringFromOpeningDays(closedDays) isRed:NO];
   [wd setOpenTimeText:L(@"day_off")];
   [wd setBreaks:@[]];
-  [wd invalidate];
-  [self.weekDaysView addSubview:wd];
-  self.weekDaysViewEstimatedHeight += wd.viewHeight;
-}
-
-- (void)alignTimeOffsets
-{
-  CGFloat offset = self.openTime.minX;
-  for (WeekDayView wd in self.weekDaysView.subviews)
-    offset = MAX(offset, wd.openTimeLeadingOffset);
-
-  for (WeekDayView wd in self.weekDaysView.subviews)
-    wd.openTimeLeadingOffset = offset;
-}
-
-- (CGFloat)cellHeight
-{
-  CGFloat height = self.currentDay.viewHeight;
-  if (self.isExpanded)
-  {
-    CGFloat const bottomOffset = 4.0;
-    height += bottomOffset;
-    if (!self.currentDay.isCompatibility)
-      height += self.weekDaysViewHeight.constant;
-  }
-  return ceil(height);
+  [self.weekDaysView addArrangedSubview:wd];
 }
 
 #pragma mark - Actions

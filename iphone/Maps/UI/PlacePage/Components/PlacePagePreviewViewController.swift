@@ -45,6 +45,9 @@ final class PlacePagePreviewViewController: UIViewController {
 
     updateViews()
 
+    subtitleLabel.adjustsFontForContentSizeCategory = true
+    scheduleLabel.adjustsFontForContentSizeCategory = true
+
     if let distance = distance {
       placePageDirectionView?.isHidden = false
       placePageDirectionView?.label.text = distance
@@ -57,12 +60,6 @@ final class PlacePagePreviewViewController: UIViewController {
     }
   }
 
-  override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-    super.traitCollectionDidChange(previousTraitCollection)
-    guard traitCollection.userInterfaceStyle != previousTraitCollection?.userInterfaceStyle else { return }
-    updateViews()
-  }
-
   func updateViews() {
     if placePagePreviewData.isMyPosition {
       if let speedAndAltitude = speedAndAltitude {
@@ -72,14 +69,14 @@ final class PlacePagePreviewViewController: UIViewController {
       let subtitleString = NSMutableAttributedString()
 //      if placePagePreviewData.isPopular {
 //        subtitleString.append(NSAttributedString(string: L("popular_place"),
-//                                                 attributes: [.foregroundColor : UIColor.linkBlue(),
-//                                                              .font : UIFont.regular14()]))
+//                                                 attributes: [.foregroundColor : UIColor.linkBlue,
+//                                                              .font : UIFont.regular14]))
 //      }
 
       if let subtitle = placePagePreviewData.subtitle ?? placePagePreviewData.coordinates {
         subtitleString.append(NSAttributedString(string: !subtitleString.string.isEmpty ? " • " + subtitle : subtitle,
-                                                 attributes: [.foregroundColor: UIColor.blackSecondaryText(),
-                                                              .font: UIFont.emojiRegular14()]))
+                                                 attributes: [.foregroundColor: UIColor.blackSecondaryText,
+                                                              .font: UIFont.emojiRegular14.dynamic]))
 
         subtitleLabel.attributedText = subtitleString
         subtitleContainerView.isHidden = false
@@ -110,7 +107,7 @@ final class PlacePagePreviewViewController: UIViewController {
 
   func updateHeading(_ angle: CGFloat) {
     placePageDirectionView?.imageView.isHidden = false
-    let duration = heading == nil ? .zero : kDefaultAnimationDuration // skip the initial setup animation
+    let duration = heading == nil ? .zero : AppConstants.defaultAnimationDuration // skip the initial setup animation
     UIView.animate(withDuration: duration,
                    delay: 0,
                    options: [.beginFromCurrentState, .curveEaseInOut],
@@ -231,13 +228,13 @@ final class PlacePagePreviewViewController: UIViewController {
   private func setScheduleLabel(state: String, stateColor: UIColor, details: String?) {
     let attributedString = NSMutableAttributedString()
     let stateString = NSAttributedString(string: state,
-                                         attributes: [NSAttributedString.Key.font: UIFont.regular14(),
+                                         attributes: [NSAttributedString.Key.font: UIFont.regular14.dynamic,
                                                       NSAttributedString.Key.foregroundColor: stateColor])
     attributedString.append(stateString)
     if details != nil {
       let detailsString = NSAttributedString(string: " • " + details!,
-                                             attributes: [NSAttributedString.Key.font: UIFont.regular14(),
-                                                          NSAttributedString.Key.foregroundColor: UIColor.blackSecondaryText()])
+                                             attributes: [NSAttributedString.Key.font: UIFont.regular14.dynamic,
+                                                          NSAttributedString.Key.foregroundColor: UIColor.blackSecondaryText])
       attributedString.append(detailsString)
     }
     scheduleLabel.attributedText = attributedString

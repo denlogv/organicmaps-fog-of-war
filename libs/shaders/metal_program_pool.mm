@@ -43,13 +43,11 @@ struct ProgramInfo
   }
 };
 
-std::array<ProgramInfo, static_cast<size_t>(SystemProgram::SystemProgramsCount)> const kMetalSystemProgramsInfo = {
-    {
-     ProgramInfo("vsCleaner", "fsClearColor", {{0, 0}}),          // ClearColor
-        ProgramInfo("vsCleaner", "fsClearDepth", {{0, 0}}),          // ClearDepth
-        ProgramInfo("vsCleaner", "fsClearColorAndDepth", {{0, 0}}),  // ClearColorAndDepth
-    }
-};
+std::array<ProgramInfo, static_cast<size_t>(SystemProgram::SystemProgramsCount)> const kMetalSystemProgramsInfo = {{
+    ProgramInfo("vsCleaner", "fsClearColor", {{0, 0}}),          // ClearColor
+    ProgramInfo("vsCleaner", "fsClearDepth", {{0, 0}}),          // ClearDepth
+    ProgramInfo("vsCleaner", "fsClearColorAndDepth", {{0, 0}}),  // ClearColorAndDepth
+}};
 
 std::array<ProgramInfo, static_cast<size_t>(Program::ProgramsCount)> const kMetalProgramsInfo = {{
     ProgramInfo("vsColoredSymbol", "fsColoredSymbol", {{0, 2}}),                      // ColoredSymbol
@@ -62,6 +60,9 @@ std::array<ProgramInfo, static_cast<size_t>(Program::ProgramsCount)> const kMeta
     ProgramInfo("vsTextStaticOutlinedGui", "fsTextOutlinedGui", {{0, 4}}),            // TextStaticOutlinedGui
     ProgramInfo("vsTextOutlinedGui", "fsTextOutlinedGui", {{0, 2}, {3, 4}}),          // TextOutlinedGui
     ProgramInfo("vsArea", "fsArea", {{0, 1}}),                                        // Area
+    ProgramInfo("vsHatchingArea", "fsAreaStipple", {{0, 2}}),                         // AreaStipple
+    ProgramInfo("vsHatchingArea", "fsAreaSpeckle", {{0, 2}}),                         // AreaSpeckle
+    ProgramInfo("vsHatchingArea", "fsAreaGrid", {{0, 2}}),                            // AreaGrid
     ProgramInfo("vsArea", "fsArea", {{0, 1}}),                                        // AreaOutline
     ProgramInfo("vsArea3d", "fsArea3d", {{0, 2}}),                                    // Area3d
     ProgramInfo("vsArea3dOutline", "fsArea", {{0, 1}}),                               // Area3dOutline
@@ -72,6 +73,7 @@ std::array<ProgramInfo, static_cast<size_t>(Program::ProgramsCount)> const kMeta
     ProgramInfo("vsArea", "fsArea", {{0, 1}}),                                        // TransparentArea
     ProgramInfo("vsCapJoin", "fsCapJoin", {{0, 2}}),                                  // CapJoin
     ProgramInfo("vsHatchingArea", "fsHatchingArea", {{0, 2}}),                        // HatchingArea
+    ProgramInfo("vsHatchingArea", "fsHatchingAreaDash", {{0, 2}}),                    // HatchingAreaDash
     ProgramInfo("vsTexturingGui", "fsTexturingGui", {{0, 1}}),                        // TexturingGui
     ProgramInfo("vsRuler", "fsRuler", {{0, 2}}),                                      // Ruler
     ProgramInfo("vsAccuracy", "fsAccuracy", {{0, 1}}),                                // Accuracy

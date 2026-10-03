@@ -8,12 +8,16 @@
 
 #include "geometry/spline.hpp"
 
-#include <limits>
-#include <memory>
+#include <optional>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace df
 {
+using MarksIDGroups = std::map<kml::MarkGroupId, drape_ptr<IDCollections>>;
+
+/// Prepared by DrapeEngine::GenerateMarkRenderInfo for user-mark geometry and overlays.
 struct UserMarkRenderParams
 {
   kml::MarkId m_markId = kml::kInvalidMarkId;
@@ -28,6 +32,8 @@ struct UserMarkRenderParams
   drape_ptr<UserPointMark::SymbolSizes> m_symbolSizes;
   drape_ptr<UserPointMark::SymbolOffsets> m_symbolOffsets;
   df::ColorConstant m_color;
+  // Explicit theme-independent color; nullopt => resolve the preset m_color string instead.
+  std::optional<dp::Color> m_customColor;
   bool m_symbolIsPOI = false;
   bool m_hasTitlePriority = false;
   uint16_t m_priority = 0;
@@ -37,6 +43,7 @@ struct UserMarkRenderParams
   float m_depth = 0.0;
   bool m_customDepth = false;
   DepthLayer m_depthLayer = DepthLayer::UserMarkLayer;
+  DepthLayer m_titleDepthLayer = DepthLayer::UserMarkLayer;
   bool m_hasCreationAnimation = false;
   mutable bool m_justCreated = false;  ///< will be reset after first caching
   bool m_isVisible = true;
@@ -44,7 +51,6 @@ struct UserMarkRenderParams
   bool m_isMarkAboveText = false;
   float m_symbolOpacity = 1.0f;
   bool m_isSymbolSelectable = true;
-  bool m_isNonDisplaceable = false;
 };
 
 struct LineLayer
@@ -63,10 +69,86 @@ struct UserLineRenderParams
   DepthLayer m_depthLayer = DepthLayer::UserLineLayer;
   std::vector<LineLayer> m_layers;
   std::vector<m2::SharedSpline> m_splines;
+  bool m_visible = true;
 };
 
 using UserMarksRenderCollection = std::unordered_map<kml::MarkId, drape_ptr<UserMarkRenderParams>>;
 using UserLinesRenderCollection = std::unordered_map<kml::MarkId, drape_ptr<UserLineRenderParams>>;
+using UserGroupsVisibilitySet = std::unordered_set<kml::MarkGroupId>;
+
+class SourceBase
+{
+public:
+  explicit SourceBase(UserGroupsVisibilitySet const * visibility) : m_visibility(visibility) {}
+  void AddGroup(ref_ptr<MarksIDGroups> group) { m_groups.push_back(group); }
+  bool IsEmpty() const { return m_groups.empty(); }
+
+protected:
+  template <class FnT>
+  void ForEachVisibleGroup(FnT && fn) const
+  {
+    for (auto const & group : m_groups)
+      for (auto const & [groupId, ids] : *group)
+        if (m_visibility->contains(groupId))
+          fn(*ids);
+  }
+
+private:
+  UserGroupsVisibilitySet const * m_visibility;
+  std::vector<ref_ptr<MarksIDGroups>> m_groups;
+};
+
+class MarksSource : public SourceBase
+{
+public:
+  using SourceBase::SourceBase;
+
+  /// Iterates marks across all visible groups, filtering by minZoom and tile containment.
+  /// @param fn is called with UserMarkRenderParams const &.
+  template <class FnT>
+  void ForEachMark(TileKey const & tileKey, UserMarksRenderCollection const & marks, FnT && fn) const
+  {
+    auto const tileRect = tileKey.GetWrappedDataRect();
+    ForEachVisibleGroup([&](IDCollections const & ids)
+    {
+      for (auto const markId : ids.m_markIds)
+      {
+        auto it = marks.find(markId);
+        if (it == marks.end())
+          continue;
+
+        auto const & rp = *it->second;
+        if (rp.m_isVisible && rp.m_minZoom <= tileKey.m_zoomLevel && tileRect.IsPointInside(rp.m_pivot))
+          fn(rp);
+      }
+    });
+  }
+};
+
+class TracksSource : public SourceBase
+{
+public:
+  using SourceBase::SourceBase;
+
+  /// Iterates unique tracks across all visible groups, skipping individually-hidden tracks
+  /// (m_visible) and those above their minZoom.
+  /// @param fn is called with UserLineRenderParams const &.
+  template <class FnT>
+  void ForEachUniqueTrack(int zoom, UserLinesRenderCollection const & lines, FnT && fn) const
+  {
+    std::unordered_set<kml::TrackId> visited;
+    ForEachVisibleGroup([&](IDCollections const & ids)
+    {
+      for (auto const lineId : ids.m_lineIds)
+        if (visited.insert(lineId).second)
+        {
+          auto it = lines.find(lineId);
+          if (it != lines.end() && it->second->m_visible && it->second->m_minZoom <= zoom)
+            fn(*it->second);
+        }
+    });
+  }
+};
 
 struct UserMarkRenderData
 {
@@ -83,14 +165,13 @@ struct UserMarkRenderData
 
 using TUserMarksRenderData = std::vector<UserMarkRenderData>;
 
-void ProcessSplineSegmentRects(m2::SharedSpline const & spline, double maxSegmentLength,
-                               std::function<bool(m2::RectD const & segmentRect)> const & func);
+// Hit testing and search-symbol suppression need the same anchor and pixel offset as the sprite vertices.
+drape_ptr<dp::OverlayHandle> CreateUserMarkOverlayHandle(UserMarkRenderParams const & renderInfo,
+                                                         TileKey const & tileKey, m2::RectD const & pixelRect);
 
 void CacheUserMarks(ref_ptr<dp::GraphicsContext> context, TileKey const & tileKey, ref_ptr<dp::TextureManager> textures,
-                    kml::MarkIdCollection const & marksId, UserMarksRenderCollection const & renderParams,
-                    dp::Batcher & batcher);
+                    MarksSource const & source, UserMarksRenderCollection const & renderParams, dp::Batcher & batcher);
 
 void CacheUserLines(ref_ptr<dp::GraphicsContext> context, TileKey const & tileKey, ref_ptr<dp::TextureManager> textures,
-                    kml::TrackIdCollection const & linesId, UserLinesRenderCollection const & renderParams,
-                    dp::Batcher & batcher);
+                    TracksSource const & source, UserLinesRenderCollection const & renderParams, dp::Batcher & batcher);
 }  // namespace df

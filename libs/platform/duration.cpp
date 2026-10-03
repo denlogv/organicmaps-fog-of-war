@@ -49,11 +49,6 @@ std::string_view GetUnitsGroupingSeparator(Locale const & locale)
   bool const isEmptySeparator = base::IsExist(kEmptyGroupingSeparatorLocales, locale.m_language);
   return isEmptySeparator ? kNoSpace : kNonBreakingSpace;
 }
-
-bool IsUnitsOrderValid(std::initializer_list<Duration::Units> units)
-{
-  return base::IsSortedAndUnique(units);
-}
 }  // namespace
 
 Duration::Duration(unsigned long seconds) : m_seconds(seconds) {}
@@ -84,7 +79,7 @@ std::string Duration::GetString(std::initializer_list<Units> units, std::string_
                                 std::string_view groupingSeparator) const
 {
   ASSERT(units.size(), ());
-  ASSERT(IsUnitsOrderValid(units), ());
+  ASSERT(base::IsSortedAndUnique(units), ());
 
   if (SecondsToUnits(m_seconds, Units::Minutes) == 0)
   {
@@ -110,6 +105,26 @@ std::string Duration::GetString(std::initializer_list<Units> units, std::string_
     }
   }
   return formattedTime;
+}
+
+std::string Duration::GetHoursMinutesString() const
+{
+  // Round seconds up to the nearest minute so a 4 min 30 s route reads "5 min" rather than "4 min".
+  long const totalMinutes = duration_cast<minutes>(m_seconds + seconds(30)).count();
+  long const h = totalMinutes / 60;
+  long const m = totalMinutes % 60;
+
+  std::string result;
+  if (h > 0)
+    result.append(std::to_string(h)).append(kNonBreakingSpace).append(GetUnitsString(Units::Hours));
+
+  if (h == 0 || m > 0)
+  {
+    if (!result.empty())
+      result.append(kNonBreakingSpace);
+    result.append(std::to_string(m)).append(kNonBreakingSpace).append(GetUnitsString(Units::Minutes));
+  }
+  return result;
 }
 
 std::string Duration::GetUnitsString(Units unit)

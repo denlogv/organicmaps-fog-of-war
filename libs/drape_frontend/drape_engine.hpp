@@ -11,6 +11,7 @@
 #include "drape_frontend/postprocess_renderer.hpp"
 #include "drape_frontend/route_shape.hpp"
 #include "drape_frontend/scenario_manager.hpp"
+#include "drape_frontend/selection_info.hpp"
 #include "drape_frontend/selection_shape.hpp"
 #include "drape_frontend/threads_commutator.hpp"
 
@@ -25,6 +26,7 @@
 #include "platform/location.hpp"
 #include "platform/placement_settings.hpp"
 
+#include "geometry/rect2d.hpp"
 #include "geometry/screenbase.hpp"
 #include "geometry/triangle2d.hpp"
 
@@ -56,7 +58,8 @@ public:
            bool allow3dBuildings, bool trafficEnabled, bool isolinesEnabled, bool blockTapEvents,
            bool showChoosePositionMark, std::vector<m2::TriangleD> && boundAreaTriangles, bool isRoutingActive,
            bool isAutozoomEnabled, bool simplifiedTrafficColors, dp::BackgroundMode backgroundMode,
-           std::optional<Arrow3dCustomDecl> arrow3dCustomDecl, OverlaysShowStatsCallback && overlaysShowStatsCallback,
+           float satelliteAreaOpacity, std::optional<Arrow3dCustomDecl> arrow3dCustomDecl,
+           OverlaysShowStatsCallback && overlaysShowStatsCallback,
            OnGraphicsContextInitialized && onGraphicsContextInitialized,
            dp::RenderInjectionHandler && renderInjectionHandler)
       : m_apiVersion(apiVersion)
@@ -78,6 +81,7 @@ public:
       , m_isAutozoomEnabled(isAutozoomEnabled)
       , m_simplifiedTrafficColors(simplifiedTrafficColors)
       , m_backgroundMode(backgroundMode)
+      , m_satelliteAreaOpacity(satelliteAreaOpacity)
       , m_arrow3dCustomDecl(std::move(arrow3dCustomDecl))
       , m_overlaysShowStatsCallback(std::move(overlaysShowStatsCallback))
       , m_onGraphicsContextInitialized(std::move(onGraphicsContextInitialized))
@@ -104,6 +108,7 @@ public:
     bool m_isAutozoomEnabled;
     bool m_simplifiedTrafficColors;
     dp::BackgroundMode m_backgroundMode;
+    float m_satelliteAreaOpacity;
     std::optional<Arrow3dCustomDecl> m_arrow3dCustomDecl;
     OverlaysShowStatsCallback m_overlaysShowStatsCallback;
     OnGraphicsContextInitialized m_onGraphicsContextInitialized;
@@ -169,8 +174,13 @@ public:
                     bool isAnim, bool isGeometrySelectionAllowed, bool isSelectionShapeVisible);
   void DeselectObject(bool restoreViewport);
 
+  /// Highlights @p lines as overlay geometry on top of the current selection, using @p color.
+  /// Replaces any previously highlighted lines. No-op if no selection is active.
+  void SetSelectionLines(SelectionInfo && info);
+
   dp::DrapeID AddSubroute(SubrouteConstPtr subroute);
   void RemoveSubroute(dp::DrapeID subrouteId, bool deactivateFollowing);
+  void RemoveAlternativeSubroutes();
   void FollowRoute(int preferredZoomLevel, int preferredZoomLevel3d, bool enableAutoZoom, bool isArrowGlued);
   void DeactivateRouteFollowing();
   void SetSubrouteVisibility(dp::DrapeID subrouteId, bool isVisible);
@@ -189,7 +199,7 @@ public:
   void ClearGpsTrackPoints();
 
   void EnableChoosePositionMode(bool enable, std::vector<m2::TriangleD> && boundAreaTriangles,
-                                m2::PointD const * optionalPosition);
+                                m2::PointD const * optionalPosition, bool shouldChangeViewport = true);
   void BlockTapEvents(bool block);
 
   void SetKineticScrollEnabled(bool enabled);
@@ -212,6 +222,11 @@ public:
   void UpdateTransitScheme(TransitDisplayInfos && transitDisplayInfos);
   void ClearTransitSchemeCache(MwmSet::MwmId const & mwmId);
   void ClearAllTransitSchemeCache();
+
+  /// Shows a single route's transit view (lines + stops) on the transit scheme layer.
+  /// Replaces any previously shown route transit. No-op if the info is empty.
+  void ShowRouteTransit(TransitInfo && info);
+  void HideRouteTransit();
 
   void EnableIsolines(bool enable);
 
@@ -244,9 +259,10 @@ public:
 
   void SetCustomArrow3d(std::optional<Arrow3dCustomDecl> arrow3dCustomDecl);
 
-  void SetTileBackgroundData(df::TileKey const & tileKey, uint32_t width, uint32_t height, dp::TextureFormat format,
-                             dp::BackgroundMode mode, std::vector<uint8_t> && bytes);
-  void SetTileBackgroundMode(dp::BackgroundMode mode);
+  void AddTileBackgroundImage(std::string const & uid, uint32_t width, uint32_t height, dp::TextureFormat format,
+                              dp::BackgroundMode mode, std::vector<uint8_t> && bytes);
+  void SetTileBackgroundData(df::TileKey const & tileKey, std::string const & imageUid, m2::RectF const & rect);
+  void SetTileBackgroundMode(dp::BackgroundMode mode, float satelliteAreaOpacity = 0.5f);
 
   void EnableFogOfWar(bool enable);
 

@@ -1,9 +1,14 @@
-• OSM-kortdata pr. 10. marts, Wikipedia pr. 1. marts
-• Mere detaljerede højde-isoliner for kinesiske provinser
-• Tilføjet rækker af træer, læderbutikker og butikker, der sælger religiøse varer
-• Tilføjet understøttelse af betingede hastighedsbegrænsninger
-• Tanzania opdelt i mindre regioner
-• Forbedret visning af virksomhedens åbningstider
-• Rettede flere nedbrud
-• Forbedrede oversættelser af app- og landenavne
-omaps.org/news
+• OSM-data pr. 26. august
+• NYT: markering af flere bogmærker og spor
+• NYT: skjul enkelte spor med øjeikonet
+• NYT: Wikipedia-artikler på bengali, hindi, marathi, polsk, tamil, telugu og urdu
+• Rettet nedbrud og fastfrysninger
+• Fugleskjul, scener, bakker og klippebuer er føjet til kortet
+• Bedre deling af steder
+• Rettelser til Android Auto
+• Rettet valg af rutestop
+• Rettet åbningstider
+• Bedre søgepanel
+• Rettet fejl i OSM-editoren
+• Rettet højdeprofil
+…mere på omaps.org/news

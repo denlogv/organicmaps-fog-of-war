@@ -12,19 +12,19 @@ enum TextColorStyleSheet: String, CaseIterable {
 }
 
 extension TextColorStyleSheet: IStyleSheet {
-  func styleResolverFor(colors: IColors, fonts _: IFonts) -> Theme.StyleResolver {
+  var styleResolver: Theme.StyleResolver {
     let color: UIColor = {
       switch self {
-      case .whitePrimary: return colors.whitePrimaryText
-      case .blackSecondary: return colors.blackSecondaryText
-      case .blackPrimary: return colors.blackPrimaryText
-      case .linkBlue: return colors.linkBlue
-      case .linkBlueHighlighted: return colors.linkBlueHighlighted
-      case .white: return colors.white
-      case .blackHint: return colors.blackHintText
-      case .green: return colors.ratingGreen
-      case .red: return colors.red
-      case .buttonRed: return colors.buttonRed
+      case .whitePrimary: .whitePrimaryText
+      case .blackSecondary: .blackSecondaryText
+      case .blackPrimary: .blackPrimaryText
+      case .linkBlue: .linkBlue
+      case .linkBlueHighlighted: .linkBlueHighlighted
+      case .white: .whitePrimary
+      case .blackHint: .blackHintText
+      case .green: .ratingGreen
+      case .red: .redPrimary
+      case .buttonRed: .buttonRed
       }
     }()
     return .add { $0.fontColor = color }

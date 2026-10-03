@@ -9,6 +9,7 @@
 #include "base/visitor.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
@@ -17,6 +18,9 @@ namespace routing
 {
 namespace transit
 {
+// V1 transit section (TRANSIT_FILE_TAG, routing::transit::GraphData): OSM route-relation transit.
+uint16_t constexpr kTransitVersion = 0;
+
 using Anchor = uint8_t;
 using FeatureId = uint32_t;
 using LineId = uint32_t;
@@ -146,6 +150,10 @@ public:
 
   StopId GetId() const { return m_id.Get(); }
   FeatureId GetFeatureId() const { return m_featureIdentifiers.GetFeatureId(); }
+  // Assigns the resolved nearest station feature at runtime. Bus/tram stops are based on
+  // stop_position OSM nodes which don't produce a feature, so they have no feature id of their
+  // own. @see ReadTransitTask::Do.
+  void SetFeatureId(FeatureId featureId) { m_featureIdentifiers.SetFeatureId(featureId); }
   OsmId GetOsmId() const { return m_featureIdentifiers.GetOsmId(); }
   TransferId GetTransferId() const { return m_transferId; }
   std::vector<LineId> const & GetLineIds() const { return m_lineIds; }

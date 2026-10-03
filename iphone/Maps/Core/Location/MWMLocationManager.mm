@@ -135,6 +135,7 @@ BOOL keepRunningInBackground()
 
 NSString * const kLocationPermissionRequestedKey = @"kLocationPermissionRequestedKey";
 NSString * const kLocationAlertNeedShowKey = @"kLocationAlertNeedShowKey";
+NSString * const kNavigationOtherLocationActivityKey = @"kNavigationOtherLocationActivityKey";
 
 BOOL needShowLocationAlert()
 {
@@ -159,6 +160,7 @@ void setShowLocationAlert(BOOL needShow)
 @property(nonatomic) CLHeading * lastHeadingInfo;
 @property(nonatomic) CLLocation * lastLocationInfo;
 @property(nonatomic) MWMLocationStatus lastLocationStatus;
+@property(nonatomic) BOOL useNavigationOtherLocationActivity;
 @property(nonatomic) MWMLocationPredictor * predictor;
 @property(nonatomic) Observers * observers;
 @property(nonatomic) location::TLocationSource locationSource;
@@ -181,7 +183,11 @@ void setShowLocationAlert(BOOL needShow)
 {
   self = [super init];
   if (self)
+  {
     _observers = [Observers weakObjectsHashTable];
+    _useNavigationOtherLocationActivity =
+        [NSUserDefaults.standardUserDefaults boolForKey:kNavigationOtherLocationActivityKey];
+  }
   return self;
 }
 
@@ -259,7 +265,7 @@ void setShowLocationAlert(BOOL needShow)
 + (CLHeading *)lastHeading
 {
   MWMLocationManager * manager = [self manager];
-  if (!manager.started || !manager.lastHeadingInfo || manager.lastHeadingInfo.headingAccuracy < 0)
+  if (!manager.started || !location_util::isValidHeading(manager.lastHeadingInfo))
     return nil;
   return manager.lastHeadingInfo;
 }
@@ -279,7 +285,10 @@ void setShowLocationAlert(BOOL needShow)
 
 - (void)processHeadingUpdate:(CLHeading *)headingInfo
 {
+  // Stored first, so +lastHeading keeps reflecting the latest (possibly invalid) state.
   self.lastHeadingInfo = headingInfo;
+  if (!location_util::isValidHeading(headingInfo))
+    return;
   GetFramework().OnCompassUpdate(location_util::compassInfoFromHeading(headingInfo));
   for (Observer observer in self.observers)
     if ([observer respondsToSelector:@selector(onHeadingUpdate:)])
@@ -369,6 +378,11 @@ void setShowLocationAlert(BOOL needShow)
   }
 }
 
++ (void)setUseNavigationOtherLocationActivity:(BOOL)enabled
+{
+  [self manager].useNavigationOtherLocationActivity = enabled;
+}
+
 + (void)checkLocationStatus
 {
   setShowLocationAlert(YES);
@@ -410,19 +424,40 @@ void setShowLocationAlert(BOOL needShow)
     return;
   _geoMode = geoMode;
 
+  [self refreshLocationActivityType];
+  [MWMLocationManager refreshGeoModeSettingsFor:self.locationManager geoMode:self.geoMode];
+}
+
+- (void)setUseNavigationOtherLocationActivity:(BOOL)enabled
+{
+  if (_useNavigationOtherLocationActivity == enabled)
+    return;
+  _useNavigationOtherLocationActivity = enabled;
+  [NSUserDefaults.standardUserDefaults setBool:enabled forKey:kNavigationOtherLocationActivityKey];
+  NSString * text =
+      [NSString stringWithFormat:@"NavigationOther location activity type is %@", enabled ? @"enabled" : @"disabled"];
+  [Toast showWithText:text alignment:AlignmentTop];
+  [self refreshLocationActivityType];
+}
+
+- (void)refreshLocationActivityType
+{
   CLLocationManager * locationManager = self.locationManager;
-  switch (geoMode)
+  switch (self.geoMode)
   {
   case GeoMode::Pending:
   case GeoMode::InPosition:
   case GeoMode::NotInPosition:
-  case GeoMode::FollowAndRotate: locationManager.activityType = CLActivityTypeOther; break;
+  case GeoMode::FollowAndRotate:
+    locationManager.activityType =
+        self.useNavigationOtherLocationActivity ? CLActivityTypeOtherNavigation : CLActivityTypeOther;
+    break;
   case GeoMode::VehicleRouting: locationManager.activityType = CLActivityTypeAutomotiveNavigation; break;
   case GeoMode::PedestrianRouting:
   case GeoMode::BicycleRouting: locationManager.activityType = CLActivityTypeOtherNavigation; break;
   }
 
-  [MWMLocationManager refreshGeoModeSettingsFor:self.locationManager geoMode:self.geoMode];
+  LOG(LINFO, ("Location activity type updated to", static_cast<int>(locationManager.activityType)));
 }
 
 + (void)refreshGeoModeSettingsFor:(CLLocationManager *)locationManager geoMode:(GeoMode)geoMode
@@ -454,6 +489,13 @@ void setShowLocationAlert(BOOL needShow)
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)heading
 {
   [self processHeadingUpdate:heading];
+}
+
+// The calibration HUD is the only way back to valid headings, which are otherwise skipped, but it
+// must not cover the map while driving, where the arrow follows the route rather than the compass.
+- (BOOL)locationManagerShouldDisplayHeadingCalibration:(CLLocationManager *)manager
+{
+  return self.geoMode != GeoMode::VehicleRouting;
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations
@@ -497,10 +539,12 @@ void setShowLocationAlert(BOOL needShow)
 
 // Delegate's method didChangeAuthorizationStatus is used to handle the authorization status when the application
 // finishes launching or user changes location access in the application settings.
-- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+
+- (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager
 {
-  LOG(LWARNING, ("CLLocationManagerDelegate: Authorization status has changed to", DebugPrint(status)));
-  switch (status)
+  LOG(LWARNING,
+      ("CLLocationManagerDelegate: Authorization status has changed to", DebugPrint(manager.authorizationStatus)));
+  switch (manager.authorizationStatus)
   {
   case kCLAuthorizationStatusAuthorizedWhenInUse:
   case kCLAuthorizationStatusAuthorizedAlways: [self startUpdatingLocationFor:manager]; break;
@@ -568,7 +612,7 @@ void setShowLocationAlert(BOOL needShow)
   if ([CLLocationManager locationServicesEnabled])
   {
     CLLocationManager * locationManager = self.locationManager;
-    switch (CLLocationManager.authorizationStatus)
+    switch (locationManager.authorizationStatus)
     {
     case kCLAuthorizationStatusAuthorizedWhenInUse:
     case kCLAuthorizationStatusAuthorizedAlways:

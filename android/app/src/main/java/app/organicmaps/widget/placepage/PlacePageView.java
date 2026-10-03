@@ -6,6 +6,8 @@ import static app.organicmaps.sdk.util.Utils.getLocalizedFeatureType;
 import static app.organicmaps.sdk.util.Utils.getTagValueLocalized;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
@@ -14,11 +16,14 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
@@ -28,8 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -37,22 +40,19 @@ import app.organicmaps.MwmActivity;
 import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
 import app.organicmaps.bookmarks.BookmarksSharingHelper;
-import app.organicmaps.bookmarks.ChooseBookmarkCategoryFragment;
 import app.organicmaps.downloader.DownloaderStatusIcon;
 import app.organicmaps.downloader.MapManagerHelper;
 import app.organicmaps.sdk.Framework;
 import app.organicmaps.sdk.bookmarks.data.Bookmark;
-import app.organicmaps.sdk.bookmarks.data.BookmarkCategory;
 import app.organicmaps.sdk.bookmarks.data.BookmarkManager;
-import app.organicmaps.sdk.bookmarks.data.BookmarkSharingResult;
 import app.organicmaps.sdk.bookmarks.data.DistanceAndAzimut;
 import app.organicmaps.sdk.bookmarks.data.FileType;
 import app.organicmaps.sdk.bookmarks.data.Icon;
 import app.organicmaps.sdk.bookmarks.data.MapObject;
 import app.organicmaps.sdk.bookmarks.data.Metadata;
-import app.organicmaps.sdk.bookmarks.data.PredefinedColors;
 import app.organicmaps.sdk.bookmarks.data.Track;
 import app.organicmaps.sdk.bookmarks.data.TrackRecording;
+import app.organicmaps.sdk.bookmarks.data.TrackSelectionCandidate;
 import app.organicmaps.sdk.downloader.CountryItem;
 import app.organicmaps.sdk.downloader.MapManager;
 import app.organicmaps.sdk.editor.Editor;
@@ -62,16 +62,19 @@ import app.organicmaps.sdk.location.SensorListener;
 import app.organicmaps.sdk.routing.RoutingController;
 import app.organicmaps.sdk.util.StringUtils;
 import app.organicmaps.sdk.util.concurrency.UiThread;
-import app.organicmaps.sdk.widget.placepage.CoordinatesFormat;
+import app.organicmaps.sdk.widget.placepage.CoordinatesFormatEntry;
+import app.organicmaps.sdk.widget.placepage.RouteInfo;
 import app.organicmaps.util.SharingUtils;
 import app.organicmaps.util.UiUtils;
 import app.organicmaps.util.Utils;
+import app.organicmaps.util.bottomsheet.ExportMenuItems;
 import app.organicmaps.util.bottomsheet.MenuBottomSheetFragment;
 import app.organicmaps.util.bottomsheet.MenuBottomSheetItem;
 import app.organicmaps.utils.Graphics;
+import app.organicmaps.widget.ArrowPopup;
 import app.organicmaps.widget.ArrowView;
-import app.organicmaps.widget.placepage.sections.PlacePageBookmarkFragment;
 import app.organicmaps.widget.placepage.sections.PlacePageLinksFragment;
+import app.organicmaps.widget.placepage.sections.PlacePageNotesFragment;
 import app.organicmaps.widget.placepage.sections.PlacePageOpeningHoursFragment;
 import app.organicmaps.widget.placepage.sections.PlacePagePhoneFragment;
 import app.organicmaps.widget.placepage.sections.PlacePageProductsFragment;
@@ -80,18 +83,17 @@ import app.organicmaps.widget.placepage.sections.PlacePageTrackRecordingFragment
 import app.organicmaps.widget.placepage.sections.PlacePageWikipediaFragment;
 import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
-public class PlacePageView extends Fragment
-    implements View.OnClickListener, View.OnLongClickListener, LocationListener, SensorListener, Observer<MapObject>,
-               ChooseBookmarkCategoryFragment.Listener, EditBookmarkFragment.EditBookmarkListener,
-               MenuBottomSheetFragment.MenuBottomSheetInterface, BookmarkManager.BookmarksSharingListener,
-               BookmarkColorDialogFragment.OnBookmarkColorChangeListener
-
+public class PlacePageView extends Fragment implements View.OnClickListener, View.OnLongClickListener, LocationListener,
+                                                       SensorListener, Observer<MapObject>,
+                                                       MenuBottomSheetFragment.MenuBottomSheetInterface
 {
   private static final String PREF_COORDINATES_FORMAT = "coordinates_format";
-  private static final String BOOKMARK_FRAGMENT_TAG = "BOOKMARK_FRAGMENT_TAG";
+  private static final String PREF_DID_SHOW_TRACK_CANDIDATES_EDU = "tip_track_selector_popup";
+  private static final long TRACK_CANDIDATES_EDU_DELAY_MS = 300L;
+  private static final String NOTES_FRAGMENT_TAG = "NOTES_FRAGMENT_TAG";
   private static final String TRACK_FRAGMENT_TAG = "TRACK_FRAGMENT_TAG";
   private static final String TRACK_RECORDING_FRAGMENT_TAG = "TRACK_RECORDING_FRAGMENT_TAG";
   private static final String PRODUCTS_FRAGMENT_TAG = "PRODUCTS_FRAGMENT_TAG";
@@ -101,14 +103,12 @@ public class PlacePageView extends Fragment
   private static final String LINKS_FRAGMENT_TAG = "LINKS_FRAGMENT_TAG";
   private static final String TRACK_SHARE_MENU_ID = "TRACK_SHARE_MENU_ID";
 
-  private static final List<CoordinatesFormat> visibleCoordsFormat =
-      Arrays.asList(CoordinatesFormat.LatLonDMS, CoordinatesFormat.LatLonDecimal, CoordinatesFormat.OLCFull,
-                    CoordinatesFormat.UTM, CoordinatesFormat.MGRS, CoordinatesFormat.OSMLink);
   private View mFrame;
   // Preview.
   private ViewGroup mPreview;
   private Toolbar mToolbar;
   private TextView mTvTitle;
+  private ImageView mIvTitleChevron;
   private TextView mTvSecondaryTitle;
   private TextView mTvSubtitle;
   private ArrowView mAvDirection;
@@ -143,10 +143,20 @@ public class PlacePageView extends Fragment
   private View mRouteRef;
   private TextView mTvRouteRef;
   private ImageView mIvRouteRef;
+  @Nullable
+  private RouteInfo[] mRoutes;
+  @Nullable
+  private PopupWindow mRoutesPopup;
+  @Nullable
+  private PopupWindow mTrackCandidatesPopup;
+  private boolean mEducationalPopupScheduled;
+  @Nullable
+  private Runnable mEducationalPopupRunnable;
   private View mEditPlace;
   private View mAddOrganisation;
   private View mAddPlace;
   private View mEditTopSpace;
+  private View mDetailsTopSpace;
   private ImageView mColorIcon;
   private TextView mTvCategory;
   private ImageView mEditBookmark;
@@ -159,7 +169,8 @@ public class PlacePageView extends Fragment
   private Observer<String> mTrackRecordingObserver;
 
   // Data
-  private CoordinatesFormat mCoordsFormat = CoordinatesFormat.LatLonDecimal;
+  // Stable id of the user-selected coordinate format (see place_page::CoordinatesFormat / native).
+  private int mCoordsFormatId = Framework.COORDINATES_FORMAT_DECIMAL;
   // Downloader`s stuff
   private DownloaderStatusIcon mDownloaderIcon;
   private TextView mDownloaderInfo;
@@ -206,6 +217,18 @@ public class PlacePageView extends Fragment
       metaLayout.setVisibility(GONE);
   }
 
+  private static void refreshMetadataOrHide(@Nullable CharSequence metadata, @NonNull View metaLayout,
+                                            @NonNull TextView metaTv)
+  {
+    if (!TextUtils.isEmpty(metadata))
+    {
+      metaLayout.setVisibility(VISIBLE);
+      metaTv.setText(metadata);
+    }
+    else
+      metaLayout.setVisibility(GONE);
+  }
+
   private static boolean isInvalidDownloaderStatus(int status)
   {
     return (status != CountryItem.STATUS_DOWNLOADABLE && status != CountryItem.STATUS_ENQUEUED
@@ -227,12 +250,14 @@ public class PlacePageView extends Fragment
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
   {
     super.onViewCreated(view, savedInstanceState);
-    mCoordsFormat =
-        CoordinatesFormat.fromId(MwmApplication.prefs(requireContext())
-                                     .getInt(PREF_COORDINATES_FORMAT, CoordinatesFormat.LatLonDecimal.getId()));
+    mCoordsFormatId =
+        MwmApplication.prefs(requireContext()).getInt(PREF_COORDINATES_FORMAT, Framework.COORDINATES_FORMAT_DECIMAL);
 
     Fragment parentFragment = getParentFragment();
     mPlacePageViewListener = (PlacePageViewListener) parentFragment;
+
+    requireActivity().getSupportFragmentManager().setFragmentResultListener(
+        EditBookmarkFragment.REQUEST_KEY, getViewLifecycleOwner(), (key, result) -> handleEditBookmarkResult(result));
 
     mFrame = view;
     mFrame.setOnClickListener((v) -> mPlacePageViewListener.onPlacePageRequestToggleState());
@@ -250,6 +275,8 @@ public class PlacePageView extends Fragment
     mTvTitle = mPreview.findViewById(R.id.tv__title);
     mTvTitle.setOnLongClickListener(this);
     mTvTitle.setOnClickListener(this);
+    mIvTitleChevron = mPreview.findViewById(R.id.iv__title_chevron);
+    mIvTitleChevron.setOnClickListener(this);
     mTvSecondaryTitle = mPreview.findViewById(R.id.tv__secondary_title);
     mTvSecondaryTitle.setOnLongClickListener(this);
     mTvSecondaryTitle.setOnClickListener(this);
@@ -319,7 +346,7 @@ public class PlacePageView extends Fragment
     mEntrance = mFrame.findViewById(R.id.ll__place_entrance);
     mTvEntrance = mEntrance.findViewById(R.id.tv__place_entrance);
     mRouteRef = mFrame.findViewById(R.id.ll__place_route_ref);
-    mRouteRef.setOnClickListener(this);
+    mFrame.findViewById(R.id.ll__place_route_ref_content).setOnClickListener(this);
     mTvRouteRef = mFrame.findViewById(R.id.tv__place_route_ref);
     mIvRouteRef = mFrame.findViewById(R.id.iv__place_route_ref);
     mEditPlace = mFrame.findViewById(R.id.ll__place_editor);
@@ -329,6 +356,7 @@ public class PlacePageView extends Fragment
     mAddPlace = mFrame.findViewById(R.id.ll__place_add);
     mAddPlace.setOnClickListener(this);
     mEditTopSpace = mFrame.findViewById(R.id.edit_top_space);
+    mDetailsTopSpace = mFrame.findViewById(R.id.details_top_space);
     latlon.setOnLongClickListener(this);
     address.setOnLongClickListener(this);
     mOperator.setOnLongClickListener(this);
@@ -351,7 +379,6 @@ public class PlacePageView extends Fragment
   {
     super.onStart();
     mViewModel.getMapObject().observe(requireActivity(), this);
-    BookmarkManager.INSTANCE.addSharingListener(this);
     MwmApplication.from(requireContext()).getLocationHelper().addListener(this);
     MwmApplication.from(requireContext()).getSensorHelper().addListener(this);
   }
@@ -360,8 +387,17 @@ public class PlacePageView extends Fragment
   public void onStop()
   {
     super.onStop();
+    if (mRoutesPopup != null && mRoutesPopup.isShowing())
+      mRoutesPopup.dismiss();
+    if (mTrackCandidatesPopup != null && mTrackCandidatesPopup.isShowing())
+      mTrackCandidatesPopup.dismiss();
+    if (mEducationalPopupRunnable != null)
+    {
+      mIvTitleChevron.removeCallbacks(mEducationalPopupRunnable);
+      mEducationalPopupRunnable = null;
+    }
+    mEducationalPopupScheduled = false;
     mViewModel.getMapObject().removeObserver(this);
-    BookmarkManager.INSTANCE.removeSharingListener(this);
     MwmApplication.from(requireContext()).getLocationHelper().removeListener(this);
     MwmApplication.from(requireContext()).getSensorHelper().removeListener(this);
     detachCountry();
@@ -420,10 +456,10 @@ public class PlacePageView extends Fragment
                        mMapObject.hasPhoneNumber());
   }
 
-  private void updateBookmarkView()
+  private void updateNotesView()
   {
-    updateViewFragment(PlacePageBookmarkFragment.class, BOOKMARK_FRAGMENT_TAG, R.id.place_page_bookmark_fragment,
-                       mMapObject.isBookmark());
+    updateViewFragment(PlacePageNotesFragment.class, NOTES_FRAGMENT_TAG, R.id.place_page_notes_fragment,
+                       mMapObject.isBookmark() || mMapObject.isTrack());
   }
 
   private void updateTrackView()
@@ -507,8 +543,14 @@ public class PlacePageView extends Fragment
     if (mMapObject.isTrack())
     {
       UiUtils.hide(mAvDirection, mTvDistance);
+      UiUtils.showIf(((Track) mMapObject).hasMultipleCandidates(), mIvTitleChevron);
+      maybeShowEducationalTrackCandidatesPopup();
     }
-    else if (mMapObject.isTrackRecording())
+    else
+    {
+      UiUtils.hide(mIvTitleChevron);
+    }
+    if (mMapObject.isTrackRecording())
     {
       TrackRecording trackRecording = (TrackRecording) mMapObject;
       final var liveData = trackRecording.getTrackRecordingPPDescription();
@@ -530,7 +572,7 @@ public class PlacePageView extends Fragment
       Drawable circle = Graphics.drawCircle(track.getColor(), R.dimen.place_page_icon_background_size,
                                             requireContext().getResources());
       mColorIcon.setImageDrawable(circle);
-      showCategory = !track.isTempRelationTrack();
+      showCategory = !track.isRelationTrack();
       if (showCategory)
         mTvCategory.setText(BookmarkManager.INSTANCE.getCategoryById(track.getCategoryId()).getName());
     }
@@ -554,136 +596,67 @@ public class PlacePageView extends Fragment
 
   void showColorDialog()
   {
-    final Bundle args = new Bundle();
-    final FragmentManager manager = getChildFragmentManager();
-    final BookmarkColorDialogFragment dialogFragment = new BookmarkColorDialogFragment();
-
+    // The picker can remain open when navigation closes this Place Page.
+    final FragmentManager fm = requireActivity().getSupportFragmentManager();
     if (mMapObject.isTrack())
     {
       final Track track = (Track) mMapObject;
-      args.putInt(BookmarkColorDialogFragment.ICON_COLOR, PredefinedColors.getPredefinedColorIndex(track.getColor()));
+      PlacePageController.showColorPicker(fm, track.getTrackId(), true, track.getColor());
     }
     else if (mMapObject.isBookmark())
     {
       final Bookmark bookmark = (Bookmark) mMapObject;
-      args.putInt(BookmarkColorDialogFragment.ICON_COLOR, bookmark.getIcon().getColor());
-      args.putInt(BookmarkColorDialogFragment.ICON_RES, bookmark.getIcon().getResId());
-    }
-
-    dialogFragment.setArguments(args);
-    dialogFragment.show(manager, null);
-  }
-
-  @Override
-  public void onBookmarkColorSet(int colorPos)
-  {
-    if (mMapObject == null)
-      return;
-    if (mMapObject.isTrack())
-    {
-      final Track track = (Track) mMapObject;
-      int from = track.getColor();
-      int to = PredefinedColors.getColor(colorPos);
-      if (from == to)
-        return;
-      track.setColor(to);
-      Drawable circle =
-          Graphics.drawCircle(to, R.dimen.place_page_icon_background_size, requireContext().getResources());
-      mColorIcon.setImageDrawable(circle);
-    }
-    else if (mMapObject.isBookmark())
-    {
-      final Bookmark bookmark = (Bookmark) mMapObject;
-      int from = bookmark.getIcon().argb();
-      int to = PredefinedColors.getColor(colorPos);
-      if (from == to)
-        return;
-      bookmark.setIconColor(to);
-      Drawable circle =
-          Graphics.drawCircleAndImage(to, R.dimen.place_page_icon_background_size, bookmark.getIcon().getResId(),
-                                      R.dimen.place_page_icon_size, requireContext());
-      mColorIcon.setImageDrawable(circle);
+      PlacePageController.showColorPicker(fm, bookmark.getBookmarkId(), false, bookmark.getIcon().argb());
     }
   }
 
   private void showCategoryList()
   {
-    final Bundle args = new Bundle();
-    final List<BookmarkCategory> categories = BookmarkManager.INSTANCE.getCategories();
-    final FragmentManager manager = getChildFragmentManager();
-    String className = ChooseBookmarkCategoryFragment.class.getName();
-    final FragmentFactory factory = manager.getFragmentFactory();
-    final ChooseBookmarkCategoryFragment frag =
-        (ChooseBookmarkCategoryFragment) factory.instantiate(getContext().getClassLoader(), className);
-    if (mMapObject.isTrack())
-    {
-      Track track = (Track) mMapObject;
-      BookmarkCategory currentCategory = BookmarkManager.INSTANCE.getCategoryById(track.getCategoryId());
-      final int index = categories.indexOf(currentCategory);
-      args.putInt(ChooseBookmarkCategoryFragment.CATEGORY_POSITION, index);
-      frag.setArguments(args);
-      frag.show(manager, null);
-    }
-    else if (mMapObject.isBookmark())
-    {
-      Bookmark bookmark = (Bookmark) mMapObject;
-      BookmarkCategory currentCategory = BookmarkManager.INSTANCE.getCategoryById(bookmark.getCategoryId());
-      final int index = categories.indexOf(currentCategory);
-      args.putInt(ChooseBookmarkCategoryFragment.CATEGORY_POSITION, index);
-      frag.setArguments(args);
-      frag.show(manager, null);
-    }
-  }
-
-  @Override
-  public void onCategoryChanged(@NonNull BookmarkCategory newCategory)
-  {
-    if (mMapObject.isTrack())
-    {
-      Track track = (Track) mMapObject;
-      BookmarkCategory previousCategory = BookmarkManager.INSTANCE.getCategoryById(track.getCategoryId());
-      if (previousCategory == newCategory)
-        return;
-      track.setCategoryId(newCategory.getId());
-      mTvCategory.setText(newCategory.getName());
-      track.setCategoryId(newCategory.getId());
-    }
-    else if (mMapObject.isBookmark())
-    {
-      Bookmark bookmark = (Bookmark) mMapObject;
-      BookmarkCategory previousCategory = BookmarkManager.INSTANCE.getCategoryById(bookmark.getCategoryId());
-      if (previousCategory == newCategory)
-        return;
-      mTvCategory.setText(newCategory.getName());
-      bookmark.setCategoryId(newCategory.getId());
-    }
+    // The chooser and its new-list dialog can remain open when navigation closes this Place Page.
+    final FragmentManager fm = requireActivity().getSupportFragmentManager();
+    if (mMapObject instanceof Track track)
+      PlacePageController.showCategoryPicker(fm, track.getTrackId(), true, track.getCategoryId());
+    else if (mMapObject instanceof Bookmark bookmark)
+      PlacePageController.showCategoryPicker(fm, bookmark.getBookmarkId(), false, bookmark.getCategoryId());
   }
 
   void showBookmarkEditFragment()
   {
+    final FragmentManager fm = requireActivity().getSupportFragmentManager();
     if (mMapObject.isTrack())
     {
       Track track = (Track) mMapObject;
-      final FragmentActivity activity = requireActivity();
-      EditBookmarkFragment.editTrack(track.getCategoryId(), track.getTrackId(), activity, getChildFragmentManager(),
-                                     PlacePageView.this);
+      EditBookmarkFragment.editTrack(track.getCategoryId(), track.getTrackId(), fm);
     }
     else if (mMapObject.isBookmark())
     {
       Bookmark bookmark = (Bookmark) mMapObject;
-      final FragmentActivity activity = requireActivity();
-      EditBookmarkFragment.editBookmark(bookmark.getCategoryId(), bookmark.getBookmarkId(), activity,
-                                        getChildFragmentManager(), PlacePageView.this);
+      EditBookmarkFragment.editBookmark(bookmark.getCategoryId(), bookmark.getBookmarkId(), fm);
     }
   }
 
-  @Override
-  public void onBookmarkSaved(long bookmarkId, boolean movedFromCategory)
+  private void handleEditBookmarkResult(@NonNull Bundle result)
   {
-    if (mMapObject.isTrack())
-      BookmarkManager.INSTANCE.updateTrackPlacePage();
-    else if (mMapObject.isBookmark())
-      BookmarkManager.INSTANCE.updateBookmarkPlacePage(bookmarkId);
+    if (mMapObject == null || !(mMapObject.isTrack() || mMapObject.isBookmark()))
+      return;
+
+    // The editor outlives the card, so a pending result may describe another object.
+    final boolean isTrack = mMapObject.isTrack();
+    final long currentId = isTrack ? ((Track) mMapObject).getTrackId() : ((Bookmark) mMapObject).getBookmarkId();
+    if (isTrack != result.getBoolean(EditBookmarkFragment.RESULT_TARGET_IS_TRACK)
+        || currentId != result.getLong(EditBookmarkFragment.RESULT_TARGET_ID))
+      return;
+
+    final String action = result.getString(EditBookmarkFragment.RESULT_ACTION);
+    if (EditBookmarkFragment.ACTION_DELETED.equals(action))
+      mPlacePageViewListener.onPlacePageRequestClose();
+    else if (EditBookmarkFragment.ACTION_SAVED.equals(action))
+    {
+      if (isTrack)
+        BookmarkManager.INSTANCE.updateTrackPlacePage();
+      else
+        BookmarkManager.INSTANCE.updateBookmarkPlacePage(currentId);
+    }
   }
 
   private void refreshDetails()
@@ -729,7 +702,8 @@ public class PlacePageView extends Fragment
                           mTvOutdoorSeating);
 
     // showTaxiOffer(mapObject);
-    refreshMetadataOrHide(Framework.nativeGetActiveObjectFormattedRouteRefs(), mRouteRef, mTvRouteRef);
+    mRoutes = Framework.nativeGetActiveObjectRoutes();
+    refreshMetadataOrHide(formatRouteRefs(mRoutes, Framework.nativeGetActiveTransitRouteRef()), mRouteRef, mTvRouteRef);
     if (mRouteRef.getVisibility() == VISIBLE)
     {
       if (mMapObject.isTramStop())
@@ -765,13 +739,15 @@ public class PlacePageView extends Fragment
           UiUtils.isVisible(mEditPlace) || UiUtils.isVisible(mAddOrganisation) || UiUtils.isVisible(mAddPlace),
           mEditTopSpace);
     }
-    UiUtils.hideIf(mMapObject.isTrackRecording(), mShareButton, mFrame.findViewById(R.id.ll__place_open_in));
-    UiUtils.hideIf(mMapObject.isTrack(), mFrame.findViewById(R.id.ll__place_open_in));
+    final boolean isTrackOrRecording = mMapObject.isTrack() || mMapObject.isTrackRecording();
+    final boolean isRelationTrack = mMapObject.isTrack() && ((Track) mMapObject).isRelationTrack();
+    UiUtils.hideIf(mMapObject.isTrackRecording() || isRelationTrack, mShareButton);
+    UiUtils.hideIf(isTrackOrRecording, mFrame.findViewById(R.id.ll__place_open_in), mDetailsTopSpace);
     updateLinksView();
     updateOpeningHoursView();
     updateProductsView();
     updateWikipediaView();
-    updateBookmarkView();
+    updateNotesView();
     updatePhoneView();
     updateTrackView();
     updateTrackRecordingView();
@@ -830,18 +806,24 @@ public class PlacePageView extends Fragment
     mTvDistance.setText(distanceAndAzimuth.getDistance().toString(requireContext()));
   }
 
+  // Index of the saved format in the available list, or 0 (the first available) when it doesn't apply
+  // here - the decimal formats always do, so the list is never empty and index 0 is always valid.
+  private int effectiveIndex(@NonNull CoordinatesFormatEntry[] entries)
+  {
+    for (int i = 0; i < entries.length; i++)
+      if (entries[i].getId() == mCoordsFormatId)
+        return i;
+    return 0;
+  }
+
   private void refreshLatLon()
   {
-    final double lat = mMapObject.getLat();
-    final double lon = mMapObject.getLon();
-    String latLon = Framework.nativeFormatLatLon(lat, lon, mCoordsFormat.getId());
-    if (latLon == null) // Some coordinates couldn't be converted to UTM and MGRS
-      latLon = "N/A";
-
-    if (mCoordsFormat.showLabel())
-      mTvLatlon.setText(mCoordsFormat.getLabel() + ": " + latLon);
-    else
-      mTvLatlon.setText(latLon);
+    // One native call resolves the region once and returns every format available here. The saved
+    // format may not apply (UTM/MGRS near the poles, OS Grid outside Great Britain); show the first
+    // available instead, without changing the saved preference.
+    final CoordinatesFormatEntry[] entries =
+        Framework.nativeGetCoordinateFormats(mMapObject.getLat(), mMapObject.getLon());
+    mTvLatlon.setText(entries[effectiveIndex(entries)].getDisplay());
     UiUtils.hideIf(mMapObject.isTrackRecording() || mMapObject.isTrack(), mFrame.findViewById(R.id.ll__place_latlon));
   }
 
@@ -863,6 +845,15 @@ public class PlacePageView extends Fragment
   {
     final Context context = requireContext();
     final int id = v.getId();
+    if ((id == R.id.tv__title || id == R.id.iv__title_chevron) && mMapObject instanceof Track)
+    {
+      final Track track = (Track) mMapObject;
+      if (track.hasMultipleCandidates())
+      {
+        showTrackCandidatesPopup(mIvTitleChevron, track.getCandidates());
+        return;
+      }
+    }
     if (id == R.id.tv__title || id == R.id.tv__secondary_title || id == R.id.tv__address)
     {
       // A workaround to make single taps toggle the bottom sheet.
@@ -876,10 +867,15 @@ public class PlacePageView extends Fragment
       addPlace();
     else if (id == R.id.ll__place_latlon)
     {
-      final int formatIndex = visibleCoordsFormat.indexOf(mCoordsFormat);
-      mCoordsFormat = visibleCoordsFormat.get((formatIndex + 1) % visibleCoordsFormat.size());
-      MwmApplication.prefs(context).edit().putInt(PREF_COORDINATES_FORMAT, mCoordsFormat.getId()).apply();
-      refreshLatLon();
+      // One native call: fetch the formats available here and advance to the next (wrapping). From an
+      // unavailable saved format this advances from the first available - i.e. from what is shown - so a
+      // tap always moves on visibly. The row's visibility is unchanged, so set the text directly.
+      final CoordinatesFormatEntry[] entries =
+          Framework.nativeGetCoordinateFormats(mMapObject.getLat(), mMapObject.getLon());
+      final CoordinatesFormatEntry next = entries[(effectiveIndex(entries) + 1) % entries.length];
+      mCoordsFormatId = next.getId();
+      MwmApplication.prefs(context).edit().putInt(PREF_COORDINATES_FORMAT, mCoordsFormatId).apply();
+      mTvLatlon.setText(next.getDisplay());
     }
     else if (id == R.id.ll__place_open_in)
     {
@@ -895,6 +891,95 @@ public class PlacePageView extends Fragment
       showBookmarkEditFragment();
     else if (id == R.id.tv__category)
       showCategoryList();
+    else if (id == R.id.ll__place_route_ref_content)
+      showRoutesPopup(v);
+  }
+
+  @NonNull
+  private static CharSequence formatRouteRefs(@Nullable RouteInfo[] routes, @Nullable String selectedRef)
+  {
+    if (routes == null || routes.length == 0)
+      return "";
+    // Routes can repeat the same ref with different from/to (e.g. inbound/outbound directions
+    // of the same line). Collapse them in the primary row — the popup still shows all entries.
+    final HashSet<String> seen = new HashSet<>(routes.length);
+    final SpannableStringBuilder sb = new SpannableStringBuilder();
+    for (RouteInfo r : routes)
+    {
+      if (!seen.add(r.getRef()))
+        continue;
+      if (sb.length() > 0)
+        sb.append(" • ");
+      final int start = sb.length();
+      sb.append(r.getRef());
+      if (r.getRef().equals(selectedRef))
+      {
+        sb.setSpan(new StyleSpan(Typeface.BOLD), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        sb.setSpan(new UnderlineSpan(), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      }
+    }
+    return sb;
+  }
+
+  private void showRoutesPopup(@NonNull View anchor)
+  {
+    if (mRoutes == null || mRoutes.length == 0)
+      return;
+
+    if (mRoutesPopup != null && mRoutesPopup.isShowing())
+      mRoutesPopup.dismiss();
+
+    final RouteInfo[] routes = mRoutes;
+    final List<ArrowPopup.Item> items = new ArrayList<>(routes.length);
+    for (RouteInfo r : routes)
+      items.add(new ArrowPopup.Item(r.formatLabel(), r.hasColor() ? r.getColor() : 0, false));
+
+    mRoutesPopup = ArrowPopup.show(requireContext(), new ArrowPopup.Anchors(anchor), items,
+                                   ArrowPopup.RowStyle.PASTEL_BACKGROUND, position -> {
+                                     final RouteInfo r = routes[position];
+                                     mTvRouteRef.setText(formatRouteRefs(routes, r.getRef()));
+                                     Framework.nativeShowRouteTransit(r.getRelId());
+                                   });
+  }
+
+  private void showTrackCandidatesPopup(@NonNull View arrowAnchor, @NonNull List<TrackSelectionCandidate> candidates)
+  {
+    if (mTrackCandidatesPopup != null && mTrackCandidatesPopup.isShowing())
+      mTrackCandidatesPopup.dismiss();
+
+    final List<ArrowPopup.Item> items = new ArrayList<>(candidates.size());
+    for (TrackSelectionCandidate c : candidates)
+      items.add(new ArrowPopup.Item(c.getTitle(), c.getColor(), c.isSelected()));
+
+    mTrackCandidatesPopup = ArrowPopup.show(requireContext(), new ArrowPopup.Anchors(mPreview, arrowAnchor), items,
+                                            ArrowPopup.RowStyle.COLOR_ICON_LEFT, Framework::nativeSelectTrackCandidate);
+    if (mTrackCandidatesPopup != null)
+      MwmApplication.prefs(requireContext()).edit().putBoolean(PREF_DID_SHOW_TRACK_CANDIDATES_EDU, true).apply();
+  }
+
+  private void maybeShowEducationalTrackCandidatesPopup()
+  {
+    if (mEducationalPopupScheduled)
+      return;
+    if (!(mMapObject instanceof Track track) || !track.hasMultipleCandidates())
+      return;
+    final SharedPreferences prefs = MwmApplication.prefs(requireContext());
+    if (prefs.getBoolean(PREF_DID_SHOW_TRACK_CANDIDATES_EDU, false))
+      return;
+    mEducationalPopupScheduled = true;
+    mEducationalPopupRunnable = () ->
+    {
+      mEducationalPopupRunnable = null;
+      if (!isAdded())
+        return;
+      // mMapObject can change during the delay; manual open in the window sets the pref flag.
+      if (prefs.getBoolean(PREF_DID_SHOW_TRACK_CANDIDATES_EDU, false))
+        return;
+      if (!(mMapObject instanceof Track current) || !current.hasMultipleCandidates())
+        return;
+      showTrackCandidatesPopup(mIvTitleChevron, current.getCandidates());
+    };
+    mIvTitleChevron.postDelayed(mEducationalPopupRunnable, TRACK_CANDIDATES_EDU_DELAY_MS);
   }
 
   private void showBigDirection()
@@ -921,14 +1006,10 @@ public class PlacePageView extends Fragment
       items.add(mTvOsmDescription.getText().toString());
     else if (id == R.id.ll__place_latlon)
     {
-      final double lat = mMapObject.getLat();
-      final double lon = mMapObject.getLon();
-      for (CoordinatesFormat format : visibleCoordsFormat)
-      {
-        String formatted = Framework.nativeFormatLatLon(lat, lon, format.getId());
-        if (formatted != null)
-          items.add(formatted);
-      }
+      // Copy the bare value of every format available here (skips OS Grid outside Great Britain, etc.).
+      for (final CoordinatesFormatEntry entry :
+           Framework.nativeGetCoordinateFormats(mMapObject.getLat(), mMapObject.getLon()))
+        items.add(entry.getValue());
     }
     else if (id == R.id.ll__place_open_in)
     {
@@ -1029,7 +1110,16 @@ public class PlacePageView extends Fragment
     // Starting the download will fire this callback but the object will be the same
     // Detaching the country in that case will crash the app
     if (!mapObject.sameAs(mMapObject))
+    {
       detachCountry();
+      // A null mMapObject is the first delivery after recreation: the activity-scoped view model,
+      // or the core replaying the selection, hands back the object the sheet was opened for, so the
+      // restored sheet is kept. A later switch (e.g. a geo: intent) is real and closes the sheet;
+      // one that coincides with the recreation is indistinguishable here, hence the instanceof
+      // guard in onShareTrackSelected.
+      if (mMapObject != null)
+        dismissTrackShareMenu();
+    }
     setCurrentCountry();
 
     mMapObject = mapObject;
@@ -1081,18 +1171,28 @@ public class PlacePageView extends Fragment
   {
     if (mMapObject.isTrackRecording())
       return;
-    if (mMapObject.isTrack())
+    if (mMapObject instanceof Track)
     {
       MenuBottomSheetFragment.newInstance(TRACK_SHARE_MENU_ID, getString(R.string.share_track))
           .show(getChildFragmentManager(), TRACK_SHARE_MENU_ID);
     }
     else
-      SharingUtils.shareMapObject(requireContext(), mMapObject);
+      SharingUtils.shareCurrentPlace(requireContext());
   }
 
-  private void onShareTrackSelected(long trackId, FileType fileType)
+  private void dismissTrackShareMenu()
   {
-    BookmarksSharingHelper.INSTANCE.prepareTrackForSharing(requireActivity(), trackId, fileType);
+    final Fragment fragment = getChildFragmentManager().findFragmentByTag(TRACK_SHARE_MENU_ID);
+    if (fragment instanceof MenuBottomSheetFragment sheet)
+      sheet.dismissAllowingStateLoss();
+  }
+
+  private void onShareTrackSelected(FileType fileType)
+  {
+    if (!(mMapObject instanceof Track track))
+      return;
+    BookmarksSharingHelper.INSTANCE.prepareTrackForSharing(requireActivity(), shareLauncher, track.getTrackId(),
+                                                           fileType);
   }
 
   @Nullable
@@ -1101,28 +1201,9 @@ public class PlacePageView extends Fragment
   {
     return switch (id)
     {
-      case TRACK_SHARE_MENU_ID -> getTrackShareMenuItems();
+      case TRACK_SHARE_MENU_ID -> ExportMenuItems.create(this::onShareTrackSelected);
       default -> null;
     };
-  }
-
-  public ArrayList<MenuBottomSheetItem> getTrackShareMenuItems()
-  {
-    Track track = (Track) mMapObject;
-    ArrayList<MenuBottomSheetItem> items = new ArrayList<>();
-    items.add(new MenuBottomSheetItem(R.string.export_file, R.drawable.ic_file_kmz,
-                                      () -> onShareTrackSelected(track.getTrackId(), FileType.Kml)));
-    items.add(new MenuBottomSheetItem(R.string.export_file_gpx, R.drawable.ic_file_gpx,
-                                      () -> onShareTrackSelected(track.getTrackId(), FileType.Gpx)));
-    items.add(new MenuBottomSheetItem(R.string.export_file_geojson, R.drawable.ic_file_geojson,
-                                      () -> onShareTrackSelected(track.getTrackId(), FileType.GeoJson)));
-    return items;
-  }
-
-  @Override
-  public void onPreparedFileForSharing(@NonNull BookmarkSharingResult result)
-  {
-    BookmarksSharingHelper.INSTANCE.onPreparedFileForSharing(requireActivity(), shareLauncher, result);
   }
 
   public interface PlacePageViewListener

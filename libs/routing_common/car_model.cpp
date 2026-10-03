@@ -77,7 +77,8 @@ VehicleModel::SurfaceInitList const kCarSurface = {
     {{"psurface", "paved_good"}, {1.0, 1.0}},
     {{"psurface", "paved_bad"}, {0.6, 0.7}},
     {{"psurface", "unpaved_good"}, {0.4, 0.7}},
-    {{"psurface", "unpaved_bad"}, {0.2, 0.3}}};
+    {{"psurface", "unpaved_bad"}, {0.2, 0.3}},
+};
 }  // namespace car_model
 
 namespace routing
@@ -140,7 +141,7 @@ CarModelFactory::CarModelFactory(CountryParentNameGetterFn const & countryParent
   using namespace car_model;
   using std::make_shared;
 
-  // Names must be the same with country names from countries.txt
+  // Names must be the same with country names from countries.json
   m_models[""] = make_shared<CarModel>();
 
   m_models["Austria"] = make_shared<CarModel>(NoPassThroughLivingStreet());

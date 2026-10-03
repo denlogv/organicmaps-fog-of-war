@@ -25,6 +25,7 @@ if (googleFirebaseServicesEnabled) {
 }
 
 apply from: "${rootProject.rootDir}/groovy/common-config.gradle"
+apply from: "${rootProject.rootDir}/groovy/application-signing.gradle"
 apply from: "${rootProject.rootDir}/groovy/permission-checker.gradle"
 
 import com.android.build.api.variant.BuildConfigField
@@ -40,11 +41,11 @@ def getCommitMessage() {
 android {
   namespace = 'app.organicmaps'
 
-  if (googleFirebaseServicesEnabled) {
-    enableKotlin = true
-  } else {
-    enableKotlin = false
-  }
+  // Kotlin is enabled for the app module so new code can be written in Kotlin
+  // and existing Java classes can be migrated incrementally. Other modules keep
+  // it disabled by default (see groovy/common-config.gradle) and can opt in by
+  // uncommenting the `enableKotlin = true` stub in their own build.gradle.
+  enableKotlin = true
 
   buildFeatures {
     dataBinding = true
@@ -125,38 +126,8 @@ android {
     universalApk = true
   }
 
-  def securityPropertiesFileExists = file('secure.properties').exists()
-  if (securityPropertiesFileExists) {
-    apply from: 'secure.properties'
-  }
-
-  signingConfigs {
-    debug {
-      storeFile file('debug.keystore')
-      storePassword '12345678'
-      keyAlias 'debug'
-      keyPassword '12345678'
-    }
-
-    release {
-      if (securityPropertiesFileExists) {
-        println('The release signing keys are available')
-        storeFile file('release.keystore')
-        storePassword spropStorePassword
-        keyAlias spropKeyAlias
-        keyPassword spropKeyPassword
-      } else {
-        println('The release signing keys are unavailable')
-      }
-    }
-  }
-
   buildTypes {
     debug {
-      applicationIdSuffix '.debug'   // Allows to install debug and release builds together
-      versionNameSuffix '-debug'
-      signingConfig = signingConfigs.debug
-
       if (googleFirebaseServicesEnabled) {
         firebaseCrashlytics {
           nativeSymbolUploadEnabled true
@@ -168,7 +139,6 @@ android {
     }
 
     release {
-      signingConfig = signingConfigs.release
       minifyEnabled true
       shrinkResources = true
       // Includes the default ProGuard rules files that are packaged with the Android Gradle plugin.
@@ -183,9 +153,6 @@ android {
     }
 
     beta {
-      applicationIdSuffix '.beta'
-      versionNameSuffix '-beta'
-      signingConfig = signingConfigs.release
       minifyEnabled true
       shrinkResources = true
       // Includes the default ProGuard rules files that are packaged with the Android Gradle plugin.
@@ -205,17 +172,44 @@ android {
         }
       }
     }
+
+    // Release-like build for performance/battery profiling.
+    // Debug-signed so it works without secure.properties, installed as
+    // app.organicmaps.profileable to coexist with other variants.
+    profileable {
+      initWith release
+      applicationIdSuffix '.profileable'
+      versionNameSuffix '-profileable'
+      signingConfig = signingConfigs.debug
+      matchingFallbacks = ['release']
+    }
   }
 
-  // We don't compress these extensions in assets/ because our random FileReader can't read zip-compressed files from apk.
-  // TODO: Load all minor files via separate call to ReadAsString which can correctly handle compressed files in zip containers.
+  // Keep uncompressed only what truly benefits. .mwm, packed_polygons.bin (memory-mapped and seeked)
+  // and .ttf fonts (read on demand by FreeType) need in-place random access; compressing them would
+  // force the whole file into memory for the app's lifetime. .png is already a compressed format, so
+  // re-deflating it only wastes load-time CPU. Everything else is compressed in the APK and inflated on
+  // load: html via the WebView's AssetManager, and files opened through Platform::GetReader via
+  // ZipFileReader::CreateModelReader.
+  // packed_polygons.bin is listed by full name (not the 'bin' extension) so other .bin assets, such
+  // as the drawing rules, are still compressed.
   androidResources {
     ignoreAssetsPattern = '!.svn:!.git:!.DS_Store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~'
-    noCompress = ['txt', 'bin', 'html', 'png', 'json', 'mwm', 'ttf', 'sdf', 'ui', 'config', 'csv', 'spv', 'obj']
+    noCompress = ['png', 'mwm', 'ttf', 'packed_polygons.bin']
   }
 
   compileOptions {
     coreLibraryDesugaringEnabled = true
+  }
+}
+
+// Wear publisher only in Google debug/beta until the watch app ships (#12030); other variants keep
+// the WearBridge no-op. Deferred because AGP creates flavor+buildType configurations after the
+// script is evaluated.
+afterEvaluate {
+  dependencies {
+    googleDebugImplementation project(':sdk:wear:gms')
+    googleBetaImplementation project(':sdk:wear:gms')
   }
 }
 
@@ -236,15 +230,16 @@ dependencies {
   googleImplementation project(':sdk:maps:world')
   huaweiImplementation project(':sdk:maps:world')
 
-  coreLibraryDesugaring libs.android.tools.desugaring
+  webImplementation project(':sdk:location:gms:google')
+  googleImplementation project(':sdk:location:gms:google')
+  huaweiImplementation project(':sdk:location:gms:google')
+  fdroidImplementation project(':sdk:location:gms:foss')
 
-  // Google Play Location Services
-  webImplementation libs.google.gms.location
-  googleImplementation libs.google.gms.location
-  huaweiImplementation libs.google.gms.location
-  // This is the microG project's re-implementation which is permissible on
-  // F-droid because it's Apache-2.0.
-  fdroidImplementation libs.microg.gms.location
+  // Wear OS phone-side seam (interface + registry + no-op); wear-protocol arrives transitively.
+  // The Google publisher that plugs into it is declared in the afterEvaluate block above.
+  implementation project(':sdk:wear:core')
+
+  coreLibraryDesugaring libs.android.tools.desugaring
 
   // Google Firebase Services
   if (googleFirebaseServicesEnabled) {
@@ -253,9 +248,8 @@ dependencies {
     implementation libs.google.firebase.crashlytics.ndk
   }
 
-  // This line is added as a workaround for duplicate classes error caused by some outdated dependency:
+  // Workaround for a duplicate-classes error caused by some outdated dependency:
   // > A failure occurred while executing com.android.build.gradle.internal.tasks.CheckDuplicatesRunnable
-  // We don't use Kotlin, but some dependencies are actively using it.
   // See https://stackoverflow.com/a/75719642
   implementation libs.androidx.core
   implementation libs.androidx.annotation
@@ -305,10 +299,10 @@ def allowedPermissions = [
     // comes from androidx.core:core:1.17.0
     // Regex to allow it for the following app packages:
     // app.organicmaps
-    // app.organicmaps.(debug|beta)
+    // app.organicmaps.(debug|beta|profileable)
     // app.organicmaps.web
-    // app.organicmaps.web.(debug|beta)
-    ~/name='app\.organicmaps(\.web)?(\.debug|\.beta)?\.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'/
+    // app.organicmaps.web.(debug|beta|profileable)
+    ~/name='app\.organicmaps(\.web)?(\.debug|\.beta|\.profileable)?\.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'/
 ]
 registerCheckApkPermissionsTasks(project, allowedPermissions)
 
@@ -321,6 +315,13 @@ androidComponents {
     onVariants(selector().withBuildType("debug")) { variant ->
       variant.packaging.jniLibs.keepDebugSymbols.add("**/liborganicmaps.so")
     }
+  }
+
+  // Keep native debug symbols in profileable builds so simpleperf / Studio Profiler
+  // can resolve liborganicmaps.so addresses to function names. Unconditional —
+  // symbol-less profiling is useless, which is the whole point of this variant.
+  onVariants(selector().withBuildType("profileable")) { variant ->
+    variant.packaging.jniLibs.keepDebugSymbols.add("**/liborganicmaps.so")
   }
 
   onVariants(selector().all()) { variant ->
@@ -364,8 +365,12 @@ tasks.register("prepareGoogleReleaseListing") {
     final targetDir = new File("${projectDir}/src/$targetFlavor/play/listings")
     final sourceFiles = fileTree(dir: sourceDir,
         include: '**/*.txt', exclude: "**/*-${targetFlavor}.txt")
+    // Locales that exist in F-Droid listings but are not supported by Google Play.
+    final googleUnsupportedLocales = ['as', 'bo', 'bs', 'jv', 'mai', 'mi', 'or', 'ug', 'uz']
     sourceFiles.each { File sourceFile ->
       final locale = sourceFile.parentFile.getName()
+      if (locale in googleUnsupportedLocales)
+        return
       final targetLocaleDir = new File(targetDir, locale)
       if (!targetLocaleDir.isDirectory())
         targetLocaleDir.mkdirs()
@@ -397,22 +402,34 @@ huaweiPublish {
       deployType = 'draft' // Requires manual confirmation in Huawei AppGallery Connect.
       def releaseDescriptions = []
       def localeOverride = [
-          'am'   : 'am-ET',
+          'am'   : 'am_ET',
+          'as'   : 'as_IN',
           'gu'   : 'gu_IN',
           'iw-IL': 'he_IL',
           'kn-IN': 'kn_IN',
+//          'mai'  : 'mai_Deva_IN',
+          'mi'   : 'mi_NZ',
           'ml-IN': 'ml_IN',
           'mn-MN': 'mn_MN',
           'mr-IN': 'mr_IN',
+          'or'   : 'or_IN',
+//          'pa-IN' : 'pa_Guru_IN',
+          'sw'   : 'sw_TZ',
           'ta-IN': 'ta_IN',
           'te-IN': 'te_IN',
+          'ug'   : 'ug_CN',
       ]
       def files = fileTree(dir: "$projectDir/src/fdroid/play/listings",
           include: '**/release-notes.txt')
       files.each { File file ->
         def locale = file.parentFile.getName()
-        if (locale == 'hy-AM') {
-          return // Armenian locale is not supported by Huawei AppGallery, skip it.
+        if (locale in ['af', 'en-AU', 'en-CA', 'en-IN', 'en-SG', 'en-ZA',
+            'es-US', 'fa-AE', 'fa-AF', 'fr-CA', 'hy-AM', 'is-IS', 'ky-KG',
+            'ms-MY', 'rm', 'sq', 'zu',
+            'ta-IN', 'te-IN',  // Not supported in Huawei
+            'mai', 'pa',       // Excluded temporarily due to "max language length > 8" error when publishing
+            ]) {
+          return // These locales are not supported by Huawei AppGallery, skip them.
         }
         def path = file.getPath()
         locale = localeOverride.get(locale, locale)

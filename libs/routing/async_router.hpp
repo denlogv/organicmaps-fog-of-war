@@ -37,19 +37,23 @@ public:
   /// @param checkpoints start, finish and intermadiate points
   /// @param direction start direction for routers with high cost of the turnarounds
   /// @param adjustToPrevRoute adjust route to the previous one if possible
+  /// @param needAlternatives compute alternative routes; false while navigating, they aren't drawn
   /// @param readyCallback function to return routing result
   /// @param progressCallback function to update the router progress
   /// @param timeoutSec timeout to cancel routing. 0 is infinity.
   // @TODO(bykoianko) Gather |readyCallback|, |needMoreMapsCallback| and |removeRouteCallback|
   // to one delegate. No need to add |progressCallback| to the delegate.
   void CalculateRoute(Checkpoints const & checkpoints, m2::PointD const & direction, bool adjustToPrevRoute,
-                      ReadyCallbackOwnership const & readyCallback, NeedMoreMapsCallback const & needMoreMapsCallback,
+                      bool needAlternatives, ReadyCallbackOwnership const & readyCallback,
+                      NeedMoreMapsCallback const & needMoreMapsCallback,
                       RemoveRouteCallback const & removeRouteCallback, ProgressCallback const & progressCallback,
                       uint32_t timeoutSec = RouterDelegate::kNoTimeout);
 
   void SetGuidesTracks(GuidesTracks && guides);
   /// Interrupt routing and clear buffers
   void ClearState();
+  /// Forward to the underlying IRouter. See IRouter::SwapAltRouteToActive.
+  void SwapAltRouteToActive();
 
   bool FindClosestProjectionToRoad(m2::PointD const & point, m2::PointD const & direction, double radius,
                                    EdgeProj & proj);
@@ -71,7 +75,7 @@ private:
                         RemoveRouteCallback const & onRemoveRoute, PointCheckCallback const & onPointCheck,
                         ProgressCallback const & onProgress, uint32_t timeoutSec);
 
-    void OnReady(std::shared_ptr<Route> route, RouterResultCode resultCode);
+    void OnReady(std::shared_ptr<RoutesResult> result, RouterResultCode resultCode);
     void OnNeedMoreMaps(uint64_t routeId, std::set<std::string> const & absentCounties);
     void OnRemoveRoute(RouterResultCode resultCode);
     void Cancel();
@@ -110,6 +114,7 @@ private:
 
   m2::PointD m_startDirection = m2::PointD::Zero();
   bool m_adjustToPrevRoute = false;
+  bool m_needAlternatives = true;
   std::shared_ptr<RouterDelegateProxy> m_delegateProxy;
   std::shared_ptr<AbsentRegionsFinder> m_absentRegionsFinder;
   std::shared_ptr<IRouter> m_router;

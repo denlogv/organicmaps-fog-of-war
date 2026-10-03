@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Adresse";
+"type.building.construction" = "Bâtiment en construction";
 "type.building.has_parts" = "Bâtiment";
 "type.building_part" = "Bâtiment";
 "type.building.garage" = "Garage";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Cuisine méditerranéenne";
 "type.cuisine.mexican" = "Cuisine mexicaine";
 "type.cuisine.moroccan" = "Cuisine marocaine";
-"type.cuisine.noodles" = "Nouilles";
+"type.cuisine.noodle" = "Nouilles";
 "type.cuisine.oriental" = "Cuisine orientale";
 "type.cuisine.pancake" = "Crêpe";
 "type.cuisine.pasta" = "Pâtes";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Saucisse";
 "type.cuisine.savory_pancakes" = "Crêpes salées";
 "type.cuisine.seafood" = "Fruits de mer";
+"type.cuisine.shawarma" = "Chawarma";
 "type.cuisine.soba" = "Soba";
 "type.cuisine.spanish" = "Cuisine espagnole";
 "type.cuisine.steak_house" = "Grillades";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Château japonais";
 "type.historic.castle.stately" = "Château";
 "type.historic.city_gate" = "Porte de ville";
+"type.man_made.ceremonial_gate" = "Porte de cérémonie";
 "type.historic.citywalls" = "Mur de la ville";
 "type.historic.fort" = "Fort militaire";
 "type.historic.gallows" = "Potence";
@@ -715,7 +718,8 @@
 "type.junction.roundabout" = "Rond-point";
 "type.landuse" = "Utilisation du sol";
 "type.landuse.allotments" = "Jardins familiaux";
-"type.landuse.basin" = "Réservoir";
+"type.landuse.basin" = "Bassin";
+"type.landuse.basin.intermittent" = "Bassin intermittent";
 "type.landuse.brownfield" = "Friche industrielle";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Carrières";
 "type.landuse.railway" = "Installations ferroviaires";
 "type.landuse.recreation_ground" = "Aire de jeux";
-"type.landuse.reservoir" = "Bassin de retenue";
 "type.landuse.residential" = "Zone résidentielle";
 "type.landuse.retail" = "Zone commerciale";
 "type.landuse.salt_pond" = "Marais salants";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Patinoire";
 "type.leisure.marina" = "Port de plaisance";
 "type.leisure.nature_reserve" = "Réserve naturelle";
+"type.leisure.bird_hide" = "Observatoire ornithologique";
 "type.leisure.outdoor_seating" = "Sièges extérieurs";
 "type.leisure.firepit" = "Aire de pique-nique";
 "type.leisure.park" = "Parc";
@@ -867,12 +871,15 @@
 "type.natural.water.lock" = "Écluse";
 "type.natural.water.pond" = "Étang";
 "type.natural.water.reservoir" = "Réservoir";
-"type.natural.water.basin" = "Réservoir";
+"type.natural.water.basin" = "Bassin";
 "type.natural.water.river" = "Rivière";
+"type.natural.water.intermittent" = "Étendue d'eau intermittente";
 "type.natural.land" = "Terrain";
 "type.natural.meadow" = "Prairie";
 "type.natural.orchard" = "Verger";
 "type.natural.peak" = "Sommet";
+"type.natural.hill" = "Colline";
+"type.natural.arch" = "Arche rocheuse";
 "type.natural.saddle" = "Col de montagne";
 "type.natural.rock" = "Rocher";
 "type.natural.scrub" = "Fourré";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Rangée d'arbres";
 "type.natural.vineyard" = "Vignoble";
 "type.natural.volcano" = "Volcan";
+"type.natural.volcano.active" = "Volcan actif";
 "type.natural.water" = "Étendue d'eau";
 "type.natural.wetland" = "Zone humide";
 "type.natural.wetland.bog" = "Tourbière";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Hockey sur gazon";
 "type.sport.badminton" = "Badminton";
 "type.sport.pelota" = "Pelote basque";
+"type.sport.boules" = "Pétanque";
+"type.sport.cycling" = "Cyclisme";
+"type.sport.four_square" = "Quatre carrés";
+"type.sport.horse_racing" = "Courses hippiques";
+"type.sport.karting" = "Karting";
+"type.sport.motocross" = "Motocross";
+"type.sport.motor" = "Sport mécanique";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Rugby à XV";
+"type.sport.running" = "Course à pied";
+"type.sport.softball" = "Softball";
 "type.tourism" = "Tourisme";
 "type.tourism.aquarium" = "Aquarium";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Attraction historique";
 "type.attraction.maze" = "Labyrinthe";
 "type.attraction.roller_coaster" = "Les montagnes russes";
+"type.roller_coaster.track" = "Les montagnes russes";
 "type.attraction.water_slide" = "Toboggan aquatique";
 "type.tourism.attraction.specified" = "Attraction";
 "type.tourism.camp_site" = "Camping";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Ralentisseur";
 "type.traffic_calming.hump" = "Ralentisseur";
 "type.waterway" = "Voie navigable";
+"type.waterway.access_point" = "Point d'accès à la voie d'eau";
 "type.waterway.canal" = "Canal";
 "type.waterway.canal.tunnel" = "Tunnel du canal";
 "type.waterway.fish_pass" = "Échelle à poissons";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Établissement de services sociaux";
+"type.amenity.stage" = "Scène";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Entrée du service des urgences";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Horloger";
 "type.xmas_feature.market" = "Marché de Noël";
 "type.xmas_feature.tree" = "Arbre de Noël";
+"type.amenity.hookah_lounge" = "Bar à chicha";

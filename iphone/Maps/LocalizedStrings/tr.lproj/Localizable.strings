@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Görülecek yerler";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Eğlence";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Geri dönüşüm";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Su";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Konumunuz henüz belirlenmedi";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Hey, Organic Maps'teki imimi incele!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Organic Maps'te buradayım";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Hey, Organic Maps’te geçerli konumumu incele!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ Organic Maps'te";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Organic Maps'te bir yer";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Organic Maps'te veya tarayıcıda aç";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Organic Maps'i indir";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Başka Uygulamada Aç";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "E-posta";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Uzunluk";
 "share_my_location" = "Konumumu Paylaş";
+"prefs_group_network" = "Ağ";
 "prefs_group_route" = "Navigasyon";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3B yapılar güç tutum kipindeyken kapatılır";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Uydu Görüntüleri";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "Sunucu URL'si";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "{z}/{x}/{y} içeren geçerli bir URL girin";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Önbellek boyutu (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Alan nesnelerinin opaklığı";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Özel döşeme kaynakları sizin tarafınızdan sağlanır. Yalnızca erişim izniniz olan hizmetleri kullanın. Atıf, lisans koşulları, API anahtarları, kotalar ve kullanım sınırlarından siz sorumlusunuz.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Sesli Yönlendirme";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Ses Dili";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Sesli Yönlendirmeleri Sına (TTS, Text-To-Speech)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Daha yüksek kaliteli bir ses indirmek için Ayarlar uygulamasını açın ve Erişilebilirlik → VoiceOver → Konuşma → Ses bölümüne gidin.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Kendiliğinden yaklaştır";
 "placepage_distance" = "Mesafe";
 "search_show_on_map" = "Haritada görüntüle";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Koyu";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Diğer";
-
 /* Tex label above the Donate button */
 "donate_description" = "Milyonlarca kullanıcıya reklamsız ve ücretsiz haritalar hediye edin!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "E-Posta gönderme hatası";
-
-/* Settings item title */
-"pref_calibration_title" = "Pusula kalibrasyonu";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Var";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "7/24";
 "day_off_today" = "Bugün kapalı";
 "day_off" = "Kapalı";
+"midnight" = "Gece yarısı";
+"noon" = "Öğle";
 "today" = "Bugün";
 "opens_in" = "%@ sonra açılıyor";
 "closes_in" = "%@ sonra kapanıyor";
@@ -571,9 +607,6 @@
 "day" = "g";
 "second" = "sn";
 "placepage_more_button" = "Diğer";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Yer İmini Düzenle";
 "placepage_personal_notes_hint" = "Kişisel notlar (metin veya html)";
 "editor_comment_hint" = "Yorum…";
 "editor_reset_edits_message" = "Tüm yerel değişiklikler sıfırlansın mı?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Rotayı yönet";
 "button_plan" = "Plan";
 "placepage_remove_stop" = "Durağı Kaldır";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Ara nokta ekle";
 "saved" = "Kaydedildi";
 "error_enter_correct_name" = "Lütfen doğru ad girin";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Bu ad zaten alınmış";
 "profile" = "OpenStreetMap profili";
 "restore" = "Geri al";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Gizlilik";
 "privacy_policy" = "Gizlilik politikası";
 "terms_of_use" = "Kullanım koşulları";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Bisiklet";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Uydu";
 "button_layer_subway" = "Metro";
 "layers_title" = "Harita Stilleri ve Katmanlar";
 
@@ -686,10 +727,16 @@
 /* Settings/Bookmark Text Placement */
 "bookmarks_text_placement_title" = "Haritadaki yer imi adları";
 "bookmarks_text_placement_description" = "Eğer çok yer imi varsa, adlarını haritada göstermek uygulamayı yavaşlatabilir.";
-"show_to_the_right" = "Sağa doğru göster";
+"show_to_the_right" = "Sağda göster";
 "show_at_the_bottom" = "Altta göster";
 "enable_logging_warning_message" = "Bu seçenek tanılama amacıyla günlüğe kaydetmeyi açar. Ekibimizin uygulamayla ilgili sorunları gidermesine yardımcı olabilir. Sorununuzla ilgili ayrıntılı günlükleri kaydetmek ve bize göndermek için bu seçeneği geçici olarak etkinleştirin.";
 "driving_options_title" = "Yönlendirme seçenekleri";
+
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Rota optimizasyonu";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Daha verimli bir rota oluşturmak için ara noktaları otomatik olarak yeniden sıralar.";
 
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Ücretli yollardan kaçın";
@@ -707,6 +754,15 @@
 "toll_road" = "Paralı yol";
 "unpaved_road" = "Asfaltsız yol";
 "ferry_crossing" = "Vapur geçişi";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Merdiven";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Kapı";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Bariyer";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Evet";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Konum Servisleri'ni seçin";
 "location_services_disabled_on_device_4" = "4. Konum Servislerini Açın";
 "location_services_disabled_on_device_additional_message" = "Veya Konum olmadan Organic Maps kullanmaya devam edin";
-"book_button" = "Rezervasyon";
 "placepage_call_button" = "Ara";
 "placepage_bookmark_name_hint" = "Yer İmi Adı";
 "placepage_delete_bookmark_button" = "Yer İmini Sil";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "En son seyahat edilen rotanızı kaydetmeyi devre dışı bırakmak istiyor musunuz?";
 "off_recent_track_background_button" = "Devre Dışı Bırak";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "İncele";
 "recent_track_background_dialog_message" = "Organic Maps, en son seyahat ettiğiniz rotayı kaydetmek için arka planda coğrafi konumunuzu kullanır.";
 "general_settings" = "Genel ayarlar";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Popüler";
 "hide_from_map" = "Haritadan gizle";
 "tags_loading_error_subtitle" = "Etiketler yüklenirken bir hata oluştu, lütfen yeniden deneyin";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Sağ";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Alt";
 "trip_start" = "Haydi gidelim";
 "pick_destination" = "Hedef";
 "follow_my_position" = "Yeniden ortala";
@@ -885,16 +931,28 @@
 "medicine" = "İlaç";
 "search_in_the_list" = "Listede ara";
 "religious_places" = "Dini yerler";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Seç";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Tümünü seç";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Seçimi kaldır";
 "transit_not_found" = "Metro navigasyonu henüz bu bölgede kullanılamaz";
 "dialog_pedestrian_route_is_long_header" = "Metro rotası bulunamadı";
 "dialog_pedestrian_route_is_long_message" = "Metro istasyonuna en yakın rotanın başlangıç veya bitiş noktasını seçin";
-"button_layer_isolines" = "Arazi";
+"button_layer_isolines" = "İzohipsler";
 "isolines_activation_error_dialog" = "Arazi katmanını etkinleştirmek ve kullanmak için lütfen haritayı güncelleyin veya indirin";
-"isolines_location_error_dialog" = "Arazi katmanı henüz bu bölgede kullanılamaz";
+"isolines_location_error_dialog" = "İzohipsler henüz bu bölgede kullanılamaz";
 "elevation_profile_ascent" = "Tırmanış";
 "elevation_profile_descent" = "İniş";
 "elevation_profile_min_elevation" = "Min. yükselti";
 "elevation_profile_max_elevation" = "Maks. yükselti";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Yükseklik profilini görmek için hareket etmeye başlayın";
 "isolines_toast_zooms_1_10" = "İzohipsleri görmek için haritayı büyütün";
 "downloader_loading_ios" = "İndiriliyor";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Tüm Yer İmlerini ve İzleri Dışa Aktar";
 "drive_through" = "Arabaya servis";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Yakınlaştır";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Uzaklaştır";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Menü Bağlantısı";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Başka Uygulamada Aç";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Self servis";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Renk Değiştir";
 
+/* Text for the hiding track. */
+"hide_track" = "İzi gizle";
+
+/* Text for the showing track. */
+"show_track" = "İzi göster";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Harita";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Bu özelliği kullanmak için lütfen aygıtınızın ayarlarında iCloud'u etkinleştirin.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Etkinleştir";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "İz rengi değiştirildi";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Haritadan seç";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Başlangıç";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Hedef";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Başlangıcı değiştir";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Hedefi değiştir";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Ara noktayı değiştir";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Maksimum ara nokta sayısına ulaşıldı";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Çarpı imini yerleştirmek için haritayı kaydırın ve yakınlaştırın";

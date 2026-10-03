@@ -204,6 +204,7 @@
     <string name="type.building">इमारत</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">पत्ता</string>
+    <string name="type.building.construction">बांधकाम सुरू असलेली इमारत</string>
     <string name="type.building.has_parts">इमारत</string>
     <string name="type.building_part">इमारत</string>
     <string name="type.building.garage">गराज</string>
@@ -248,12 +249,13 @@
     <string name="type.cuisine.italian_pizza">इटालियन, पिझ्झा</string>
     <string name="type.cuisine.japanese">जपानी</string>
     <string name="type.cuisine.local">स्थानिक</string>
-    <string name="type.cuisine.noodles">नूडल्स</string>
+    <string name="type.cuisine.noodle">नूडल्स</string>
     <string name="type.cuisine.pasta">पास्ता</string>
     <string name="type.cuisine.pizza">पिझ्झा</string>
     <string name="type.cuisine.regional">प्रादेशिक</string>
     <string name="type.cuisine.sandwich">सँडविच</string>
     <string name="type.cuisine.seafood">मासळी जेवण</string>
+    <string name="type.cuisine.shawarma">शोरमा</string>
     <string name="type.cuisine.tea">चहा</string>
     <string name="type.cuisine.uzbek">उझ्बेक</string>
     <string name="type.cuisine.vegetarian">शाकाहारी</string>
@@ -467,6 +469,7 @@
     <string name="type.historic.castle.shiro">जपानी किल्ला</string>
     <string name="type.historic.castle.stately">किल्ला</string>
     <string name="type.historic.city_gate">शहराचा दरवाजा</string>
+    <string name="type.man_made.ceremonial_gate">समारंभिक द्वार</string>
     <string name="type.historic.citywalls">शहराची भिंत</string>
     <string name="type.historic.fort">दुर्ग</string>
     <string name="type.historic.gallows">फाशी</string>
@@ -500,6 +503,7 @@
     <string name="type.landuse">भूमी उपयोग</string>
     <string name="type.landuse.allotments">वाटप</string>
     <string name="type.landuse.basin">कुंड</string>
+    <string name="type.landuse.basin.intermittent">तात्पुरते कुंड</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">स्मशानभूमी</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
@@ -526,7 +530,6 @@
     <string name="type.landuse.quarry">खाण</string>
     <string name="type.landuse.railway">रेल्वे परिसर</string>
     <string name="type.landuse.recreation_ground">मनोरंजन मैदान</string>
-    <string name="type.landuse.reservoir">पाणी</string>
     <string name="type.landuse.residential">निवासी जमीन</string>
     <string name="type.landuse.retail">किरकोळ जमीन</string>
     <string name="type.landuse.salt_pond">तलाव</string>
@@ -543,6 +546,7 @@
     <string name="type.leisure.hackerspace">हॅकरस्पेस</string>
     <string name="type.leisure.ice_rink">हिम क्रीडा क्षेत्र</string>
     <string name="type.leisure.nature_reserve">संरक्षित निसर्गक्षेत्र</string>
+    <string name="type.leisure.bird_hide">पक्षी निरीक्षण आसरा</string>
     <string name="type.leisure.outdoor_seating">बाहेरची आसनव्यवस्था</string>
     <string name="type.leisure.park">उद्यान</string>
     <string name="type.leisure.park.no.access">उद्यान</string>
@@ -622,10 +626,13 @@
     <string name="type.natural.water.reservoir">जलाशय</string>
     <string name="type.natural.water.basin">कुंड</string>
     <string name="type.natural.water.river">नदी</string>
+    <string name="type.natural.water.intermittent">तात्पुरता पाणवठा</string>
     <string name="type.natural.land">जमीन</string>
     <string name="type.natural.meadow">कुरण</string>
     <string name="type.natural.orchard">फळबागा</string>
     <string name="type.natural.peak">शिखर</string>
+    <string name="type.natural.hill">टेकडी</string>
+    <string name="type.natural.arch">शिला मेहराब</string>
     <string name="type.natural.saddle">माउंटन सॅडल</string>
     <string name="type.natural.rock">खडक</string>
     <string name="type.natural.scrub">खुरटी झाडे</string>
@@ -635,6 +642,7 @@
     <string name="type.natural.tree_row">झाडाची रांग</string>
     <string name="type.natural.vineyard">द्राक्षमळा</string>
     <string name="type.natural.volcano">ज्वालामुखी</string>
+    <string name="type.natural.volcano.active">सक्रिय ज्वालामुखी</string>
     <string name="type.natural.water">पाणवठा</string>
     <string name="type.natural.wetland">ओलिताची जमीन</string>
     <string name="type.natural.wetland.bog">ओलिताची जमीन</string>
@@ -1106,6 +1114,18 @@
     <string name="type.sport.volleyball">व्हॉलीबॉल</string>
     <string name="type.sport.10pin">गोलंदाजी</string>
     <string name="type.sport.9pin">गोलंदाजी</string>
+    <string name="type.sport.boules">बूल्स</string>
+    <string name="type.sport.cycling">सायकल चालवणे</string>
+    <string name="type.sport.four_square">फोर स्क्वेअर</string>
+    <string name="type.sport.horse_racing">घोड्यांची शर्यत</string>
+    <string name="type.sport.karting">कार्टिंग</string>
+    <string name="type.sport.motocross">मोटोक्रॉस</string>
+    <string name="type.sport.motor">मोटरस्पोर्ट</string>
+    <string name="type.sport.netball">नेटबॉल</string>
+    <string name="type.sport.pickleball">पिकलबॉल</string>
+    <string name="type.sport.rugby_union">रग्बी</string>
+    <string name="type.sport.running">धावणे</string>
+    <string name="type.sport.softball">सॉफ्टबॉल</string>
     <string name="type.tourism">पर्यटन</string>
     <string name="type.tourism.aquarium">मत्स्यालय</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1123,6 +1143,7 @@
     <string name="type.attraction.historic">ऐतिहासिक आकर्षण</string>
     <string name="type.attraction.maze">चक्रव्यूह</string>
     <string name="type.attraction.roller_coaster">रोलर कोस्टर</string>
+    <string name="type.roller_coaster.track">रोलर कोस्टर</string>
     <string name="type.attraction.water_slide">वॉटर स्लाइड</string>
     <string name="type.tourism.attraction.specified">आकर्षण</string>
     <string name="type.tourism.camp_site">शिबिरवास(कॅम्पिंग)</string>
@@ -1147,6 +1168,7 @@
     <string name="type.tourism.zoo.petting">पेटिंग प्राणीसंग्रहालय</string>
     <string name="type.traffic_calming.bump">वाहतूक गतिरोधक</string>
     <string name="type.waterway">जलमार्ग</string>
+    <string name="type.waterway.access_point">जलमार्ग प्रवेश बिंदू</string>
     <string name="type.waterway.canal">कालवा</string>
     <string name="type.waterway.canal.tunnel">कालवा</string>
     <string name="type.waterway.fish_pass">मासे शिडी</string>
@@ -1184,6 +1206,7 @@
     <string name="type.self_service.no">स्व-सेवा नाही</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">सामाजिक सुविधा</string>
+    <string name="type.amenity.stage">मंच</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">आपत्कालीन प्रभाग प्रवेशद्वार</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1207,4 +1230,5 @@
     <string name="type.craft.watchmaker">वॉचमेकर</string>
     <string name="type.xmas_feature.market">ख्रिसमस मार्केट</string>
     <string name="type.xmas_feature.tree">ख्रिसमस ट्री</string>
+    <string name="type.amenity.hookah_lounge">हुक्का पार्लर</string>
 </resources>

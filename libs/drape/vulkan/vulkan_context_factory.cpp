@@ -23,9 +23,9 @@ public:
                     VkDevice device, uint32_t renderingQueueFamilyIndex,
                     ref_ptr<dp::vulkan::VulkanObjectManager> objectManager, uint32_t appVersionCode,
                     bool hasPartialTextureUpdates)
-    : dp::vulkan::VulkanBaseContext(vulkanInstance, gpu, gpuProperties, device, renderingQueueFamilyIndex,
-                                    objectManager, make_unique_dp<dp::vulkan::VulkanPipeline>(device, appVersionCode),
-                                    hasPartialTextureUpdates)
+    : dp::vulkan::VulkanBaseContext(
+          vulkanInstance, gpu, gpuProperties, device, renderingQueueFamilyIndex, objectManager,
+          make_unique_dp<dp::vulkan::VulkanPipeline>(device, gpuProperties, appVersionCode), hasPartialTextureUpdates)
   {
     VkQueue queue;
     vkGetDeviceQueue(device, renderingQueueFamilyIndex, 0, &queue);
@@ -81,7 +81,7 @@ VulkanContextFactory::VulkanContextFactory(uint32_t appVersionCode, int sdkVersi
   appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
   appInfo.applicationVersion = appVersionCode;
   appInfo.engineVersion = appVersionCode;
-  appInfo.pApplicationName = "OMaps";
+  appInfo.pApplicationName = "Organic Maps";
   appInfo.pEngineName = "Drape Engine";
 
   bool enableDiagnostics = false;

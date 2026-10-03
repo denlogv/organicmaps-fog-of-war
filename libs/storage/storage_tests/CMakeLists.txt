@@ -10,6 +10,7 @@ set(SRC
   helpers.cpp
   helpers.hpp
   simple_tree_test.cpp
+  storage_download_tests.cpp
   storage_tests.cpp
   task_runner.cpp
   task_runner.hpp
@@ -24,5 +25,4 @@ target_link_libraries(${PROJECT_NAME}
     platform_tests_support
     generator_tests_support
     storage
-    cppjansson
 )

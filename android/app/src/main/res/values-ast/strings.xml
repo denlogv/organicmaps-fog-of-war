@@ -61,7 +61,7 @@
     <string name="category_parking">Aparcaderu</string>
     <!-- Search category for places to stay; any changes should be duplicated in categories.txt @category_hotel! -->
     <string name="category_hotel">Hotel</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">Arruelu</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">Caxeru automáticu</string>
@@ -82,6 +82,10 @@
     <string name="share_bookmarks_email_body">¡Hola!\n\nLos mios marcadores tán axuntos; ábrilos n’Organic Maps. Si nun lu tienes instaláu, te lu puedes baxar equí: https://omaps.app/get?kmz\n\n¡Gocia viaxar con Organic Maps!</string>
     <!-- resource for context menu -->
     <string name="edit">Editar</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s n’Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Un llugar n’Organic Maps</string>
     <!-- Text for message when used successfully copied something -->
     <string name="copied_to_clipboard">Copióse nel cartafueyu: %s</string>
     <!-- Used for bookmark editing -->
@@ -99,7 +103,7 @@
     <string name="pref_tts_street_names_title">Anunciar nomes de cais</string>
     <!-- Settings «Route» category: «Test Voice Directions» title -->
     <string name="pref_tts_test_voice_title">Probar indicaciones de voz (TTS, Text-To-Speech)</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">Non disponible</string>
     <string name="placepage_distance">Distancia</string>
     <string name="search_show_on_map">Ver nel mapa</string>
@@ -170,10 +174,10 @@
     <string name="editor_time_simple">Mou simplificáu</string>
     <string name="editor_example_values">Valores d’exemplu</string>
     <string name="editor_report_problem_send_button">Unviar</string>
-    <string name="editor_report_problem_no_place_title">Esti llugar nun esiste</string>
-    <string name="editor_report_problem_duplicate_place_title">Llugar duplicáu</string>
     <string name="autodownload">Baxar mapes n’automático</string>
     <string name="twentyfour_seven">24/7</string>
+    <string name="midnight">Medianueche</string>
+    <string name="noon">Mediudía</string>
     <string name="today">Güei</string>
     <string name="password">Contraseña</string>
     <string name="forgot_password">¿Escaeciesti la contraseña?</string>
@@ -215,7 +219,7 @@
     <string name="day">d</string>
     <string name="second">s</string>
     <string name="placepage_more_button">Más</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Editar marcador</string>
     <string name="placepage_personal_notes_hint">Notes personales (testu o HTML)</string>
     <string name="editor_comment_hint">Comentariu…</string>
@@ -235,10 +239,9 @@
     <string name="mobile_data_option_always">Usar siempres</string>
     <string name="mobile_data_option_today">Namás güei</string>
     <string name="mobile_data_option_ask">Entrugar siempres</string>
-    <string name="traffic_update_maps_text">P’amosar datos de tráficu, tienen d’anovase los mapes.</string>
-    <string name="traffic_update_app">Anueva Organic Maps</string>
     <string name="learn_more">Deprende más</string>
     <string name="placepage_remove_stop">Desaniciar parada</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
     <string name="placepage_add_stop">Amestar parada</string>
     <string name="saved">Guardáu</string>
     <string name="bookmark_lists">Llistes</string>
@@ -287,6 +290,10 @@
     <string name="power_managment_setting_never">Enxamás</string>
     <string name="power_managment_setting_manual_max">Siempres</string>
     <string name="driving_options_title">Opciones d’encaminamientu</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Optimización de la ruta</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Reordena automáticamente les paraes intermedies pa crear una ruta más eficiente.</string>
     <string name="unable_to_calc_alert_subtitle">Nun pudo alcontrase una ruta. Quiciabes se deba a les opciones d’encaminamientu o a datos faltantes n’OpenStreetMap. Revisa les tos opciones d’encaminamientu y vuelvi intentalo.</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">Sí</string>
@@ -319,6 +326,12 @@
     <string name="fuel_places">Gasolineres</string>
     <string name="search_in_the_list">Guetar na llista</string>
     <string name="religious_places">Llugares relixosos</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">Esbillar</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">Esbillar too</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">Desesbillar too</string>
     <string name="button_layer_isolines">Curves de nivel</string>
     <string name="isolines_location_error_dialog">Les curves de nivel entá nun tán disponibles nesta rexón</string>
     <string name="elevation_profile_ascent">Ascensu</string>
@@ -350,8 +363,6 @@
     <!-- Bookmark categories screen, button that opens share dialog to export all bookmarks and tracks -->
     <string name="bookmarks_export">Esportar tolos marcadores y trayeutos</string>
     <string name="drive_through">Serviciu dende’l coche</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Abrir n’otra aplicación</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Autoserviciu</string>
     <string name="select_option">Esbilla una opción</string>
@@ -371,4 +382,22 @@
     <string name="edit_track">Editar trayeutu</string>
     <!-- Setting option to sync the app's theme with the operating system's dark/light mode -->
     <string name="follow_system">Siguir el sistema</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="one">%d esbilláu</item>
+        <item quantity="other">%d esbillaos</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="one">¿Desaniciar %d elementu?</item>
+        <item quantity="other">¿Desaniciar %d elementos?</item>
+    </plurals>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">Tu</string>
+
+    <!-- SECTION: gps strings -->
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Parar y guardar</string>
 </resources>

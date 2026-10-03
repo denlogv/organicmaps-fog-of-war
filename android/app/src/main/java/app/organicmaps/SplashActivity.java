@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.window.SplashScreenView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -15,19 +16,21 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import app.organicmaps.downloader.DownloaderActivity;
 import app.organicmaps.intent.Factory;
+import app.organicmaps.sdk.display.DisplayManager;
+import app.organicmaps.sdk.display.DisplayType;
 import app.organicmaps.sdk.location.LocationHelper;
+import app.organicmaps.sdk.location.LocationUtils;
 import app.organicmaps.sdk.util.Config;
-import app.organicmaps.sdk.util.LocationUtils;
 import app.organicmaps.sdk.util.concurrency.UiThread;
 import app.organicmaps.sdk.util.log.Logger;
 import app.organicmaps.util.SharingUtils;
 import app.organicmaps.util.Utils;
+import app.organicmaps.util.WindowInsetUtils.BaselinePaddingInsetsListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.io.IOException;
 import java.util.Objects;
@@ -71,7 +74,10 @@ public class SplashActivity extends AppCompatActivity
     });
     mShareLauncher = SharingUtils.RegisterLauncher(this);
 
-    if (MwmApplication.from(this).getDisplayManager().isCarDisplayUsed())
+    final DisplayManager displayManager = MwmApplication.from(this).getDisplayManager();
+    displayManager.init(DisplayType.Device);
+
+    if (displayManager.isCarDisplayUsed())
     {
       startActivity(new Intent(this, MapPlaceholderActivity.class));
       finish();
@@ -178,7 +184,11 @@ public class SplashActivity extends AppCompatActivity
     // https://github.com/organicmaps/organicmaps/pull/7287
     // FORWARD_RESULT_FLAG conflicts with the ActivityResultLauncher.
     // https://github.com/organicmaps/organicmaps/issues/8984
-    intent.setFlags(intent.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    final int launchFlags = intent.getFlags();
+    intent.setFlags(launchFlags & Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+    if (markIntentConsumedIfRelaunchedFromHistory(intent, launchFlags))
+      Logger.w(TAG, "Relaunched from history, the intent payload is treated as already processed");
 
     if (Factory.isStartedForApiResult(intent))
     {
@@ -190,6 +200,29 @@ public class SplashActivity extends AppCompatActivity
     Config.setFirstStartDialogSeen(this);
     startActivity(intent);
     finish();
+  }
+
+  /**
+   * A relaunch from Recents re-delivers the intent the task started with, whose one-shot payload is
+   * most likely spent: a bookmarks file shared through a temporary content:// URI is gone by then
+   * and would only fail to open. An explicit {@link MwmActivity#EXTRA_CONSUMED} wins over this
+   * guess, since only the map activity really knows. Without one the two cases are indistinguishable
+   * here, and resolving them to "processed" drops a file shared just before a kill during startup.
+   *
+   * @param launchFlags the flags the intent was launched with, taken before they are reset.
+   * @return whether the intent was marked as already processed.
+   */
+  @VisibleForTesting
+  static boolean markIntentConsumedIfRelaunchedFromHistory(@NonNull Intent intent, int launchFlags)
+  {
+    if (intent.hasExtra(MwmActivity.EXTRA_CONSUMED))
+      return false;
+
+    if ((launchFlags & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0)
+      return false;
+
+    intent.putExtra(MwmActivity.EXTRA_CONSUMED, true);
+    return true;
   }
 
   private boolean isManageSpaceActivity(@NonNull Intent intent)
@@ -208,11 +241,7 @@ public class SplashActivity extends AppCompatActivity
 
   private void adjustBrandingInfoPadding()
   {
-    ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.ll__branding_info), (view, insets) -> {
-      final Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-      view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(),
-                      view.getPaddingBottom() + systemBars.bottom);
-      return insets;
-    });
+    final View brandingInfo = findViewById(R.id.ll__branding_info);
+    ViewCompat.setOnApplyWindowInsetsListener(brandingInfo, BaselinePaddingInsetsListener.onlyBottom());
   }
 }

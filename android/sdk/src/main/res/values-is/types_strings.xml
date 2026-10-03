@@ -237,6 +237,7 @@
     <string name="type.building">Bygging</string>
     <!-- Duplicates [address] in strings.txt -->
     <string name="type.building.address">Heimilisfang</string>
+    <string name="type.building.construction">Bygging í byggingu</string>
     <string name="type.building.has_parts">Bygging</string>
     <string name="type.building_part">Bygging</string>
     <string name="type.building.garage">Verkstæði</string>
@@ -327,7 +328,7 @@
     <string name="type.cuisine.mediterranean">Miðjarðarhafs</string>
     <string name="type.cuisine.mexican">Mexíkanskt</string>
     <string name="type.cuisine.moroccan">Marokkanskt</string>
-    <string name="type.cuisine.noodles">Núðlur</string>
+    <string name="type.cuisine.noodle">Núðlur</string>
     <string name="type.cuisine.oriental">Austur-asískt</string>
     <string name="type.cuisine.pancake">Pönnukökur</string>
     <string name="type.cuisine.pasta">Pasta</string>
@@ -570,6 +571,7 @@
     <string name="type.historic.castle.shiro">Japanskur kastali</string>
     <string name="type.historic.castle.stately">Kastalasetur</string>
     <string name="type.historic.city_gate">Borgarhlið</string>
+    <string name="type.man_made.ceremonial_gate">Hátíðleg hlið</string>
     <string name="type.historic.citywalls">Borgarmúr</string>
     <string name="type.historic.fort">Virki</string>
     <string name="type.historic.gallows">Gálgar</string>
@@ -603,6 +605,7 @@
     <string name="type.landuse">Landnotkun</string>
     <string name="type.landuse.allotments">Úthlutuð svæði</string>
     <string name="type.landuse.basin">Lægð</string>
+    <string name="type.landuse.basin.intermittent">Tímabundin lægð</string>
     <string name="type.landuse.brownfield">Órækt</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Grafreitur</string>
@@ -633,7 +636,6 @@
     <string name="type.landuse.quarry">Grjótnáma</string>
     <string name="type.landuse.railway">Járnbrautasvæði</string>
     <string name="type.landuse.recreation_ground">Leikvöllur</string>
-    <string name="type.landuse.reservoir">Uppistöðulón</string>
     <string name="type.landuse.residential">Íbúðasvæði</string>
     <string name="type.landuse.retail">Smásölusvæði</string>
     <string name="type.landuse.salt_pond">Salttjörn</string>
@@ -655,6 +657,7 @@
     <string name="type.leisure.ice_rink">Skautahöll</string>
     <string name="type.leisure.marina">Bátalægi</string>
     <string name="type.leisure.nature_reserve">Náttúruverndarsvæði</string>
+    <string name="type.leisure.bird_hide">Fuglaskoðunarbyrgi</string>
     <string name="type.leisure.outdoor_seating">Sæti utandyra</string>
     <string name="type.leisure.firepit">Eldgryfja</string>
     <string name="type.leisure.park">Almenningsgarður</string>
@@ -741,10 +744,13 @@
     <string name="type.natural.water.reservoir">Uppistöðulón</string>
     <string name="type.natural.water.basin">Lægð</string>
     <string name="type.natural.water.river">Á</string>
+    <string name="type.natural.water.intermittent">Tímabundið vatn</string>
     <string name="type.natural.land">Land</string>
     <string name="type.natural.meadow">Skógarlundur</string>
     <string name="type.natural.orchard">Trjágarður</string>
     <string name="type.natural.peak">Tindur</string>
+    <string name="type.natural.hill">Hóll</string>
+    <string name="type.natural.arch">Steinbogagöng</string>
     <string name="type.natural.saddle">Fjallsröðull</string>
     <string name="type.natural.rock">Klettar</string>
     <string name="type.natural.scrub">Runnar</string>
@@ -754,6 +760,7 @@
     <string name="type.natural.tree_row">Trjáröð</string>
     <string name="type.natural.vineyard">Vínekra</string>
     <string name="type.natural.volcano">Eldfjall</string>
+    <string name="type.natural.volcano.active">Virkur eldfjall</string>
     <string name="type.natural.water">Vatn</string>
     <string name="type.natural.wetland">Votlendi</string>
     <string name="type.natural.wetland.bog">Fen</string>
@@ -1303,6 +1310,18 @@
     <string name="type.sport.field_hockey">Grashokkí</string>
     <string name="type.sport.badminton">Badminton</string>
     <string name="type.sport.pelota">Baskneskt Pelota</string>
+    <string name="type.sport.boules">Boules</string>
+    <string name="type.sport.cycling">Hjólreiðar</string>
+    <string name="type.sport.four_square">Fjórir ferningar</string>
+    <string name="type.sport.horse_racing">Veðhlaup</string>
+    <string name="type.sport.karting">Gokart</string>
+    <string name="type.sport.motocross">Motokross</string>
+    <string name="type.sport.motor">Vélaakstursíþrótt</string>
+    <string name="type.sport.netball">Netbolti</string>
+    <string name="type.sport.pickleball">Pickleball</string>
+    <string name="type.sport.rugby_union">Ruðningur</string>
+    <string name="type.sport.running">Hlaup</string>
+    <string name="type.sport.softball">Softbolti</string>
     <string name="type.tourism">Ferðamennska</string>
     <string name="type.tourism.aquarium">Fiskabúr</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1322,6 +1341,7 @@
     <string name="type.attraction.historic">Sögustaður</string>
     <string name="type.attraction.maze">Völundarhús</string>
     <string name="type.attraction.roller_coaster">Rússíbani</string>
+    <string name="type.roller_coaster.track">Rússíbani</string>
     <string name="type.attraction.water_slide">Vatnsrennibraut</string>
     <string name="type.tourism.attraction.specified">Aðdráttarafl</string>
     <string name="type.tourism.camp_site">Tjaldsvæði</string>
@@ -1353,6 +1373,7 @@
     <string name="type.traffic_calming.bump">Hraðahindrun</string>
     <string name="type.traffic_calming.hump">Hraðahindrun</string>
     <string name="type.waterway">Siglingaleið</string>
+    <string name="type.waterway.access_point">Aðgengispunktur vatnaleiðar</string>
     <string name="type.waterway.canal">Skipaskurður</string>
     <string name="type.waterway.canal.tunnel">Skipaskurðsgöng</string>
     <string name="type.waterway.fish_pass">Fiskastigi</string>
@@ -1411,6 +1432,7 @@
     <string name="type.self_service.no">Ekki sjálfsafgreiðsla</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Félagsþjónusta</string>
+    <string name="type.amenity.stage">Svið</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Inngangur á bráðamóttöku</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->
@@ -1442,4 +1464,5 @@
     <string name="type.craft.watchmaker">Úrsmiður</string>
     <string name="type.xmas_feature.market">Jólamarkaður</string>
     <string name="type.xmas_feature.tree">Jólatré</string>
+    <string name="type.amenity.hookah_lounge">Vatnspípubar</string>
 </resources>

@@ -69,7 +69,7 @@ UNIT_TEST(FinshRouteOnSomeDistanceToTheFinishPointTest)
     auto const settings = GetRoutingSettings(vehicleType);
     for (auto const & segments : GetSegments())
     {
-      Route route("TestRouter", 0 /* route id */);
+      Route route;
       route.SetRoutingSettings(settings);
 
       vector<RouteSegment> routeSegments;
@@ -78,7 +78,7 @@ UNIT_TEST(FinshRouteOnSomeDistanceToTheFinishPointTest)
       route.SetRouteSegments(std::move(routeSegments));
 
       route.SetGeometry(kTestGeometry.begin(), kTestGeometry.end());
-      route.SetSubroteAttrs(vector<Route::SubrouteAttrs>(
+      route.SetSubroutes(vector<Route::SubrouteAttrs>(
           {Route::SubrouteAttrs(geometry::PointWithAltitude(kTestGeometry.front(), geometry::kDefaultAltitudeMeters),
                                 geometry::PointWithAltitude(kTestGeometry.back(), geometry::kDefaultAltitudeMeters), 0,
                                 kTestSegments.size())}));
@@ -111,7 +111,7 @@ UNIT_TEST(DistanceAndTimeToCurrentTurnTest)
 {
   // |curTurn.m_index| is an index of the point of |curTurn| at polyline |route.m_poly|.
 
-  Route route("TestRouter", 0 /* route id */);
+  Route route;
   vector<RouteSegment> routeSegments;
   GetTestRouteSegments(kTestGeometry, kTestTurns, {}, kTestTimes, routeSegments);
   route.SetGeometry(kTestGeometry.begin(), kTestGeometry.end());
@@ -197,7 +197,7 @@ UNIT_TEST(DistanceAndTimeToCurrentTurnTest)
 
 UNIT_TEST(NextTurnTest)
 {
-  Route route("TestRouter", 0 /* route id */);
+  Route route;
   vector<RouteSegment> routeSegments;
   GetTestRouteSegments(kTestGeometry, kTestTurns, {}, {}, routeSegments);
   route.SetRouteSegments(std::move(routeSegments));
@@ -246,7 +246,7 @@ UNIT_TEST(NextTurnTest)
 
 UNIT_TEST(NextTurnsTest)
 {
-  Route route("TestRouter", 0 /* route id */);
+  Route route;
   route.SetGeometry(kTestGeometry.begin(), kTestGeometry.end());
   vector<RouteSegment> routeSegments;
   GetTestRouteSegments(kTestGeometry, kTestTurns, {}, {}, routeSegments);
@@ -336,7 +336,7 @@ UNIT_TEST(SelfIntersectedRouteMatchingTest)
                                              {0.0002, 0.0002}, {0.0002, 0.0001}, {0.0, 0.0001}};
   double constexpr kRoundingErrorMeters = 0.001;
 
-  Route route("TestRouter", 0 /* route id */);
+  Route route;
   route.SetGeometry(kRouteGeometry.begin(), kRouteGeometry.end());
 
   vector<RouteSegment> routeSegments;
@@ -386,7 +386,7 @@ UNIT_TEST(SelfIntersectedRouteMatchingTest)
 
 UNIT_TEST(RouteNameTest)
 {
-  Route route("TestRouter", 0 /* route id */);
+  Route route;
 
   route.SetGeometry(kTestGeometry.begin(), kTestGeometry.end());
   vector<RouteSegment> routeSegments;
@@ -413,5 +413,148 @@ UNIT_TEST(RouteNameTest)
   route.MoveIterator(pos);
   route.GetCurrentStreetName(roadNameInfo);
   TEST_EQUAL(roadNameInfo.m_name, "Street2", (roadNameInfo.m_name));
+}
+
+// Builds a Route whose junctions sit at the given path points along the equator. |path[0]| must
+// equal |path[1]| per FillSegmentInfo's convention (segment 0 carries dist=0). One Segment per
+// (path.size()-1).
+Route MakeRoute(vector<m2::PointD> const & path, vector<Segment> const & segments)
+{
+  CHECK_EQUAL(path.size(), segments.size() + 1, ());
+  Route r;
+  vector<RouteSegment> segs;
+  RouteSegmentsFrom(segments, path, {}, {}, segs);
+  FillSegmentInfo(vector<double>(segments.size(), 0.0), segs);
+  r.SetRouteSegments(std::move(segs));
+  r.SetSubroutes(vector<Route::SubrouteAttrs>{Route::SubrouteAttrs(
+      geometry::PointWithAltitude(path.front(), geometry::kDefaultAltitudeMeters),
+      geometry::PointWithAltitude(path.back(), geometry::kDefaultAltitudeMeters), 0, segments.size())});
+  return r;
+}
+
+UNIT_TEST(RouteBase_PromoteWithLeadingEmptySubroute)
+{
+  m2::PointD const oldStart = {0, 0};
+  m2::PointD const routeStart = {0.01, 0};
+  m2::PointD const checkpoint = {0.011, 0};
+  m2::PointD const finish = {0.012, 0};
+  vector<m2::PointD> const path = {routeStart, routeStart, checkpoint, checkpoint, finish};
+  vector<Segment> segments;
+  for (uint32_t i = 0; i < path.size() - 1; ++i)
+    segments.emplace_back(0, 0, i, true);
+
+  auto source = MakeRoute(path, segments);
+  auto const withAltitude = [](m2::PointD const & point)
+  { return geometry::PointWithAltitude(point, geometry::kDefaultAltitudeMeters); };
+  // Rebuilds retain passed checkpoints as empty subroutes. Advancing once more changes currentIdx
+  // without removing the earlier route segments, so neither front() nor currentIdx is the geometry origin.
+  source.SetSubroutes(
+      vector<Route::SubrouteAttrs>{{withAltitude(oldStart), withAltitude(routeStart), 0, 0},
+                                   {withAltitude(routeStart), withAltitude(checkpoint), 0, 2},
+                                   {withAltitude(checkpoint), withAltitude(finish), 2, segments.size()}},
+      2);
+
+  Route route(static_cast<RouteBase const &>(source));
+  TEST_EQUAL(route.GetCurrentSubrouteIdx(), 2, ());
+  TEST(route.IsSubroutePassed(0), ());
+  TEST(route.MoveIterator(GetGps(checkpoint.x, checkpoint.y)), ());
+  TEST(!route.IsSubroutePassed(2), ());
+  TEST_EQUAL(route.GetPoly().GetPoints(), path, (route.GetPoly().GetPoints()));
+
+  vector<m2::PointD> points;
+  source.ForEachPoint([&points](geometry::PointWithAltitude const & point) { points.push_back(point.GetPoint()); });
+  TEST_EQUAL(points, path, (points));
+  auto const midpoint = source.GetMidpoint(0, 0);
+  TEST_EQUAL(midpoint, routeStart, (midpoint));
+}
+
+// 10 unit-length segments along the equator with junctions at (0..9, 0). The first FillSegmentInfo
+// segment carries dist=0 (the path convention duplicates path[0]==path[1]) so the total geodesic
+// length is 9 deg of longitude. The midpoint by distance lands at the (4.5, 0) interpolation
+// between junctions (4, 0) and (5, 0).
+UNIT_TEST(RouteBase_GetMidpoint_Whole)
+{
+  vector<m2::PointD> path = {{0, 0}, {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}};
+  vector<Segment> segs;
+  for (uint32_t i = 0; i < 10; ++i)
+    segs.emplace_back(0, 0, i, true);
+
+  auto const route = MakeRoute(path, segs);
+  auto const mid = route.GetMidpoint();
+  TEST_ALMOST_EQUAL_ABS(mid.x, 4.5, 1e-6, (mid));
+  TEST_ALMOST_EQUAL_ABS(mid.y, 0.0, 1e-6, (mid));
+}
+
+// Subrange [3, 6] covers segments whose junctions span x = 3..6 (with the run start at segment 3's
+// "previous junction" = (2, 0)). Midpoint by distance falls at (4, 0).
+UNIT_TEST(RouteBase_GetMidpoint_Subrange)
+{
+  vector<m2::PointD> path = {{0, 0}, {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}};
+  vector<Segment> segs;
+  for (uint32_t i = 0; i < 10; ++i)
+    segs.emplace_back(0, 0, i, true);
+
+  auto const route = MakeRoute(path, segs);
+  auto const mid = route.GetMidpoint(3, 6);
+  TEST_ALMOST_EQUAL_ABS(mid.x, 4.0, 1e-6, (mid));
+  TEST_ALMOST_EQUAL_ABS(mid.y, 0.0, 1e-6, (mid));
+}
+
+// Same featureId set on both sides → every segment matches → no divergence → nullopt.
+UNIT_TEST(RouteBase_FindMaxDiffMidpoint_NoDiff)
+{
+  vector<m2::PointD> path = {{0, 0}, {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}};
+  vector<Segment> segs;
+  for (uint32_t i = 0; i < 5; ++i)
+    segs.emplace_back(0, 0, i, true);
+
+  auto const route = MakeRoute(path, segs);
+  TEST(!route.FindMaxDiffMidpoint(route.GetRouteSegments()).has_value(), ());
+}
+
+// 30-segment route; only segment 15 diverges → ~1/29 ≈ 3.4% of total length, below the 5% gate
+// that FindMaxDiffMidpoint applies. The single diverging segment is real (not fake), so the
+// rejection is purely on the threshold.
+UNIT_TEST(RouteBase_FindMaxDiffMidpoint_BelowThreshold)
+{
+  size_t constexpr kN = 30;
+  vector<m2::PointD> path;
+  path.reserve(kN + 1);
+  path.push_back({0, 0});
+  for (size_t i = 0; i < kN; ++i)
+    path.push_back({static_cast<double>(i), 0});
+  vector<Segment> originSegs;
+  vector<Segment> altSegs;
+  for (uint32_t i = 0; i < kN; ++i)
+  {
+    originSegs.emplace_back(0, 0, i, true);
+    altSegs.emplace_back(0, i == kN / 2 ? 1 : 0, i, true);
+  }
+  auto const altRoute = MakeRoute(path, altSegs);
+  auto const originRoute = MakeRoute(path, originSegs);
+
+  TEST(!altRoute.FindMaxDiffMidpoint(originRoute.GetRouteSegments()).has_value(), ());
+}
+
+// 10 segments; segments [3..6] (4 of them) carry featureId 1 instead of 0. Diff fraction = 4/9 ≈
+// 44%, well above the 5% gate. The single diff run is [3, 6], whose midpoint by distance lands at
+// x = 4 (start dist = seg[2].dist = 2, end dist = seg[6].dist = 6, mid = 4).
+UNIT_TEST(RouteBase_FindMaxDiffMidpoint_AboveThreshold)
+{
+  vector<m2::PointD> path = {{0, 0}, {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}};
+  vector<Segment> originSegs;
+  vector<Segment> altSegs;
+  for (uint32_t i = 0; i < 10; ++i)
+  {
+    originSegs.emplace_back(0, 0, i, true);
+    altSegs.emplace_back(0, (i >= 3 && i <= 6) ? 1 : 0, i, true);
+  }
+  auto const altRoute = MakeRoute(path, altSegs);
+  auto const originRoute = MakeRoute(path, originSegs);
+
+  auto const mid = altRoute.FindMaxDiffMidpoint(originRoute.GetRouteSegments());
+  TEST(mid.has_value(), ());
+  TEST_ALMOST_EQUAL_ABS(mid->x, 4.0, 1e-6, (*mid));
+  TEST_ALMOST_EQUAL_ABS(mid->y, 0.0, 1e-6, (*mid));
 }
 }  // namespace route_tests

@@ -59,7 +59,7 @@ JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Bookmark_nativeSetColor(J
 
   // initialize new bookmark
   kml::BookmarkData bmData(mark->GetData());
-  bmData.m_color.m_predefinedColor = kml::kOrderedPredefinedColors[color];
+  bmData.m_color = kml::MakeCustomBookmarkColorData(dp::Color::FromARGB(color));
 
   g_framework->ReplaceBookmark(static_cast<kml::MarkId>(bmk), bmData);
 }
@@ -77,15 +77,9 @@ JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Bookmark_nativeUpdatePara
     kml::SetDefaultStr(bmData.m_customName, bmName);
   if (descr)
     kml::SetDefaultStr(bmData.m_description, jni::ToNativeString(env, descr));
-  bmData.m_color.m_predefinedColor = kml::kOrderedPredefinedColors[color];
+  bmData.m_color = kml::MakeCustomBookmarkColorData(dp::Color::FromARGB(color));
 
   g_framework->ReplaceBookmark(static_cast<kml::MarkId>(bmk), bmData);
-}
-
-JNIEXPORT jstring Java_app_organicmaps_sdk_bookmarks_data_Bookmark_nativeEncode2Ge0Url(JNIEnv * env, jclass, jlong bmk,
-                                                                                       jboolean addName)
-{
-  return jni::ToJavaString(env, frm()->CodeGe0url(getBookmark(bmk), addName));
 }
 
 JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Bookmark_nativeChangeCategory(JNIEnv *, jclass, jlong oldCatId,

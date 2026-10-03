@@ -24,6 +24,10 @@ static PlacePageRoadType convertRoadType(RoadWarningMarkType roadType)
   case RoadWarningMarkType::Toll: return PlacePageRoadTypeToll;
   case RoadWarningMarkType::Ferry: return PlacePageRoadTypeFerry;
   case RoadWarningMarkType::Dirty: return PlacePageRoadTypeDirty;
+  // Steps/gate/lift_gate warnings have no "avoid" routing option, so no special road action button.
+  case RoadWarningMarkType::Steps:
+  case RoadWarningMarkType::Gate:
+  case RoadWarningMarkType::LiftGate:
   case RoadWarningMarkType::Count: return PlacePageRoadTypeNone;
   }
 }
@@ -157,7 +161,7 @@ static PlacePageRoadType convertRoadType(RoadWarningMarkType roadType)
   if (rawData().IsBookmark())
     return PlacePageObjectTypeBookmark;
   else if (rawData().IsTrack())
-    return PlacePageObjectTypeTrack;
+    return rawData().IsRelationTrack() ? PlacePageObjectTypeRelationTrack : PlacePageObjectTypeTrack;
   else if (self.trackData)
     return PlacePageObjectTypeTrackRecording;
   else

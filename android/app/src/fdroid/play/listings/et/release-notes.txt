@@ -1,10 +1,11 @@
-• OSM-i kaardiandmed 10. märtsi seisuga, Vikipeedia 1. märtsi seisuga
-• Hiina provintside täpsemad kõrgusisoliinid
-• Lisatud puude read, nahapoed ja religioosseid kaupu müüvad poed
-• Lisatud tingimuslike kiiruspiirangute tugi
-• Tansaania jagatud väiksemateks piirkondadeks
-• Lahtiolekuaegade täiustatud kuvamine
-• Parandatud mitu krahhi
-• Täiustatud rakenduste ja riikide nimede tõlked
-• Lisatud ühistranspordipeatuste platvormid ilma lähedal asuvate bussipeatusteta
-omaps.org/et/news
+• OSM-i andmed seisuga 26. august
+• UUS: järjehoidjate ja radade mitmikvalik
+• UUS: üksikute radade peitmine silmaikooniga
+• UUS: Vikipeedia artiklid bengali, hindi, marathi, poola, tamili, telugu ja urdu keeles
+• Parandatud kokkujooksmised ja hangumised
+• Kaardile lisatud linnuvaatluspunktid, lavad, künkad ja kivikaared
+• Parem kohtade jagamine
+• Android Auto parandused
+• Parandatud marsruudi peatuste valik
+• Parandatud lahtiolekuajad
+…rohkem infot aadressil omaps.org/et/news

@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- SECTION: Other translations -->
+    <!-- Text shown before a shared "my position" link, and the email subject when sharing the current location. -->
+    <string name="share_my_position">Som tu na mape Organic Maps</string>
+    <!-- Shared email link text; opens the shared place in Organic Maps or in a web browser. -->
+    <string name="share_open_in_om_or_browser">Otvoriť v Organic Maps alebo v prehliadači</string>
+    <!-- Shared email link text; leads to the Organic Maps download page. -->
+    <string name="share_get_om">Získať Organic Maps</string>
+    <!-- Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. -->
+    <string name="open_in_app">Otvoriť v inej aplikácii</string>
+
     <!-- SECTION: Uncategorized -->
+    <!-- Settings/Downloader - size string, only strings different from English should be translated -->
+    <string name="mb">MB</string>
+    <string name="gb">GB</string>
     <!-- A text for current gps location point/arrow selected on the map -->
     <string name="core_my_position">Moja poloha</string>
     <!-- Default bookmark list name -->
@@ -30,8 +43,8 @@
     <!-- Toast text when the maps version should be updated to display the OSM hiking and cycling routes -->
     <string name="routes_update_maps_text">Na zobrazenie trás je potrebné aktualizovať mapy.</string>
     <!-- Subway exits for public transport marks on the map -->
-    <string name="core_exit">Ukončiť</string>
-    <string name="core_entrance">Vchod | vjazd</string>
+    <string name="core_exit">Výstup</string>
+    <string name="core_entrance">Vchod</string>
     <string name="subway_data_unavailable">Mapa metra nie je dostupná</string>
     <!-- Settings/Highlight downloaded regions on the map -->
     <string name="show_downloaded_regions">Fialové stiahnuté regióny</string>

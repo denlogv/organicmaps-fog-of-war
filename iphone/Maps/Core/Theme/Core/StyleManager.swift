@@ -22,15 +22,15 @@
   }
 
   func update() {
-    for window in UIApplication.shared.windows {
+    for window in UIApplication.shared.allConnectedWindows {
       updateView(window.rootViewController?.view)
     }
 
     let appDelegate = UIApplication.shared.delegate as! MapsAppDelegate
-    if let vc = appDelegate.window.rootViewController?.presentedViewController {
+    if let vc = appDelegate.window?.rootViewController?.presentedViewController {
       vc.applyTheme()
       updateView(vc.view)
-    } else if let vcs = appDelegate.window.rootViewController?.children {
+    } else if let vcs = appDelegate.window?.rootViewController?.children {
       for vc in vcs {
         vc.applyTheme()
       }
@@ -70,7 +70,7 @@
 
   @objc func removeListener(_ themeListener: ThemeListener) {
     listeners.removeAll { container -> Bool in
-      return container.value === themeListener
+      container.value === themeListener
     }
   }
 }

@@ -7,7 +7,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace feature
@@ -35,7 +34,8 @@ public:
 
 using TrackGeometry = std::vector<geometry::PointWithAltitude>;
 
-using LocalizableString = std::unordered_map<int8_t, std::string>;
+// Ordered: the language order decides the KML element and KMB string table order.
+using LocalizableString = std::map<int8_t, std::string>;
 using LocalizableStringSubIndex = std::map<int8_t, uint32_t>;
 using LocalizableStringIndex = std::vector<LocalizableStringSubIndex>;
 using Properties = std::map<std::string, std::string>;
@@ -44,7 +44,6 @@ using MarkGroupId = uint64_t;
 using MarkId = uint64_t;
 using TrackId = uint64_t;
 using LocalId = uint8_t;
-using CompilationId = uint64_t;
 
 using MarkIdCollection = std::vector<MarkId>;
 using TrackIdCollection = std::vector<TrackId>;
@@ -59,7 +58,11 @@ MarkGroupId constexpr kInvalidMarkGroupId = std::numeric_limits<MarkGroupId>::ma
 MarkId constexpr kInvalidMarkId = std::numeric_limits<MarkId>::max();
 MarkId constexpr kDebugMarkId = kInvalidMarkId - 1;
 TrackId constexpr kInvalidTrackId = std::numeric_limits<TrackId>::max();
-CompilationId constexpr kInvalidCompilationId = std::numeric_limits<CompilationId>::max();
+TrackId constexpr kTempRelationTrackId = kInvalidTrackId - 1;
+// The only values Organic Maps ever writes into the vestigial "Collections" slots,
+// see CategoryData::m_unusedCompilationId.
+uint64_t constexpr kUnusedCompilationId = std::numeric_limits<uint64_t>::max();
+uint8_t constexpr kUnusedCompilationType = 0;
 
 inline uint64_t ToSecondsSinceEpoch(Timestamp const & time)
 {
@@ -119,20 +122,37 @@ bool IsEqual(std::vector<T> const & lhs, std::vector<T> const & rhs)
 }
 
 struct BookmarkData;
+// Passing "default" selects the device-independent LocalizableString ordering used for
+// serialization. The localized feature type remains the final fallback for a nameless bookmark.
 std::string GetPreferredBookmarkName(BookmarkData const & bmData, std::string_view languageOrig);
 std::string GetPreferredBookmarkStr(LocalizableString const & name, std::string const & languageNorm);
 std::string GetPreferredBookmarkStr(LocalizableString const & name, feature::RegionData const & regionData,
                                     std::string const & languageNorm);
 std::string GetLocalizedFeatureType(std::vector<uint32_t> const & types);
 
+// Selects one device-independent value for serialization and other stable output. Prefers
+// default/int_name/en; if none exists, the lowest language code wins as a deterministic last
+// resort, so a non-empty localized value is never dropped. The view points into lstr.
+// Note that a value picked this way is promoted to the "default" language when a KML file written
+// with it is loaded back, see KmlParser::CharData.
+std::string_view GetStringForExport(LocalizableString const & lstr);
+
+// m_collectionIndex is mutable because it is filled during serialization.
+/// @todo Not good design to store intermediate ser/des index inside data.
+
 #define DECLARE_COLLECTABLE(IndexType, ...)            \
-  IndexType m_collectionIndex;                         \
+  mutable IndexType m_collectionIndex;                 \
   template <typename Collector>                        \
   void Collect(Collector & collector)                  \
   {                                                    \
     collector.Collect(m_collectionIndex, __VA_ARGS__); \
   }                                                    \
-  void ClearCollectionIndex()                          \
+  template <typename Collector>                        \
+  void Collect(Collector & collector) const            \
+  {                                                    \
+    collector.Collect(m_collectionIndex, __VA_ARGS__); \
+  }                                                    \
+  void ClearCollectionIndex() const                    \
   {                                                    \
     m_collectionIndex.clear();                         \
   }

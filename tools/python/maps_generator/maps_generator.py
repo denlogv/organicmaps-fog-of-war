@@ -32,10 +32,8 @@ def generate_maps(env: Env, from_stage: Optional[AnyStr] = None):
         sd.StageCoastline(),
         sd.StagePreprocess(),
         sd.StageFeatures(),
-        sd.StageDownloadDescriptions(),
         sd.StageMwm(),
         sd.StageCountriesTxt(),
-        sd.StageLocalAds(),
         sd.StageStatistics(),
         sd.StageCleanup(),
     )

@@ -1,9 +1,11 @@
-• OSM-Kartendaten vom 10. März, Wikipedia vom 1. März
-• Detailliertere Höhenisolinien für chinesische Provinzen
-• Es wurden Baumreihen, Ledergeschäfte und Geschäfte mit religiösen Gütern hinzugefügt
-• Unterstützung für bedingte Geschwindigkeitsbegrenzungen hinzugefügt
-• Tansania in kleinere Regionen aufgeteilt
-• Verbesserte Anzeige der Geschäftsöffnungszeiten
-• Mehrere Abstürze behoben
-• Verbesserte Übersetzungen von App- und Ländernamen
-omaps.org/de/news
+• OSM-Daten vom 26. August
+• NEU: Mehrfachauswahl für Lesezeichen und Tracks
+• NEU: Einzelne Tracks über das Augensymbol ausblenden
+• NEU: Wikipedia-Artikel auf Bengalisch, Hindi, Marathi, Polnisch, Tamil, Telugu, Urdu
+• Abstürze und Einfrieren behoben
+• Vogelbeobachtungsstände, Bühnen, Hügel und Felsenbögen zur Karte hinzugefügt
+• Besseres Teilen von Orten
+• Korrekturen für Android Auto
+• Auswahl von Routenstopps korrigiert
+• Öffnungszeiten korrigiert
+…mehr unter omaps.org/de/news

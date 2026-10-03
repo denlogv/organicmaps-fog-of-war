@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
+import androidx.annotation.ColorInt;
 import androidx.annotation.Keep;
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -24,9 +25,6 @@ import java.util.List;
 public enum BookmarkManager {
   INSTANCE;
 
-  // These values have to match the values of kml::CompilationType from kml/types.hpp
-  public static final int CATEGORY = 0;
-
   private static final String[] BOOKMARKS_EXTENSIONS = Framework.nativeGetBookmarksFilesExts();
 
   private static final String TAG = BookmarkManager.class.getSimpleName();
@@ -38,6 +36,8 @@ public enum BookmarkManager {
   private BookmarkCategoriesDataProvider mCurrentDataProvider = mCategoriesCoreDataProvider;
 
   private final BookmarkCategoriesCache mBookmarkCategoriesCache = new BookmarkCategoriesCache();
+
+  private int mLoadingGeneration;
 
   @NonNull
   private final List<BookmarksLoadingListener> mListeners = new ArrayList<>();
@@ -125,10 +125,23 @@ public enum BookmarkManager {
   @MainThread
   private void onBookmarksLoadingFinished()
   {
+    ++mLoadingGeneration;
     updateCache();
     mCurrentDataProvider = new CacheBookmarkCategoriesDataProvider();
     for (BookmarksLoadingListener listener : mListeners)
       listener.onBookmarksLoadingFinished();
+  }
+
+  /**
+   * Counts the loads of the bookmark files that have completed. A load rebuilds every category from its file and
+   * hands out fresh ids, so a screen holding ids has to notice one even when it happened while the screen was
+   * not registered as a listener - between {@code onViewCreated()} and {@code onStart()}, or while stopped.
+   * Comparing a snapshot of this against the current value is the only way: the callback above reaches
+   * registered listeners only.
+   */
+  public int getLoadingGeneration()
+  {
+    return mLoadingGeneration;
   }
 
   // Called from JNI.
@@ -191,10 +204,10 @@ public enum BookmarkManager {
   @Keep
   @SuppressWarnings("unused")
   @MainThread
-  private void onElevationCurrentPositionChanged()
+  private void onElevationCurrentPositionChanged(long trackId, double distance)
   {
     if (mOnElevationCurrentPositionChangedListener != null)
-      mOnElevationCurrentPositionChangedListener.onCurrentPositionChanged();
+      mOnElevationCurrentPositionChangedListener.onCurrentPositionChanged(trackId, distance);
   }
 
   public void setElevationCurrentPositionChangedListener(@Nullable OnElevationCurrentPositionChangedListener listener)
@@ -211,10 +224,10 @@ public enum BookmarkManager {
   @Keep
   @SuppressWarnings("unused")
   @MainThread
-  private void onElevationActivePointChanged()
+  private void onElevationActivePointChanged(long trackId, double distance)
   {
     if (mOnElevationActivePointChangedListener != null)
-      mOnElevationActivePointChangedListener.onElevationActivePointChanged();
+      mOnElevationActivePointChangedListener.onElevationActivePointChanged(trackId, distance);
   }
 
   @Nullable
@@ -260,6 +273,39 @@ public enum BookmarkManager {
     nativeDeleteBookmark(bmkId);
   }
 
+  /**
+   * Unlike {@link #getTrack(long)}, it does not assert on an already deleted track.
+   */
+  public boolean hasTrack(long trackId)
+  {
+    return nativeHasTrack(trackId);
+  }
+
+  /**
+   * Deletes several bookmarks and tracks at once. Ids that no longer exist are skipped.
+   */
+  public void deleteBookmarksAndTracks(@NonNull long[] bookmarkIds, @NonNull long[] trackIds)
+  {
+    nativeDeleteBookmarksAndTracks(bookmarkIds, trackIds);
+  }
+
+  /**
+   * Moves several bookmarks and tracks into {@code newCategoryId} at once. Ids that no longer exist and items that
+   * already belong to the destination category are skipped.
+   */
+  public void moveBookmarksAndTracks(@NonNull long[] bookmarkIds, @NonNull long[] trackIds, long newCategoryId)
+  {
+    nativeMoveBookmarksAndTracks(bookmarkIds, trackIds, newCategoryId);
+  }
+
+  /**
+   * Applies a custom color to several bookmarks and tracks at once. Ids that no longer exist are skipped.
+   */
+  public void changeBookmarksAndTracksColor(@NonNull long[] bookmarkIds, @NonNull long[] trackIds, @ColorInt int color)
+  {
+    nativeChangeBookmarksAndTracksColor(bookmarkIds, trackIds, color);
+  }
+
   public long createCategory(@NonNull String name)
   {
     return nativeCreateCategory(name);
@@ -275,7 +321,7 @@ public enum BookmarkManager {
     nativeShowBookmarkCategoryOnMap(catId);
   }
 
-  @PredefinedColors.Color
+  @ColorInt
   public int getLastEditedColor()
   {
     return nativeGetLastEditedColor();
@@ -288,6 +334,7 @@ public enum BookmarkManager {
     nativeLoadBookmarksFile(path, isTemporaryFile);
   }
 
+  @WorkerThread
   static @Nullable String getBookmarksFilenameFromUri(@NonNull ContentResolver resolver, @NonNull Uri uri)
   {
     String filename = null;
@@ -362,6 +409,7 @@ public enum BookmarkManager {
     return null;
   }
 
+  @WorkerThread
   private static String guessExtensionByContent(@NonNull ContentResolver resolver, @NonNull Uri uri)
   {
     // If first symbol is '{' -> GeoJson
@@ -520,6 +568,13 @@ public enum BookmarkManager {
     nativeSetAllCategoriesVisibility(visible);
   }
 
+  /// Sets individual track visibility. Uses EditSession internally for thread safety.
+  /// Category visibility takes precedence: a track renders only if both category and track are visible.
+  public void setTrackVisibility(long trackId, boolean visible)
+  {
+    nativeSetTrackVisibility(trackId, visible);
+  }
+
   public void prepareCategoriesForSharing(long[] catIds, @NonNull FileType fileType)
   {
     nativePrepareFileForSharing(catIds, fileType.ordinal());
@@ -542,12 +597,6 @@ public enum BookmarkManager {
   }
 
   @NonNull
-  public List<BookmarkCategory> getChildrenCategories(long catId)
-  {
-    return mCurrentDataProvider.getChildrenCategories(catId);
-  }
-
-  @NonNull
   native BookmarkCategory nativeGetBookmarkCategory(long catId);
 
   @NonNull
@@ -555,12 +604,9 @@ public enum BookmarkManager {
 
   native int nativeGetBookmarkCategoriesCount();
 
-  @NonNull
-  native BookmarkCategory[] nativeGetChildrenCategories(long catId);
-
-  public void setElevationActivePoint(long trackId, double distance, @NonNull ElevationInfo.Point point)
+  public void setElevationActivePoint(long trackId, double distance)
   {
-    nativeSetElevationActivePoint(trackId, distance, point.getLatitude(), point.getLongitude());
+    nativeSetElevationActivePoint(trackId, distance);
   }
 
   @Nullable
@@ -582,6 +628,16 @@ public enum BookmarkManager {
 
   private native void nativeDeleteBookmark(long bmkId);
 
+  private static native boolean nativeHasTrack(long trackId);
+
+  private static native void nativeDeleteBookmarksAndTracks(@NonNull long[] bookmarkIds, @NonNull long[] trackIds);
+
+  private static native void nativeMoveBookmarksAndTracks(@NonNull long[] bookmarkIds, @NonNull long[] trackIds,
+                                                          long newCatId);
+
+  private static native void nativeChangeBookmarksAndTracksColor(@NonNull long[] bookmarkIds, @NonNull long[] trackIds,
+                                                                 @ColorInt int color);
+
   /**
    * @return category Id
    */
@@ -594,7 +650,7 @@ public enum BookmarkManager {
   @Nullable
   private native Bookmark nativeAddBookmarkToLastEditedCategory(double lat, double lon);
 
-  @PredefinedColors.Color
+  @ColorInt
   private native int nativeGetLastEditedColor();
 
   private static native void nativeLoadBookmarksFile(@NonNull String path, boolean isTemporaryFile);
@@ -611,6 +667,8 @@ public enum BookmarkManager {
 
   private static native void nativeSetAllCategoriesVisibility(boolean visible);
 
+  private static native void nativeSetTrackVisibility(long trackId, boolean visible);
+
   private static native void nativePrepareFileForSharing(long[] catIds, int fileType);
 
   private static native void nativePrepareTrackFileForSharing(long trackId, int fileType);
@@ -624,8 +682,7 @@ public enum BookmarkManager {
 
   public static native void nativeRemoveElevationCurrentPositionChangedListener();
 
-  private static native void nativeSetElevationActivePoint(long trackId, double distanceInMeters, double latitude,
-                                                           double longitude);
+  private static native void nativeSetElevationActivePoint(long trackId, double distanceInMeters);
 
   private static native void nativeSetElevationActiveChangedListener();
 
@@ -654,12 +711,12 @@ public enum BookmarkManager {
 
   public interface OnElevationActivePointChangedListener
   {
-    void onElevationActivePointChanged();
+    void onElevationActivePointChanged(long trackId, double distance);
   }
 
   public interface OnElevationCurrentPositionChangedListener
   {
-    void onCurrentPositionChanged();
+    void onCurrentPositionChanged(long trackId, double distance);
   }
 
   static class BookmarkCategoriesCache

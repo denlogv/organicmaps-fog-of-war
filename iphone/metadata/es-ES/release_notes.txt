@@ -1,23 +1,50 @@
-• Datos cartográficos de OSM a fecha de 10 de marzo
-• Datos de Wikipedia a fecha de 1 de marzo
-• Se ha añadido compatibilidad con límites de velocidad condicionales
-• Isólineas de elevación más detalladas para las provincias chinas
-• Se han añadido tiendas de cuero y tiendas que venden artículos religiosos
-• Se han añadido hileras de árboles
-• Se han añadido plataformas de transporte público sin paradas de autobús cercanas
-• Se ha corregido el cálculo del progreso de descarga de países
-• Se ha dividido Tanzania en regiones más pequeñas
-• Se ha añadido el historial de categorías utilizadas recientemente en el Editor
-• Se ha mejorado el deslizamiento hacia arriba en la pantalla de planificación de rutas
-• Se ha corregido la posición de la regla para CarPlay
-• Se han corregido varios fallos y se ha mejorado la estabilidad y el rendimiento
+## Mapa y lugares
 
-### Traducciones
+• Datos de OpenStreetMap actualizados al 26 de agosto de 2026
+• Se han actualizado artículos de Wikipedia en árabe, bengalí, chino, inglés, francés, alemán, hindi, italiano, japonés, coreano, marathi, polaco, portugués, ruso, español, tamil, telugu, turco y urdu
+• Se han añadido al mapa observatorios de aves, escenarios, colinas y arcos de roca, además de un nuevo icono para las rocas
+• Se ha cambiado el tamaño de los iconos de picos, cuevas y puertos de montaña
+• Las áreas protegidas, los parques nacionales y los humedales se muestran ahora en tonos más claros
+• Se han corregido numerosos problemas que provocaban que el horario de apertura se mostrara de forma incorrecta
+• Se han reorganizado los ajustes en las secciones «General», «Mapa», «Navegación», «Red» y «Privacidad»
+• Se ha eliminado el ajuste de calibración de la brújula, ya que ahora la calibración se realiza de forma automática
+• Se han solucionado problemas con la brújula que podían hacer que la flecha de posición actual apuntara en una dirección incorrecta o se quedara bloqueada
+• El punto correspondiente se muestra ahora en el mapa mientras se arrastra el dedo por el perfil de altitud en la vista previa de una ruta a pie o en bicicleta
+• Se han solucionado un bloqueo de la aplicación y un problema que, en ocasiones, provocaba que se ignoraran los toques y los gestos
 
-• Se han mejorado las descripciones de los países
-• Se han aplicado correcciones en rumano de Eugen Dedu
-• Se han actualizado los nombres de los países
-• Se han actualizado las traducciones de los colaboradores de Weblate
-• Se ha corregido la traducción al ucraniano
+## Compartir, marcadores y trayectos
 
-¡Gracias a todos los que contribuyen, donan y apoyan a Organic Maps! ¡Construyamos juntos los mejores mapas!
+• NUEVO: se ha añadido la selección múltiple a las listas de marcadores y trayectos, con acciones en bloque para eliminar, mover y cambiar el color de los elementos seleccionados, además de «Seleccionar todo» y «Deseleccionar todo»
+• Se ha añadido compatibilidad con AirDrop para compartir lugares
+• Al compartir un lugar, un marcador o la posición actual, ahora se envía un enlace legible con información útil
+• Los marcadores exportados conservan ahora sus nombres y descripciones originales
+• Las listas de marcadores compartidas utilizan ahora su nombre visible en lugar del nombre de archivo interno
+• Se ha corregido un problema de visualización del gráfico de altitud que podía producirse inmediatamente después de iniciar la grabación de un trayecto
+• Se ha restaurado el selector de color personalizado en la ventana emergente de la paleta de colores
+• Se ha corregido la visualización de las descripciones en HTML cuando se selecciona un marcador en el mapa
+
+## Rutas y navegación
+
+• NUEVO: se ha añadido un panel de CarPlay y se han solucionado varios problemas relacionados con CarPlay
+• Se ha corregido la activación del estilo de mapa de navegación para el coche
+• Al pulsar sobre una parada o un punto de la ruta, ahora se abre correctamente en lugar de cambiar entre las rutas planificadas
+• Ahora las rutas de transporte público se calculan más rápidamente
+• Se han corregido instrucciones de giro incorrectas
+• Se ha corregido un punto de partida incorrecto tras recalcular una ruta
+• Al planificar rutas, las carreteras de laterita se consideran ahora carreteras con firme sin asfaltar de baja calidad
+• Las carreteras etiquetadas con access=unknown se tratan ahora como carreteras de acceso privado o de acceso exclusivo al destino
+
+## Editor de OpenStreetMap
+
+• Se ha corregido un cierre inesperado de la aplicación al finalizar en segundo plano una subida a OpenStreetMap
+• Al borrar el campo de horario de apertura, los botones «Guardar» o «Hecho» ya no quedan desactivados
+• Las subidas que fallan parcialmente ahora se vuelven a intentar, en lugar de registrarse como completamente correctas
+
+## Traducciones
+
+• Se han añadido instrucciones de voz en armenio y laosiano
+• Se ha actualizado la sección de Ayuda/Preguntas frecuentes (FAQ) y se ha añadido la traducción al japonés
+• Se ha corregido la traducción al japonés de «Cerrado ahora»
+• Se han mejorado las traducciones al chino de «trayecto» y «desactivar»
+
+Consulte las notas detalladas de la versión en https://omaps.org/es/news/

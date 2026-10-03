@@ -43,7 +43,7 @@ public:
            ref_ptr<dp::GraphicsContextFactory> factory, ref_ptr<dp::TextureManager> texMng,
            MapDataProvider const & model, TUpdateCurrentCountryFn const & updateCurrentCountryFn,
            ref_ptr<RequestedTiles> requestedTiles, bool allow3dBuildings, bool trafficEnabled, bool isolinesEnabled,
-           bool simplifiedTrafficColors, dp::BackgroundMode backgroundMode,
+           bool simplifiedTrafficColors, dp::BackgroundMode backgroundMode, float satelliteAreaOpacity,
            std::optional<Arrow3dCustomDecl> arrow3dCustomDecl,
            OnGraphicsContextInitialized const & onGraphicsContextInitialized)
       : BaseRenderer::Params(apiVersion, commutator, factory, texMng, onGraphicsContextInitialized)
@@ -55,6 +55,7 @@ public:
       , m_isolinesEnabled(isolinesEnabled)
       , m_simplifiedTrafficColors(simplifiedTrafficColors)
       , m_backgroundMode(backgroundMode)
+      , m_satelliteAreaOpacity(satelliteAreaOpacity)
       , m_arrow3dCustomDecl(std::move(arrow3dCustomDecl))
     {}
 
@@ -66,6 +67,7 @@ public:
     bool m_isolinesEnabled;
     bool m_simplifiedTrafficColors;
     dp::BackgroundMode m_backgroundMode;
+    float m_satelliteAreaOpacity;
     std::optional<Arrow3dCustomDecl> m_arrow3dCustomDecl;
   };
 
@@ -87,6 +89,10 @@ private:
   void RecacheChoosePositionMark();
   void RecacheMapShapes();
   void CleanupTextures();
+  /// Posts a ClearTransitSchemeDataMessage to the frontend renderer scoped to the route's
+  /// sentinel (default-constructed) MwmId. Used both before pushing a fresh route build
+  /// and on hide.
+  void ClearRouteTransitData();
 
 #ifdef RENDER_DEBUG_INFO_LABELS
   void RecacheDebugLabels();

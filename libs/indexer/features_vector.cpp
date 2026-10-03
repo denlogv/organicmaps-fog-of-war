@@ -33,6 +33,11 @@ std::unique_ptr<FeatureType> FeaturesVector::GetByIndex(uint32_t index) const
   return std::make_unique<FeatureType>(&m_loadInfo, m_recordReader->ReadRecord(ftOffset));
 }
 
+feature::RouteRelation FeaturesVector::GetRelation(uint32_t index) const
+{
+  return m_loadInfo.GetRelation(index);
+}
+
 size_t FeaturesVector::GetNumFeatures() const
 {
   return m_table ? m_table->size() : 0;
@@ -45,20 +50,12 @@ FeaturesVectorTest::FeaturesVectorTest(std::string const & filePath)
 FeaturesVectorTest::FeaturesVectorTest(FilesContainerR const & cont)
   : m_cont(cont)
   , m_header(m_cont)
-  , m_vector(m_cont, m_header, nullptr, nullptr, nullptr)
-{
-  m_vector.m_table = feature::FeaturesOffsetsTable::Load(m_cont, FEATURE_OFFSETS_FILE_TAG).release();
+  , m_ftTable(feature::FeaturesOffsetsTable::Load(m_cont, FEATURE_OFFSETS_FILE_TAG))
+  , m_relTable(m_cont.IsExist(RELATION_OFFSETS_FILE_TAG)
+                   ? feature::FeaturesOffsetsTable::Load(m_cont, RELATION_OFFSETS_FILE_TAG)
+                   : nullptr)
+  , m_metaDeserializer(m_cont.IsExist(METADATA_FILE_TAG) ? indexer::MetadataDeserializer::Load(m_cont) : nullptr)
+  , m_vector(m_cont, m_header, m_ftTable.get(), m_relTable.get(), m_metaDeserializer.get())
+{}
 
-  if (m_cont.IsExist(RELATION_OFFSETS_FILE_TAG))
-    m_vector.m_loadInfo.m_relTable = feature::FeaturesOffsetsTable::Load(m_cont, RELATION_OFFSETS_FILE_TAG).release();
-
-  if (m_cont.IsExist(METADATA_FILE_TAG))
-    m_vector.m_loadInfo.m_metaDeserializer = indexer::MetadataDeserializer::Load(m_cont).release();
-}
-
-FeaturesVectorTest::~FeaturesVectorTest()
-{
-  delete m_vector.m_table;
-  delete m_vector.m_loadInfo.m_metaDeserializer;
-  delete m_vector.m_loadInfo.m_relTable;
-}
+FeaturesVectorTest::~FeaturesVectorTest() = default;

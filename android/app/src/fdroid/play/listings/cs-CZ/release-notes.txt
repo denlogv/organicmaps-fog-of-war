@@ -1,10 +1,13 @@
-• Mapová data OSM k 10. březnu, Wikipedie k 1. březnu
-• Podrobnější výškové izočáry pro čínské provincie
-• Přidány řady stromů, kožené obchody a obchody prodávající náboženské zboží
-• Přidána podpora pro podmíněné omezení rychlosti
-• Tanzánie rozdělena na menší regiony
-• Vylepšené zobrazení otevírací doby podniků
-• Opraveno několik pádů
-• Vylepšené překlady názvů aplikací a zemí
-• Přidána nástupiště MHD bez blízkých autobusových zastávek
-omaps.org/cs/news
+• Data OSM k 26. srpnu
+• NOVINKA: hromadný výběr záložek a stop
+• NOVINKA: skrytí jednotlivých stop ikonou oka
+• NOVINKA: články Wikipedie v bengálštině, hindštině, maráthštině, polštině, tamilštině, telugštině a urdštině
+• Opraveny pády a zamrzání
+• Na mapu přidány pozorovatelny ptáků, pódia, kopce a skalní oblouky
+• Lepší sdílení míst
+• Opravy pro Android Auto
+• Opraven výběr zastávek trasy
+• Opravena otevírací doba
+• Opraveny chyby editoru OSM
+• Opraven výškový graf
+…více na omaps.org/cs/news

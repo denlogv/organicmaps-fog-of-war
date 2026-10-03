@@ -47,6 +47,8 @@
     <string name="auto">Αυτόματα</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">Τρισδιάστατα κτίρια</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">Δεν είναι διαθέσιμη</string>
     <!-- Text in menu -->
     <string name="help">Βοήθεια</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">Ανοικτό</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">Κλειστό σήμερα</string>
+    <string name="midnight">Μεσάνυχτα</string>
+    <string name="noon">Μεσημέρι</string>
     <string name="opens_in">Ανοίγει σε %s</string>
     <string name="closes_in">Κλείνει σε %s</string>
     <string name="closed">Κλειστό</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">Αποφυγή πορθμείων</string>
     <string name="avoid_motorways">Αποφυγή αυτοκινητόδρομων</string>
     <string name="unable_to_calc_alert_title">Δεν ήταν δυνατός ο υπολογισμός διαδρομής</string>
+    <string name="trip_finished">Μόλις φτάσατε!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">Ταξινόμηση σελιδ/κτών</string>
     <!-- Android -->
@@ -100,7 +105,7 @@
     <string name="downloader_loading_ios">Κατέβασμα</string>
     <string name="download_map_title">Κατεβάστε τον παγκόσμιο χάρτη επισκόπησης</string>
     <!-- The text in the activity for location permission request. -->
-    <string name="aa_request_permission_activity_text">Οι οργανικοί χάρτες στο Android Auto χρειάζονται δικαιώματα τοποθεσίας για να λειτουργούν αποτελεσματικά</string>
+    <string name="aa_request_permission_activity_text">Organic Maps στο Android Auto απαιτεί δικαιώματα πρόσβασης στην τοποθεσία για να λειτουργεί αποτελεσματικά</string>
     <!-- Grant Permissions button. -->
     <string name="aa_grant_permissions">Να επιτραπεί</string>
 </resources>

@@ -8,8 +8,8 @@ class DirectionView: SolidTouchView {
   @IBOutlet private var contentView: UIView!
 
   override func awakeFromNib() {
-    distanceLabel.font = alternative(iPhone: .regular32(), iPad: .regular52())
-    typeLabel.font = alternative(iPhone: .regular16(), iPad: .regular24())
+    distanceLabel.font = alternative(iPhone: .regular32, iPad: .regular52)
+    typeLabel.font = alternative(iPhone: .regular16, iPad: .regular24)
   }
 
   override func didMoveToSuperview() {
@@ -58,7 +58,7 @@ class DirectionView: SolidTouchView {
   }
 
   func updateHeading(_ angle: CGFloat) {
-    UIView.animate(withDuration: kDefaultAnimationDuration,
+    UIView.animate(withDuration: AppConstants.defaultAnimationDuration,
                    delay: 0,
                    options: [.beginFromCurrentState, .curveEaseInOut],
                    animations: { [unowned self] in

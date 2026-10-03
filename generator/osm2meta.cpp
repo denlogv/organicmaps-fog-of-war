@@ -17,53 +17,13 @@
 #include <cmath>
 #include <cstdlib>
 #include <optional>
-#include <unordered_set>
 
 namespace
 {
 using osm::EditableMapObject;
 
-constexpr char const * kOSMMultivalueDelimiter = ";";
-
 // https://en.wikipedia.org/wiki/List_of_tallest_buildings_in_the_world
 auto constexpr kMaxBuildingLevelsInTheWorld = 167;
-
-template <class T>
-void RemoveDuplicatesAndKeepOrder(std::vector<T> & vec)
-{
-  std::unordered_set<T> seen;
-  auto const predicate = [&seen](T const & value)
-  {
-    if (seen.contains(value))
-      return true;
-    seen.insert(value);
-    return false;
-  };
-  vec.erase(remove_if(vec.begin(), vec.end(), predicate), vec.end());
-}
-
-// Also filters out duplicates.
-class MultivalueCollector
-{
-public:
-  void operator()(std::string const & value)
-  {
-    if (value.empty() || value == kOSMMultivalueDelimiter)
-      return;
-    m_values.push_back(value);
-  }
-  std::string GetString()
-  {
-    if (m_values.empty())
-      return {};
-
-    RemoveDuplicatesAndKeepOrder(m_values);
-    return strings::JoinStrings(m_values, kOSMMultivalueDelimiter);
-  }
-
-private:
-  std::vector<std::string> m_values;
-};
 
 bool IsNoNameNoAddressBuilding(FeatureParams const & params)
 {
@@ -93,7 +53,7 @@ std::string MetadataTagProcessorImpl::ValidateAndFormat_stars(std::string const 
     return {};
 
   // Ignore numbers larger than 9.
-  if (v.size() > 1 && ::isdigit(v[1]))
+  if (v.size() > 1 && strings::IsASCIIDigit(v[1]))
     return {};
 
   return std::string(1, v[0]);
@@ -319,11 +279,11 @@ std::string MetadataTagProcessorImpl::ValidateAndFormat_airport_iata(std::string
     return {};
 
   auto str = v;
-  for (auto & c : str)
+  for (auto c : str)
   {
-    if (!std::isalpha(c))
+    if (!strings::IsASCIILatin(c))
       return {};
-    c = std::toupper(c);
+    c = strings::AsciiToUpper(c);
   }
   return str;
 }
@@ -387,7 +347,7 @@ std::string MetadataTagProcessorImpl::ValidateAndFormat_duration(std::string con
   {
     uint32_t number = 0;
     size_t const startPos = pos;
-    while (pos < v.size() && isdigit(v[pos]))
+    while (pos < v.size() && strings::IsASCIIDigit(v[pos]))
     {
       number *= 10;
       number += v[pos] - '0';
@@ -530,6 +490,7 @@ void MetadataTagProcessor::operator()(std::string const & k, std::string const &
     valid = ValidateAndFormat_operator(v);
     break;
   case Metadata::FMD_WEBSITE: valid = ValidateAndFormat_url(v); break;
+  case Metadata::FMD_HERITAGE_WEBSITE: valid = ValidateAndFormat_url(v); break;
   case Metadata::FMD_WEBSITE_MENU: valid = ValidateAndFormat_url(v); break;
   case Metadata::FMD_CONTACT_FACEBOOK: valid = osm::ValidateAndFormat_facebook(v); break;
   case Metadata::FMD_CONTACT_INSTAGRAM: valid = osm::ValidateAndFormat_instagram(v); break;

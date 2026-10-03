@@ -108,8 +108,22 @@ size_t CountNormLowerSymbols(UniString const & s, UniString const & lowStr);
 
 size_t Utf8Length(std::string_view const s);
 
+constexpr char AsciiToLower(char c) noexcept
+{
+  return c >= 'A' && c <= 'Z' ? static_cast<char>(c - 'A' + 'a') : c;
+}
+
+constexpr char AsciiToUpper(char c) noexcept
+{
+  return c >= 'a' && c <= 'z' ? static_cast<char>(c - 'a' + 'A') : c;
+}
+
 void AsciiToLower(std::string & s);
 void AsciiToUpper(std::string & s);
+
+/// Compares ASCII strings ignoring case. Unlike EqualNoCase() it neither allocates nor applies
+/// Unicode case folding, so it is only correct for ASCII inputs like language tags or URL schemes.
+bool EqualAsciiNoCase(std::string_view s1, std::string_view s2) noexcept;
 
 // All trimming functions do in-place trimming. Only ASCII whitespaces are trimmed.
 void Trim(std::string & s);
@@ -133,6 +147,7 @@ bool EqualNoCase(std::string const & s1, std::string const & s2);
 UniString MakeUniString(std::string_view utf8s);
 std::string ToUtf8(UniString const & s);
 std::u16string ToUtf16(std::string_view utf8);
+
 bool IsASCIIString(std::string_view sv);
 
 // std::isdigit is locale-dependent and fails for trailing UTF-8 characters.
@@ -168,7 +183,11 @@ inline constexpr bool IsASCIISpace(T c)
   }
 }
 
-bool IsASCIILatin(UniChar c);
+template <std::integral T>
+bool IsASCIILatin(T c)
+{
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
 
 inline std::string DebugPrint(UniString const & s)
 {
@@ -403,6 +422,28 @@ std::vector<ResultT> Tokenize(std::string_view str, char const * delims)
 {
   std::vector<ResultT> c;
   Tokenize(str, delims, [&c](std::string_view v) { c.push_back(ResultT(v)); });
+  return c;
+}
+
+/// Like Tokenize, but each token is trimmed and the empty ones are skipped.
+/// Handy for OSM-style multi-value tags ("a; b ;;c").
+template <typename TFunctor>
+void TokenizeAndTrim(std::string_view str, char const * delims, TFunctor && f)
+{
+  Tokenize(str, delims, [&f](std::string_view token)
+  {
+    Trim(token);
+    if (!token.empty())
+      f(token);
+  });
+}
+
+/// @note Lifetime of return container is the same as \a str lifetime. Avoid temporary input.
+template <class ResultT = std::string_view>
+std::vector<ResultT> TokenizeAndTrim(std::string_view str, char const * delims)
+{
+  std::vector<ResultT> c;
+  TokenizeAndTrim(str, delims, [&c](std::string_view v) { c.push_back(ResultT(v)); });
   return c;
 }
 

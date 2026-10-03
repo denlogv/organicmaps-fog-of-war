@@ -17,7 +17,7 @@
 - `conf/isolines/` - per-country isoline profiles.
 - `vulkan_shaders/` -
 
-- `countries.txt` - map files hierarchy and checksums.
+- `countries.json` - map files hierarchy and checksums.
 - `countries_meta.txt` - country/region languages and driving sides.
 - `hierarchy.txt` - countries/map regions hierarchy, languages used and Wikidata IDs.
 
@@ -46,12 +46,11 @@ Automatically generated:
 - `symbols/` - symbols for different screen DPIs
 - `symbols/default/` - default resources used on all sceen DPIs
 - `symbols-svg/` - social networks icons
-- `search-icons/svg/` - source SVG files for search categories icons
 - `styles/` - map [style files](STYLES.md#files)
 
 Automatically [generated](STYLES.md#technical-details):
 - `symbols/` - icons skin files in various resolutions for `dark` and `light` themes.
-- `drules_proto*` - binary drawing rules files.
+- `drules_*` - binary drawing rules (and text dumps), one file per style family.
 - `colors.txt`,`patterns.txt`,`visibility.txt`
 
 ### Strings and translations
@@ -98,7 +97,6 @@ Automatically [generated](TRANSLATIONS.md#technical-details):
 - `openlr/` -
 - `packaging/` - packaging specs for various distributions.
 - `platform/` - platform abstraction classes: file paths, http requests, location services.
-- `pyhelpers/` -
 - `qt_tstfrm/` - widgets for visual testing.
 - `routing_common/` -
 - `routing/` - in-app routing engine.
@@ -110,7 +108,7 @@ Automatically [generated](TRANSLATIONS.md#technical-details):
 - `track_analyzing/` -
 - `tracking/` -
 - `traffic/` - real-time traffic information.
-- `transit/` - experimental GTFS-based public transport support.
+- `transit/` - OSM public transport data structures.
 
 ## Documentation
 

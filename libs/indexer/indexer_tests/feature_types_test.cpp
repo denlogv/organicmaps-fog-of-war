@@ -1,11 +1,13 @@
 #include "testing/testing.hpp"
 
 #include "indexer/classificator.hpp"
-#include "indexer/classificator_loader.hpp"
 #include "indexer/feature_data.hpp"
+
+#include "generator/generator_tests_support/test_with_classificator.hpp"
 
 namespace feature_types_test
 {
+using namespace generator::tests_support;
 
 feature::TypesHolder MakeTypesHolder(std::initializer_list<base::StringIL> const & arr, bool sortBySpec = true,
                                      feature::GeomType geomType = feature::GeomType::Point)
@@ -23,10 +25,8 @@ feature::TypesHolder MakeTypesHolder(std::initializer_list<base::StringIL> const
   return types;
 }
 
-UNIT_TEST(Feature_UselessTypes)
+UNIT_CLASS_TEST(TestWithClassificator, Feature_UselessTypes)
 {
-  /// @todo Take out TestWithClassificator into some common test support lib.
-  classificator::Load();
   auto const & cl = classif();
 
   {
@@ -52,10 +52,8 @@ UNIT_TEST(Feature_UselessTypes)
   }
 }
 
-UNIT_TEST(Feature_TypesPriority)
+UNIT_CLASS_TEST(TestWithClassificator, Feature_TypesPriority)
 {
-  /// @todo Take out TestWithClassificator into some common test support lib.
-  classificator::Load();
   auto const & cl = classif();
 
   {
@@ -134,6 +132,52 @@ UNIT_TEST(Feature_TypesPriority)
         true /* sortBySpec */, feature::GeomType::Line);
 
     TEST_EQUAL(types.front(), cl.GetTypeByPath({"highway", "cycleway"}), ());
+  }
+}
+
+UNIT_CLASS_TEST(TestWithClassificator, Feature_TypesEqualUsefulSorted)
+{
+  {
+    auto types1 = MakeTypesHolder(
+        {
+            {"psurface", "paved_bad"},
+            {"highway", "cycleway"},
+        },
+        false /* sortBySpec */, feature::GeomType::Line);
+
+    auto types2 = MakeTypesHolder(
+        {
+            {"psurface", "paved_good"},
+            {"highway", "cycleway"},
+        },
+        false /* sortBySpec */, feature::GeomType::Line);
+
+    types1.SortToCompare();
+    types2.SortToCompare();
+    TEST(types1.EqualUsefulSorted(types2), ());
+  }
+
+  {
+    auto types1 = MakeTypesHolder({{"cuisine", "vegan"}, {"amenity", "cafe"}});
+    auto types2 = MakeTypesHolder({{"cuisine", "vegan"}, {"amenity", "restaurant"}});
+    types1.SortToCompare();
+    types2.SortToCompare();
+    TEST(!types1.EqualUsefulSorted(types2), ());
+  }
+  {
+    auto types1 = MakeTypesHolder({{"shop", "bakery"}, {"amenity", "cafe"}});
+    auto types2 = MakeTypesHolder({{"shop", "bakery"}});
+    types1.SortToCompare();
+    types2.SortToCompare();
+    TEST(types1.front() == types2.front(), ());
+    TEST(!types1.EqualUsefulSorted(types2), ());
+  }
+  {
+    auto types1 = MakeTypesHolder({{"building"}});
+    auto types2 = MakeTypesHolder({{"building"}, {"internet_access", "wlan"}});
+    types1.SortToCompare();
+    types2.SortToCompare();
+    TEST(types1.EqualUsefulSorted(types2), ());
   }
 }
 

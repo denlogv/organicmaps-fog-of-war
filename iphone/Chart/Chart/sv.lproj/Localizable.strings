@@ -7,6 +7,8 @@
 
 /********** Uncategorized **********/
 
+
+/* Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. */
 "you" = "Du";
 
 
@@ -17,4 +19,4 @@
 "login_osm_credentials" = "Logga in med lösenord";
 
 /* Login to OSM button text */
-"login_osm_browser" = "Logga in med hjälp av webbläsare";
+"login_osm_browser" = "Logga in med hjälp av en webbläsare";

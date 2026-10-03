@@ -1,4 +1,6 @@
-#import "MWMViewController.h"
+#import "MWMTableViewController.h"
+
+#include "geometry/point2d.hpp"
 
 #include <string>
 
@@ -13,10 +15,14 @@ class EditableMapObject;
 
 @end
 
-@interface MWMObjectsCategorySelectorController : MWMViewController
+@interface MWMObjectsCategorySelectorController : MWMTableViewController
 
 @property(weak, nonatomic) id<MWMObjectsCategorySelectorDelegate> delegate;
 
 - (void)setSelectedCategory:(std::string const &)type;
+// Position captured when the user confirms placement. Must be set before the controller is shown;
+// the picked category is created at this exact point instead of the live viewport center
+// (which can drift while the user browses categories).
+- (void)setCreatedPosition:(m2::PointD const &)position;
 
 @end

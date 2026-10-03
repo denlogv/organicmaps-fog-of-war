@@ -2,6 +2,7 @@ protocol PlacePagePresenterProtocol: AnyObject {
   func layoutIfNeeded()
   func updateVisibleAreaInsets(_ insets: UIEdgeInsets, updatingViewport: Bool)
   func showNextStop()
+  func scrollToReveal(_ anchor: UIView)
   func openURL(_ path: String)
   func showActivity(_ activity: ActivityViewController, from sourceView: UIView)
   func showAlert(_ alert: UIAlertController)
@@ -40,6 +41,10 @@ extension PlacePagePresenter: PlacePagePresenterProtocol {
     view.showNextStop()
   }
 
+  func scrollToReveal(_ anchor: UIView) {
+    view.scrollToReveal(anchor)
+  }
+
   func showActivity(_ activity: ActivityViewController, from sourceView: UIView) {
     activity.present(inParentViewController: mapViewController, anchorView: sourceView)
   }
@@ -47,7 +52,7 @@ extension PlacePagePresenter: PlacePagePresenterProtocol {
   func showShareSheet(for placePageData: PlacePageData, from sourceView: UIView) {
     switch placePageData.objectType {
     case .POI, .bookmark:
-      let shareViewController = ActivityViewController.share(forPlacePage: placePageData)
+      let shareViewController = ActivityViewController.shareForCurrentPlacePage()
       shareViewController.present(inParentViewController: mapViewController, anchorView: sourceView)
     case .track:
       headerView.showShareTrackMenu()

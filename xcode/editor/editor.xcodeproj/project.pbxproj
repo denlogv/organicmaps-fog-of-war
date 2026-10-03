@@ -60,13 +60,11 @@
 		FACB76C526B8A04200810C9C /* libindexer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76C426B8A04200810C9C /* libindexer.a */; };
 		FACB76C726B8A08000810C9C /* libicu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76C626B8A08000810C9C /* libicu.a */; };
 		FACB76C926B8A08800810C9C /* libplatform.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76C826B8A08800810C9C /* libplatform.a */; };
-		FACB76CB26B8A0D200810C9C /* libprotobuf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76CA26B8A0D200810C9C /* libprotobuf.a */; };
 		FACB76CF26B8A0E800810C9C /* libopening_hours.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76CE26B8A0E800810C9C /* libopening_hours.a */; };
 		FACB76D126B8A10F00810C9C /* libplatform_tests_support.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76D026B8A10F00810C9C /* libplatform_tests_support.a */; };
 		FACB76D326B8A13700810C9C /* libgenerator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76D226B8A13700810C9C /* libgenerator.a */; };
 		FACB76D526B8A15100810C9C /* libstorage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76D426B8A15100810C9C /* libstorage.a */; };
 		FACB76D726B8A18F00810C9C /* libsuccinct.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76D626B8A18F00810C9C /* libsuccinct.a */; };
-		FACB76D926B8A22000810C9C /* libcppjansson.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76D826B8A22000810C9C /* libcppjansson.a */; };
 		FACB76DA26B8A23E00810C9C /* libgenerator_tests_support.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76CC26B8A0DC00810C9C /* libgenerator_tests_support.a */; };
 		FACB76DE26B8A27000810C9C /* libsearch.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76DD26B8A27000810C9C /* libsearch.a */; };
 		FACB76E026B8A28600810C9C /* librouting_common.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FACB76DF26B8A28600810C9C /* librouting_common.a */; };
@@ -133,14 +131,12 @@
 		FACB76C426B8A04200810C9C /* libindexer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libindexer.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76C626B8A08000810C9C /* libicu.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libicu.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76C826B8A08800810C9C /* libplatform.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libplatform.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB76CA26B8A0D200810C9C /* libprotobuf.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libprotobuf.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76CC26B8A0DC00810C9C /* libgenerator_tests_support.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libgenerator_tests_support.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76CE26B8A0E800810C9C /* libopening_hours.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libopening_hours.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76D026B8A10F00810C9C /* libplatform_tests_support.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libplatform_tests_support.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76D226B8A13700810C9C /* libgenerator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libgenerator.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76D426B8A15100810C9C /* libstorage.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libstorage.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76D626B8A18F00810C9C /* libsuccinct.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libsuccinct.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB76D826B8A22000810C9C /* libcppjansson.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libcppjansson.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76DB26B8A25100810C9C /* librouting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = librouting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76DD26B8A27000810C9C /* libsearch.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libsearch.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB76DF26B8A28600810C9C /* librouting_common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = librouting_common.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -163,7 +159,6 @@
 				FACB76E026B8A28600810C9C /* librouting_common.a in Frameworks */,
 				FACB76DE26B8A27000810C9C /* libsearch.a in Frameworks */,
 				FACB76DA26B8A23E00810C9C /* libgenerator_tests_support.a in Frameworks */,
-				FACB76D926B8A22000810C9C /* libcppjansson.a in Frameworks */,
 				FACB76BB26B89FFE00810C9C /* libbase.a in Frameworks */,
 				FACB76C326B8A03600810C9C /* libcoding.a in Frameworks */,
 				FACB76D726B8A18F00810C9C /* libsuccinct.a in Frameworks */,
@@ -174,7 +169,6 @@
 				FACB76D326B8A13700810C9C /* libgenerator.a in Frameworks */,
 				FACB76D126B8A10F00810C9C /* libplatform_tests_support.a in Frameworks */,
 				FACB76CF26B8A0E800810C9C /* libopening_hours.a in Frameworks */,
-				FACB76CB26B8A0D200810C9C /* libprotobuf.a in Frameworks */,
 				FACB76C726B8A08000810C9C /* libicu.a in Frameworks */,
 				FACB76C126B8A01100810C9C /* libpugixml.a in Frameworks */,
 				6715565120BF0F47002BA3B4 /* libeditor_tests_support.a in Frameworks */,
@@ -283,14 +277,12 @@
 				FACB76DF26B8A28600810C9C /* librouting_common.a */,
 				FACB76DD26B8A27000810C9C /* libsearch.a */,
 				FACB76DB26B8A25100810C9C /* librouting.a */,
-				FACB76D826B8A22000810C9C /* libcppjansson.a */,
 				FACB76D626B8A18F00810C9C /* libsuccinct.a */,
 				FACB76D426B8A15100810C9C /* libstorage.a */,
 				FACB76D226B8A13700810C9C /* libgenerator.a */,
 				FACB76D026B8A10F00810C9C /* libplatform_tests_support.a */,
 				FACB76CE26B8A0E800810C9C /* libopening_hours.a */,
 				FACB76CC26B8A0DC00810C9C /* libgenerator_tests_support.a */,
-				FACB76CA26B8A0D200810C9C /* libprotobuf.a */,
 				FACB76C826B8A08800810C9C /* libplatform.a */,
 				FACB76C626B8A08000810C9C /* libicu.a */,
 				FACB76C426B8A04200810C9C /* libindexer.a */,
@@ -407,7 +399,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				DefaultBuildSystemTypeForWorkspace = Latest;
-				LastUpgradeCheck = 1510;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					3411386A1C15AD97002E3B3E = {
 						CreatedOnToolsVersion = 7.1.1;
@@ -546,12 +538,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				PRODUCT_BUNDLE_IDENTIFIER = app.organicmaps.editor_tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(OMIM_ROOT)/3party/pugixml/pugixml/src",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.organicmaps.editor_tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
@@ -559,12 +551,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
-				PRODUCT_BUNDLE_IDENTIFIER = app.organicmaps.editor_tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(OMIM_ROOT)/3party/pugixml/pugixml/src",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.organicmaps.editor_tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};

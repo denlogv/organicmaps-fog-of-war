@@ -47,6 +47,8 @@
     <string name="auto">自动</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">3D 建筑</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">不可用</string>
     <!-- Text in menu -->
     <string name="help">帮助</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -66,6 +68,8 @@
     <string name="editor_time_open">正在营业</string>
     <string name="twentyfour_seven">24/7 全天候营业</string>
     <string name="day_off_today">今天不营业</string>
+    <string name="midnight">午夜</string>
+    <string name="noon">中午</string>
     <string name="opens_in">将于 %s 后营业</string>
     <string name="closes_in">将于 %s 后不营业</string>
     <string name="closed">已停止营业</string>
@@ -83,6 +87,7 @@
     <string name="avoid_ferry">避开轮渡</string>
     <string name="avoid_motorways">避开高速公路</string>
     <string name="unable_to_calc_alert_title">无法规划路线</string>
+    <string name="trip_finished">您已到达目的地！</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">分类排序</string>
     <!-- Android -->

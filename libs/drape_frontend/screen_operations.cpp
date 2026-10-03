@@ -1,5 +1,6 @@
 #include "screen_operations.hpp"
 
+#include "drape_frontend/shape_view_params.hpp"
 #include "drape_frontend/visual_params.hpp"
 
 #include "indexer/scales.hpp"
@@ -50,9 +51,8 @@ bool CheckMinScale(ScreenBase const & screen)
   m2::RectD const & r = screen.ClipRect();
   m2::RectD const & worldR = df::GetWorldRect();
 
-  // Y must not exceed pole boundaries (no scrolling past poles).
-  // X is unconstrained — the world wraps horizontally at the antimeridian.
-  return r.SizeY() <= worldR.SizeY();
+  // X must fit one world copy (no duplicates across the antimeridian); Y must fit between the poles.
+  return r.SizeX() <= worldR.SizeX() && r.SizeY() <= worldR.SizeY();
 }
 
 bool CheckMaxScale(ScreenBase const & screen)
@@ -71,15 +71,14 @@ bool CheckBorders(ScreenBase const & screen)
   m2::RectD const & r = screen.ClipRect();
   m2::RectD const & worldR = df::GetWorldRect();
 
-  // Viewport Y must fit inside world Y (no scrolling past poles).
+  // Y must stay between the poles. X is intentionally unchecked — the world wraps at the antimeridian.
   return r.minY() >= worldR.minY() && r.maxY() <= worldR.maxY();
 }
 
 bool CanShrinkInto(ScreenBase const & screen, m2::RectD const & boundRect)
 {
   m2::RectD const & clipRect = screen.ClipRect();
-  // Only check Y — X is unconstrained (world wraps horizontally).
-  return boundRect.SizeY() >= clipRect.SizeY();
+  return boundRect.SizeX() >= clipRect.SizeX() && boundRect.SizeY() >= clipRect.SizeY();
 }
 
 void ShrinkInto(ScreenBase & screen, m2::RectD const & boundRect)
@@ -123,6 +122,9 @@ void ScaleInto(ScreenBase & screen, m2::RectD const & boundRect)
       LOG(LERROR, ("Bad scale factor =", k, "Bound rect =", boundRect, "Clip rect =", clipRect));
     }
   };
+
+  if (clipRect.SizeX() > boundRect.SizeX())
+    DoScale(boundRect.SizeX() / clipRect.SizeX());
 
   if (clipRect.minY() < boundRect.minY())
     DoScale((boundRect.minY() - clipRect.Center().y) / (clipRect.minY() - clipRect.Center().y));
@@ -241,6 +243,30 @@ void NormalizeScreenOriginX(ScreenBase & screen)
 m2::PointD AdjustPointForViewport(m2::PointD const & pt, ScreenBase const & screen)
 {
   return {mercator::NearestWrapX(pt.x, screen.GetOrg().x), pt.y};
+}
+
+m2::PointD GtoPWrap(m2::PointD const & pt, ScreenBase const & screen)
+{
+  return screen.GtoP(AdjustPointForViewport(pt, screen));
+}
+
+m2::PointD PtoGWrap(m2::PointD const & pt, ScreenBase const & screen)
+{
+  auto mercator = screen.PtoG(pt);
+  mercator.x = mercator::WrapX(mercator.x);
+  return mercator;
+}
+
+AdjustedScreen::AdjustedScreen(ScreenBase const & screen, m2::PointD const & pivot) : m_screen(screen)
+{
+  double const wrapX = mercator::NearestWrapX(pivot.x, screen.GetOrg().x);
+  m_wrapPivot = {wrapX, pivot.y};
+  m_offsetWrapX = pivot.x - wrapX;
+}
+
+ScreenBase::Matrix3dT AdjustedScreen::GetShapeModelView() const
+{
+  return m_screen.GetModelView(m_wrapPivot, kShapeCoordScalar);
 }
 
 }  // namespace df

@@ -8,7 +8,7 @@
     <string name="type.aerialway">Teleferik</string>
     <string name="type.aerialway.cable_car">Teleferik</string>
     <string name="type.aerialway.chair_lift">Kreslo lifti</string>
-    <string name="type.aerialway.drag_lift">Bugle teleferik</string>
+    <string name="type.aerialway.drag_lift">Bügel lifti</string>
     <string name="type.aerialway.gondola">Qondol</string>
     <string name="type.aerialway.mixed_lift">Teleferik</string>
     <string name="type.aerialway.station">Hava yolu stansiyası</string>
@@ -218,6 +218,7 @@
     <string name="type.boundary.protected_area.5">Qorunan ərazi</string>
     <string name="type.boundary.protected_area.6">Qorunan ərazi</string>
     <string name="type.building">Bina</string>
+    <string name="type.building.construction">İnşa edilən bina</string>
     <string name="type.building.has_parts">Bina</string>
     <string name="type.building_part">Bina</string>
     <string name="type.building.garage">Qaraj</string>
@@ -307,7 +308,7 @@
     <string name="type.cuisine.mediterranean">Aralıq dənizi mətbəxi</string>
     <string name="type.cuisine.mexican">Meksika mətbəxi</string>
     <string name="type.cuisine.moroccan">Mərakeş mətbəxi</string>
-    <string name="type.cuisine.noodles">Əriştə</string>
+    <string name="type.cuisine.noodle">Əriştə</string>
     <string name="type.cuisine.oriental">Uzaq Şərq mətbəxi</string>
     <string name="type.cuisine.pancake">Müşahidə</string>
     <string name="type.cuisine.pasta">Makaron</string>
@@ -532,9 +533,9 @@
     <string name="type.historic">Tarix</string>
     <string name="type.historic.aircraft">Tarixi Təyyarə</string>
     <string name="type.historic.anchor">Tarixi Çapa</string>
-    <string name="type.historic.archaeological_site">Qorunan ərazi</string>
+    <string name="type.historic.archaeological_site">Arxeoloji sahə</string>
     <string name="type.historic.battlefield">Döyüş Meydanı</string>
-    <string name="type.historic.boundary_stone">Landmark</string>
+    <string name="type.historic.boundary_stone">Sərhəd daşı</string>
     <string name="type.historic.cannon">Top</string>
     <string name="type.historic.castle">Möhkəmləndirilmiş qala</string>
     <string name="type.historic.castle.castrum">Kastra</string>
@@ -548,6 +549,7 @@
     <string name="type.historic.castle.shiro">Yapon qalası</string>
     <string name="type.historic.castle.stately">Qala</string>
     <string name="type.historic.city_gate">Şəhər qapısı</string>
+    <string name="type.man_made.ceremonial_gate">Mərasim qapısı</string>
     <string name="type.historic.citywalls">Şəhər Divarı</string>
     <string name="type.historic.fort">Qala</string>
     <string name="type.historic.gallows">Dar ağacı</string>
@@ -581,6 +583,7 @@
     <string name="type.landuse">Torpaqdan istifadə</string>
     <string name="type.landuse.allotments">Ayrılmalar</string>
     <string name="type.landuse.basin">Hövzə</string>
+    <string name="type.landuse.basin.intermittent">Müvəqqəti hövzə</string>
     <string name="type.landuse.brownfield">Tərk edilmiş Sənaye Zonası</string>
     <!-- In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. -->
     <string name="type.landuse.cemetery">Məzarlıq</string>
@@ -610,7 +613,6 @@
     <string name="type.landuse.quarry">Daş çuxuru</string>
     <string name="type.landuse.railway">Dəmir yolu binası</string>
     <string name="type.landuse.recreation_ground">İstirahət zonası</string>
-    <string name="type.landuse.reservoir">Bu</string>
     <string name="type.landuse.residential">Yaşayış sahəsi</string>
     <string name="type.landuse.retail">Pərakəndə satış sahəsi</string>
     <string name="type.landuse.salt_pond">Üzgüçülük hovuzu</string>
@@ -629,6 +631,7 @@
     <string name="type.leisure.ice_rink">Buz Meydançası</string>
     <string name="type.leisure.marina">Liman</string>
     <string name="type.leisure.nature_reserve">Təbii qoruq</string>
+    <string name="type.leisure.bird_hide">Quş müşahidə sığınacağı</string>
     <string name="type.leisure.outdoor_seating">Açıq oturma</string>
     <string name="type.leisure.park">Park</string>
     <string name="type.leisure.park.no.access">Park</string>
@@ -646,8 +649,8 @@
     <string name="type.leisure.stadium">Stadion</string>
     <string name="type.leisure.swimming_pool">Üzgüçülük hovuzu</string>
     <string name="type.leisure.swimming_pool.private">Üzgüçülük hovuzu</string>
-    <string name="type.leisure.track">Uçuş zolağı</string>
-    <string name="type.leisure.track.area">Uçuş zolağı</string>
+    <string name="type.leisure.track">İdman treki</string>
+    <string name="type.leisure.track.area">İdman treki</string>
     <string name="type.leisure.water_park">Su parkı</string>
     <string name="type.leisure.beach_resort">Çimərlik kurort</string>
     <string name="type.man_made">İnsan istehsalı</string>
@@ -704,16 +707,19 @@
     <string name="type.natural.grassland">Campo</string>
     <string name="type.natural.heath">Buş</string>
     <string name="type.natural.hot_spring">Spa</string>
-    <string name="type.natural.water.lake">Məqsəd</string>
+    <string name="type.natural.water.lake">Göl</string>
     <string name="type.natural.water.lock">Kilid otağı</string>
     <string name="type.natural.water.pond">Gölməçə</string>
     <string name="type.natural.water.reservoir">Su anbarı</string>
     <string name="type.natural.water.basin">Hövzə</string>
     <string name="type.natural.water.river">Çay</string>
+    <string name="type.natural.water.intermittent">Müvəqqəti su hövzəsi</string>
     <string name="type.natural.land">Torpaq</string>
     <string name="type.natural.meadow">Çəmən</string>
     <string name="type.natural.orchard">Meyvə bağı</string>
     <string name="type.natural.peak">Pik</string>
+    <string name="type.natural.hill">Təpə</string>
+    <string name="type.natural.arch">Daş qövs</string>
     <string name="type.natural.saddle">Dağ yəhəri</string>
     <string name="type.natural.rock">Qaya</string>
     <string name="type.natural.scrub">Kollar</string>
@@ -723,7 +729,8 @@
     <string name="type.natural.tree_row">Ağac cərgəsi</string>
     <string name="type.natural.vineyard">Bond</string>
     <string name="type.natural.volcano">Vulkan</string>
-    <string name="type.natural.water">Su təchizatı</string>
+    <string name="type.natural.volcano.active">Fəal vulkan</string>
+    <string name="type.natural.water">Su hövzəsi</string>
     <string name="type.natural.wetland">Bataqlıq</string>
     <string name="type.natural.wetland.bog">Bataqlıq</string>
     <string name="type.natural.wetland.marsh">Bataqlıq</string>
@@ -1258,6 +1265,18 @@
     <string name="type.sport.field_hockey">Otüstü xokkey</string>
     <string name="type.sport.badminton">Badminton</string>
     <string name="type.sport.pelota">Bask pelota</string>
+    <string name="type.sport.boules">Bul</string>
+    <string name="type.sport.cycling">Velosiped idmanı</string>
+    <string name="type.sport.four_square">Dörd kvadrat</string>
+    <string name="type.sport.horse_racing">At yarışı</string>
+    <string name="type.sport.karting">Kartinq</string>
+    <string name="type.sport.motocross">Motokros</string>
+    <string name="type.sport.motor">Motor idmanı</string>
+    <string name="type.sport.netball">Netbol</string>
+    <string name="type.sport.pickleball">Piklbol</string>
+    <string name="type.sport.rugby_union">Reqbi ittifaqı</string>
+    <string name="type.sport.running">Qaçış</string>
+    <string name="type.sport.softball">Softbol</string>
     <string name="type.tourism">Turizm</string>
     <string name="type.tourism.aquarium">Akvarium</string>
     <!-- Typically serviced, staff is present and food is available (compared to wilderness_hut). -->
@@ -1275,6 +1294,7 @@
     <string name="type.attraction.historic">Tarixi cazibə</string>
     <string name="type.attraction.maze">Labirent</string>
     <string name="type.attraction.roller_coaster">Roller Coaster</string>
+    <string name="type.roller_coaster.track">Roller Coaster</string>
     <string name="type.attraction.water_slide">Su Slayd</string>
     <string name="type.tourism.attraction.specified">Attraksionlar</string>
     <string name="type.tourism.camp_site">Düşərgə sahəsi</string>
@@ -1305,6 +1325,7 @@
     <string name="type.traffic_calming.bump">Sürət Qırıcı (Rip)</string>
     <string name="type.traffic_calming.hump">Sürət Qırıcı (Rip)</string>
     <string name="type.waterway">Su yolu</string>
+    <string name="type.waterway.access_point">Su yolu giriş nöqtəsi</string>
     <string name="type.waterway.canal">Kanal</string>
     <string name="type.waterway.canal.tunnel">Kanal</string>
     <string name="type.waterway.fish_pass">Balıq keçidi</string>
@@ -1349,6 +1370,7 @@
     <string name="type.self_service.no">Özünə xidmət yoxdur</string>
     <!-- https://wiki.openstreetmap.org/wiki/Key:social_facility -->
     <string name="type.amenity.social_facility">Sosial obyekt</string>
+    <string name="type.amenity.stage">Səhnə</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance -->
     <string name="type.emergency.emergency_ward_entrance">Təcili yardım şöbəsinin girişi</string>
     <!-- https://wiki.openstreetmap.org/wiki/Tag:amenity=dojo -->

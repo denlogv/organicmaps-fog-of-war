@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "旅游景点";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "娱乐";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "回收";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "水";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "您的位置尚未确定";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "嘿，看看我在 Organic Maps 上标记的图钉吧！";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "我在 Organic Maps 上的位置";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "嗨，到 Organic Maps 查看我当前的位置！";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ - Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Organic Maps 上的地点";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "在 Organic Maps 或浏览器中打开";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "获取 Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "在另一个应用中打开";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "电子邮件";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "长度";
 "share_my_location" = "分享我的位置";
+"prefs_group_network" = "网络";
 "prefs_group_route" = "导航";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D 建筑在省电模式下处于关闭状态";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "卫星图像";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "服务器 URL";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "请输入包含 {z}/{x}/{y} 的有效 URL";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "缓存大小 (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "面状对象不透明度";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "自定义瓦片源由您自行提供。请仅使用您有权访问的服务。署名、许可条款、API 密钥、配额和使用限制由您自行负责。";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "语音指导";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "语音语言";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "测试语音指令（TTS，文本转语音系统）";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "要下载更高质量的语音，请打开“设置”App，然后前往“辅助功能”→“VoiceOver”→“语音”→“声音”。";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "自动缩放";
 "placepage_distance" = "距离";
 "search_show_on_map" = "在地图上查看";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "深色";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "其他";
-
 /* Tex label above the Donate button */
 "donate_description" = "向数百万用户赠送无广告的免费地图！";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "电子邮件发送失败";
-
-/* Settings item title */
-"pref_calibration_title" = "指南针校准";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "可用";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7 全天候营业";
 "day_off_today" = "今天不营业";
 "day_off" = "不营业";
+"midnight" = "午夜";
+"noon" = "中午";
 "today" = "今天";
 "opens_in" = "将于 %@ 后营业";
 "closes_in" = "将于 %@ 后不营业";
@@ -553,10 +589,10 @@
 /* Title for OSM note section in the editor */
 "editor_other_info" = "OpenStreetMap 志愿者须知（可选）";
 "editor_more_about_osm" = "关于 OpenStreetMap 的更多信息";
-"editor_operator" = "操作员";
+"editor_operator" = "运营方";
 
 /* To indicate the operator of ATMs, bicycle rentals, electric vehicle charging stations… */
-"operator" = "操作员: %@";
+"operator" = "运营方: %@";
 "editor_category_unsuitable_title" = "找不到合适的类别？";
 "editor_category_unsuitable_text" = "Organic Maps 只允许添加简单的点类别，即无法添加城镇、道路、湖泊、建筑轮廓等类别。请直接向 <a href=\"https://www.openstreetmap.org\">OpenStreetMap.org</a> 添加此类类别。请查看我们的<a href=\"https://organicmaps.app/faq/editing/advanced-map-editing\">指南</a>，了解详细的步骤说明。";
 "downloader_no_downloaded_maps_title" = "您尚未下载任何地图";
@@ -571,9 +607,6 @@
 "day" = "天";
 "second" = "秒";
 "placepage_more_button" = "更多";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "编辑书签";
 "placepage_personal_notes_hint" = "个人备注（文字或 html）";
 "editor_comment_hint" = "备注…";
 "editor_reset_edits_message" = "重置所有本地更改？";
@@ -611,7 +644,7 @@
 "mobile_data_description" = "要显示地点的详细信息（例如照片、价格和评价），需要使用移动网络。";
 "mobile_data_option_never" = "从不使用";
 "mobile_data_option_ask" = "总是询问";
-"traffic_update_maps_text" = "诺要显示交通数据，必须更新地图。";
+"traffic_update_maps_text" = "若要显示交通数据，必须更新地图。";
 "big_font" = "增大地图上的字体大小";
 
 /* "traffic" as in "road congestion" */
@@ -621,7 +654,9 @@
 "planning_route_manage_route" = "管理路线";
 "button_plan" = "规划";
 "placepage_remove_stop" = "删除站点";
-"placepage_add_stop" = "添加经停点";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "添加途经点";
 "saved" = "已保存";
 "error_enter_correct_name" = "请输入正确的名称";
 "bookmark_lists" = "列表";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "这个名称已经被使用了";
 "profile" = "OpenStreetMap 资料";
 "restore" = "恢复";
+
+/* Settings privacy group in settings screen */
+"privacy" = "隐私";
 "privacy_policy" = "隐私政策";
 "terms_of_use" = "使用条款";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "骑行";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "卫星";
 "button_layer_subway" = "地铁";
 "layers_title" = "地图样式和图层";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "临时启用此选项，以便使用“报告错误”功能在帮助对话框中记录并手动发送详细诊断日志给我们。日志可能包含位置信息。";
 "driving_options_title" = "绕行设置";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "路线优化";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "自动重新排列经停点，以生成更高效的路线。";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "避开收费公路";
 
@@ -707,6 +754,15 @@
 "toll_road" = "收费公路";
 "unpaved_road" = "未铺砌道路";
 "ferry_crossing" = "轮渡";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "阶梯";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "门";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "道闸";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "是";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. 选择“定位服务”";
 "location_services_disabled_on_device_4" = "4. 打开“定位服务”";
 "location_services_disabled_on_device_additional_message" = "或没有定位继续使用 Organic Maps";
-"book_button" = "预定";
 "placepage_call_button" = "呼叫";
 "placepage_bookmark_name_hint" = "书签名称";
 "placepage_delete_bookmark_button" = "删除书签";
@@ -798,16 +853,13 @@
 "refresh" = "更新";
 
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
-"recent_track_background_dialog_title" = "禁止记录您最近去过的路线吗？";
+"recent_track_background_dialog_title" = "取消记录您最近去过的路线吗？";
 "off_recent_track_background_button" = "禁用";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "来看看";
 "recent_track_background_dialog_message" = "Organic Maps 在后台使用您的位置记录您最近去过的路线。";
 "general_settings" = "常规设置";
 
 /* "traffic" as in road congestion */
-"traffic_update_app_message" = "诺要显示交通数据，必须更新应用。";
+"traffic_update_app_message" = "若要显示交通数据，必须更新应用。";
 "log_file_size" = "日志文件大小：%@";
 "planning_route_remove_title" = "拖拽到此处以移除";
 "placepage_replace_stop" = "更换停机坪";
@@ -818,7 +870,7 @@
 
 /* For iOS message 'alert_reauth_message' should be splitted in two parts: message + link. Here's link part */
 "alert_reauth_link_text_ios" = "这里";
-"downloader_hide_screen" = "隱藏屏幕";
+"downloader_hide_screen" = "隐藏屏幕";
 "downloader_percent" = "%@ (%@ / %@)";
 "downloader_process" = "正在下載 %@…";
 "downloader_applying" = "正在应用 %@…";
@@ -831,12 +883,6 @@
 "popular_place" = "受欢迎的";
 "hide_from_map" = "从地图上隐藏";
 "tags_loading_error_subtitle" = "加载标签时出错，请重试";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "右侧";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "底部";
 "trip_start" = "出发";
 "pick_destination" = "目的地";
 "follow_my_position" = "重新居中";
@@ -885,6 +931,15 @@
 "medicine" = "医疗";
 "search_in_the_list" = "在列表中搜索";
 "religious_places" = "宗教场所";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "选择";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "全选";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "取消全选";
 "transit_not_found" = "本区域的地铁导航目前不可用";
 "dialog_pedestrian_route_is_long_header" = "未找到地铁路线图";
 "dialog_pedestrian_route_is_long_message" = "选择地铁站附近的起点和终点";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "下坡";
 "elevation_profile_min_elevation" = "最低高度";
 "elevation_profile_max_elevation" = "最高高度";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "开始移动以查看海拔剖面";
 "isolines_toast_zooms_1_10" = "放大地图以查看等高线";
 "downloader_loading_ios" = "正在下载";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "导出所有书签和轨迹";
 "drive_through" = "面下车通道";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "放大";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "缩小";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "菜单链接";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "在另一个应用中打开";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "自助服务";
@@ -1002,7 +1063,7 @@
 "placepage_delete_track_button" = "删除轨迹";
 
 /* The track deletion confirmaion alert message. */
-"placepage_delete_track_confirmation_alert_message" = "您确定要删除这条音轨吗？";
+"placepage_delete_track_confirmation_alert_message" = "您确定要删除这条轨迹吗？";
 
 /* Placeholder for track name input on track edit screen */
 "placepage_track_name_hint" = "轨迹名称";
@@ -1015,6 +1076,12 @@
 
 /* Text for the editing the Track's color button. */
 "change_color" = "更改颜色";
+
+/* Text for the hiding track. */
+"hide_track" = "隐藏轨迹";
+
+/* Text for the showing track. */
+"show_track" = "显示轨迹";
 
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "地图";
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "请在您的设备设置中启用 iCloud，以使用此功能。";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "启用";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "轨迹颜色已更改";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "在地图上选择";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "起点";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "目的地";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "更改起点";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "更改目的地";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "更改途经点";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "已达到最大途经点数量";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "移动并缩放地图以定位十字";

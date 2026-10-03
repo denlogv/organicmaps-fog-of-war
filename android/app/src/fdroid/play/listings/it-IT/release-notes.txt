@@ -1,8 +1,10 @@
-• Dati cartografici OSM al 10 marzo, Wikipedia al 1 marzo
-• Isolinee di elevazione più dettagliate per le province cinesi
-• Aggiunti filari di alberi, negozi di pelletteria e negozi che vendono articoli religiosi
-• Aggiunto il supporto per i limiti di velocità condizionali
-• La Tanzania è stata suddivisa in regioni più piccole
-• Migliorata la visualizzazione degli orari di apertura delle attività
-• Risolti diversi arresti anomali
-omaps.org/it/news
+• Dati OSM aggiornati al 26 agosto
+• NOVITÀ: selezione multipla di preferiti e tracce
+• NOVITÀ: nascondi singole tracce con l’icona dell’occhio
+• NOVITÀ: articoli di Wikipedia in bengalese, hindi, marathi, polacco, tamil, telugu e urdu
+• Corretti arresti e blocchi
+• Aggiunti alla mappa capanni per il birdwatching, palchi, colline e archi rocciosi
+• Migliore condivisione dei luoghi
+• Correzioni per Android Auto
+• Corretta la selezione delle fermate del percorso
+…continua su omaps.org/it/news

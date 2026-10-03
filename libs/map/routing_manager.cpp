@@ -1,6 +1,5 @@
 #include "routing_manager.hpp"
 
-#include "map/chart_generator.hpp"
 #include "map/routing_mark.hpp"
 
 #include "routing/absent_regions_finder.hpp"
@@ -14,26 +13,72 @@
 #include "storage/country_info_getter.hpp"
 #include "storage/routing_helpers.hpp"
 
+#include "indexer/classificator.hpp"
+#include "indexer/data_source.hpp"
+#include "indexer/ftypes_matcher.hpp"
+
 #include "drape_frontend/drape_engine.hpp"
+#include "drape_frontend/visual_params.hpp"
 
 #include "routing_common/num_mwm_id.hpp"
 
-#include "indexer/map_style_reader.hpp"
-
 #include "platform/country_file.hpp"
+#include "platform/distance.hpp"
+#include "platform/duration.hpp"
 #include "platform/platform.hpp"
 
+#include "geometry/algorithm.hpp"
 #include "geometry/mercator.hpp"  // kPointEqualityEps
-#include "geometry/simplification.hpp"
+#include "geometry/parametrized_segment.hpp"
 
 #include "coding/file_writer.hpp"
 
+#include "base/logging.hpp"
 #include "base/scope_guard.hpp"
+#include "base/small_map.hpp"
+#include "base/stl_helpers.hpp"
 #include "base/string_utils.hpp"
+
+#include <glaze/json.hpp>
 
 #include <map>
 
 using namespace routing;
+
+namespace route_points_json
+{
+struct RoutePointJson
+{
+  int type = 0;
+  std::string title;
+  std::string subtitle;
+  double x = 0.0;
+  double y = 0.0;
+  bool replaceWithMyPosition = false;
+};
+
+RoutePointJson ToRoutePointJson(RouteMarkData const & data)
+{
+  return {.type = static_cast<int>(data.m_pointType),
+          .title = data.m_title,
+          .subtitle = data.m_subTitle,
+          .x = data.m_position.x,
+          .y = data.m_position.y,
+          .replaceWithMyPosition = data.m_replaceWithMyPositionAfterRestart};
+}
+
+RouteMarkData ToRouteMarkData(RoutePointJson const & point)
+{
+  RouteMarkData data;
+  data.m_pointType = static_cast<RouteMarkType>(point.type);
+  data.m_title = point.title;
+  data.m_subTitle = point.subtitle;
+  data.m_position = {point.x, point.y};
+  data.m_replaceWithMyPositionAfterRestart = point.replaceWithMyPosition;
+  return data;
+}
+}  // namespace route_points_json
+
 namespace
 {
 std::string_view constexpr kRouterTypeKey = "router";
@@ -100,88 +145,42 @@ RouteMarkData GetLastPassedPoint(BookmarkManager * bmManager, std::vector<RouteM
   return data;
 }
 
-void SerializeRoutePoint(json_t * node, RouteMarkData const & data)
-{
-  ASSERT(node != nullptr, ());
-  ToJSONObject(*node, "type", static_cast<int>(data.m_pointType));
-  ToJSONObject(*node, "title", data.m_title);
-  ToJSONObject(*node, "subtitle", data.m_subTitle);
-  ToJSONObject(*node, "x", data.m_position.x);
-  ToJSONObject(*node, "y", data.m_position.y);
-  ToJSONObject(*node, "replaceWithMyPosition", data.m_replaceWithMyPositionAfterRestart);
-}
-
-RouteMarkData DeserializeRoutePoint(json_t * node)
-{
-  ASSERT(node != nullptr, ());
-  RouteMarkData data;
-
-  int type = 0;
-  FromJSONObject(node, "type", type);
-  data.m_pointType = static_cast<RouteMarkType>(type);
-
-  FromJSONObject(node, "title", data.m_title);
-  FromJSONObject(node, "subtitle", data.m_subTitle);
-
-  FromJSONObject(node, "x", data.m_position.x);
-  FromJSONObject(node, "y", data.m_position.y);
-
-  FromJSONObject(node, "replaceWithMyPosition", data.m_replaceWithMyPositionAfterRestart);
-
-  return data;
-}
-
 std::string SerializeRoutePoints(std::vector<RouteMarkData> const & points)
 {
   ASSERT_GREATER_OR_EQUAL(points.size(), 2, ());
-  auto pointsNode = base::NewJSONArray();
+  std::vector<route_points_json::RoutePointJson> pointsJson;
+  pointsJson.reserve(points.size());
   for (auto const & p : points)
-  {
-    auto pointNode = base::NewJSONObject();
-    SerializeRoutePoint(pointNode.get(), p);
-    json_array_append_new(pointsNode.get(), pointNode.release());
-  }
-  std::unique_ptr<char, JSONFreeDeleter> buffer(json_dumps(pointsNode.get(), JSON_COMPACT));
-  return std::string(buffer.get());
+    pointsJson.push_back(route_points_json::ToRoutePointJson(p));
+
+  std::string buffer;
+  if (auto const error = glz::write_json(pointsJson, buffer); error)
+    MYTHROW(RootException, (glz::format_error(error)));
+  return buffer;
 }
 
 std::vector<RouteMarkData> DeserializeRoutePoints(std::string const & data)
 {
-  try
-  {
-    base::Json root(data.c_str());
-
-    if (root.get() == nullptr || !json_is_array(root.get()))
-      return {};
-
-    size_t const sz = json_array_size(root.get());
-    if (sz == 0)
-      return {};
-
-    std::vector<RouteMarkData> result;
-    result.reserve(sz);
-    for (size_t i = 0; i < sz; ++i)
-    {
-      auto pointNode = json_array_get(root.get(), i);
-      if (pointNode == nullptr)
-        continue;
-
-      auto point = DeserializeRoutePoint(pointNode);
-      if (point.m_position.EqualDxDy(m2::PointD::Zero(), mercator::kPointEqualityEps))
-        continue;
-
-      result.push_back(std::move(point));
-    }
-
-    if (result.size() < 2)
-      return {};
-
-    return result;
-  }
-  catch (base::Json::Exception const &)
-  {
+  std::vector<route_points_json::RoutePointJson> pointsJson;
+  glz::opts constexpr opts{.error_on_unknown_keys = false, .error_on_missing_keys = false};
+  if (auto const error = glz::read<opts>(pointsJson, data); error || pointsJson.empty())
     return {};
+
+  std::vector<RouteMarkData> result;
+  result.reserve(pointsJson.size());
+  for (auto const & pointJson : pointsJson)
+  {
+    auto point = route_points_json::ToRouteMarkData(pointJson);
+    if (point.m_position.EqualDxDy(m2::PointD::Zero(), mercator::kPointEqualityEps))
+      continue;
+
+    result.push_back(std::move(point));
   }
+
+  if (result.size() < 2)
+    return {};
+
+  return result;
 }
 
 VehicleType GetVehicleType(RouterType routerType)
@@ -198,18 +197,43 @@ VehicleType GetVehicleType(RouterType routerType)
   UNREACHABLE();
 }
 
-RoadWarningMarkType GetRoadType(RoutingOptions::Road road)
+// Maps a barrier point-feature classificator type (stored in routing::Route::GetWarnings) to a UI
+// warning mark type. Mirrors ftypes::IsWayChecker; this is the single place to extend when adding
+// a new barrier warning kind.
+class BarrierWarningChecker : public ftypes::BaseChecker
 {
-  if (road == RoutingOptions::Road::Toll)
-    return RoadWarningMarkType::Toll;
-  if (road == RoutingOptions::Road::Ferry)
-    return RoadWarningMarkType::Ferry;
-  if (road == RoutingOptions::Road::Dirty)
-    return RoadWarningMarkType::Dirty;
+public:
+  BarrierWarningChecker()
+  {
+    Classificator const & c = classif();
+    std::pair<char const *, RoadWarningMarkType> const types[] = {
+        {"gate", RoadWarningMarkType::Gate},
+        {"lift_gate", RoadWarningMarkType::LiftGate},
+    };
 
-  CHECK(false, ("Invalid road type to avoid:", road));
-  return RoadWarningMarkType::Count;
-}
+    m_marks.Reserve(std::size(types));
+    for (auto const & e : types)
+    {
+      uint32_t const type = c.GetTypeByPath({"barrier", e.first});
+      m_types.push_back(type);
+      m_marks.Insert(type, e.second);
+    }
+    m_marks.FinishBuilding();
+  }
+
+  DECLARE_CHECKER_INSTANCE(BarrierWarningChecker);
+
+  /// @returns RoadWarningMarkType::Count if |type| is not a known barrier warning.
+  RoadWarningMarkType GetWarningType(uint32_t type) const
+  {
+    if (auto const * res = m_marks.Find(ftype::Trunc(type, 2)))
+      return *res;
+    return RoadWarningMarkType::Count;
+  }
+
+private:
+  base::SmallMap<uint32_t, RoadWarningMarkType> m_marks;
+};
 
 drape_ptr<df::Subroute> CreateDrapeSubroute(std::vector<RouteSegment> const & segments, m2::PointD const & startPt,
                                             double baseDistance, double baseDepth, routing::RouterType routerType)
@@ -319,9 +343,9 @@ RoutingManager::RoutingManager(Callbacks && callbacks, Delegate & delegate)
 #endif
   );
 
-  m_routingSession.SetRoutingCallbacks([this](Route const & route, RouterResultCode code)
-  { OnBuildRouteReady(route, code); }, [this](Route const & route, RouterResultCode code)
-  { OnRebuildRouteReady(route, code); }, [this](uint64_t routeId, storage::CountriesSet const & absentCountries)
+  m_routingSession.SetRoutingCallbacks([this](RoutesResult const & result, RouterResultCode code)
+  { OnBuildRouteReady(result, code); }, [this](RoutesResult const & result, RouterResultCode code)
+  { OnRebuildRouteReady(result, code); }, [this](uint64_t routeId, storage::CountriesSet const & absentCountries)
   { OnNeedMoreMaps(routeId, absentCountries); }, [this](RouterResultCode code) { OnRemoveRoute(code); });
 
   m_routingSession.SetCheckpointCallback([this](size_t passedCheckpointIdx)
@@ -389,21 +413,22 @@ void RoutingManager::SetTransitManager(TransitReadManager * transitManager)
   m_transitReadManager = transitManager;
 }
 
-void RoutingManager::OnBuildRouteReady(Route const & route, RouterResultCode code)
+void RoutingManager::OnBuildRouteReady(RoutesResult const & result, RouterResultCode code)
 {
   // @TODO(bykoianko) Remove |code| from callback signature.
   CHECK_EQUAL(code, RouterResultCode::NoError, ());
   HidePreviewSegments();
 
-  auto const hasWarnings = InsertRoute(route);
+  auto const hasWarnings = InsertRoute(result);
   m_drapeEngine.SafeCall(&df::DrapeEngine::StopLocationFollow);
 
   // Validate route (in case of bicycle routing it can be invalid).
-  ASSERT(route.IsValid(), ());
+  ASSERT(result.IsValid(), ());
+  auto const & active = result.GetActive();
   // Do not show the full route if one or more stops were added, for easier multi-stop trip planning.
-  if (route.IsValid() && route.GetSubrouteCount() < 2 && m_currentRouterType != routing::RouterType::Ruler)
+  if (active.IsValid() && active.GetSubrouteCount() < 2 && m_currentRouterType != routing::RouterType::Ruler)
   {
-    m2::RectD routeRect = route.GetPoly().GetLimitRect();
+    m2::RectD routeRect = active.GetLimitRect();
     routeRect.Scale(kRouteScaleMultiplier);
     m_drapeEngine.SafeCall(&df::DrapeEngine::SetModelViewRect, routeRect, true /* applyRotation */, -1 /* zoom */,
                            true /* isAnim */, true /* useVisibleViewport */);
@@ -412,14 +437,14 @@ void RoutingManager::OnBuildRouteReady(Route const & route, RouterResultCode cod
   CallRouteBuilded(hasWarnings ? RouterResultCode::HasWarnings : code, storage::CountriesSet());
 }
 
-void RoutingManager::OnRebuildRouteReady(Route const & route, RouterResultCode code)
+void RoutingManager::OnRebuildRouteReady(RoutesResult const & result, RouterResultCode code)
 {
   HidePreviewSegments();
 
   if (code != RouterResultCode::NoError)
     return;
 
-  auto const hasWarnings = InsertRoute(route);
+  auto const hasWarnings = InsertRoute(result);
   CallRouteBuilded(hasWarnings ? RouterResultCode::HasWarnings : code, storage::CountriesSet());
 }
 
@@ -547,6 +572,7 @@ void RoutingManager::RemoveRoute(bool deactivateFollowing)
       es.ClearGroup(UserMark::Type::TRANSIT);
       es.ClearGroup(UserMark::Type::SPEED_CAM);
       es.ClearGroup(UserMark::Type::ROAD_WARNING);
+      es.ClearGroup(UserMark::Type::ROUTE_ALT);
     }
     if (deactivateFollowing)
       SetPointsFollowingMode(false /* enabled */);
@@ -576,46 +602,71 @@ void RoutingManager::RemoveRoute(bool deactivateFollowing)
   }
 }
 
+void RoutingManager::ClearAlternativeRoutes()
+{
+  // Synchronously clear ETA balloons. RemoveRoute uses RunTask(Gui) which only fires after
+  // the current GUI flow returns, leaving stale marks briefly visible; we call the same path
+  // directly since RoutingManager is GUI-thread-only.
+  m_bmManager->GetEditSession().ClearGroup(UserMark::Type::ROUTE_ALT);
+
+  m_drapeEngine.SafeCall(&df::DrapeEngine::RemoveAlternativeSubroutes);
+}
+
 void RoutingManager::CollectRoadWarnings(std::vector<routing::RouteSegment> const & segments,
-                                         m2::PointD const & startPt, double baseDistance, GetMwmIdFn const & getMwmIdFn,
+                                         m2::PointD const & startPt, double baseDistance,
                                          RoadWarningsCollection & roadWarnings)
 {
-  auto const isWarnedType = [](RoutingOptions::Road roadType)
-  {
-    return (roadType == RoutingOptions::Road::Toll || roadType == RoutingOptions::Road::Ferry ||
-            roadType == RoutingOptions::Road::Dirty);
-  };
-
-  bool const isCarRouter = (m_currentRouterType == RouterType::Vehicle);
-
   double currentDistance = baseDistance;
   double startDistance = baseDistance;
-  RoutingOptions::Road lastType = RoutingOptions::Road::Usual;
+  RoadWarningMarkType lastWarn = RoadWarningMarkType::Count;
   for (size_t i = 0; i < segments.size(); ++i)
   {
-    auto const currentType = ChooseMainRoutingOptionRoad(segments[i].GetRoadTypes(), isCarRouter);
-    if (currentType != lastType)
+    auto const currentWarn = ChooseRoadWarning(segments[i].GetRoadTypes(), m_currentRouterType);
+    if (currentWarn != lastWarn)
     {
-      if (isWarnedType(lastType))
+      if (lastWarn != RoadWarningMarkType::Count)
       {
-        ASSERT(!roadWarnings[lastType].empty(), ());
-        roadWarnings[lastType].back().m_distance = segments[i].GetDistFromBeginningMeters() - startDistance;
+        ASSERT(!roadWarnings[lastWarn].empty(), ());
+        roadWarnings[lastWarn].back().m_distance = segments[i].GetDistFromBeginningMeters() - startDistance;
       }
 
-      if (isWarnedType(currentType))
+      if (currentWarn != RoadWarningMarkType::Count)
       {
         startDistance = currentDistance;
         auto const featureId =
-            FeatureID(getMwmIdFn(segments[i].GetSegment().GetMwmId()), segments[i].GetSegment().GetFeatureId());
+            FeatureID(GetMwmId(segments[i].GetSegment().GetMwmId()), segments[i].GetSegment().GetFeatureId());
         auto const markPoint = i == 0 ? startPt : segments[i - 1].GetJunction().GetPoint();
-        roadWarnings[currentType].push_back(RoadInfo(markPoint, featureId));
+        roadWarnings[currentWarn].push_back(RoadInfo(markPoint, featureId));
       }
-      lastType = currentType;
+      lastWarn = currentWarn;
     }
     currentDistance = segments[i].GetDistFromBeginningMeters();
   }
-  if (isWarnedType(lastType))
-    roadWarnings[lastType].back().m_distance = segments.back().GetDistFromBeginningMeters() - startDistance;
+  if (lastWarn != RoadWarningMarkType::Count)
+    roadWarnings[lastWarn].back().m_distance = segments.back().GetDistFromBeginningMeters() - startDistance;
+}
+
+void RoutingManager::CollectRoadPointWarnings(RouteBase const & route, RoadWarningsCollection & roadWarnings)
+{
+  // The heavy barrier lookup already ran on the routing thread (IndexRouter::RedressRoute);
+  // here we just translate the stored barrier types into UI mark types and filter by router type.
+  auto const & checker = BarrierWarningChecker::Instance();
+  for (auto const & warning : route.GetWarnings())
+  {
+    auto const markType = checker.GetWarningType(warning.m_type);
+    if (markType == RoadWarningMarkType::Count || !IsWarningShownFor(markType, m_currentRouterType))
+      continue;
+
+    // Check for duplicates (from alt routes).
+    RoadInfo const toInsert(warning.m_point, warning.m_featureId);
+    auto & resVec = roadWarnings[markType];
+    if (!base::IsExistIf(resVec, [&toInsert](RoadInfo const & ri)
+    {
+      return ri.m_featureId == toInsert.m_featureId &&
+             ri.m_startPoint.EqualDxDy(toInsert.m_startPoint, kMwmPointAccuracy);
+    }))
+      resVec.push_back(toInsert);
+  }
 }
 
 void RoutingManager::CreateRoadWarningMarks(RoadWarningsCollection && roadWarnings)
@@ -628,7 +679,7 @@ void RoutingManager::CreateRoadWarningMarks(RoadWarningsCollection && roadWarnin
     auto es = m_bmManager->GetEditSession();
     for (auto const & typeInfo : roadWarnings)
     {
-      auto const type = GetRoadType(typeInfo.first);
+      auto const type = typeInfo.first;
       for (size_t i = 0; i < typeInfo.second.size(); ++i)
       {
         auto const & routeInfo = typeInfo.second[i];
@@ -636,33 +687,161 @@ void RoutingManager::CreateRoadWarningMarks(RoadWarningsCollection && roadWarnin
         mark->SetIndex(static_cast<uint32_t>(i));
         mark->SetRoadWarningType(type);
         mark->SetFeatureId(routeInfo.m_featureId);
-        std::string distanceStr = platform::Distance::CreateFormatted(routeInfo.m_distance).ToString();
-        mark->SetDistance(distanceStr);
+        // Point warnings (gate/lift_gate) sit on a single vertex and carry no span length.
+        if (routeInfo.m_distance > 0.0)
+          mark->SetDistance(platform::Distance::CreateFormatted(routeInfo.m_distance).ToString());
       }
     }
   });
 }
 
-bool RoutingManager::InsertRoute(Route const & route)
+namespace
 {
-  if (!m_drapeEngine)
+// Multiplier applied to the alpha channel of subroute colors for alternative (non-active) routes.
+float constexpr kAlternativeRouteAlphaMul = 0.5f;
+
+}  // namespace
+
+void RoutingManager::CreateRouteAltMarks(routing::RoutesResult const & result)
+{
+  if (result.m_routes.empty())
+    return;
+
+  // Snapshot the data we need so the Gui-thread task doesn't depend on |result|'s lifetime.
+  struct AltMarkInfo
+  {
+    m2::PointD m_pt;
+    std::string m_eta;
+    size_t m_idx;
+    bool m_isActive;
+  };
+  std::vector<AltMarkInfo> infos;
+  infos.reserve(result.m_routes.size());
+
+  for (size_t i = 0; i < result.m_routes.size(); ++i)
+  {
+    auto const & r = result.m_routes[i];
+    if (!r.IsValid())
+      continue;
+
+    // Alts carry a divergence midpoint (set by IndexRouter::CalculateRoute) so the balloon lands
+    // where the alt actually differs from the active route. Active route has no diff — fall back
+    // to the geometric midpoint of the whole route.
+    auto const & diffMid = r.GetDiffMidpoint();
+    m2::PointD const pivot = diffMid ? *diffMid : r.GetMidpoint();
+    infos.push_back({pivot, platform::Duration(std::lround(r.GetTotalTimeSec())).GetHoursMinutesString(), i,
+                     i == result.m_activeIdx});
+  }
+
+  GetPlatform().RunTask(Platform::Thread::Gui, [this, infos = std::move(infos)]()
+  {
+    // Place each balloon up or down based on the midpoint's latitude relative to the others:
+    // the northern midpoint (larger mercator y) gets the up balloon, the southern one goes down.
+    // +y in drape vertex-normal space is downward, so (0, -N) lifts the body above the pivot.
+    float constexpr kAltMarkOffsetPx = 50.0f;
+    double avgY = 0.0;
+    for (auto const & info : infos)
+      avgY += info.m_pt.y;
+    avgY /= static_cast<double>(infos.size());
+
+    auto es = m_bmManager->GetEditSession();
+    for (auto const & info : infos)
+    {
+      auto mark = es.CreateUserMark<RouteAltMark>(info.m_pt);
+      mark->SetEta(info.m_eta);
+      mark->SetRouteIdx(info.m_idx);
+      mark->SetIsActive(info.m_isActive);
+      float const sign = (info.m_pt.y >= avgY) ? -1.0f : 1.0f;
+      mark->SetPixelOffset({0.0f, sign * kAltMarkOffsetPx});
+    }
+  });
+}
+
+MwmSet::MwmId RoutingManager::GetMwmId(routing::NumMwmId numMwmId) const
+{
+  return m_callbacks.m_dataSourceGetter().GetMwmIdByCountryFile(m_numMwmIDs->GetFile(numMwmId));
+}
+
+bool RoutingManager::InsertRoute(RoutesResult const & result)
+{
+  if (!m_drapeEngine || result.m_routes.empty())
     return false;
 
   // TODO: Now we always update whole route, so we need to remove previous one.
   RemoveRoute(false /* deactivateFollowing */);
 
-  auto const getMwmId = [this](routing::NumMwmId numMwmId)
-  { return m_callbacks.m_dataSourceGetter().GetMwmIdByCountryFile(m_numMwmIDs->GetFile(numMwmId)); };
-
   RoadWarningsCollection roadWarnings;
 
   bool const isTransitRoute = (m_currentRouterType == RouterType::Transit);
+  auto const makeTransitRouteDisplay = [this]()
+  {
+    // clang-format off
+    return std::make_shared<TransitRouteDisplay>(*m_transitReadManager,
+          [this](routing::NumMwmId numMwmId) { return GetMwmId(numMwmId); },
+          m_callbacks.m_stringsBundleGetter, m_bmManager, m_transitSymbolSizes);
+    // clang-format on
+  };
+
   std::shared_ptr<TransitRouteDisplay> transitRouteDisplay;
   if (isTransitRoute)
+    transitRouteDisplay = makeTransitRouteDisplay();
+
+  // In follow (navigation) mode only the active route is drawn — alternatives and ETA balloons
+  // would clutter the moving map and the ETA is shown in the navigation UI instead.
+  bool const isFollowing = m_routingSession.IsFollowing();
+  if (!isFollowing)
   {
-    transitRouteDisplay = std::make_shared<TransitRouteDisplay>(
-        *m_transitReadManager, getMwmId, m_callbacks.m_stringsBundleGetter, m_bmManager, m_transitSymbolSizes);
+    for (size_t i = 0; i < result.m_routes.size(); ++i)
+    {
+      if (i == result.m_activeIdx)
+        continue;
+      // A TransitRouteDisplay accumulates steps/distance across all subroutes fed to it, so an
+      // alternative route must use its own throwaway display: it draws just its (muted) polyline,
+      // without corrupting the active route's distance/steps or duplicating its stop marks (the
+      // alt's display is never asked for route info or marks).
+      auto const altDisplay = isTransitRoute ? makeTransitRouteDisplay() : transitRouteDisplay;
+      InsertSingleRoute(result.m_routes[i], false /* isActive */, 0.0 /* depthOffset */, altDisplay, roadWarnings);
+    }
   }
+  // Lift the active route by 10 so it stays above alternative subroutes even when polylines overlap.
+  // The offset must exceed the per-route subroute count (count is typically 1, so 10 is plenty).
+  InsertSingleRoute(result.GetActive(), true /* isActive */, 10.0 /* depthOffset */, transitRouteDisplay, roadWarnings);
+
+  if (!isFollowing && m_currentRouterType != RouterType::Ruler && result.m_routes.size() >= 2)
+    CreateRouteAltMarks(result);
+
+  {
+    std::lock_guard<std::mutex> lock(m_drapeSubroutesMutex);
+    m_transitRouteInfo = isTransitRoute ? transitRouteDisplay->GetRouteInfo() : TransitRouteInfo();
+  }
+
+  if (isTransitRoute)
+  {
+    GetPlatform().RunTask(Platform::Thread::Gui, [transitRouteDisplay = std::move(transitRouteDisplay)]()
+    { transitRouteDisplay->CreateTransitMarks(); });
+  }
+
+  // We render marks for every warning, but only an avoidable warning (toll/ferry/dirty) on a car
+  // route should surface the "driving options" affordance via RouterResultCode::HasWarnings.
+  // Steps/gate/lift_gate have no avoid option, and non-car routes have no driving options at all.
+  bool const hasDrivingOptionsWarning =
+      m_currentRouterType == RouterType::Vehicle &&
+      base::AnyOf(roadWarnings, [](auto const & w) { return IsAvoidableRoadWarning(w.first); });
+
+  if (!roadWarnings.empty())
+    CreateRoadWarningMarks(std::move(roadWarnings));
+
+  return hasDrivingOptionsWarning;
+}
+
+void RoutingManager::InsertSingleRoute(RouteBase const & route, bool isActive, double depthOffset,
+                                       std::shared_ptr<TransitRouteDisplay> const & transitRouteDisplay,
+                                       RoadWarningsCollection & roadWarnings)
+{
+  if (!route.IsValid())
+    return;
+
+  float const alphaMul = isActive ? 1.0f : kAlternativeRouteAlphaMul;
 
   std::vector<RouteSegment> segments;
   double distance = 0.0;
@@ -672,10 +851,12 @@ bool RoutingManager::InsertRoute(Route const & route)
     route.GetSubrouteInfo(subrouteIndex, segments);
 
     auto const startPt = route.GetSubrouteAttrs(subrouteIndex).GetStart().GetPoint();
-    auto subroute = CreateDrapeSubroute(segments, startPt, distance,
-                                        static_cast<double>(subroutesCount - subrouteIndex - 1), m_currentRouterType);
+    auto subroute =
+        CreateDrapeSubroute(segments, startPt, distance,
+                            static_cast<double>(subroutesCount - subrouteIndex - 1) + depthOffset, m_currentRouterType);
     if (!subroute)
       continue;
+    subroute->m_alphaMul = alphaMul;
     distance = segments.back().GetDistFromBeginningMerc();
     switch (m_currentRouterType)
     {
@@ -683,8 +864,12 @@ bool RoutingManager::InsertRoute(Route const & route)
     {
       subroute->m_routeType = df::RouteType::Car;
       subroute->AddStyle(df::SubrouteStyle(df::kRouteColor, df::kRouteOutlineColor));
-      FillTrafficForRendering(segments, subroute->m_traffic);
-      FillTurnsDistancesForRendering(segments, subroute->m_baseDistance, subroute->m_turns);
+      // Skip traffic colors on alternatives — keep them visually muted and easy to distinguish.
+      if (isActive)
+      {
+        FillTrafficForRendering(segments, subroute->m_traffic);
+        FillTurnsDistancesForRendering(segments, subroute->m_baseDistance, subroute->m_turns);
+      }
       break;
     }
     case RouterType::Transit:
@@ -704,7 +889,8 @@ bool RoutingManager::InsertRoute(Route const & route)
     {
       subroute->m_routeType = df::RouteType::Bicycle;
       subroute->AddStyle(df::SubrouteStyle(df::kRouteBicycle, df::RoutePattern(8.0, 2.0)));
-      FillTurnsDistancesForRendering(segments, subroute->m_baseDistance, subroute->m_turns);
+      if (isActive)
+        FillTurnsDistancesForRendering(segments, subroute->m_baseDistance, subroute->m_turns);
       break;
     }
     case RouterType::Ruler:
@@ -716,33 +902,18 @@ bool RoutingManager::InsertRoute(Route const & route)
     default: CHECK(false, ("Unknown router type"));
     }
 
-    CollectRoadWarnings(segments, startPt, subroute->m_baseDistance, getMwmId, roadWarnings);
+    CollectRoadWarnings(segments, startPt, subroute->m_baseDistance, roadWarnings);
 
     auto const subrouteId =
         m_drapeEngine.SafeCallWithResult(&df::DrapeEngine::AddSubroute, df::SubrouteConstPtr(subroute.release()));
 
-    // TODO: we will send subrouteId to routing subsystem when we can partly update route.
-    // route.SetSubrouteUid(subrouteIndex, static_cast<SubrouteUid>(subrouteId));
     std::lock_guard<std::mutex> lock(m_drapeSubroutesMutex);
     m_drapeSubroutes.push_back(subrouteId);
   }
 
-  {
-    std::lock_guard<std::mutex> lock(m_drapeSubroutesMutex);
-    m_transitRouteInfo = isTransitRoute ? transitRouteDisplay->GetRouteInfo() : TransitRouteInfo();
-  }
-
-  if (isTransitRoute)
-  {
-    GetPlatform().RunTask(Platform::Thread::Gui, [transitRouteDisplay = std::move(transitRouteDisplay)]()
-    { transitRouteDisplay->CreateTransitMarks(); });
-  }
-
-  bool const hasWarnings = !roadWarnings.empty();
-  if (hasWarnings && m_currentRouterType == RouterType::Vehicle)
-    CreateRoadWarningMarks(std::move(roadWarnings));
-
-  return hasWarnings;
+  // Point warnings (barrier nodes) are precomputed on the routing thread (IndexRouter::RedressRoute)
+  // and stored in the route; read them once (route-global, not per-subroute).
+  CollectRoadPointWarnings(route, roadWarnings);
 }
 
 void RoutingManager::FollowRoute()
@@ -760,7 +931,71 @@ void RoutingManager::FollowRoute()
   HideRoutePoint(RouteMarkType::Start);
   SetPointsFollowingMode(true /* enabled */);
 
+  ClearAlternativeRoutes();
+
   CancelRecommendation(Recommendation::RebuildAfterPointsLoading);
+}
+
+bool RoutingManager::SwapActiveAlternative(size_t idx)
+{
+  if (!m_routingSession.SwapActiveAlternative(idx))
+    return false;
+
+  // Re-render drape with the new active variant and notify platform UI (elevation profile,
+  // route info, etc.) via the same RouteBuilded callback path used by the initial build, so
+  // any cached route data on the Android/iOS side is refreshed for the new active route.
+  bool hasWarnings = false;
+  m_routingSession.RouteCall([this, &hasWarnings](routing::RoutesResult const & result)
+  { hasWarnings = InsertRoute(result); });
+  CallRouteBuilded(hasWarnings ? RouterResultCode::HasWarnings : RouterResultCode::NoError, storage::CountriesSet());
+  return true;
+}
+
+bool RoutingManager::TryTapOnAlternativeRoute(m2::PointD const & mercator, double mercatorPerPixel)
+{
+  // Alts aren't drawn during navigation and the active route shouldn't be tap-swappable.
+  if (!IsRoutingActive() || m_routingSession.IsFollowing() || !m_routingSession.IsRouteValid())
+    return false;
+
+  // Pixel-radius for the tap area. Matches the visual half-width the routes are drawn with;
+  // closer than this and we treat the tap as hitting that polyline.
+  double constexpr kTapPixels = 16.0;
+  double const tapMerc = kTapPixels * df::VisualParams::Instance().GetVisualScale() * mercatorPerPixel;
+  double const tapMercSq = tapMerc * tapMerc;
+  m2::RectD const tapRect(mercator, tapMerc, tapMerc);
+
+  int targetIdx = -1;
+  double bestSq = tapMercSq;
+  m_routingSession.RouteCall([&](routing::RoutesResult const & result)
+  {
+    for (size_t i = 0; i < result.m_routes.size(); ++i)
+    {
+      if (i == result.m_activeIdx)
+        continue;
+
+      std::optional<m2::PointD> prev;
+      result.m_routes[i].ForEachPoint([&](geometry::PointWithAltitude const & p)
+      {
+        if (prev)
+        {
+          auto const & p2 = p.GetPoint();
+          if (m2::RectD(*prev, p2).IsIntersect(tapRect))
+          {
+            m2::ParametrizedSegment<m2::PointD> seg(*prev, p2);
+            double const distSq = seg.SquaredDistanceToPoint(mercator);
+            if (distSq < bestSq)
+            {
+              bestSq = distSq;
+              targetIdx = i;
+            }
+          }
+        }
+        prev = p.GetPoint();
+      });
+    }
+  });
+
+  return targetIdx >= 0 ? SwapActiveAlternative(targetIdx) : false;
 }
 
 void RoutingManager::CloseRouting(bool removeRoutePoints)
@@ -821,42 +1056,99 @@ bool RoutingManager::CouldAddIntermediatePoint() const
   if (!IsRoutingActive())
     return false;
 
-  return m_bmManager->GetUserMarkIds(UserMark::Type::ROUTING).size() <
-         RoutePointsLayout::kMaxIntermediatePointsCount + 2;
+  return m_bmManager->GetUserMarkIds(UserMark::Type::ROUTING).size() < RoutePointsLayout::kMaxRoutePointsCount;
 }
 
-void RoutingManager::AddRoutePoint(RouteMarkData && markData, bool reorderIntermediatePoints)
+bool RoutingManager::AddRoutePoint(RouteMarkData && markData, bool optimize)
 {
   ASSERT(m_bmManager != nullptr, ());
   RoutePointsLayout routePoints(*m_bmManager);
+  bool const isIntermediate = markData.m_pointType == RouteMarkType::Intermediate;
 
-  // Always replace start and finish points.
-  if (markData.m_pointType == RouteMarkType::Start || markData.m_pointType == RouteMarkType::Finish)
+  if (!isIntermediate)
     routePoints.RemoveRoutePoint(markData.m_pointType);
 
   if (markData.m_isMyPosition)
   {
-    RouteMarkPoint const * mark = routePoints.GetMyPositionPoint();
-    if (mark != nullptr)
-      routePoints.RemoveRoutePoint(mark->GetRoutePointType(), mark->GetIntermediateIndex());
+    if (auto const * staleMyPosition = routePoints.GetMyPositionPoint())
+      routePoints.RemoveRoutePoint(staleMyPosition->GetRoutePointType(), staleMyPosition->GetIntermediateIndex());
   }
 
-  markData.m_isVisible = !markData.m_isMyPosition;
-  routePoints.AddRoutePoint(std::move(markData));
+  bool const hasStart = routePoints.GetRoutePoint(RouteMarkType::Start) != nullptr;
+  bool const hasFinish = routePoints.GetRoutePoint(RouteMarkType::Finish) != nullptr;
+  if (isIntermediate)
+    markData.m_intermediateIndex = routePoints.GetRoutePointsCount() - hasStart - hasFinish;
 
-  if (reorderIntermediatePoints)
-    ReorderIntermediatePoints();
+  markData.m_isVisible = !markData.m_isMyPosition;
+  auto const * addedPoint = routePoints.AddRoutePoint(std::move(markData));
+  if (addedPoint == nullptr)
+    return false;
+
+  // Ruler points describe the user's measurement, not a route to optimize.
+  if (isIntermediate && optimize && hasStart && hasFinish && m_currentRouterType != RouterType::Ruler)
+    ReorderIntermediatePoints(routePoints, addedPoint);
+  return true;
 }
 
-void RoutingManager::ContinueRouteToPoint(RouteMarkData && markData)
+void RoutingManager::ReplaceRoutePoint(RouteMarkType type, size_t intermediateIndex, RouteMarkData && markData)
+{
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
+  auto * target = routePoints.GetRoutePointForEdit(type, intermediateIndex);
+  if (target == nullptr)
+  {
+    markData.m_pointType = type;
+    AddRoutePoint(std::move(markData), false /* optimize */);
+    return;
+  }
+
+  if (markData.m_isMyPosition)
+  {
+    if (auto const * staleMyPosition = routePoints.GetMyPositionPoint();
+        staleMyPosition != nullptr && staleMyPosition != target)
+    {
+      routePoints.RemoveRoutePoint(staleMyPosition->GetRoutePointType(), staleMyPosition->GetIntermediateIndex());
+    }
+  }
+
+  // Removing another My Position mark may have changed the target's type or index.
+  markData.m_pointType = target->GetRoutePointType();
+  markData.m_intermediateIndex = target->GetIntermediateIndex();
+  markData.m_isVisible = !markData.m_isMyPosition;
+  target->SetMarkData(std::move(markData));
+}
+
+bool RoutingManager::OptimizeRoutePoints()
+{
+  ASSERT(m_bmManager != nullptr, ());
+  if (IsRoutingFollowing() || m_currentRouterType == RouterType::Ruler ||
+      m_bmManager->GetUserMarkIds(UserMark::Type::ROUTING).size() < 3)
+    return false;
+  RoutePointsLayout layout(*m_bmManager);
+  if (layout.GetRoutePoint(RouteMarkType::Start) == nullptr || layout.GetRoutePoint(RouteMarkType::Finish) == nullptr)
+    return false;
+  return ReorderIntermediatePoints(layout, nullptr /* added */);
+}
+
+bool RoutingManager::ContinueRouteToPoint(RouteMarkData && markData)
 {
   ASSERT(m_bmManager != nullptr, ());
   ASSERT(markData.m_pointType == RouteMarkType::Finish, ("New route point should have type RouteMarkType::Finish"));
   RoutePointsLayout routePoints(*m_bmManager);
 
+  if (routePoints.GetRoutePointsCount() >= RoutePointsLayout::kMaxRoutePointsCount)
+  {
+    LOG(LWARNING, ("Cannot continue route: route points limit reached."));
+    return false;
+  }
+
   // Finish point is now Intermediate point
   RouteMarkPoint * finishMarkData = routePoints.GetRoutePointForEdit(RouteMarkType::Finish);
-  CHECK(finishMarkData, ());
+  if (finishMarkData == nullptr)
+  {
+    LOG(LWARNING, ("Cannot continue route: finish point is missing."));
+    return false;
+  }
   finishMarkData->SetRoutePointType(RouteMarkType::Intermediate);
   finishMarkData->SetIntermediateIndex(routePoints.GetRoutePointsCount() - 2);
 
@@ -870,6 +1162,7 @@ void RoutingManager::ContinueRouteToPoint(RouteMarkData && markData)
   markData.m_intermediateIndex = routePoints.GetRoutePointsCount() - 1;
   markData.m_isVisible = !markData.m_isMyPosition;
   routePoints.AddRoutePoint(std::move(markData));
+  return true;
 }
 
 void RoutingManager::RemoveRoutePoint(RouteMarkType type, size_t intermediateIndex)
@@ -891,6 +1184,25 @@ void RoutingManager::RemoveIntermediateRoutePoints()
   ASSERT(m_bmManager != nullptr, ());
   RoutePointsLayout routePoints(*m_bmManager);
   routePoints.RemoveIntermediateRoutePoints();
+}
+
+void RoutingManager::RemovePassedRoutePoints()
+{
+  ASSERT(m_bmManager != nullptr, ());
+  RoutePointsLayout routePoints(*m_bmManager);
+  if (!routePoints.RemovePassedRoutePoints())
+    return;
+
+  // If the passed Start was removed, add a new one at the current position.
+  if (routePoints.GetRoutePoint(RouteMarkType::Start) == nullptr)
+  {
+    RouteMarkData startPt;
+    startPt.m_pointType = RouteMarkType::Start;
+    startPt.m_isMyPosition = true;
+    startPt.m_isVisible = false;
+    startPt.m_position = m_bmManager->MyPositionMark().GetPivot();
+    routePoints.AddRoutePoint(std::move(startPt));
+  }
 }
 
 void RoutingManager::MoveRoutePoint(RouteMarkType currentType, size_t currentIntermediateIndex,
@@ -941,45 +1253,70 @@ void RoutingManager::SetPointsFollowingMode(bool enabled)
   routePoints.SetFollowingMode(enabled);
 }
 
-void RoutingManager::ReorderIntermediatePoints()
+bool RoutingManager::ReorderIntermediatePoints(RoutePointsLayout & layout, RouteMarkPoint const * added)
 {
-  std::vector<RouteMarkPoint *> prevPoints;
-  std::vector<m2::PointD> prevPositions;
-  prevPoints.reserve(RoutePointsLayout::kMaxIntermediatePointsCount);
-  prevPositions.reserve(RoutePointsLayout::kMaxIntermediatePointsCount);
-  RoutePointsLayout routePoints(*m_bmManager);
+  auto const points = layout.GetRoutePoints();
+  ASSERT_GREATER_OR_EQUAL(points.size(), 3, ());
+  ASSERT(points.front()->GetRoutePointType() == RouteMarkType::Start, ());
+  ASSERT(points.back()->GetRoutePointType() == RouteMarkType::Finish, ());
 
-  RouteMarkPoint * addedPoint = nullptr;
-  m2::PointD addedPosition;
+  // Passed stops keep their slots; the rest of the route starts from the last of them.
+  size_t lastPassedIndex = 0;
+  for (size_t i = 1; i + 1 < points.size(); ++i)
+    if (points[i]->IsPassed())
+      lastPassedIndex = i;
 
-  for (auto const & p : routePoints.GetRoutePoints())
+  std::vector<RouteMarkPoint *> ordered;
+  std::vector<RouteMarkPoint *> toPlace;
+  for (size_t i = lastPassedIndex + 1; i + 1 < points.size(); ++i)
+    if (added == nullptr || points[i] == added)
+      toPlace.push_back(points[i]);
+    else
+      ordered.push_back(points[i]);
+
+  std::vector<m2::PointD> positions;
+  for (auto const * point : ordered)
+    positions.push_back(point->GetPivot());
+
+  CheckpointPredictor const predictor(points[lastPassedIndex]->GetPivot(), points.back()->GetPivot());
+  for (auto * point : toPlace)
   {
-    CHECK(p, ());
-    if (p->GetRoutePointType() == RouteMarkType::Intermediate)
+    size_t const index = predictor.PredictPosition(positions, point->GetPivot());
+    positions.insert(positions.begin() + index, point->GetPivot());
+    ordered.insert(ordered.begin() + index, point);
+  }
+
+  // Greedy re-insertion depends on the current order and may produce a longer route. Commit only a strictly shorter
+  // one to prevent repeated optimization from flipping between orders.
+  if (added == nullptr)
+  {
+    double currentLength = 0.0;
+    for (size_t i = lastPassedIndex; i + 1 < points.size(); ++i)
+      currentLength += mercator::DistanceOnEarth(points[i]->GetPivot(), points[i + 1]->GetPivot());
+
+    double optimizedLength = 0.0;
+    m2::PointD const * previous = &points[lastPassedIndex]->GetPivot();
+    for (auto const & position : positions)
     {
-      // Note. An added (new) intermediate point is the first intermediate point at |routePoints.GetRoutePoints()|.
-      // The other intermediate points are former ones.
-      if (addedPoint == nullptr)
-      {
-        addedPoint = p;
-        addedPosition = p->GetPivot();
-      }
-      else
-      {
-        prevPoints.push_back(p);
-        prevPositions.push_back(p->GetPivot());
-      }
+      optimizedLength += mercator::DistanceOnEarth(*previous, position);
+      previous = &position;
+    }
+    optimizedLength += mercator::DistanceOnEarth(*previous, points.back()->GetPivot());
+    if (optimizedLength >= currentLength)
+      return false;
+  }
+
+  bool changed = false;
+  for (size_t i = 0; i < ordered.size(); ++i)
+  {
+    size_t const index = lastPassedIndex + i;
+    if (ordered[i]->GetIntermediateIndex() != index)
+    {
+      ordered[i]->SetIntermediateIndex(index);
+      changed = true;
     }
   }
-  if (addedPoint == nullptr)
-    return;
-
-  CheckpointPredictor predictor(m_routingSession.GetStartPoint(), m_routingSession.GetEndPoint());
-
-  size_t const insertIndex = predictor.PredictPosition(prevPositions, addedPosition);
-  addedPoint->SetIntermediateIndex(insertIndex);
-  for (size_t i = 0; i < prevPoints.size(); ++i)
-    prevPoints[i]->SetIntermediateIndex(i < insertIndex ? i : i + 1);
+  return changed;
 }
 
 void RoutingManager::GenerateNotifications(std::vector<std::string> & turnNotifications, bool announceStreets)
@@ -992,6 +1329,12 @@ void RoutingManager::BuildRoute(uint32_t timeoutSec)
   CHECK_THREAD_CHECKER(m_threadChecker, ("BuildRoute"));
 
   m_bmManager->GetEditSession().ClearGroup(UserMark::Type::TRANSIT);
+
+  // Remove already passed intermediate points so they don't affect the new route.
+  // https://github.com/organicmaps/organicmaps/issues/7939
+  // https://github.com/organicmaps/organicmaps/issues/9592
+  // https://github.com/organicmaps/organicmaps/issues/11256
+  RemovePassedRoutePoints();
 
   auto routePoints = GetRoutePoints();
   if (routePoints.size() < 2)
@@ -1118,10 +1461,11 @@ void RoutingManager::CheckLocationForRouting(location::GpsInfo const & info)
   SessionState const state = m_routingSession.OnLocationPositionChanged(info);
   if (state == SessionState::RouteNeedRebuild)
   {
-    m_routingSession.RebuildRoute(
-        mercator::FromLatLon(info.m_latitude, info.m_longitude), [this](Route const & route, RouterResultCode code)
-    { OnRebuildRouteReady(route, code); }, nullptr /* needMoreMapsCallback */, nullptr /* removeRouteCallback */,
-        RouterDelegate::kNoTimeout, SessionState::RouteRebuilding, true /* adjustToPrevRoute */);
+    m_routingSession.RebuildRoute(mercator::FromLatLon(info.m_latitude, info.m_longitude),
+                                  [this](RoutesResult const & result, RouterResultCode code)
+    { OnRebuildRouteReady(result, code); }, nullptr /* needMoreMapsCallback */, nullptr /* removeRouteCallback */,
+                                  RouterDelegate::kNoTimeout, SessionState::RouteRebuilding,
+                                  true /* adjustToPrevRoute */);
   }
 }
 
@@ -1183,7 +1527,7 @@ void RoutingManager::SetDrapeEngine(ref_ptr<df::DrapeEngine> engine, bool is3dAl
       // In case of the engine reinitialization recover route.
       if (IsRoutingActive())
       {
-        m_routingSession.RouteCall([this](Route const & route) { InsertRoute(route); });
+        m_routingSession.RouteCall([this](RoutesResult const & result) { InsertRoute(result); });
 
         if (is3dAllowed && m_routingSession.IsFollowing())
           m_drapeEngine.SafeCall(&df::DrapeEngine::EnablePerspective);
@@ -1197,103 +1541,29 @@ bool RoutingManager::HasRouteAltitude() const
   return m_loadAltitudes && m_routingSession.HasRouteAltitude();
 }
 
-bool RoutingManager::GetRouteAltitudesAndDistancesM(DistanceAltitude & da) const
+bool RoutingManager::GetRouteElevationInfo(ElevationInfo & ei) const
 {
-  return m_routingSession.GetRouteAltitudesAndDistancesM(da.m_distances, da.m_altitudes);
-}
-
-void RoutingManager::DistanceAltitude::Simplify(double altitudeDeviation)
-{
-  class IterT
-  {
-    DistanceAltitude const & m_da;
-    size_t m_ind = 0;
-
-  public:
-    IterT(DistanceAltitude const & da, bool isBeg) : m_da(da) { m_ind = isBeg ? 0 : m_da.GetSize(); }
-
-    IterT(IterT const & rhs) = default;
-    IterT & operator=(IterT const & rhs)
-    {
-      m_ind = rhs.m_ind;
-      return *this;
-    }
-
-    bool operator!=(IterT const & rhs) const { return m_ind != rhs.m_ind; }
-
-    IterT & operator++()
-    {
-      ++m_ind;
-      return *this;
-    }
-    IterT operator+(size_t inc) const
-    {
-      IterT res = *this;
-      res.m_ind += inc;
-      return res;
-    }
-    int64_t operator-(IterT const & rhs) const { return int64_t(m_ind) - int64_t(rhs.m_ind); }
-
-    m2::PointD operator*() const { return {m_da.m_distances[m_ind], double(m_da.m_altitudes[m_ind])}; }
-  };
-
-  std::vector<m2::PointD> out;
-
-  // 1. Deviation from approximated altitude.
-  //  double constexpr eps = 1.415; // ~sqrt(2)
-  //  struct DeviationFromApproxY
-  //  {
-  //    double operator()(m2::PointD const & a, m2::PointD const & b, m2::PointD const & x) const
-  //    {
-  //      double f = (x.x - a.x) / (b.x - a.x);
-  //      ASSERT(0 <= f && f <= 1, (f));  // distance is an icreasing function
-  //      double const approxY = (1 - f) * a.y + f * b.y;
-  //      return fabs(approxY - x.y);
-  //    }
-  //  } distFn;
-  //  SimplifyNearOptimal(20 /* maxFalseLookAhead */, IterT(*this, true), IterT(*this, false),
-  //                      eps, distFn, AccumulateSkipSmallTrg(distFn, out, eps));
-
-  // 2. Default square distance from segment.
-  SimplifyDefault(IterT(*this, true), IterT(*this, false), math::Pow2(altitudeDeviation), out);
-
-  size_t const count = out.size();
-  m_distances.resize(count);
-  m_altitudes.resize(count);
-  for (size_t i = 0; i < count; ++i)
-  {
-    m_distances[i] = out[i].x;
-    m_altitudes[i] = geometry::Altitude(out[i].y);
-  }
-}
-
-bool RoutingManager::DistanceAltitude::GenerateRouteAltitudeChart(uint32_t width, uint32_t height,
-                                                                  std::vector<uint8_t> & imageRGBAData) const
-{
-  if (GetSize() == 0)
+  auto const * route = m_routingSession.GetRoute();
+  if (!route || !route->IsValid() || !route->HaveAltitudes())
     return false;
 
-  return maps::GenerateChart(width, height, m_distances, m_altitudes, GetStyleReader().GetCurrentStyle(),
-                             imageRGBAData);
+  geometry::Altitudes altitudes;
+  route->GetAltitudes(altitudes);
+
+  ei.Assign(route->GetSegDistanceMeters(), altitudes);
+  ei.Simplify();
+  return true;
 }
 
-void RoutingManager::DistanceAltitude::CalculateAscentDescent(uint32_t & totalAscentM, uint32_t & totalDescentM) const
+std::optional<m2::PointD> RoutingManager::GetRoutePointAtDistance(double distanceMeters) const
 {
-  totalAscentM = 0;
-  totalDescentM = 0;
-  for (size_t i = 1; i < m_altitudes.size(); i++)
-  {
-    int16_t const delta = m_altitudes[i] - m_altitudes[i - 1];
-    if (delta > 0)
-      totalAscentM += delta;
-    else
-      totalDescentM += -delta;
-  }
-}
+  auto const * route = m_routingSession.GetRoute();
+  if (!route || !route->IsValid())
+    return std::nullopt;
 
-std::string DebugPrint(RoutingManager::DistanceAltitude const & da)
-{
-  return DebugPrint(da.m_altitudes);
+  auto const & distances = route->GetSegDistanceMeters();
+  auto const & points = route->GetPoly().GetPoints();
+  return m2::InterpolatePointAtDistance(distances, points, distanceMeters);
 }
 
 void RoutingManager::SetRouter(RouterType type)
@@ -1425,6 +1695,7 @@ void RoutingManager::LoadRoutePoints(LoadRouteHandler const & handler)
       auto const & myPosMark = m_bmManager->MyPositionMark();
       auto editSession = m_bmManager->GetEditSession();
       editSession.ClearGroup(UserMark::Type::ROUTING);
+      // Saved points have no intermediate indices; replay their order without optimization.
       for (auto & p : points)
       {
         // Check if the saved route used the user's position
@@ -1437,11 +1708,11 @@ void RoutingManager::LoadRoutePoints(LoadRouteHandler const & handler)
           startPt.m_pointType = RouteMarkType::Start;
           startPt.m_isMyPosition = true;
           startPt.m_position = myPosMark.GetPivot();
-          AddRoutePoint(std::move(startPt));
+          AddRoutePoint(std::move(startPt), false /* optimize */);
         }
         else
         {
-          AddRoutePoint(std::move(p));
+          AddRoutePoint(std::move(p), false /* optimize */);
         }
       }
 
@@ -1490,8 +1761,7 @@ std::vector<RouteMarkData> RoutingManager::GetRoutePointsToSave() const
   std::vector<RouteMarkData> result;
   result.reserve(points.size());
 
-  // Save last passed point. It will be used on points loading if my position
-  // isn't determined.
+  // Resume from the last passed point, or the original start when none was passed.
   result.emplace_back(GetLastPassedPoint(m_bmManager, points));
 
   for (auto & p : points)

@@ -5,6 +5,40 @@
 #include "app/organicmaps/sdk/bookmarks/data/Metadata.hpp"
 #include "app/organicmaps/sdk/bookmarks/data/TrackStatistics.hpp"
 #include "app/organicmaps/sdk/core/jni_helper.hpp"
+#include "app/organicmaps/sdk/util/Distance.hpp"
+
+#include "drape/color.hpp"
+
+namespace
+{
+jobjectArray BuildTrackCandidatesArray(JNIEnv * env, place_page::Info const & info)
+{
+  auto const & candidates = info.GetTrackCandidates();
+  if (candidates.empty())
+    return nullptr;
+
+  jni::TScopedLocalClassRef candidateClazz(
+      env, env->FindClass("app/organicmaps/sdk/bookmarks/data/TrackSelectionCandidate"));
+  static jmethodID const candidateCtor = jni::GetConstructorID(env, candidateClazz.get(), "(JLjava/lang/String;IZ)V");
+
+  jobjectArray result = env->NewObjectArray(static_cast<jsize>(candidates.size()), candidateClazz.get(), nullptr);
+
+  auto const isRelationTrack = info.IsRelationTrack();
+  auto const selectedTrackId = info.GetTrackId();
+  auto const & selectedRelationId = info.GetTrackRelationId();
+  for (size_t i = 0; i < candidates.size(); ++i)
+  {
+    auto const & c = candidates[i];
+    bool const isSelected = isRelationTrack ? c.m_relationId == selectedRelationId : c.m_trackId == selectedTrackId;
+    jni::TScopedLocalRef title(env, jni::ToJavaStringWithSupplementalCharsFix(env, c.m_title));
+    jni::TScopedLocalRef candidate(
+        env, env->NewObject(candidateClazz.get(), candidateCtor, static_cast<jlong>(c.m_trackId), title.get(),
+                            static_cast<jint>(c.m_color.GetARGB()), static_cast<jboolean>(isSelected)));
+    env->SetObjectArrayElement(result, static_cast<jsize>(i), candidate.get());
+  }
+  return result;
+}
+}  // namespace
 
 jobject CreateTrack(JNIEnv * env, place_page::Info const & info, jni::TScopedLocalObjectArrayRef const & jrawTypes,
                     jni::TScopedLocalRef const & routingPointInfo)
@@ -14,6 +48,7 @@ jobject CreateTrack(JNIEnv * env, place_page::Info const & info, jni::TScopedLoc
     "("
     "J"                                               // categoryId
     "J"                                               // trackId
+    "Z"                                               // isRelationTrack
     "Ljava/lang/String;"                              // title
     "Ljava/lang/String;"                              // secondaryTitle
     "Ljava/lang/String;"                              // subtitle
@@ -27,6 +62,8 @@ jobject CreateTrack(JNIEnv * env, place_page::Info const & info, jni::TScopedLoc
     "Lapp/organicmaps/sdk/util/Distance;"             // length
     "D"                                               // lat
     "D"                                               // lon
+    "[Lapp/organicmaps/sdk/bookmarks/data/TrackSelectionCandidate;"  // candidates
+    "Z"                                               // visible
     ")V"
   );
   // clang-format on
@@ -34,10 +71,12 @@ jobject CreateTrack(JNIEnv * env, place_page::Info const & info, jni::TScopedLoc
   auto const trackId = info.GetTrackId();
   auto const track = frm()->GetBookmarkManager().GetTrack(trackId);
   ms::LatLon const ll = info.GetLatLon();
+  jni::TScopedLocalObjectArrayRef candidatesArray(env, BuildTrackCandidatesArray(env, info));
   // clang-format off
   jobject mapObject = env->NewObject(g_trackClazz, ctorId,
     static_cast<jlong>(track->GetGroupId()),
     static_cast<jlong>(trackId),
+    static_cast<jboolean>(info.IsRelationTrack()),
     jni::ToJavaStringWithSupplementalCharsFix(env, info.GetTitle()),
     jni::ToJavaStringWithSupplementalCharsFix(env, info.GetSecondaryTitle()),
     jni::ToJavaStringWithSupplementalCharsFix(env, info.GetSubtitle()),
@@ -50,7 +89,9 @@ jobject CreateTrack(JNIEnv * env, place_page::Info const & info, jni::TScopedLoc
     track->GetColor(0).GetARGB(),
     ToJavaDistance(env, platform::Distance::CreateFormatted(track->GetLengthMeters())),
     static_cast<jdouble>(ll.m_lat),
-    static_cast<jdouble>(ll.m_lon)
+    static_cast<jdouble>(ll.m_lon),
+    candidatesArray.get(),
+    static_cast<jboolean>(track->IsVisible())
   );
   // clang-format on
 
@@ -78,13 +119,15 @@ JNIEXPORT jobject Java_app_organicmaps_sdk_bookmarks_data_Track_nativeGetStatist
   return ToJavaTrackStatistics(env, frm()->GetBookmarkManager().GetTrack(id)->GetStatistics());
 }
 
-JNIEXPORT jobject Java_app_organicmaps_sdk_bookmarks_data_Track_nativeGetElevationActivePointCoordinates(JNIEnv * env,
-                                                                                                         jclass,
-                                                                                                         jlong trackId)
+JNIEXPORT jdoubleArray Java_app_organicmaps_sdk_bookmarks_data_Track_nativeGetElevationActivePointCoordinates(
+    JNIEnv * env, jclass, jlong trackId)
 {
   auto const & trackInfo = frm()->GetBookmarkManager().GetTrackSelectionInfo(trackId);
   auto const latlon = mercator::ToLatLon(trackInfo.m_trackPoint);
-  return ToJavaElevationInfoPoint(env, latlon);
+  jdoubleArray result = env->NewDoubleArray(2);
+  jdouble coords[] = {latlon.m_lat, latlon.m_lon};
+  env->SetDoubleArrayRegion(result, 0, 2, coords);
+  return result;
 }
 
 JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Track_nativeSetParams(JNIEnv * env, jclass, jlong id,
@@ -98,16 +141,14 @@ JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Track_nativeSetParams(JNI
   kml::SetDefaultStr(trackData.m_name, trkName);
   kml::SetDefaultStr(trackData.m_description, jni::ToNativeString(env, descr));
 
-  uint8_t alpha = ExtractByte(color, 3);
-  trackData.m_layers[0].m_color.m_rgba = static_cast<uint32_t>(shift(color, 8) + alpha);
+  trackData.m_layers[0].m_color.m_rgba = dp::Color::FromARGB(static_cast<uint32_t>(color)).GetRGBA();
 
   g_framework->ReplaceTrack(static_cast<kml::TrackId>(id), trackData);
 }
 
 JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Track_nativeChangeColor(JNIEnv *, jclass, jlong id, jint color)
 {
-  uint8_t const alpha = ExtractByte(color, 3);
-  g_framework->ChangeTrackColor(static_cast<kml::TrackId>(id), static_cast<dp::Color>(shift(color, 8) + alpha));
+  g_framework->ChangeTrackColor(static_cast<kml::TrackId>(id), dp::Color::FromARGB(static_cast<uint32_t>(color)));
 }
 
 JNIEXPORT void Java_app_organicmaps_sdk_bookmarks_data_Track_nativeChangeCategory(JNIEnv *, jclass, jlong oldCat,

@@ -22,8 +22,13 @@
     <item name="android:windowTranslucentNavigation">false</item>
 
     <item name="alertDialogTheme">@style/MwmTheme.AlertDialog</item>
+    <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.App.SmallComponent</item>
+    <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent</item>
+    <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.App.LargeComponent</item>
     <item name="windowBackgroundForced">@color/bg_window</item>
     <item name="cardBackground">@color/bg_cards</item>
+    <item name="searchToolbarTextAppearance">@style/MwmTextAppearance.Toolbar.Search</item>
+    <item name="searchToolbarEndIconTint">@android:color/white</item>
     <item name="titleDialogTheme">@color/white_primary</item>
     <item name="textDialogTheme">@color/white_secondary</item>
     <item name="fullscreenDialogTheme">@style/MwmTheme.DialogFragment.Fullscreen</item>
@@ -41,7 +46,8 @@
 
     <item name="secondary">@color/text_light_hint</item>
     <item name="dividerHorizontal">@color/divider</item>
-
+    <item name="textSearchField">@color/text_light</item>
+    <item name="textSearchFieldHint">@color/text_light_hint</item>
     <item name="ppBackground">@color/bg_cards</item>
     <item name="ppButtonsBackground">@color/bg_window</item>
     <item name="ppFloatingMarkerIconColor">@color/white_54</item>
@@ -73,14 +79,14 @@
 
     <item name="myPositionButtonAnimation">@drawable/ic_menu_location_pending</item>
     <item name="wheelPendingAnimation">@drawable/anim_spinner_pending</item>
-    <item name="trafficLoadingAnimation">@drawable/anim_traffic_loading</item>
 
     <item name="navButtonsThemeRect">@style/MwmTheme.NavButtonsRect</item>
     <item name="navButtonsThemeRound">@style/MwmTheme.NavButtonsRound</item>
     <item name="downloaderTheme">@style/MwmTheme.Downloader</item>
     <item name="navigationTheme">@style/MwmTheme.Navigation</item>
 
-    <item name="routingButtonHint">@color/routing_button_tint</item>
+    <item name="routingTabPillBg">@color/bg_search</item>
+    <item name="routingTabActiveBg">@color/routing_tab_active_bg</item>
 
     <item name="android:listDivider">@drawable/list_divider</item>
 

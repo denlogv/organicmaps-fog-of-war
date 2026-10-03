@@ -120,7 +120,7 @@
     <string name="category_hotel">Hotell</string>
     <!-- Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! -->
     <string name="category_tourism">Severdigheter</string>
-    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! -->
+    <!-- Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. -->
     <string name="category_entertainment">Underholdning</string>
     <!-- Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! -->
     <string name="category_atm">Minibank</string>
@@ -142,7 +142,7 @@
     <string name="category_police">Politi</string>
     <!-- Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! -->
     <string name="category_recycling">Resirkulering</string>
-    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type -->
+    <!-- Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. -->
     <string name="category_water">Vann</string>
     <!-- Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! -->
     <string name="category_rv">Bobilanlegg</string>
@@ -170,17 +170,13 @@
     <!-- Alert message that we can't run Map Storage settings due to some reasons. -->
     <string name="cant_change_this_setting">Beklager, innstillingene for kartlagring er for øyeblikket deaktivert.</string>
     <!-- Alert message that downloading is in progress. -->
-    <string name="downloading_is_active">Nedlasting av land pågår nå.</string>
-    <!-- Share my position using SMS, %1$@ contains om:// and %2$@ https://omaps.app link WITHOUT NAME. @NOTE non-ascii symbols in the link will result in max 70 characters SMS instead of 140. -->
-    <string name="my_position_share_sms">Hei, se posisjonen min på Organic Maps! %1$s eller %2$s Har du ikke offline-kart? Last dem ned her: https://omaps.app/get</string>
-    <!-- Subject for emailed bookmark -->
-    <string name="bookmark_share_email_subject">Hei, se merket mitt på Organic Maps-kartet</string>
-    <!-- Subject for emailed position -->
-    <string name="my_position_share_email_subject">Hei, se posisjonen min på Organic Maps-kartet!</string>
-    <!-- Share my position using EMail, %1$@ is om:// and %2$@ is https://omaps.app link WITHOUT NAME -->
-    <string name="my_position_share_email">Hei,Jeg er her nå: %1$s. Klikk på denne koblingen %2$s eller denne %3$s for å se stedet på kartet.\n\nTakk.</string>
+    <string name="downloading_is_active">Kartnedlasting pågår nå.</string>
     <!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
     <string name="share">Del</string>
+    <!-- Email subject when sharing a place. %1$@ is the place name or address. -->
+    <string name="share_place_subject">%1$s på Organic Maps</string>
+    <!-- Email subject when sharing a place that has no name or address. -->
+    <string name="share_place_subject_default">Et sted på Organic Maps</string>
     <!-- Share by email button text, also used in editor and About. -->
     <string name="email">E-post</string>
     <!-- Text for message when used successfully copied something -->
@@ -219,6 +215,18 @@
     <string name="pref_map_3d_buildings_title">Bygninger i 3D</string>
     <!-- A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled -->
     <string name="pref_map_3d_buildings_disabled_summary">3D-bygninger er slått av i strømsparingsmodus</string>
+    <!-- Settings: title of the satellite imagery (custom raster tiles) screen -->
+    <string name="pref_bg_tiles_title">Satellittbilder</string>
+    <!-- Settings «Satellite Imagery»: title of the tile server URL input field -->
+    <string name="pref_bg_tiles_url_title">Tjener-URL</string>
+    <!-- Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) -->
+    <string name="pref_bg_tiles_url_error">Skriv inn en gyldig URL med {z}/{x}/{y}</string>
+    <!-- Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) -->
+    <string name="pref_bg_tiles_size_title">Bufferstørrelse (MB)</string>
+    <!-- Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) -->
+    <string name="pref_bg_tiles_opacity_title">Ugjennomsiktighet for områdeobjekter</string>
+    <!-- Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure -->
+    <string name="pref_bg_tiles_disclaimer">Tilpassede flisekilder leveres av deg. Bruk kun tjenester du har tillatelse til å bruke. Du er ansvarlig for kreditering, lisensvilkår, API-nøkler, kvoter og bruksgrenser.</string>
     <!-- Settings «Route» category: «Tts enabled» title -->
     <string name="pref_tts_enable_title">Taleinstrukser</string>
     <!-- Settings «Route» category: «Tts announce street names» title -->
@@ -231,7 +239,7 @@
     <string name="pref_tts_test_voice_title">Test taleanvisninger (TTS, tekst-til-tale)</string>
     <!-- Settings «Route» category: Pop-up message when clicking «Test Voice Directions» -->
     <string name="pref_tts_playing_test_voice">Kontroller volumet eller systeminnstillingene for tekst-til-tale hvis du ikke hører stemmen nå.</string>
-    <!-- Settings «Route» category: «Tts unavailable» subtitle -->
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
     <string name="pref_tts_unavailable">Ikke tilgjengelig</string>
     <string name="pref_map_auto_zoom">Automatisk zooming</string>
     <string name="placepage_distance">Avstand</string>
@@ -369,6 +377,12 @@
     <string name="search_history_title">Søkehistorikk</string>
     <string name="search_history_text">Vis de siste søkene raskt.</string>
     <string name="clear_search">Tøm søkehistorikk</string>
+    <!-- Place Page link to Wikipedia article (if map object has it). -->
+    <string name="read_in_wikipedia">Wikipedia</string>
+    <!-- Source attribution for Wikipedia articles displayed in the place description screen. -->
+    <string name="article_from_wikipedia">Artikkel fra wikipedia.org</string>
+    <!-- Place Page link to Wikimedia Commons. -->
+    <string name="wikimedia_commons">Wikimedia Commons</string>
     <string name="p2p_your_location">Din beliggenhet</string>
     <string name="p2p_start">Start</string>
     <string name="p2p_from_here">Fra</string>
@@ -395,19 +409,15 @@
     <string name="editor_example_values">Eksempelverdier</string>
     <string name="editor_correct_mistake">Rett feil</string>
     <string name="editor_add_select_location">Velg sted</string>
-    <string name="editor_report_problem_desription_1">Beskriv problemet detaljert slik at OpenStreetMap-samfunnet kan fikse feilen.</string>
-    <string name="editor_report_problem_desription_2">Eller gjør det selv på https://www.openstreetmap.org/</string>
     <string name="editor_report_problem_send_button">Send</string>
-    <string name="editor_report_problem_title">Problem</string>
-    <string name="editor_report_problem_no_place_title">Stedet finnes ikke</string>
-    <string name="editor_report_problem_under_construction_title">Stengt pga. vedlikehold</string>
-    <string name="editor_report_problem_duplicate_place_title">Duplisert sted</string>
     <string name="autodownload">Automatisk nedlasting</string>
     <!-- Place Page opening hours text -->
     <string name="daily">Daglig</string>
     <string name="twentyfour_seven">Dag og natt</string>
     <string name="day_off_today">Fridag i dag</string>
     <string name="day_off">Fridag</string>
+    <string name="midnight">Midnatt</string>
+    <string name="noon">Midt på dagen</string>
     <string name="today">I dag</string>
     <string name="opens_in">Åpner om %s</string>
     <string name="closes_in">Stenger om %s</string>
@@ -460,8 +470,6 @@
     <!-- The second part of the editor_edit_place_name_hint to explain that name should be entered in a local language, see https://wiki.openstreetmap.org/wiki/Key:name -->
     <string name="editor_default_language_hint">Som det står skrevet på det lokale språket</string>
     <string name="editor_edit_place_category_title">Kategori</string>
-    <string name="detailed_problem_description">Detaljert beskrivelse av problemet</string>
-    <string name="editor_report_problem_other_title">Et annet problem</string>
     <string name="placepage_add_business_button">Legg til organisasjon</string>
     <string name="message_invalid_feature_position">Et objekt kan ikke plasseres her</string>
     <!-- Text in About and OSM Login screens. First %@ is replaced by a local, human readable date. -->
@@ -504,7 +512,7 @@
     <string name="day">d</string>
     <string name="second">s</string>
     <string name="placepage_more_button">Mer</string>
-    <!-- A disable button text in the explanation dialog that opens hotel details page on Kayak website. -->
+    <!-- Toolbar title of the Edit Bookmark screen. -->
     <string name="placepage_edit_bookmark_button">Rediger bokmerke</string>
     <string name="placepage_personal_notes_hint">Personlige notater (text or html)</string>
     <string name="editor_comment_hint">Kommentar…</string>
@@ -548,11 +556,7 @@
     <string name="mobile_data_description">Mobilt Internett er nødvendig for å vise detaljert informasjon om steder, for eksempel fotografier, priser og anmeldelser.</string>
     <string name="mobile_data_option_never">Aldri bruk</string>
     <string name="mobile_data_option_ask">Alltid spør</string>
-    <string name="traffic_update_maps_text">For å vise trafikkdata må kartene i appen være oppdaterte.</string>
     <string name="big_font">Forstørr skriften på kartet</string>
-    <string name="traffic_update_app">Vennligst oppdater Organic Maps</string>
-    <!-- "traffic" as in "road congestion" -->
-    <string name="traffic_data_unavailable">Trafikkdata er ikke tilgjengelig</string>
     <string name="enable_logging">Aktiver loggføring</string>
     <!-- Settings: "Send general feedback" button -->
     <string name="feedback_general">Generell tilbakemelding</string>
@@ -561,14 +565,12 @@
     <string name="prefs_languages_information_off_link">Les denne veiledningen for mer informasjon.</string>
     <string name="transliteration_title">Omskrivning til latin</string>
     <string name="learn_more">Finn ut mer</string>
-    <!-- User selected the destination by pressing Route To, but the current position is unknown. User needs to select a starting point of a route using search or by tapping on the map and then pressing "Route From". -->
-    <string name="routing_add_start_point">Bruk søk eller trykk på kartet for å legge til et startpunkt for ruten</string>
-    <!-- User selected the start of a route by pressing Route From. Now the destination of a route should be selected using search or by tapping on the map and then pressing "Route To". -->
-    <string name="routing_add_finish_point">Bruk søk eller trykk på kartet for å legge til et destinasjonspunkt</string>
     <string name="planning_route_manage_route">Administrere rute</string>
     <string name="button_plan">Planlegge</string>
     <string name="placepage_remove_stop">Fjern stopp</string>
-    <string name="placepage_add_stop">Angi stopp</string>
+    <!-- Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. -->
+    <string name="placepage_add_stop">Legg til stopp</string>
+    <string name="drag_to_reorder">Omorganiser</string>
     <string name="saved">Reddet</string>
     <!-- Alert to ask user relogin to OpenStreetMap with OAuth2 flow after OAuth1 authentication is deprecated. -->
     <string name="alert_reauth_message">Logg inn på OpenStreetMap for automatisk å laste opp alle kartredigeringene dine. Finn ut mer <a href="https://github.com/organicmaps/organicmaps/issues/6144">her</a>.</string>
@@ -616,6 +618,8 @@
     <string name="button_layer_hiking">Vandring</string>
     <!-- Cycling routes layer name in the Styles and Layers dialog -->
     <string name="button_layer_cycling">Sykling</string>
+    <!-- Map layers menu: toggle button for the satellite imagery layer -->
+    <string name="button_layer_satellite">Satellitt</string>
     <string name="button_layer_subway">T-bane</string>
     <string name="layers_title">Kartstiler og -lag</string>
     <string name="bookmarks_empty_list_title">Denne listen er tom</string>
@@ -654,6 +658,10 @@
     <string name="show_at_the_bottom">Vis nederst</string>
     <string name="enable_logging_warning_message">Alternativet slår på logging for diagnostiske formål. Det kan være nyttig for våre supportpersonale som feilsøker problemer med appen. Aktiver dette alternativet bare på forespørsel fra Organic Maps-brukerstøtte.</string>
     <string name="driving_options_title">Kjørealternativer</string>
+    <!-- Routing setting that automatically reorders intermediate stops -->
+    <string name="route_optimization">Ruteoptimalisering</string>
+    <!-- Explains that route optimization automatically reorders intermediate stops -->
+    <string name="route_optimization_description">Omorganiserer mellomstopp automatisk for å lage en mer effektiv rute.</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
     <string name="avoid_tolls">Unngå bompenger</string>
     <!-- Recommended length for CarPlay and Android Auto is around 25-27 characters -->
@@ -668,6 +676,12 @@
     <string name="toll_road">Bompengevei</string>
     <string name="unpaved_road">Uasfaltert vei</string>
     <string name="ferry_crossing">Fergeovergang</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_steps">Trapper</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_gate">Port</string>
+    <!-- Route warning shown on the map for this obstacle type. -->
+    <string name="road_warning_lift_gate">Bom</string>
     <!-- A generic "Yes" button in dialogs -->
     <string name="yes">Ja</string>
     <!-- A generic "No" button in dialogs -->
@@ -702,7 +716,14 @@
     <string name="moreyear_ago_sorttype">Mer enn ett år siden</string>
     <string name="near_me_sorttype">Nær meg</string>
     <string name="others_sorttype">Andre</string>
+    <!-- Place Page opening hours text -->
+    <string name="closed_now">Lukket nå</string>
+    <string name="opens_tomorrow_at">Åpner i morgen klokka %s</string>
+    <string name="opens_dayoftheweek_at">Åpner %1$s klokka %2$s</string>
+    <string name="opens_at">Åpner klokka %s</string>
+    <string name="closes_at">Stenger %s</string>
     <string name="editor_add_select_category_all_subtitle">Alle kategorier</string>
+    <string name="placepage_replace_stop">Erstatt stopp</string>
 
     <!-- SECTION: Bookmark types used for sorting -->
     <string name="food_places">Mat</string>
@@ -721,6 +742,12 @@
     <string name="medicine">Medisin</string>
     <string name="search_in_the_list">Søk på lista</string>
     <string name="religious_places">Hellige steder</string>
+    <!-- Button that starts multi-selection in a bookmark list. -->
+    <string name="select">Velg</string>
+    <!-- Action that selects every bookmark and track in a bookmark list. -->
+    <string name="select_all">Velg alle</string>
+    <!-- Action that clears the multi-selection in a bookmark list. -->
+    <string name="deselect_all">Fjern all merking</string>
     <string name="select_list">Velge liste</string>
     <string name="button_layer_isolines">Høyder</string>
     <string name="isolines_activation_error_dialog">For å bruke høydekurver oppdater eller last opp kartet til nødvendig område</string>
@@ -754,6 +781,8 @@
     <string name="change_map_locale">Kart-språk</string>
     <!-- OpenStreetMap text on splash screen -->
     <string name="splash_subtitle">Kartdata fra OpenStreetMap</string>
+    <!-- A number of bookmarks and a number of tracks, separated by comma, like: 1 bookmark, 5 tracks -->
+    <string name="comma_separated_pair">%1$s, %2$s</string>
     <!-- App Tip #00 -->
     <string name="app_tip_00">Takk for at du bruker kartene vi har laget i fellesskap!</string>
     <!-- App tip #01 -->
@@ -803,15 +832,14 @@
     <string name="pref_tts_no_system_tts">Innstillinger for talesyntese ble ikke funnet, er du sikker på at enheten din støtter dette?</string>
     <string name="drive_through">Gjennomkjøring</string>
     <string name="clear_the_search">Fjern søket</string>
+    <!-- Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_in">Zoom inn</string>
-    <!-- Accessibility text for the zoom-out button on the map -->
+    <!-- Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. -->
     <string name="zoom_out">Zoom ut</string>
     <!-- Restaurant or other food place's menu URL field in the Editor -->
     <string name="website_menu">Lenke til menyen</string>
     <!-- Button in the Place Page which opens a restaurant or other food place's menu in a browser -->
     <string name="view_menu">Vis meny</string>
-    <!-- Title for the "Open in Another App" button on the PlacePage. -->
-    <string name="open_in_app">Åpne i en annen app</string>
     <!-- To indicate if the place proposed self service… -->
     <string name="self_service">Selvbetjening</string>
     <string name="select_option">Velg alternativ</string>
@@ -846,16 +874,72 @@
     <string name="share_track">Del spor</string>
     <!-- Title for the dialog when deleting a track with the track name passed in %@ -->
     <string name="delete_track_dialog_title">Slett %s?</string>
+    <!-- Bookmark list title in multi-selection mode. %d is the number of selected bookmarks and tracks. -->
+    <plurals name="n_items_selected">
+        <item quantity="one">%d valgt</item>
+        <item quantity="other">%d valgt</item>
+    </plurals>
+    <!-- Title for the dialog when deleting several bookmarks and tracks at once. %d is their number. -->
+    <plurals name="delete_n_items_dialog_title">
+        <item quantity="one">Slett %d element?</item>
+        <item quantity="other">Slett %d elementer?</item>
+    </plurals>
+    <!-- move track or bookmark from the list button text -->
+    <string name="move">Flytt</string>
+    <!-- Text for the editing the Track's color button. -->
+    <string name="change_color">Endre farge</string>
+    <!-- Text for the hiding track. -->
+    <string name="hide_track">Skjul ruten</string>
+    <!-- Text for the showing track. -->
+    <string name="show_track">Vis ruten</string>
+
+    <!-- SECTION: Uncategorized -->
+    <!-- Short label of the user's position marker on the elevation profile chart. Where a bare pronoun would be unnatural or gendered, a location noun ("My location") is preferred. -->
+    <string name="you">Du</string>
 
     <!-- SECTION: gps strings -->
     <!-- Login to OSM button text -->
     <string name="login_osm_credentials">Logg inn med passord</string>
     <!-- Login to OSM button text -->
-    <string name="login_osm_browser">Innlogging ved hjelp av nettleser</string>
+    <string name="login_osm_browser">Logg inn med nettleser</string>
     <!-- Editor section title that shows recently used categories (types of objects) when adding a place on the map -->
     <string name="editor_add_select_category_recent_subtitle">Nylig brukt</string>
     <!-- Toast message shown when bookmark colors are changed in category settings -->
     <string name="toast_bookmarks_color_changed">Bokmerkefarge endret</string>
     <!-- Toast message shown when track colors are changed in category settings -->
     <string name="toast_tracks_color_changed">Sporfarge endret</string>
+    <!-- Tab label for the spectrum color picker mode -->
+    <string name="color_picker_spectrum">Spektrum</string>
+    <!-- Tab label for the RGB sliders color picker mode -->
+    <string name="color_picker_sliders">Glidebrytere</string>
+    <!-- Label for the red channel slider in the color picker -->
+    <string name="color_picker_red">RØD</string>
+    <!-- Label for the green channel slider in the color picker -->
+    <string name="color_picker_green">GRØNN</string>
+    <!-- Label for the blue channel slider in the color picker -->
+    <string name="color_picker_blue">BLÅ</string>
+    <!-- Label for the hex color input field in the color picker -->
+    <string name="color_picker_hex_label">sRGB Hex Color #</string>
+    <!-- Tab label for the grid color picker mode -->
+    <string name="color_picker_grid">Rutenett</string>
+    <!-- Accessibility label for the voice-search mic button in the search bar -->
+    <string name="voice_search">Stemmesøk</string>
+    <!-- Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair -->
+    <string name="choose_on_map">Velg på kartet</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_start_location">Startsted</string>
+    <!-- Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="choose_destination">Destinasjon</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_start_location">Endre startsted</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_destination">Endre destinasjon</string>
+    <!-- Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field -->
+    <string name="change_stop_along_route">Endre stoppested</string>
+    <!-- Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number -->
+    <string name="routing_max_stops_reached">Maksimalt antall stopp er nådd</string>
+    <!-- Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it -->
+    <string name="choose_point_on_map_hint">Flytt og zoom på kartet for å plassere korset</string>
+    <!-- Track recording notification button: stops the recording and saves the recorded track. -->
+    <string name="track_recording_stop_and_save">Stopp og lagre</string>
 </resources>

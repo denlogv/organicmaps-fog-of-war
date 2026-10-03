@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Naslov";
+"type.building.construction" = "Stavba v gradnji";
 "type.building.has_parts" = "Stavba";
 "type.building_part" = "Stavba";
 "type.building.garage" = "Garaža";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Sredozemska";
 "type.cuisine.mexican" = "Mehiška";
 "type.cuisine.moroccan" = "Maroška";
-"type.cuisine.noodles" = "Rezanci";
+"type.cuisine.noodle" = "Rezanci";
 "type.cuisine.oriental" = "Vzhodnoazijska";
 "type.cuisine.pancake" = "Palačinka";
 "type.cuisine.pasta" = "Testenine";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Klobasa";
 "type.cuisine.savory_pancakes" = "Slane palačinke";
 "type.cuisine.seafood" = "Morska hrana";
+"type.cuisine.shawarma" = "Shawarma";
 "type.cuisine.soba" = "Soba";
 "type.cuisine.spanish" = "Španska";
 "type.cuisine.steak_house" = "Zrezkarna";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Japonski grad";
 "type.historic.castle.stately" = "Veličasten grad";
 "type.historic.city_gate" = "Mestna vrata";
+"type.man_made.ceremonial_gate" = "Obredna vrata";
 "type.historic.citywalls" = "Mestno obzidje";
 "type.historic.fort" = "Utrdba";
 "type.historic.gallows" = "Vislice";
@@ -715,7 +718,8 @@
 "type.junction.roundabout" = "Krožišče";
 "type.landuse" = "Raba zemljišč";
 "type.landuse.allotments" = "Vrtički";
-"type.landuse.basin" = "Bazen";
+"type.landuse.basin" = "Vodni bazen";
+"type.landuse.basin.intermittent" = "Občasni vodni bazen";
 "type.landuse.brownfield" = "Degradirano območje";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Kamnolom";
 "type.landuse.railway" = "Železniško območje";
 "type.landuse.recreation_ground" = "Rekreacijsko območje";
-"type.landuse.reservoir" = "Zadrževalnik";
 "type.landuse.residential" = "Stanovanjsko območje";
 "type.landuse.retail" = "Trgovsko območje";
 "type.landuse.salt_pond" = "Solni bazen";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Drsališče";
 "type.leisure.marina" = "Marina";
 "type.leisure.nature_reserve" = "Naravni rezervat";
+"type.leisure.bird_hide" = "Opazovalnica ptic";
 "type.leisure.outdoor_seating" = "Sedenje na prostem";
 "type.leisure.firepit" = "Kurišče";
 "type.leisure.park" = "Park";
@@ -867,12 +871,15 @@
 "type.natural.water.lock" = "Zapornica";
 "type.natural.water.pond" = "Ribnik";
 "type.natural.water.reservoir" = "Zadrževalnik";
-"type.natural.water.basin" = "Bazen";
+"type.natural.water.basin" = "Vodni bazen";
 "type.natural.water.river" = "Reka";
+"type.natural.water.intermittent" = "Občasna vodna površina";
 "type.natural.land" = "Zemljišče";
 "type.natural.meadow" = "Travnik";
 "type.natural.orchard" = "Sadovnjak";
 "type.natural.peak" = "Vrh";
+"type.natural.hill" = "Hrib";
+"type.natural.arch" = "Skalni lok";
 "type.natural.saddle" = "Gorsko sedlo";
 "type.natural.rock" = "Skala";
 "type.natural.scrub" = "Grmičevje";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Drevored";
 "type.natural.vineyard" = "Vinograd";
 "type.natural.volcano" = "Vulkan";
+"type.natural.volcano.active" = "Aktivni vulkan";
 "type.natural.water" = "Voda";
 "type.natural.wetland" = "Mokrišče";
 "type.natural.wetland.bog" = "Barje";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Hokej na travi";
 "type.sport.badminton" = "Badminton";
 "type.sport.pelota" = "Baskovska pelota";
+"type.sport.boules" = "Balinanje";
+"type.sport.cycling" = "Kolesarstvo";
+"type.sport.four_square" = "Štirje kvadrati";
+"type.sport.horse_racing" = "Konjske dirke";
+"type.sport.karting" = "Karting";
+"type.sport.motocross" = "Motokros";
+"type.sport.motor" = "Avto-moto šport";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Ragbi";
+"type.sport.running" = "Tek";
+"type.sport.softball" = "Softball";
 "type.tourism" = "Turizem";
 "type.tourism.aquarium" = "Akvarij";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Zgodovinska znamenitost";
 "type.attraction.maze" = "Labirint";
 "type.attraction.roller_coaster" = "Vlak smrti";
+"type.roller_coaster.track" = "Vlak smrti";
 "type.attraction.water_slide" = "Vodni tobogan";
 "type.tourism.attraction.specified" = "Znamenitost";
 "type.tourism.camp_site" = "Kamp";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Grbina";
 "type.traffic_calming.hump" = "Grbina";
 "type.waterway" = "Vodotok";
+"type.waterway.access_point" = "Dostopna točka do plovnih poti";
 "type.waterway.canal" = "Kanal";
 "type.waterway.canal.tunnel" = "Kanalski predor";
 "type.waterway.fish_pass" = "Ribja steza";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Socialna ustanova";
+"type.amenity.stage" = "Oder";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Vhod v urgentni oddelek";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Watchmaker";
 "type.xmas_feature.market" = "Christmas Market";
 "type.xmas_feature.tree" = "Christmas Tree";
+"type.amenity.hookah_lounge" = "Hookah Lounge";

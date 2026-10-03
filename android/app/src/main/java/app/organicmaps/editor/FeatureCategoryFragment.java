@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import app.organicmaps.MwmApplication;
 import app.organicmaps.R;
 import app.organicmaps.base.BaseMwmRecyclerFragment;
-import app.organicmaps.sdk.Framework;
 import app.organicmaps.sdk.editor.Editor;
 import app.organicmaps.sdk.editor.OsmOAuth;
 import app.organicmaps.sdk.editor.data.FeatureCategory;
@@ -130,7 +129,6 @@ public class FeatureCategoryFragment
 
   public void selectCategory(FeatureCategory category)
   {
-    Editor.nativeAddToRecentCategories(category.getType());
     if (requireActivity() instanceof FeatureCategoryListener)
       ((FeatureCategoryListener) requireActivity()).onFeatureCategorySelected(category);
     else if (getParentFragment() instanceof FeatureCategoryListener)
@@ -158,9 +156,13 @@ public class FeatureCategoryFragment
       return;
     }
 
-    final double[] center = Framework.nativeGetScreenRectCenter();
-    final double lat = center[0];
-    final double lon = center[1];
+    final Bundle args = requireArguments();
+    final double lat = args.getDouble(FeatureCategoryActivity.EXTRA_POSITION_LAT, Double.NaN);
+    final double lon = args.getDouble(FeatureCategoryActivity.EXTRA_POSITION_LON, Double.NaN);
+    // nativeCreateStandaloneNote() takes raw lat/lon, so an invariant break would silently post
+    // the note to (0, 0). Crash explicitly instead.
+    if (Double.isNaN(lat) || Double.isNaN(lon))
+      throw new IllegalStateException("FeatureCategoryFragment missing position extras");
 
     if (!MwmApplication.prefs(requireContext().getApplicationContext()).contains(NOTE_CONFIRMATION_SHOWN))
     {

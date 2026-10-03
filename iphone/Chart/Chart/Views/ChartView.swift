@@ -7,17 +7,20 @@ enum ChartAnimation: TimeInterval {
 }
 
 public class ChartView: UIView {
+  private static let selectedPointCaptureRadius: CGFloat = 22
+
   let chartsContainerView = ExpandedTouchView()
   let chartPreviewView = ChartPreviewView()
   let yAxisView = ChartYAxisView()
   let xAxisView = ChartXAxisView()
   let chartInfoView = ChartInfoView()
   let segmentLinesView = ChartSegmentLinesView()
+  private let placeholderLabel = UILabel()
   var lineViews: [ChartLineView] = []
   var showPreview: Bool = false // Set true to show the preview
 
   private var tapGR: UITapGestureRecognizer!
-  private var selectedPointDistance: Double = 0
+  private var hasSelectedPoint = false
   private var panStartPoint = 0
   private var panGR: UIPanGestureRecognizer!
   private var pinchStartLower = 0
@@ -69,11 +72,30 @@ public class ChartView: UIView {
     }
   }
 
+  public var placeholderFont: UIFont = .systemFont(ofSize: 14, weight: .regular) {
+    didSet {
+      placeholderLabel.font = placeholderFont
+    }
+  }
+
   public var textColor: UIColor = .init(white: 0, alpha: 0.2) {
     didSet {
       xAxisView.textColor = textColor
       yAxisView.textColor = textColor
       chartInfoView.textColor = textColor
+    }
+  }
+
+  public var placeholderTextColor: UIColor = .init(white: 0, alpha: 0.2) {
+    didSet {
+      placeholderLabel.textColor = placeholderTextColor
+    }
+  }
+
+  public var placeholderText: String? {
+    didSet {
+      placeholderLabel.text = placeholderText
+      placeholderLabel.isHidden = placeholderText?.isEmpty ?? true
     }
   }
 
@@ -84,9 +106,15 @@ public class ChartView: UIView {
     }
   }
 
+  public var isXAxisViewHidden: Bool = false {
+    didSet {
+      xAxisView.isHidden = isXAxisViewHidden
+    }
+  }
+
   override public var backgroundColor: UIColor? {
     didSet {
-      chartInfoView.tooltipBackgroundColor = backgroundColor ?? .white
+      chartInfoView.tooltipBackgroundColor = backgroundColor?.resolvedColor(with: traitCollection) ?? .white
     }
   }
 
@@ -160,10 +188,18 @@ public class ChartView: UIView {
     chartInfoView.tooltipBackgroundColor = backgroundColor ?? .white
     yAxisView.textBackgroundColor = infoBackgroundColor.withAlphaComponent(0.7)
     segmentLinesView.lineColor = gridColor
+    placeholderLabel.font = placeholderFont
+    placeholderLabel.textColor = placeholderTextColor
+    placeholderLabel.textAlignment = .center
+    placeholderLabel.numberOfLines = 0
+    placeholderLabel.isHidden = true
+    placeholderLabel.isUserInteractionEnabled = false
 
     tapGR = UITapGestureRecognizer(target: self, action: #selector(onTap(_:)))
+    tapGR.require(toFail: chartInfoView.selectionGestureRecognizer)
     chartsContainerView.addGestureRecognizer(tapGR)
     panGR = UIPanGestureRecognizer(target: self, action: #selector(onPan(_:)))
+    panGR.delegate = self
     chartsContainerView.addGestureRecognizer(panGR)
     pinchGR = UIPinchGestureRecognizer(target: self, action: #selector(onPinch(_:)))
     chartsContainerView.addGestureRecognizer(pinchGR)
@@ -178,11 +214,12 @@ public class ChartView: UIView {
     }
     chartPreviewView.delegate = self
     addSubview(xAxisView)
+    addSubview(placeholderLabel)
   }
 
   public func setSelectedPoint(_ x: Double) {
-    guard selectedPointDistance != x else { return }
-    selectedPointDistance = x
+    guard hasSelectedPoint || !x.isZero else { return }
+    hasSelectedPoint = true
     let routeLength = chartData.distance(forChartX: CGFloat(chartData.pointsCount - 1))
     let upper = chartData.xAxisValueAt(CGFloat(chartPreviewView.maxX))
     var lower = chartData.xAxisValueAt(CGFloat(chartPreviewView.minX))
@@ -236,6 +273,7 @@ public class ChartView: UIView {
                              width: bounds.width,
                              height: bounds.maxY - previewFrame.height - xAxisFrame.height)
     chartsContainerView.frame = chartsFrame
+    placeholderLabel.frame = chartsFrame.insetBy(dx: 16, dy: 0)
   }
 
   override public func point(inside point: CGPoint, with _: UIEvent?) -> Bool {
@@ -279,6 +317,7 @@ public class ChartView: UIView {
   }
 
   @objc func onPan(_ sender: UIPanGestureRecognizer) {
+    guard chartData != nil else { return }
     let t = sender.translation(in: chartsContainerView)
     if sender.state == .began {
       panStartPoint = xAxisView.lowerBound
@@ -317,7 +356,9 @@ public class ChartView: UIView {
     }
 
     let padding = round((upper - lower) / 10)
-    lower = chartData.formatter.yAxisLowerBound(from: max(0, lower - padding))
+    let paddedLower = lower - padding
+    let adjustedLower = lower >= 0 ? max(0, paddedLower) : paddedLower
+    lower = chartData.formatter.yAxisLowerBound(from: adjustedLower)
     upper = chartData.formatter.yAxisUpperBound(from: upper + padding)
     let steps = chartData.formatter.yAxisSteps(lowerBound: lower, upperBound: upper)
 
@@ -339,6 +380,28 @@ public class ChartView: UIView {
     }
     segmentLinesView.setViewport(minX: xAxisView.lowerBound, maxX: xAxisView.upperBound)
   }
+
+  private var isChartZoomed: Bool {
+    guard let chartData else { return false }
+    return xAxisView.lowerBound > 0 || xAxisView.upperBound < chartData.pointsCount - 1
+  }
+
+  private func shouldStartSelecting(at pointX: CGFloat) -> Bool {
+    guard chartData != nil, chartInfoView.bounds.width > 0 else { return false }
+    if !isChartZoomed {
+      return true
+    }
+
+    let clampedPointX = max(chartInfoView.bounds.minX, min(chartInfoView.bounds.maxX, pointX))
+    let selectedPointX = chartInfoView.infoX * chartInfoView.bounds.width
+    return abs(clampedPointX - selectedPointX) <= Self.selectedPointCaptureRadius
+  }
+
+  private func notifySelectedPointChanged(at chartX: CGFloat) {
+    let distance = chartData.distance(forChartX: chartX)
+    hasSelectedPoint = true
+    onSelectedPointChanged?(distance)
+  }
 }
 
 extension ChartView: ChartPreviewViewDelegate {
@@ -348,7 +411,7 @@ extension ChartView: ChartPreviewViewDelegate {
     chartInfoView.update()
     setMyPosition(myPosition)
     let chartX = chartInfoView.infoX * CGFloat(xAxisView.upperBound - xAxisView.lowerBound) + CGFloat(xAxisView.lowerBound)
-    onSelectedPointChanged?(chartData.distance(forChartX: chartX))
+    notifySelectedPointChanged(at: chartX)
   }
 }
 
@@ -356,18 +419,20 @@ extension ChartView: ChartInfoViewDelegate {
   func chartInfoView(_ view: ChartInfoView, didMoveToPoint pointX: CGFloat) {
     let p = convert(CGPoint(x: pointX, y: 0), from: view)
     let chartX = (p.x / bounds.width) * CGFloat(xAxisView.upperBound - xAxisView.lowerBound) + CGFloat(xAxisView.lowerBound)
-    onSelectedPointChanged?(chartData.distance(forChartX: chartX))
+    notifySelectedPointChanged(at: chartX)
   }
 
-  func chartInfoView(_: ChartInfoView, didCaptureInfoView captured: Bool) {
-    panGR.isEnabled = !captured
+  func chartInfoView(_: ChartInfoView, shouldStartSelectingAtPoint pointX: CGFloat) -> Bool {
+    shouldStartSelecting(at: pointX)
   }
 
   func chartInfoView(_ view: ChartInfoView, infoAtPointX pointX: CGFloat) -> (String, [ChartLineInfo])? {
     guard let chartData, bounds.width > 0 else { return nil }
     let p = convert(CGPoint(x: pointX, y: .zero), from: view)
     let chartX = (p.x / bounds.width) * CGFloat(xAxisView.upperBound - xAxisView.lowerBound) + CGFloat(xAxisView.lowerBound)
-    guard !pointX.isZero, chartX >= 0, chartX <= CGFloat(chartData.pointsCount - 1) else { return nil }
+    guard !pointX.isZero || view.captured || hasSelectedPoint,
+          chartX >= 0,
+          chartX <= CGFloat(chartData.pointsCount - 1) else { return nil }
     let distance = CGFloat(chartData.distance(forChartX: chartX))
     let label = chartData.labelAt(chartX)
 
@@ -384,5 +449,14 @@ extension ChartView: ChartInfoViewDelegate {
     }
 
     return (label, result)
+  }
+}
+
+extension ChartView: UIGestureRecognizerDelegate {
+  override public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+    guard gestureRecognizer === panGR else { return true }
+    guard isChartZoomed else { return false }
+    let pointX = gestureRecognizer.location(in: chartInfoView).x
+    return !shouldStartSelecting(at: pointX)
   }
 }

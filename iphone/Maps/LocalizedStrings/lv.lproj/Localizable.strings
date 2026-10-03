@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Apskates objekti";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Izklaide";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Pārstrāde";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Ūdens";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Jūsu atrašanās vieta vēl nav noteikta";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Hei, apskatiet manu grāmatzīmi Organic Maps kartē!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Esmu šeit, Organic Maps kartē";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Hei, apskati manu atrašanās vietu „Oganic Maps“ kartē!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ lietotnē Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Vieta lietotnē Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Atvērt lietotnē Organic Maps vai pārlūkā";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Iegūt Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Atvērt citā lietotnē";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "E-pasts";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Garums";
 "share_my_location" = "Kopīgot manu atrašanās vietu";
+"prefs_group_network" = "Tīkls";
 "prefs_group_route" = "Navigācija";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "Energotaupības režīmā 3D ēkas ir izslēgtas";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Satelītattēli";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "Servera URL";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Ievadiet derīgu URL ar {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Kešatmiņas lielums (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Laukuma objektu necaurspīdīgums";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Pielāgotos flīžu avotus nodrošināt jūs. Izmantojiet tikai pakalpojumus, kuriem jums ir atļauta piekļuve. Jūs atbildat par autorības norādīšanu, licences noteikumiem, API atslēgām, kvotām un lietošanas ierobežojumiem.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Balss instrukcijas";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Balss valoda";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Pārbaudīt balss norādes (TTS, teksta pārvēršana runā)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Lai lejupielādētu augstākas kvalitātes balsi, atveriet lietotni Iestatījumi un dodieties uz Pieejamība → VoiceOver → Runa → Balss.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Automātisks mērogs";
 "placepage_distance" = "Attālums";
 "search_show_on_map" = "Rādīt kartē";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Tumšs";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Cita";
-
 /* Tex label above the Donate button */
 "donate_description" = "Dāviniet bezmaksas kartes bez reklāmām miljoniem lietotāju!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Kļūda, nosūtot vēstuli";
-
-/* Settings item title */
-"pref_calibration_title" = "Kompasa kalibrēšana";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Pieejamas";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "Šodien slēgts";
 "day_off" = "Slēgts";
+"midnight" = "Pusnakts";
+"noon" = "Pusdienlaiks";
 "today" = "Šodien";
 "opens_in" = "Atveras pēc %@";
 "closes_in" = "Slēgts pēc %@";
@@ -571,9 +607,6 @@
 "day" = "d";
 "second" = "s";
 "placepage_more_button" = "Vairāk";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Grāmatzīmes labošana";
 "placepage_personal_notes_hint" = "Personīgi pieraksti (teksts vai HTML)";
 "editor_comment_hint" = "Komentārs…";
 "editor_reset_edits_message" = "Vai izmest visas lokāli saglabātās izmaiņas?";
@@ -621,6 +654,8 @@
 "planning_route_manage_route" = "Pārvaldīt maršrutu";
 "button_plan" = "Plānot";
 "placepage_remove_stop" = "Noņemt starppunktu";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
 "placepage_add_stop" = "Pievienot starppunktu";
 "saved" = "Saglabāts";
 "error_enter_correct_name" = "Ierakstiet pareizu nosaukumu";
@@ -640,6 +675,9 @@
 "bookmarks_error_title_list_name_already_taken" = "Šāds nosaukums jau ir aizņemts";
 "profile" = "„OpenStreetMap“ profils";
 "restore" = "Atjaunot";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Privātums";
 "privacy_policy" = "Privātuma politika";
 "terms_of_use" = "Lietošanas noteikumi";
 
@@ -648,6 +686,9 @@
 
 /* Cycling routes layer name in the Styles and Layers dialog */
 "button_layer_cycling" = "Riteņbraukšana";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Satelīts";
 "button_layer_subway" = "Metro";
 "layers_title" = "Kartes stili un slāņi";
 
@@ -691,6 +732,12 @@
 "enable_logging_warning_message" = "Uz laiku ieslēdziet šo opciju, lai reģistrētu un manuāli nosūtītu sīkākus žurnālus problēmu diagnostikai, izmantojot „Ziņot par kļūdu“ funkciju palīdzības lodziņā. Žurnāli var saturēt informāciju par atrašanās vietu.";
 "driving_options_title" = "Maršruta opcijas";
 
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Maršruta optimizācija";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Automātiski pārkārto starppunktus, lai izveidotu efektīvāku maršrutu.";
+
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Izvairīties no maksas ceļiem";
 
@@ -707,6 +754,15 @@
 "toll_road" = "Maksas ceļš";
 "unpaved_road" = "Neasfaltēts ceļš";
 "ferry_crossing" = "Prāmja pārceltuve";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Stairs";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Gate";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Lift Gate";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Jā";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Atlasiet atrašanās vietas pakalpojumus";
 "location_services_disabled_on_device_4" = "4. Ieslēdziet atrašanāš vietas noteikšanas pakalpojumus";
 "location_services_disabled_on_device_additional_message" = "Vai turpiniet izmantot „Organic Maps“ bez vietas";
-"book_button" = "Rezervēt";
 "placepage_call_button" = "Zvanīt";
 "placepage_bookmark_name_hint" = "Grāmatzīmes nosaukums";
 "placepage_delete_bookmark_button" = "Dzēst grāmatzīmi";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Vai izslēgt pēdējā noietā vai nobrauktā maršuta ierakstīšanu?";
 "off_recent_track_background_button" = "Izslēgt";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Paskaties";
 "recent_track_background_dialog_message" = "„Organic Maps“ fonā izmantos ierīces atrašanās vietas datus, lai reģistrētu pēdējo noieto vai nobraukto maršrutu.";
 "general_settings" = "Pamata iestatījumi";
 
@@ -831,12 +883,6 @@
 "popular_place" = "Populāras";
 "hide_from_map" = "Slēpt kartē";
 "tags_loading_error_subtitle" = "Kļūda, ielādējot birkas. Mēģiniet vēlreiz.";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Tiesības";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Apakšējā daļa";
 "trip_start" = "Uz priekšu";
 "pick_destination" = "Galamērķis";
 "follow_my_position" = "Centrēt";
@@ -885,6 +931,15 @@
 "medicine" = "Medicīna";
 "search_in_the_list" = "Meklēt sarakstā";
 "religious_places" = "Reliģiskas vietas";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Atlasīt";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Atlasīt visu";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Noņemt atlasi";
 "transit_not_found" = "Metro navigācija šajā reģionā nav pieejama";
 "dialog_pedestrian_route_is_long_header" = "Metro maršruts nav atrasts";
 "dialog_pedestrian_route_is_long_message" = "Izvēlieties sākuma un beigu punktu tuvāk metro stacijai";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Kritums";
 "elevation_profile_min_elevation" = "Zemākais punkts";
 "elevation_profile_max_elevation" = "Augstākais punkts";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Sāciet kustēties, lai redzētu augstuma profilu";
 "isolines_toast_zooms_1_10" = "Pietuviniet, lai izpētītu izolīnijas";
 "downloader_loading_ios" = "Lejupielādē";
 
@@ -956,14 +1014,17 @@
 "button_layer_outdoor" = "Aktīvā atpūta";
 
 /* Bookmark categories screen, button that opens share dialog to export all bookmarks and tracks */
-"bookmarks_export" = "Izgūt visus pēdojumus un grāmatzīmes";
-"drive_through" = "Caurbrauktuve caur";
+"bookmarks_export" = "Eksportēt visas trases un grāmatzīmes";
+"drive_through" = "Caurbrauktuve";
+
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Tuvināt";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Tālināt";
 
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Saite uz ēdienkarti";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Atvērt citā lietotnē";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Pašapkalpošanās";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Mainīt krāsu";
 
+/* Text for the hiding track. */
+"hide_track" = "Paslēpt pēdojumu";
+
+/* Text for the showing track. */
+"show_track" = "Rādīt pēdojumu";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Karte";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Ja vēlaties izmantot šo funkciju, ierīces iestatījumos ieslēdziet „iCloud“.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Ieslēgt";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Maršrutu krāsa mainīta";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Izvēlēties kartē";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Sākums";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Galamērķis";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Mainīt sākumu";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Mainīt galamērķi";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Mainīt starppunktu";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Sasniegts maksimālais starppunktu skaits";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Pārvietojiet un tuviniet karti, lai novietotu krustiņu";

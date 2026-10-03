@@ -1,73 +1,52 @@
 #!/usr/bin/env bash
 # Shared configuration for code formatting scripts.
-# Sourced by both tools/unix/clang-format.sh and tools/hooks/pre-commit.
+# Sourced by tools/unix/clang-format.sh, tools/unix/ktlint_format.sh and tools/hooks/pre-commit.
 #
-# Each entry is "directory|find_name_pattern".
-# Patterns use find's -name syntax; multiple patterns are OR'd with -o.
+# Targets are git pathspecs matched by extension, not by directory: per-module
+# directory lists silently drift when modules are added, split or moved.
+# Files that must not be reformatted are listed in .clang-format-ignore,
+# which clang-format applies on its own.
 
 CLANG_FORMAT_TARGETS=(
-  # Android – Java
-  "android/app/src|*.java"
-  "android/libs/api/src|*.java"
-  "android/libs/branding/src|*.java"
-  "android/libs/car/src|*.java"
-  "android/libs/downloader/src|*.java"
-  "android/libs/googleassistant/src|*.java"
-  "android/libs/routing/src|*.java"
-  "android/libs/utils/src|*.java"
-  "android/sdk/car/src|*.java"
-  "android/sdk/src|*.java"
-  "android/sdk/widgets/lanes/src|*.java"
-  "android/sdk/widgets/speedlimit/src|*.java"
-  # Android – C++
-  "android/sdk/src/main/cpp|*.[hc]pp"
-  # iOS – C++/ObjC
-  "iphone|*.[hc]pp"
-  "iphone|*.[hm]"
-  "iphone|*.mm"
-  # Core / C++
-  "dev_sandbox|*.[hc]pp"
-  "generator|*.[hc]pp"
-  "libs|*.[hc]pp"
-  "qt|*.[hc]pp"
-  "tools|*.[hc]pp"
+  '*.java'
+  '*.[hc]pp'
+  '*.[hm]'  # Legacy C++ headers and Objective-C implementations.
+  '*.mm'
 )
 
 SWIFTFORMAT_TARGETS=(
   "iphone"
 )
 
-# Resolve a clang-format binary, preferring a versioned one.
-resolve_clang_format() {
-  local binary
-  for binary in clang-format clang-format-22; do
-    if command -v "$binary" >/dev/null 2>&1; then
-      echo "$binary"
-      return 0
-    fi
-  done
-  echo "Error: clang-format not found." >&2
+KTLINT_TARGETS=(
+  'android/*.kt'
+)
+
+resolve_ktlint() {
+  if command -v ktlint >/dev/null 2>&1; then
+    echo "ktlint"
+    return 0
+  fi
   return 1
 }
 
-# Build a grep -E pattern that matches any file covered by a targets array.
-# Usage: build_path_regex CLANG_FORMAT_TARGETS[@]
-build_path_regex() {
-  local _targets_name="$1"
-  eval "local _entries=(\"\${${_targets_name}[@]}\")"
-  local parts=()
-  for entry in "${_entries[@]}"; do
-    local dir="${entry%%|*}"
-    local glob="${entry##*|}"
-    # Convert find glob to regex: *.[hc]pp -> \.[hc]pp$, *.java -> \.java$
-    local ext_re
-    ext_re=$(printf '%s' "$glob" | sed 's/\*//; s/\./\\./g')
-    # Escape directory slashes for regex
-    local dir_re
-    dir_re=$(printf '%s' "$dir" | sed 's/\//\\\//g')
-    parts+=("^${dir_re}/.*${ext_re}\$")
+# Major version of clang-format used by CI. Different majors reformat the same
+# code differently, so local and CI runs must agree. Also read by the workflow.
+CLANG_FORMAT_VERSION=23
+
+# Resolve the clang-format binary matching CLANG_FORMAT_VERSION, preferring a versioned name.
+resolve_clang_format() {
+  local binary version found=
+  for binary in "clang-format-$CLANG_FORMAT_VERSION" clang-format; do
+    command -v "$binary" >/dev/null 2>&1 || continue
+    version=$("$binary" --version)
+    if [[ "$version" == *"version $CLANG_FORMAT_VERSION."* ]]; then
+      echo "$binary"
+      return 0
+    fi
+    found="${found:-$version}"
   done
-  # Join with |
-  local IFS='|'
-  echo "${parts[*]}"
+  echo "Error: clang-format $CLANG_FORMAT_VERSION.x is required, found: ${found:-none}." >&2
+  echo "See docs/CODE_STYLE_GUIDE.md for installation instructions." >&2
+  return 1
 }

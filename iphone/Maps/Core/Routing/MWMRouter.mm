@@ -8,15 +8,21 @@
 #import "MWMMapViewControlsManager.h"
 #import "MWMNavigationDashboardManager+Entity.h"
 #import "MWMRoutePoint+CPP.h"
+#import "MWMRoutingManager.h"
 #import "MWMStorage+UI.h"
 #import "MapsAppDelegate.h"
 #import "SwiftBridge.h"
-#import "UIImage+RGBAData.h"
 
+#include <CoreApi/ElevationProfileData+Core.h>
 #include <CoreApi/Framework.h>
+#include <CoreApi/RouteElevationPreviewData.h>
 #include <CoreApi/StringUtils+Core.h>
+#include <CoreApi/TrackInfo+Core.h>
 
-#include "platform/distance.hpp"
+#include "routing/routing_options.hpp"
+
+#include "kml/type_utils.hpp"
+#include "map/routing_mark.hpp"
 #include "platform/local_country_file_utils.hpp"
 #include "platform/localization.hpp"
 
@@ -24,10 +30,6 @@ using namespace routing;
 
 @interface MWMRouter () <MWMLocationObserver, MWMFrameworkRouteBuilderObserver>
 
-@property(nonatomic) NSMutableDictionary<NSValue *, NSData *> * altitudeImagesData;
-@property(nonatomic) NSString * totalAscent;
-@property(nonatomic) NSString * totalDescent;
-@property(nonatomic) dispatch_queue_t renderAltitudeImagesQueue;
 @property(nonatomic) uint32_t routeManagerTransactionId;
 @property(nonatomic) BOOL canAutoAddLastLocation;
 @property(nonatomic) BOOL isAPICall;
@@ -37,11 +39,6 @@ using namespace routing;
 + (MWMRouter *)router;
 
 @end
-
-namespace
-{
-char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeImagesQueue";
-}  // namespace
 
 @implementation MWMRouter
 
@@ -63,6 +60,59 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
   case MWMRouterTypePedestrian:
   case MWMRouterTypeBicycle: return GetFramework().GetRoutingManager().HasRouteAltitude();
   }
+}
+
++ (RouteElevationPreviewData *)routeElevationProfileData
+{
+  if (![self hasRouteAltitude])
+    return nil;
+
+  ElevationInfo elevationInfo;
+  if (!GetFramework().GetRoutingManager().GetRouteElevationInfo(elevationInfo))
+    return nil;
+
+  auto const altitudesInfo = elevationInfo.CalculateAltitudesInfo(ElevationInfo::kDefThresholdMWM);
+  // A zero vertical range collapses the chart's Y-axis transforms, so suppress the misleading flat preview.
+  if (altitudesInfo.m_maxAltitude == altitudesInfo.m_minAltitude)
+    return nil;
+
+  TrackStatistics trackStatistics;
+  trackStatistics.m_ascent = altitudesInfo.GetTotalAscent();
+  trackStatistics.m_descent = altitudesInfo.GetTotalDescent();
+  trackStatistics.m_maxElevation = altitudesInfo.m_maxAltitude;
+  trackStatistics.m_minElevation = altitudesInfo.m_minAltitude;
+
+  TrackInfo * trackInfo = [[TrackInfo alloc] initWithTrackStatistics:trackStatistics];
+  ElevationProfileData * profileData = [[ElevationProfileData alloc] initWithTrackId:kml::kInvalidTrackId
+                                                                       elevationInfo:elevationInfo];
+  return [[RouteElevationPreviewData alloc] initWithTrackInfo:trackInfo elevationInfo:profileData];
+}
+
++ (void)setRouteElevationActivePointDistance:(double)distance
+{
+  auto & framework = GetFramework();
+  if (framework.GetDrapeEngine() == nullptr)
+    return;
+
+  auto const point = framework.GetRoutingManager().GetRoutePointAtDistance(distance);
+  if (!point)
+    return;
+
+  framework.GetDrapeEngine()->SelectObject(df::SelectionShape::ESelectedObject::OBJECT_TRACK, *point, FeatureID(),
+                                           false /* isAnim */, false /* isGeometrySelectionAllowed */,
+                                           true /* isSelectionShapeVisible */);
+}
+
++ (void)resetRouteElevationActivePoint
+{
+  auto & framework = GetFramework();
+  if (!framework.HasPlacePageInfo())
+    framework.DeactivateMapSelectionCircle(false /* restoreViewport */);
+}
+
++ (void)saveRouteAsTrack
+{
+  GetFramework().SaveRoute();
 }
 
 + (void)startRouting
@@ -150,13 +200,17 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
   return GetFramework().GetRoutingManager().CouldAddIntermediatePoint();
 }
 
++ (BOOL)isRoutePointsLimitReached
+{
+  // Unlike canAddIntermediatePoint, this also works before routing becomes active.
+  return GetFramework().GetRoutingManager().GetRoutePointsCount() >= RoutePointsLayout::kMaxRoutePointsCount;
+}
+
 - (instancetype)initRouter
 {
   self = [super init];
   if (self)
   {
-    self.altitudeImagesData = [@{} mutableCopy];
-    self.renderAltitudeImagesQueue = dispatch_queue_create(kRenderAltitudeImagesQueueLabel, DISPATCH_QUEUE_SERIAL);
     self.routeManagerTransactionId = RoutingManager::InvalidRoutePointsTransactionId();
     [MWMLocationManager addObserver:self];
     [MWMFrameworkListener addObserver:self];
@@ -256,19 +310,24 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
     NSAssert(NO, @"Target point can not be nil");
     return;
   }
-  switch (point.type)
+  if (point.type == MWMRoutePointTypeStart)
   {
-  case MWMRoutePointTypeStart: [self buildFromPoint:newPoint bestRouter:NO]; break;
-  case MWMRoutePointTypeFinish: [self buildToPoint:newPoint bestRouter:NO]; break;
-  case MWMRoutePointTypeIntermediate:
-    RouteMarkData pt = point.routeMarkData;
-    auto & routingManager = GetFramework().GetRoutingManager();
-    routingManager.RemoveRoutePoint(pt.m_pointType, pt.m_intermediateIndex);
-    RouteMarkData newPt = newPoint.routeMarkData;
-    routingManager.AddRoutePoint(std::move(newPt), NO /* reorderIntermediatePoints */);
-    [[MWMNavigationDashboardManager sharedManager] onRoutePointsUpdated];
-    [self rebuildWithBestRouter:NO];
+    [self buildFromPoint:newPoint bestRouter:NO];
+    return;
   }
+  if (point.type == MWMRoutePointTypeFinish)
+  {
+    // Destination setup can add the current location when this is the only route point.
+    [self buildToPoint:newPoint bestRouter:NO];
+    return;
+  }
+
+  auto & routingManager = GetFramework().GetRoutingManager();
+  RouteMarkData pt = point.routeMarkData;
+  RouteMarkData newPt = newPoint.routeMarkData;
+  routingManager.ReplaceRoutePoint(pt.m_pointType, pt.m_intermediateIndex, std::move(newPt));
+  [[MWMNavigationDashboardManager sharedManager] onRoutePointsUpdated];
+  [self rebuildWithBestRouter:NO];
 }
 
 + (void)swapStartAndFinish
@@ -306,7 +365,7 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
   }
 
   RouteMarkData pt = point.routeMarkData;
-  GetFramework().GetRoutingManager().AddRoutePoint(std::move(pt));
+  GetFramework().GetRoutingManager().AddRoutePoint(std::move(pt), RoutingOptions::LoadRouteOptimizationFromSettings());
   [[MWMNavigationDashboardManager sharedManager] onRoutePointsUpdated];
 }
 
@@ -319,7 +378,9 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
   }
 
   RouteMarkData pt = point.routeMarkData;
-  GetFramework().GetRoutingManager().ContinueRouteToPoint(std::move(pt));
+  if (!GetFramework().GetRoutingManager().ContinueRouteToPoint(std::move(pt)))
+    return;
+
   [[MWMNavigationDashboardManager sharedManager] onRoutePointsUpdated];
   [self rebuildWithBestRouter:NO];
 }
@@ -371,8 +432,6 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
 
 + (void)rebuildWithBestRouter:(BOOL)bestRouter
 {
-  [self clearAltitudeImagesData];
-
   auto & rm = GetFramework().GetRoutingManager();
   auto const & points = rm.GetRoutePoints();
   auto const pointsCount = points.size();
@@ -391,7 +450,6 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
 
 + (void)start
 {
-  [self saveRoute];
   auto const doStart = ^{
     auto & rm = GetFramework().GetRoutingManager();
     auto const routePoints = rm.GetRoutePoints();
@@ -403,11 +461,15 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
       CLLocation * lastLocation = [MWMLocationManager lastLocation];
       if (p1.isMyPosition && lastLocation)
       {
-        rm.FollowRoute();
+        [[MWMRoutingManager routingManager] startRoute];
         [[MWMMapViewControlsManager manager] onRouteStart];
       }
       else
       {
+        // The route is not followed here, and only following saves the points, so save them for
+        // restoreRouteIfNeeded.
+        [self saveRoute];
+
         BOOL const needToRebuild = lastLocation && [MWMLocationManager isStarted] && !p2.isMyPosition;
 
         [[MWMAlertViewController activeAlertController]
@@ -443,10 +505,9 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
 
 + (void)doStop:(BOOL)removeRoutePoints
 {
-  [self clearAltitudeImagesData];
-  GetFramework().GetRoutingManager().CloseRouting(removeRoutePoints);
+  [[MWMRoutingManager routingManager] stopRoutingAndRemoveRoutePoints:removeRoutePoints];
   if (removeRoutePoints)
-    GetFramework().GetRoutingManager().DeleteSavedRoutePoints();
+    [[MWMRoutingManager routingManager] deleteSavedRoutePoints];
 }
 
 - (void)updateFollowingInfo
@@ -463,68 +524,6 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
     [navManager updateTransitInfo:rm.GetTransitRouteInfo()];
   else
     [navManager updateFollowingInfo:info routePoints:[MWMRouter points] type:[MWMRouter type]];
-}
-
-+ (void)routeAltitudeImageForSize:(CGSize)size completion:(MWMImageHeightBlock)block
-{
-  if (![self hasRouteAltitude])
-    return;
-
-  auto altitudes = std::make_shared<RoutingManager::DistanceAltitude>();
-  if (!GetFramework().GetRoutingManager().GetRouteAltitudesAndDistancesM(*altitudes))
-    return;
-
-  // |altitudes| should not be used in the method after line below.
-  dispatch_async(self.router.renderAltitudeImagesQueue, [=]()
-  {
-    auto router = self.router;
-    CGFloat const screenScale = [UIScreen mainScreen].scale;
-    CGSize const scaledSize = {size.width * screenScale, size.height * screenScale};
-    CHECK_GREATER_OR_EQUAL(scaledSize.width, 0.0, ());
-    CHECK_GREATER_OR_EQUAL(scaledSize.height, 0.0, ());
-    uint32_t const width = static_cast<uint32_t>(scaledSize.width);
-    uint32_t const height = static_cast<uint32_t>(scaledSize.height);
-    if (width == 0 || height == 0)
-      return;
-
-    NSValue * sizeValue = [NSValue valueWithCGSize:scaledSize];
-    NSData * imageData = router.altitudeImagesData[sizeValue];
-    if (!imageData)
-    {
-      altitudes->Simplify();
-
-      std::vector<uint8_t> imageRGBAData;
-      if (!altitudes->GenerateRouteAltitudeChart(width, height, imageRGBAData))
-        return;
-      if (imageRGBAData.empty())
-        return;
-      imageData = [NSData dataWithBytes:imageRGBAData.data() length:imageRGBAData.size()];
-      router.altitudeImagesData[sizeValue] = imageData;
-
-      uint32_t totalAscentM, totalDescentM;
-      altitudes->CalculateAscentDescent(totalAscentM, totalDescentM);
-
-      auto const localizedUnits = platform::GetLocalizedAltitudeUnits();
-      router.totalAscent = @(platform::Distance::FormatAltitude(totalAscentM).c_str());
-      router.totalDescent = @(platform::Distance::FormatAltitude(totalDescentM).c_str());
-    }
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-      UIImage * altitudeImage = [UIImage imageWithRGBAData:imageData width:width height:height];
-      if (altitudeImage)
-        block(altitudeImage, router.totalAscent, router.totalDescent);
-    });
-  });
-}
-
-+ (void)clearAltitudeImagesData
-{
-  auto router = self.router;
-  dispatch_async(router.renderAltitudeImagesQueue, ^{
-    [router.altitudeImagesData removeAllObjects];
-    router.totalAscent = nil;
-    router.totalDescent = nil;
-  });
 }
 
 #pragma mark - MWMLocationObserver
@@ -574,8 +573,6 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
     if (![MWMRouter IsRouteValid])
       [[MWMNavigationDashboardManager sharedManager] onRouteError:L(@"routing_planning_error")];
     break;
-  case routing::RouterResultCode::RouteFileNotExist:
-  case routing::RouterResultCode::InconsistentMWMandRoute:
   case routing::RouterResultCode::FileTooOld:
   case routing::RouterResultCode::RouteNotFound:
     self.routingOptions = [MWMRoutingOptions new];
@@ -720,6 +717,13 @@ char const * kRenderAltitudeImagesQueueLabel = "mapsme.mwmrouter.renderAltitudeI
   }
   [options save];
   [self rebuildWithBestRouter:YES];
+}
+
++ (void)optimizeRoutePointsAndRebuild
+{
+  // The core keeps the approved order while following or in Ruler mode.
+  if ([self isRoutingActive] && GetFramework().GetRoutingManager().OptimizeRoutePoints())
+    [self rebuildWithBestRouter:NO];
 }
 
 + (void)showNavigationMapControls

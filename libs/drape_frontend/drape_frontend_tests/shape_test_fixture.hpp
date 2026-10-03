@@ -3,6 +3,7 @@
 #include "drape_frontend/map_shape.hpp"
 
 #include "drape/batcher.hpp"
+#include "drape/framebuffer.hpp"
 #include "drape/render_bucket.hpp"
 #include "drape/render_state.hpp"
 #include "drape/texture_manager.hpp"
@@ -22,11 +23,11 @@ namespace df::test_support
 ///
 /// Usage:
 ///   ShapeTestFixture fixture;
-///   fixture.RenderShapesToImage(400, 300, [](ShapeTestFixture & f)
+///   fixture.Render("Test Name", 400, 300, [](ShapeTestFixture & f)
 ///   {
 ///     f.AddShape(make_unique_dp<LineShape>(spline, params));
 ///   });
-///   fixture.ShowInWindow("Test Name");
+///   QImage const & img = fixture.GetLastImage();
 ///
 class ShapeTestFixture
 {
@@ -38,11 +39,14 @@ public:
   /// @param createShapes — functor that calls AddShape() to populate geometry.
   void Render(char const * title, uint32_t width, uint32_t height, ShapeCreatorFn const & createShapes);
 
-  /// Add a shape to the current batch. Only valid inside RenderShapesToImage callback.
+  /// Add a shape to the current batch. Only valid inside the Render() callback.
   void AddShape(drape_ptr<MapShape> && shape);
 
+  /// The last rendered frame; valid after Render() returns.
+  QImage const & GetLastImage() const { return m_lastImage; }
+
 private:
-  bool Init(uint32_t width, uint32_t height);
+  void Init(uint32_t width, uint32_t height);
   void Flush();
   void Render();
   void ReleaseGLResources();
@@ -55,9 +59,7 @@ private:
 
   uint32_t m_width = 0;
   uint32_t m_height = 0;
-  uint32_t m_fbo = 0;
-  uint32_t m_colorRbo = 0;
-  uint32_t m_depthRbo = 0;
+  drape_ptr<dp::Framebuffer> m_framebuffer;
 
   std::unique_ptr<dp::GraphicsContext> m_context;
   std::unique_ptr<dp::TextureManager> m_texMng;

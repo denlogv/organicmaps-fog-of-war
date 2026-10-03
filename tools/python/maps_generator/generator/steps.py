@@ -289,22 +289,6 @@ def step_coastline_index(env: Env, country: AnyStr, **kwargs):
     _generate_common_index(env, country, **kwargs)
 
 
-def step_ugc(env: Env, country: AnyStr, **kwargs):
-    run_gen_tool_with_recovery_country(
-        env,
-        env.gen_tool,
-        out=env.get_subprocess_out(country),
-        err=env.get_subprocess_out(country),
-        data_path=env.paths.mwm_path,
-        intermediate_data_path=env.paths.intermediate_data_path,
-        cache_path=env.paths.cache_path,
-        user_resource_path=env.paths.user_resource_path,
-        ugc_data=env.paths.ugc_path,
-        output=country,
-        **kwargs,
-    )
-
-
 def step_popularity(env: Env, country: AnyStr, **kwargs):
     run_gen_tool_with_recovery_country(
         env,
@@ -415,9 +399,7 @@ def step_routing_transit(env: Env, country: AnyStr, **kwargs):
         cache_path=env.paths.cache_path,
         user_resource_path=env.paths.user_resource_path,
         transit_path=env.paths.transit_path,
-        transit_path_experimental=env.paths.transit_path_experimental,
         make_transit_cross_mwm=True,
-        make_transit_cross_mwm_experimental=bool(env.paths.transit_path_experimental),
         output=country,
         **kwargs,
     )

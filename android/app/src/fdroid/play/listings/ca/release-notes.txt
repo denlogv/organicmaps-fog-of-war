@@ -1,9 +1,11 @@
-• Dades del mapa OSM a partir del 10 de març, Viquipèdia a partir de l'1 de març
-• Isolínies d'elevació més detallades per a les províncies xineses
-• S'han afegit fileres d'arbres, cuireries i botigues de venda d'articles religiosos
-• S'ha afegit suport per a límits de velocitat condicionals
-• Tanzània dividida en regions més petites
-• Millora de la visualització de l'horari comercial
-• Arreglats diversos bloquejos
-• Traduccions millorades de noms d'aplicacions i països
-omaps.org/ca/news
+• Dades d’OSM del 26 d’agost
+• NOU: selecció múltiple de marcadors i recorreguts
+• NOU: amaga recorreguts concrets amb la icona de l’ull
+• NOU: articles de la Viquipèdia en bengalí, hindi, marathi, polonès, tàmil, telugu i urdú
+• Corregides fallades i bloqueigs
+• Afegits al mapa aguaits d’ocells, escenaris, turons i arcs rocosos
+• Millor compartició de llocs
+• Correccions per a Android Auto
+• Corregida la selecció de parades de la ruta
+• Corregits els horaris d’obertura
+…més a omaps.org/ca/news

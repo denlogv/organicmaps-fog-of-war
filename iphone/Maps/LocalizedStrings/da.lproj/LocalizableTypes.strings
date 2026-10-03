@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Adresse";
+"type.building.construction" = "Bygning under opførelse";
 "type.building.has_parts" = "Bygning";
 "type.building_part" = "Bygning";
 "type.building.garage" = "Garage";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Middelhavskøkken";
 "type.cuisine.mexican" = "Mexicansk";
 "type.cuisine.moroccan" = "Marokkansk";
-"type.cuisine.noodles" = "Nudler";
+"type.cuisine.noodle" = "Nudler";
 "type.cuisine.oriental" = "Orientalsk";
 "type.cuisine.pancake" = "Pandekage";
 "type.cuisine.pasta" = "Pasta";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Pølse";
 "type.cuisine.savory_pancakes" = "Madpandekage";
 "type.cuisine.seafood" = "Fisk og skaldyr";
+"type.cuisine.shawarma" = "Shawarma";
 "type.cuisine.soba" = "Soba";
 "type.cuisine.spanish" = "Spansk";
 "type.cuisine.steak_house" = "Bøfhus";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Japansk slot";
 "type.historic.castle.stately" = "Slot";
 "type.historic.city_gate" = "Byport";
+"type.man_made.ceremonial_gate" = "Ceremoniel port";
 "type.historic.citywalls" = "Bymur";
 "type.historic.fort" = "Fort";
 "type.historic.gallows" = "Galge";
@@ -716,6 +719,7 @@
 "type.landuse" = "Arealanvendelse";
 "type.landuse.allotments" = "Kolonihaveområde";
 "type.landuse.basin" = "Vandbassin";
+"type.landuse.basin.intermittent" = "Periodisk vandbassin";
 "type.landuse.brownfield" = "Forladt område";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Brud";
 "type.landuse.railway" = "Jernbaneanlæg";
 "type.landuse.recreation_ground" = "Fritidsområde";
-"type.landuse.reservoir" = "Vandreservoir";
 "type.landuse.residential" = "Boligområde";
 "type.landuse.retail" = "Detailhandelsområde";
 "type.landuse.salt_pond" = "Saltfordampningsdam";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Skøjtebane";
 "type.leisure.marina" = "Lystbådehavn";
 "type.leisure.nature_reserve" = "Naturreservat";
+"type.leisure.bird_hide" = "Fugleskjul";
 "type.leisure.outdoor_seating" = "Udendørs siddepladser";
 "type.leisure.firepit" = "Bålsted";
 "type.leisure.park" = "Park";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "Reservoir";
 "type.natural.water.basin" = "Vandbassin";
 "type.natural.water.river" = "Flod";
+"type.natural.water.intermittent" = "Periodisk vandområde";
 "type.natural.land" = "Land";
 "type.natural.meadow" = "Eng";
 "type.natural.orchard" = "Frugthave";
 "type.natural.peak" = "Bjerg";
+"type.natural.hill" = "Bakke";
+"type.natural.arch" = "Klippebuen";
 "type.natural.saddle" = "Bjergsadel";
 "type.natural.rock" = "Sten";
 "type.natural.scrub" = "Krat";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Trærække";
 "type.natural.vineyard" = "Vinmark";
 "type.natural.volcano" = "Vulkan";
+"type.natural.volcano.active" = "Aktiv vulkan";
 "type.natural.water" = "Vandmasse";
 "type.natural.wetland" = "Vådområde";
 "type.natural.wetland.bog" = "Mose";
@@ -979,7 +987,7 @@
 "type.railway.disused" = "Ubenyttet jernbane";
 "type.railway.disused.bridge" = "Ubenyttet jernbanebro";
 "type.railway.disused.tunnel" = "Ubenyttet jernbanetunnel";
-"type.railway.funicular" = "Funicular";
+"type.railway.funicular" = "Funikular";
 "type.railway.funicular.bridge" = "Kabelbanebro";
 "type.railway.funicular.tunnel" = "Kabelbanetunnel";
 "type.railway.halt" = "Togstation";
@@ -1319,7 +1327,7 @@
 "type.shop.erotic" = "Erotikbutik";
 "type.shop.fabric" = "Stofbutik";
 "type.shop.farm" = "Foderhandel";
-"type.shop.fashion_accessories" = "Accessory-butik";
+"type.shop.fashion_accessories" = "Tilbehørsbutik";
 "type.shop.florist" = "Blomsterbutik";
 "type.shop.funeral_directors" = "Bedemand";
 "type.shop.furniture" = "Møbelbutik";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Landhockey";
 "type.sport.badminton" = "Badminton";
 "type.sport.pelota" = "Baskisk pelota";
+"type.sport.boules" = "Boule";
+"type.sport.cycling" = "Cykling";
+"type.sport.four_square" = "Fire firkanter";
+"type.sport.horse_racing" = "Hestevæddeløb";
+"type.sport.karting" = "Gokart";
+"type.sport.motocross" = "Motocross";
+"type.sport.motor" = "Motorsport";
+"type.sport.netball" = "Netball";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Rugby union";
+"type.sport.running" = "Løb";
+"type.sport.softball" = "Softball";
 "type.tourism" = "Turisme";
 "type.tourism.aquarium" = "Akvarium";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Historisk attraktion";
 "type.attraction.maze" = "Labyrint";
 "type.attraction.roller_coaster" = "Rutsjebane";
+"type.roller_coaster.track" = "Rutsjebane";
 "type.attraction.water_slide" = "Vandrutschebane";
 "type.tourism.attraction.specified" = "Attraktioner";
 "type.tourism.camp_site" = "Campingplads";
@@ -1491,11 +1512,12 @@
 /* Typically more basic, not staffed and free (compared to alpine_hut). */
 "type.tourism.wilderness_hut" = "Vildmarkshytte";
 "type.tourism.zoo" = "Zoologisk have";
-"type.tourism.zoo.petting" = "Petting Zoo";
+"type.tourism.zoo.petting" = "Dyrepark med klappedyr";
 "type.traffic_calming" = "Trafiksanering";
 "type.traffic_calming.bump" = "Vejbump";
 "type.traffic_calming.hump" = "Vejbump";
 "type.waterway" = "Vandløb";
+"type.waterway.access_point" = "Adgangspunkt til vandvejen";
 "type.waterway.canal" = "Kanal";
 "type.waterway.canal.tunnel" = "Kanal";
 "type.waterway.fish_pass" = "Fiskestige";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Social facilitet";
+"type.amenity.stage" = "Scene";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Indgang til akutafdeling";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Urmager";
 "type.xmas_feature.market" = "Julemarked";
 "type.xmas_feature.tree" = "Juletræ";
+"type.amenity.hookah_lounge" = "Vandpibecafé";

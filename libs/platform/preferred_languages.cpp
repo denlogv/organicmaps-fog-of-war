@@ -3,6 +3,7 @@
 
 #include "coding/string_utf8_multilang.hpp"
 
+#include "base/assert.hpp"
 #include "base/buffer_vector.hpp"
 #include "base/macros.hpp"
 #include "base/string_utils.hpp"
@@ -12,6 +13,7 @@
 #include <cstdlib>  // getenv
 #include <cstring>  // strlen
 #include <string>
+#include <string_view>
 
 #if defined(OMIM_OS_MAC) || defined(OMIM_OS_IPHONE)
 #include <CoreFoundation/CFLocale.h>
@@ -434,12 +436,35 @@ static MSLocale const gLocales[] = {
 
 namespace languages
 {
+namespace
+{
+struct SystemLanguagesState
+{
+  std::string m_override;
+  bool m_initialized = false;
+};
+
+SystemLanguagesState & GetSystemLanguagesState()
+{
+  static SystemLanguagesState state;
+  return state;
+}
+}  // namespace
+
 struct SystemLanguages
 {
   buffer_vector<std::string, 4> m_langs;
 
   SystemLanguages()
   {
+    auto & state = GetSystemLanguagesState();
+    state.m_initialized = true;
+    if (!state.m_override.empty())
+    {
+      m_langs.push_back(state.m_override);
+      return;
+    }
+
     /// @DebugNote
     // Hardcode draw text language.
     // m_langs.push_back("hi");
@@ -521,6 +546,14 @@ struct SystemLanguages
   }
 };
 
+void SetPreferredLanguageOverride(std::string_view language)
+{
+  ASSERT(!language.empty(), ());
+  auto & state = GetSystemLanguagesState();
+  ASSERT(!state.m_initialized, ("The language override must be set before the first language lookup"));
+  state.m_override = language;
+}
+
 buffer_vector<std::string, 4> const & GetSystemPreferred()
 {
   static SystemLanguages const langs;
@@ -553,9 +586,51 @@ std::string GetCurrentOrig()
     return arr[0];
 }
 
+namespace
+{
+// Delimiters between subtags: "-" (BCP 47), "_" (POSIX), "#" (Java's Locale.toString() prefixes the
+// script and extensions with it), and "." / "@" (POSIX $LANG spells the charset and modifier as
+// "zh_TW.UTF-8@modifier"). " " is defensive.
+constexpr char kSubtagDelimiters[] = "-_ #.@";
+
+std::string_view PrimarySubtag(std::string_view tag) noexcept
+{
+  return tag.substr(0, tag.find_first_of(kSubtagDelimiters));
+}
+
+bool IsSubtagDelimiter(char c) noexcept
+{
+  return std::string_view{kSubtagDelimiters}.find(c) != std::string_view::npos;
+}
+
+// Parses BCP 47 / POSIX-style language tags and reports whether `subtag` appears as a whole
+// segment, not just as a substring. Substring matching reads Android's "-u-fw-mon" regional
+// preference (first day of week = Monday) as Macau, because "mo" sits inside "mon".
+bool HasSubtag(std::string_view tag, std::string_view subtag) noexcept
+{
+  size_t start = 0;
+  while (start < tag.size())
+  {
+    auto const end = tag.find_first_of(kSubtagDelimiters, start);
+    // substr() clamps the count, so an npos `end` simply spans the rest of the tag.
+    auto segment = tag.substr(start, end - start);
+    // Android resource qualifiers prefix a two-letter region with "r" ("zh-rTW", cf.
+    // android/app/src/main/res/values-zh-rTW), accepted here as an alternate spelling of it.
+    if (subtag.size() == 2 && segment.size() == 3 && strings::AsciiToLower(segment.front()) == 'r')
+      segment.remove_prefix(1);
+    if (strings::EqualAsciiNoCase(segment, subtag))
+      return true;
+    if (end == std::string_view::npos)
+      return false;
+    start = end + 1;
+  }
+  return false;
+}
+}  // namespace
+
 std::string Normalize(std::string_view lang)
 {
-  return std::string{lang.substr(0, lang.find_first_of("-_ "))};
+  return std::string{PrimarySubtag(lang)};
 }
 
 std::string GetCurrentNorm()
@@ -563,37 +638,68 @@ std::string GetCurrentNorm()
   return Normalize(GetCurrentOrig());
 }
 
-std::string GetCurrentMapLanguage()
+std::string SelectMapLanguage(buffer_vector<std::string, 4> const & preferred)
 {
-  std::string languageCode;
-  if (!settings::Get(settings::kMapLanguageCode, languageCode) || languageCode.empty())
-  {
-    for (auto const & systemLanguage : GetSystemPreferred())
-    {
-      auto normalizedLang = Normalize(systemLanguage);
-      if (StringUtf8Multilang::GetLangIndex(normalizedLang) != StringUtf8Multilang::kUnsupportedLanguageCode)
-        return normalizedLang;
-    }
-    return std::string(StringUtf8Multilang::GetLangByCode(StringUtf8Multilang::kDefaultCode));
-  }
-  return languageCode;
+  for (auto const & lang : preferred)
+    if (StringUtf8Multilang::GetLangIndex(Normalize(lang)) != StringUtf8Multilang::kUnsupportedLanguageCode)
+      return lang;
+  return std::string(StringUtf8Multilang::GetLangByCode(StringUtf8Multilang::kDefaultCode));
 }
 
-std::string GetTwine(std::string const & lang)
+std::string GetCurrentMapLanguage()
+{
+  // A map-language override is stored as a core code (possibly with '_', e.g. "zh_pinyin") and is
+  // used verbatim; a system language like "en-US" is normalized to its core code "en".
+  std::string languageCode;
+  if (settings::Get(settings::kMapLanguageCode, languageCode) && !languageCode.empty())
+    return languageCode;
+  return Normalize(SelectMapLanguage(GetSystemPreferred()));
+}
+
+bool StartsWithSubtags(std::string_view tag, std::string_view prefix) noexcept
+{
+  return tag.starts_with(prefix) && (tag.size() == prefix.size() || IsSubtagDelimiter(tag[prefix.size()]));
+}
+
+ChineseScript GetChineseScript(std::string_view tag)
+{
+  // Match the primary subtag exactly so "zha" (Zhuang) isn't treated as Chinese.
+  if (!strings::EqualAsciiNoCase(PrimarySubtag(tag), "zh"))
+    return ChineseScript::NotChinese;
+
+  // An explicit script subtag is authoritative (BCP 47), so it wins over the region: Android can
+  // report "zh_HK_#Hans" for a Simplified-preferring user living in a Traditional region.
+  if (HasSubtag(tag, "hans"))
+    return ChineseScript::Simplified;
+
+  // Traditional script: explicit "Hant", or the regions that use it (Taiwan, Hong Kong, Macau).
+  for (char const * s : {"hant", "tw", "hk", "mo"})
+    if (HasSubtag(tag, s))
+      return ChineseScript::Traditional;
+
+  // Simplified Chinese by default for all other cases.
+  return ChineseScript::Simplified;
+}
+
+std::string DebugPrint(ChineseScript script)
+{
+  switch (script)
+  {
+  case ChineseScript::NotChinese: return "NotChinese";
+  case ChineseScript::Simplified: return "Simplified";
+  case ChineseScript::Traditional: return "Traditional";
+  }
+  UNREACHABLE();
+}
+
+std::string GetTwine(std::string_view lang)
 {
   // Special cases for different Chinese variations.
-  if (lang.find("zh") == 0)
+  switch (GetChineseScript(lang))
   {
-    std::string lower = lang;
-    strings::AsciiToLower(lower);
-
-    // Traditional Chinese.
-    for (char const * s : {"hant", "tw", "hk", "mo"})
-      if (lower.find(s) != std::string::npos)
-        return "zh-Hant";
-
-    // Simplified Chinese by default for all other cases.
-    return "zh-Hans";
+  case ChineseScript::Traditional: return "zh-Hant";
+  case ChineseScript::Simplified: return "zh-Hans";
+  case ChineseScript::NotChinese: break;
   }
   // Use short (2 or 3 chars) versions for all other languages.
   return Normalize(lang);
@@ -606,7 +712,107 @@ std::string GetCurrentTwine()
 
 std::string GetCurrentMapTwine()
 {
-  return GetTwine(GetCurrentMapLanguage());
+  // Not GetTwine(GetCurrentMapLanguage()): that normalizes "zh-Hant" to "zh" first, so a Traditional
+  // Chinese user would get Simplified ("zh-Hans") search categories. Keep the script here.
+  std::string languageCode;
+  if (settings::Get(settings::kMapLanguageCode, languageCode) && !languageCode.empty())
+    return GetTwine(languageCode);
+  return GetTwine(SelectMapLanguage(GetSystemPreferred()));
+}
+
+CJKResolver::Variant CJKResolver::FromLanguageTag(std::string_view tag)
+{
+  // Match the primary language subtag exactly so "jav" (Javanese) isn't treated as Japanese.
+  std::string_view const primary = PrimarySubtag(tag);
+
+  if (strings::EqualAsciiNoCase(primary, "ja"))
+    return Variant::JP;
+  if (strings::EqualAsciiNoCase(primary, "ko"))
+    return Variant::KR;
+
+  switch (GetChineseScript(tag))
+  {
+  // Hong Kong has its own glyph variants of the Traditional script.
+  case ChineseScript::Traditional: return HasSubtag(tag, "hk") ? Variant::HK : Variant::TC;
+  case ChineseScript::Simplified:
+  case ChineseScript::NotChinese: break;
+  }
+
+  // Simplified and non-CJK locales alike fall back to Simplified Chinese — the most widely
+  // recognized variant for any Han glyph the user might encounter on the map.
+  return Variant::SC;
+}
+
+std::optional<CJKResolver::Variant> CJKResolver::FromSfntFamilyName(std::string_view family) noexcept
+{
+  // Order matters: HK before TC/SC; "Noto Sans CJK HK" must not match TC or SC.
+  if (family.contains("JP"))
+    return Variant::JP;
+  if (family.contains("KR"))
+    return Variant::KR;
+  if (family.contains("HK"))
+    return Variant::HK;
+  if (family.contains("TC"))
+    return Variant::TC;
+  if (family.contains("SC"))
+    return Variant::SC;
+  return std::nullopt;
+}
+
+std::optional<CJKResolver::Variant> CJKResolver::FromFontFileName(std::string_view fileName) noexcept
+{
+  // "Hans"/"Hant" are older Noto naming for SC/TC.
+  struct Entry
+  {
+    std::string_view m_part;
+    Variant m_variant;
+  };
+  static constexpr Entry kEntries[] = {
+      {"NotoSansJP-Regular", Variant::JP},   {"NotoSansKR-Regular", Variant::KR}, {"NotoSansSC-Regular", Variant::SC},
+      {"NotoSansTC-Regular", Variant::TC},   {"NotoSansHK-Regular", Variant::HK}, {"NotoSansHans-Regular", Variant::SC},
+      {"NotoSansHant-Regular", Variant::TC},
+  };
+  for (auto const & e : kEntries)
+    if (fileName.contains(e.m_part))
+      return e.m_variant;
+  return std::nullopt;
+}
+
+bool CJKResolver::IsCJKContainerFileName(std::string_view fileName) noexcept
+{
+  // Android 7+ NotoSansCJK-Regular.ttc is the only Pan-CJK collection currently encountered.
+  // The .ttc suffix gate keeps a stray non-collection file (e.g. NotoSansCJK.txt) from triggering
+  // a face-index probe in glyph_manager.
+  return fileName.contains("NotoSansCJK") && fileName.ends_with(".ttc");
+}
+
+std::array<CJKResolver::Variant, 5> CJKResolver::FallbackChain(Variant userVariant) noexcept
+{
+  using V = Variant;
+  switch (userVariant)
+  {
+  case V::JP: return {V::JP, V::SC, V::TC, V::HK, V::KR};
+  case V::KR: return {V::KR, V::SC, V::TC, V::HK, V::JP};
+  case V::SC: return {V::SC, V::HK, V::TC, V::JP, V::KR};
+  case V::TC: return {V::TC, V::HK, V::SC, V::JP, V::KR};
+  case V::HK: return {V::HK, V::TC, V::SC, V::JP, V::KR};
+  }
+  UNREACHABLE();
+}
+
+CJKResolver::CJKResolver() : m_user(FromLanguageTag(GetCurrentOrig())) {}
+
+std::string DebugPrint(CJKResolver::Variant v)
+{
+  switch (v)
+  {
+  case CJKResolver::Variant::JP: return "JP";
+  case CJKResolver::Variant::KR: return "KR";
+  case CJKResolver::Variant::SC: return "SC";
+  case CJKResolver::Variant::TC: return "TC";
+  case CJKResolver::Variant::HK: return "HK";
+  }
+  UNREACHABLE();
 }
 
 }  // namespace languages

@@ -1,5 +1,5 @@
 Copyright 2020 My.com B.V. (Mail.Ru Group)
-Copyright 2021-2025 Organic Maps Contributors
+Copyright 2020-2026 Organic Maps Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,13 @@ organizations and licensed in different ways:
 Please refer to their LICENCE, COPYING or NOTICE files for terms of use.
 Some icons files may be copyrighted by (C) 2020 My.com B.V. (Mail.Ru Group)
 See also the `.reuse/dep5` and `data/copyright.html` file for a full list of copyright notices.
+
+Windows runtime packages include Qt 6 libraries and plugins, copyright The Qt Company Ltd.
+and other contributors. Qt is available under the GNU Lesser General Public License
+version 3 or the GNU General Public License version 3. Copies of both licenses are in
+`LICENSES/Windows/LGPL-3.0-only.txt` and `LICENSES/Windows/GPL-3.0-only.txt`.
+Qt source is available from https://code.qt.io/; the bundled Qt version is recorded
+in `build-provenance.json`.
 
 If you use Organic Maps source code or its user interface in your project, please include a visible,
 human-readable mention of the “Organic Maps Project” and a clickable link to https://organicmaps.app.

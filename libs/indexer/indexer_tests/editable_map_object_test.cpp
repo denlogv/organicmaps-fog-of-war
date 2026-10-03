@@ -1,17 +1,19 @@
 #include "testing/testing.hpp"
 
 #include "indexer/classificator.hpp"
-#include "indexer/classificator_loader.hpp"
 #include "indexer/editable_map_object.hpp"
 #include "indexer/feature.hpp"
 #include "indexer/feature_utils.hpp"
 #include "indexer/validate_and_format_contacts.hpp"
+
+#include "generator/generator_tests_support/test_with_classificator.hpp"
 
 #include <string>
 #include <vector>
 
 namespace editable_map_object_test
 {
+using namespace generator::tests_support;
 using namespace std;
 
 using osm::EditableMapObject;
@@ -109,6 +111,7 @@ UNIT_TEST(EditableMapObject_ValidateFlats)
   TEST(EditableMapObject::ValidateFlats("123-456; 43-45"), ());
   TEST(!EditableMapObject::ValidateFlats("123-456, 43-45"), ());
   TEST(!EditableMapObject::ValidateFlats("234-234 124"), ());
+  TEST(!EditableMapObject::ValidateFlats("123-\xC3\xA9"), ());
   TEST(!EditableMapObject::ValidateFlats("123-345-567"), ());
   TEST(!EditableMapObject::ValidateFlats("234-234;234("), ());
   TEST(!EditableMapObject::ValidateFlats("-;"), ());
@@ -144,6 +147,7 @@ UNIT_TEST(EditableMapObject_ValidatePhoneList)
   TEST(!EditableMapObject::ValidatePhoneList("00 00"), ());
   TEST(!EditableMapObject::ValidatePhoneList("acb"), ());
   TEST(!EditableMapObject::ValidatePhoneList("000 000 00b"), ());
+  TEST(!EditableMapObject::ValidatePhoneList("12345\xC3\xA9"), ());
   TEST(!EditableMapObject::ValidatePhoneList(";"), ());
   TEST(!EditableMapObject::ValidatePhoneList(","), ());
   TEST(!EditableMapObject::ValidatePhoneList(";;;;;;"), ());
@@ -328,10 +332,8 @@ void SetTypes(EditableMapObject & emo, std::initializer_list<base::StringIL> typ
 }
 }  // namespace
 
-UNIT_TEST(EditableMapObject_SetInternet)
+UNIT_CLASS_TEST(TestWithClassificator, EditableMapObject_SetInternet)
 {
-  classificator::Load();
-
   EditableMapObject emo;
   auto const wifiType = classif().GetTypeByPath({"internet_access", "wlan"});
   emo.SetType(wifiType);
@@ -374,10 +376,8 @@ UNIT_TEST(EditableMapObject_SetInternet)
   setInternetAndCheck(bunkerEmo, feature::Internet::Wlan, true);
 }
 
-UNIT_TEST(EditableMapObject_FromFeatureType)
+UNIT_CLASS_TEST(TestWithClassificator, EditableMapObject_FromFeatureType)
 {
-  classificator::Load();
-
   EditableMapObject emo;
   SetTypes(emo, {{"amenity", "cafe"}});
 
@@ -409,10 +409,8 @@ UNIT_TEST(EditableMapObject_FromFeatureType)
   TEST(emo2.IsPointType(), ());
 }
 
-UNIT_TEST(EditableMapObject_GetLocalizedAllTypes)
+UNIT_CLASS_TEST(TestWithClassificator, EditableMapObject_GetLocalizedAllTypes)
 {
-  classificator::Load();
-
   {
     EditableMapObject emo;
     SetTypes(emo, {{"amenity", "fuel"}, {"shop"}, {"building"}, {"toilets", "yes"}});

@@ -8,6 +8,9 @@
 #include "map/framework.hpp"
 
 #include "platform/platform.hpp"
+#ifdef OMIM_OS_LINUX
+#include "platform/platform_linux_migration.hpp"
+#endif
 #include "platform/preferred_languages.hpp"
 #include "platform/settings.hpp"
 #include "platform/style_utils.hpp"
@@ -15,7 +18,6 @@
 #include "coding/reader.hpp"
 
 #include "base/logging.hpp"
-#include "base/macros.hpp"
 
 #include "build_style/build_style.h"
 
@@ -27,6 +29,16 @@
 #include <QtWidgets/QMessageBox>
 
 #include <gflags/gflags.h>
+
+#ifdef OMIM_OS_WINDOWS
+#include <QtCore/QDateTime>
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+#include <QtCore/QTemporaryFile>
+
+#include <cstdio>
+#endif
 
 DEFINE_string(data_path, "", "Path to data directory.");
 DEFINE_string(log_abort_level, base::ToString(base::GetDefaultLogAbortLevel()),
@@ -44,7 +56,7 @@ DEFINE_string(rects, "",
               "[;lat_leftBottom,lon_leftBottom,lat_rightTop,lon_rightTop]\" or path to a file with "
               "rects in the same format. Each rect defines a place on the map to take screenshot.");
 DEFINE_string(dst_path, "", "Path to a directory to save screenshots.");
-DEFINE_string(lang, "", "Device language.");
+DEFINE_string(lang, "", "Preferred language override.");
 DEFINE_int32(width, 0, "Screenshot width.");
 DEFINE_int32(height, 0, "Screenshot height.");
 DEFINE_double(
@@ -73,37 +85,43 @@ bool ValidateLogAbortLevel(char const * flagname, std::string const & value)
 
 bool const g_logAbortLevelDummy = gflags::RegisterFlagValidator(&FLAGS_log_abort_level, &ValidateLogAbortLevel);
 
-class FinalizeBase
+#ifdef OMIM_OS_WINDOWS
+void InitializeWindowsLogging(Platform const & platform)
 {
-public:
-  ~FinalizeBase()
+  QDir const logDir(QString::fromStdString(platform.WritablePathForFile("logs")));
+  if (!QDir().mkpath(logDir.path()))
+    return;
+
+  auto const timestamp = QDateTime::currentDateTimeUtc().toString("yyyyMMdd-HHmmss-zzz");
+  QString logPath;
+  // QTemporaryFile::close() retains its native handle; destroy the object before the CRT reopens the path.
   {
-    // optional - clean allocated data in protobuf library
-    // useful when using memory and resource leak utilites
-    // google::protobuf::ShutdownProtobufLibrary();
+    QTemporaryFile logFile(logDir.filePath("organicmaps-" + timestamp + "-XXXXXX.log"));
+    logFile.setAutoRemove(false);
+    if (!logFile.open())
+    {
+      LOG(LWARNING, ("Could not create log file", logFile.errorString().toStdString()));
+      return;
+    }
+    logPath = logFile.fileName();
   }
-};
+  if (::_wfreopen(logPath.toStdWString().c_str(), L"a", stderr) == nullptr)
+    return;
+  // Startup writes without a console can leave cerr in a failed state even after stderr is reopened.
+  std::cerr.clear();
 
-#if defined(OMIM_OS_WINDOWS)  //&& defined(PROFILER_COMMON)
-class InitializeFinalize : public FinalizeBase
-{
-  FILE * m_errFile;
-  base::ScopedLogLevelChanger const m_debugLog;
+  auto logs = logDir.entryList({"organicmaps-*.log"}, QDir::Files | QDir::NoSymLinks | QDir::CaseSensitive, QDir::Time);
+  logs.removeOne(QFileInfo(logPath).fileName());
+  constexpr int kPreviousLogsToKeep = 9;
+  for (int i = kPreviousLogsToKeep; i < logs.size(); ++i)
+    QFile::remove(logDir.filePath(logs[i]));  // Open logs are retried on a later launch.
 
-public:
-  InitializeFinalize() : m_debugLog(LDEBUG)
-  {
-    // App runs without error console under win32.
-    m_errFile = ::freopen(".\\mapsme.log", "w", stderr);
-
-    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_DELAY_FREE_MEM_DF);
-    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-  }
-  ~InitializeFinalize() { ::fclose(m_errFile); }
-};
-#else
-typedef FinalizeBase InitializeFinalize;
+  LOG(LINFO, ("Logging to", logPath.toStdString(), "Resources Directory:", platform.ResourcesDir(),
+              "Writable Directory:", platform.WritableDir(), "Tmp Directory:", platform.TmpDir(),
+              "Settings Directory:", platform.SettingsDir()));
+}
 #endif
+
 }  // namespace
 
 int main(int argc, char * argv[])
@@ -114,14 +132,17 @@ int main(int argc, char * argv[])
   // See http://dbaron.org/log/20121222-locale for more details.
   std::setlocale(LC_NUMERIC, "C");
 
+#ifdef OMIM_OS_LINUX
+  platform::EnableDesktopDataMigration();
+#endif
   Platform & platform = GetPlatform();
-
-  LOG(LINFO, ("Organic Maps", platform.Version(), "built with QT:", QT_VERSION_STR, "runtime QT:", qVersion(),
-              "detected CPU cores:", platform.CpuCores()));
 
   gflags::SetUsageMessage("Desktop application.");
   gflags::SetVersionString(platform.Version());
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  if (!FLAGS_lang.empty())
+    languages::SetPreferredLanguageOverride(FLAGS_lang);
 
   if (!FLAGS_resources_path.empty())
     platform.SetResourceDir(FLAGS_resources_path);
@@ -135,8 +156,12 @@ int main(int argc, char * argv[])
 
   Q_INIT_RESOURCE(resources_common);
 
-  InitializeFinalize mainGuard;
-  UNUSED_VALUE(mainGuard);
+#ifdef OMIM_OS_WINDOWS
+  InitializeWindowsLogging(platform);
+#endif
+
+  LOG(LINFO, ("Organic Maps", platform.Version(), "built with QT:", QT_VERSION_STR, "runtime QT:", qVersion(),
+              "detected CPU cores:", platform.CpuCores()));
 
   QApplication app(argc, argv);
   app.setDesktopFileName("app.organicmaps.desktop");
@@ -176,9 +201,6 @@ int main(int argc, char * argv[])
   if (eulaAccepted)  // User has accepted EULA
   {
     std::unique_ptr<qt::ScreenshotParams> screenshotParams;
-
-    if (!FLAGS_lang.empty())
-      (void)::setenv("LANGUAGE", FLAGS_lang.c_str(), 1);
 
     if (!FLAGS_kml_path.empty() || !FLAGS_points.empty() || !FLAGS_rects.empty())
     {

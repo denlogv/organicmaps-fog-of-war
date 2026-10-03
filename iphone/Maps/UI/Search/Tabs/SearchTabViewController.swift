@@ -1,12 +1,12 @@
-@objc(MWMSearchTabViewControllerDelegate)
+@objc
 protocol SearchTabViewControllerDelegate: UIScrollViewDelegate {
   func searchTabController(_ viewController: SearchTabViewController, didSearch: SearchQuery)
 }
 
-@objc(MWMSearchTabViewController)
+@objc
 final class SearchTabViewController: TabViewController {
-  private enum SearchActiveTab: Int {
-    case history = 0
+  private enum Tab: Int {
+    case history
     case categories
   }
 
@@ -14,8 +14,9 @@ final class SearchTabViewController: TabViewController {
   @objc weak var delegate: SearchTabViewControllerDelegate?
 
   private var frameworkHelper = MWMSearchFrameworkHelper.self
+  private var tabs: [Tab] = []
 
-  private var activeTab: SearchActiveTab = .init(rawValue:
+  private var activeTab: Tab = .init(rawValue:
     UserDefaults.standard.integer(forKey: SearchTabViewController.selectedIndexKey)) ?? .categories {
     didSet {
       UserDefaults.standard.set(activeTab.rawValue, forKey: SearchTabViewController.selectedIndexKey)
@@ -25,29 +26,44 @@ final class SearchTabViewController: TabViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    let history = SearchHistoryViewController(frameworkHelper: frameworkHelper,
-                                              delegate: self)
-    history.title = L("history")
+    tabs = Settings.searchHistoryEnabled() ? [.history, .categories] : [.categories]
+    viewControllers = tabs.map { viewController(for: $0) }
+    tabView.showsTabBar = tabs.count > 1
 
-    let categories = SearchCategoriesViewController(frameworkHelper: frameworkHelper,
-                                                    delegate: self)
-    categories.title = L("categories")
-    viewControllers = [history, categories]
-
-    if frameworkHelper.isSearchHistoryEmpty() {
-      tabView.selectedIndex = SearchActiveTab.categories.rawValue
+    let selectedTab: Tab
+    if !tabs.contains(.history) || frameworkHelper.isSearchHistoryEmpty() {
+      selectedTab = .categories
     } else {
-      tabView.selectedIndex = activeTab.rawValue
+      selectedTab = activeTab
     }
+    tabView.selectedIndex = tabs.firstIndex(of: selectedTab) ?? 0
   }
 
   override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
-    activeTab = SearchActiveTab(rawValue: tabView.selectedIndex ?? 0) ?? .categories
+    guard let selectedIndex = tabView.selectedIndex,
+          tabs.indices.contains(selectedIndex) else { return }
+    activeTab = tabs[selectedIndex]
   }
 
   func reloadSearchHistory() {
-    (viewControllers[SearchActiveTab.history.rawValue] as? SearchHistoryViewController)?.reload()
+    guard let historyIndex = tabs.firstIndex(of: .history) else { return }
+    (viewControllers[historyIndex] as? SearchHistoryViewController)?.reload()
+  }
+
+  private func viewController(for tab: Tab) -> UIViewController {
+    switch tab {
+    case .history:
+      let history = SearchHistoryViewController(frameworkHelper: frameworkHelper,
+                                                delegate: self)
+      history.title = L("history")
+      return history
+    case .categories:
+      let categories = SearchCategoriesViewController(frameworkHelper: frameworkHelper,
+                                                      delegate: self)
+      categories.title = L("categories")
+      return categories
+    }
   }
 }
 

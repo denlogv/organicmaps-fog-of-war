@@ -31,6 +31,8 @@
     <string name="auto">ອັດຕະໂນມັດ</string>
     <!-- Settings «Map» category: «3D buildings» title -->
     <string name="pref_map_3d_buildings_title">ອາຄານ 3D</string>
+    <!-- Settings «Route» category: «Tts unavailable» subtitle. Also used as a CarToast in Android Auto when the user taps the muted voice icon. -->
+    <string name="pref_tts_unavailable">ບໍ່ສາມາດໃຊ້ງານໄດ້</string>
     <!-- Text in menu -->
     <string name="help">ຊ່ວຍເຫຼືອ</string>
     <!-- In maps downloader and country place page shows how many maps are downloaded / to download, e.g. "Maps: 3 of 10" -->
@@ -50,6 +52,8 @@
     <string name="editor_time_open">ເປີດ</string>
     <string name="twentyfour_seven">24/7</string>
     <string name="day_off_today">ປິດມື້ນີ້</string>
+    <string name="midnight">ທ່ຽງຄືນ</string>
+    <string name="noon">ທ່ຽງວັນ</string>
     <string name="opens_in">ຈະເປີດໃນອີກ %s</string>
     <string name="closes_in">ຈະປິດໃນອີກ %s</string>
     <string name="closed">ປິດ</string>
@@ -67,6 +71,7 @@
     <string name="avoid_ferry">ເລ່ຽງເຮືອຂ້າມຟາກ</string>
     <string name="avoid_motorways">ເລ່ຽງທາງດ່ວນ</string>
     <string name="unable_to_calc_alert_title">ບໍ່ສາມາດຄິດໄລ່ເສັ້ນທາງໄດ້</string>
+    <string name="trip_finished">ທ່ານມາຮອດແລ້ວ!</string>
     <!-- Android, title, max 20-22 symbols -->
     <string name="sort_bookmarks">ຈັດລຽງບຸກມາກ</string>
     <!-- Android -->

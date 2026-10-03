@@ -49,6 +49,8 @@ set(SRC
   batchers_pool.hpp
   circles_pack_shape.cpp
   circles_pack_shape.hpp
+  clip_splines_builder.cpp
+  clip_splines_builder.hpp
   color_constants.cpp
   color_constants.hpp
   colored_symbol_shape.cpp
@@ -161,6 +163,8 @@ set(SRC
   route_renderer.hpp
   route_shape.cpp
   route_shape.hpp
+  search_mark_overlay_filter.cpp
+  search_mark_overlay_filter.hpp
   rule_drawer.cpp
   rule_drawer.hpp
   scenario_manager.cpp
@@ -171,6 +175,7 @@ set(SRC
   screen_operations.hpp
   screen_quad_renderer.cpp
   screen_quad_renderer.hpp
+  selection_info.hpp
   selection_shape.cpp
   selection_shape.hpp
   selection_shape_generator.cpp
@@ -216,8 +221,12 @@ set(SRC
 
 omim_add_library(${PROJECT_NAME} ${SRC})
 
+# fast_obj.h defines unprefixed macros (array_size, BUFFER_SIZE, ...) and never undefines them.
+set_property(SOURCE arrow3d.cpp PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
+
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
+    glaze::glaze
     editor
     drape
     indexer

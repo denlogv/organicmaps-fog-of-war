@@ -1,26 +1,16 @@
 #include "drape_frontend/message_queue.hpp"
 
 #include "base/assert.hpp"
-#include "base/stl_helpers.hpp"
 
 namespace df
 {
-MessageQueue::MessageQueue() : m_isWaiting(false) {}
-
-MessageQueue::~MessageQueue()
-{
-  CancelWait();
-  ClearQuery();
-}
-
 drape_ptr<Message> MessageQueue::PopMessage(bool waitForMessage)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
-  if (waitForMessage && m_messages.empty() && m_lowPriorityMessages.empty())
+  if (waitForMessage)
   {
-    m_isWaiting = true;
-    m_condition.wait(lock, [this]() { return !m_isWaiting; });
-    m_isWaiting = false;
+    m_condition.wait(lock, [this] { return m_cancelPending || !m_messages.empty() || !m_lowPriorityMessages.empty(); });
+    m_cancelPending = false;
   }
 
   drape_ptr<Message> msg;
@@ -85,7 +75,7 @@ void MessageQueue::PushMessage(drape_ptr<Message> && message, MessagePriority pr
   default: ASSERT(false, ("Unknown message priority type"));
   }
 
-  CancelWaitImpl();
+  m_condition.notify_one();
 }
 
 void MessageQueue::FilterMessagesImpl()
@@ -144,20 +134,13 @@ size_t MessageQueue::GetSize() const
 void MessageQueue::CancelWait()
 {
   std::lock_guard<std::mutex> lock(m_mutex);
-  CancelWaitImpl();
+  m_cancelPending = true;
+  m_condition.notify_one();
 }
 
-void MessageQueue::CancelWaitImpl()
+void MessageQueue::Clear()
 {
-  if (m_isWaiting)
-  {
-    m_isWaiting = false;
-    m_condition.notify_all();
-  }
-}
-
-void MessageQueue::ClearQuery()
-{
+  std::lock_guard<std::mutex> lock(m_mutex);
   m_messages.clear();
   m_lowPriorityMessages.clear();
 }

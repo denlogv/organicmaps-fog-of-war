@@ -1,10 +1,12 @@
 #import "ElevationProfileData+Core.h"
 #import "PlacePageTrackData+Core.h"
+#import "PlacePageTrackSelectionData+Core.h"
 #import "TrackInfo+Core.h"
 
 @interface PlacePageTrackData ()
 
 @property(nonatomic, readwrite) double activePointDistance;
+@property(nonatomic, readwrite) NSArray<PlacePageTrackSelectionData *> * trackSelectionCandidates;
 
 @end
 
@@ -20,6 +22,7 @@
     _trackInfo = trackInfo;
     _elevationProfileData = elevationInfo;
     _onActivePointChangedHandler = onActivePointChangedHandler;
+    _trackSelectionCandidates = @[];
   }
   return self;
 }
@@ -41,12 +44,10 @@
   self = [super init];
   if (self)
   {
-    auto const trackPtr = GetFramework().GetBookmarkManager().GetTrack(rawData.GetTrackId());
-    auto const & track = *trackPtr;
     auto const & bm = GetFramework().GetBookmarkManager();
+    auto const & track = *bm.GetTrack(rawData.GetTrackId());
 
     _trackId = track.GetData().m_id;
-    _isTempRelationTrack = (_trackId == BookmarkManager::kTempRelationTrackId);
 
     auto const & groupId = track.GetGroupId();
     if (groupId && bm.HasBmCategory(groupId))
@@ -58,11 +59,36 @@
     auto const color = track.GetColor(0);
     _color = [UIColor colorWithRed:color.GetRedF() green:color.GetGreenF() blue:color.GetBlueF() alpha:1.f];
 
-    _trackDescription = [NSString stringWithCString:track.GetDescription().c_str() encoding:NSUTF8StringEncoding];
+    std::string const description = track.GetDescription();
+    _trackDescription = [NSString stringWithCString:description.c_str() encoding:NSUTF8StringEncoding];
+    _isHtmlDescription = strings::IsHTML(description);
     _trackInfo = [[TrackInfo alloc] initWithTrackStatistics:track.GetStatistics()];
     _activePointDistance = bm.GetElevationActivePoint(_trackId);
     _myPositionDistance = bm.GetElevationMyPosition(_trackId);
     _onActivePointChangedHandler = onActivePointChangedHandler;
+
+    auto const & selectionInfos = rawData.GetTrackCandidates();
+    NSMutableArray<PlacePageTrackSelectionData *> * trackSelectionCandidates =
+        [NSMutableArray arrayWithCapacity:selectionInfos.size()];
+
+    for (size_t candidateIndex = 0; candidateIndex < selectionInfos.size(); ++candidateIndex)
+    {
+      auto const & selectionInfo = selectionInfos[candidateIndex];
+      auto selectionColor = selectionInfo.m_color;
+      auto * color = [UIColor colorWithRed:selectionColor.GetRedF()
+                                     green:selectionColor.GetGreenF()
+                                      blue:selectionColor.GetBlueF()
+                                     alpha:1.f];
+      BOOL const isSelected = selectionInfo.IsRelation() ? selectionInfo.m_relationId == rawData.GetTrackRelationId()
+                                                         : selectionInfo.m_trackId == rawData.GetTrackId();
+      auto * selectionData = [[PlacePageTrackSelectionData alloc] initWithTrackId:selectionInfo.m_trackId
+                                                                       relationId:selectionInfo.m_relationId
+                                                                            title:@(selectionInfo.m_title.c_str())
+                                                                            color:color
+                                                                       isSelected:isSelected];
+      [trackSelectionCandidates addObject:selectionData];
+    }
+    _trackSelectionCandidates = trackSelectionCandidates;
 
     auto const * elevationInfo = track.GetElevationInfo();
     if (elevationInfo)

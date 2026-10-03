@@ -100,10 +100,10 @@ UNIT_TEST(Netherlands_Amsterdam_OnewaySt_CyclewayOpposite)
 
 UNIT_TEST(RussiaMoscowKashirskoe16ToCapLongRoute)
 {
-  // There is no dedicated bicycle infra, except short end part. All OSM routers give different results,
-  // OM yields a short and logical route shortcutting via some service roads and footways (allowed in Russia).
+  // Main route - dedicated bicycle infra.
+  // Alt route - a short and logical route shortcutting via some service roads and footways (allowed in Russia).
   CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Bicycle), mercator::FromLatLon(55.66230, 37.63214),
-                                   {0., 0.}, mercator::FromLatLon(55.68927, 37.70356), 6968.64);
+                                   {0., 0.}, mercator::FromLatLon(55.68927, 37.70356), 7318.61);
 }
 
 UNIT_TEST(Germany_UseServiceCountrysideRoads)
@@ -254,7 +254,7 @@ UNIT_TEST(London_GreenwichTunnel)
 
   CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Bicycle),
                                    mercator::FromLatLon(51.4817397, -0.0100070258), {0.0, 0.0},
-                                   mercator::FromLatLon(51.4883739, -0.00809729298), 1183.12 /* expectedRouteMeters */);
+                                   mercator::FromLatLon(51.4883739, -0.00809729298), 965.747 /* expectedRouteMeters */);
 }
 
 UNIT_TEST(Batumi_AvoidServiceDetour)
@@ -345,12 +345,12 @@ UNIT_TEST(Spain_Madrid_DedicatedCycleway)
 // https://github.com/organicmaps/organicmaps/issues/7047
 UNIT_TEST(Seoul_ElevationDetour)
 {
-  // The longer 664m route has less uphill Ascent: 25 Descent: 17
-  // The shorter 545m route has bigger Ascent: 37 Descent: 29n.
+  // The longer 628m route has less uphill Ascent: 25 Descent: 17
+  // The shorter 507m route has bigger Ascent: 37 Descent: 29n.
   // OM prefers a shorter one (like Graphhopper). Valhalla prefers the longer one.
   CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Bicycle),
                                    mercator::FromLatLon(37.510519, 127.101251), {0.0, 0.0},
-                                   mercator::FromLatLon(37.513874, 127.099234), 544.063 /* expectedRouteMeters */);
+                                   mercator::FromLatLon(37.513874, 127.099234), 627.649 /* expectedRouteMeters */);
 }
 
 UNIT_TEST(Spain_Zaragoza_Fancy_NoBicycle_Crossings)
@@ -467,6 +467,24 @@ UNIT_TEST(Germany_BicycleYes_VehicleNo)
   CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Bicycle),
                                    mercator::FromLatLon(48.077322, 11.252503), {0.0, 0.0},
                                    mercator::FromLatLon(48.074355, 11.2472321), 551.705);
+}
+
+// https://github.com/organicmaps/organicmaps/issues/12953
+// A useful distance-biased alternative exists on this flat route. It should remain shorter than
+// the active route without incurring an excessive ETA penalty on slow roads.
+UNIT_TEST(Germany_Munich_AlternativeRouteEta)
+{
+  auto & components = GetVehicleComponents(VehicleType::Bicycle);
+  Checkpoints const checkpoints(mercator::FromLatLon(48.1312306, 11.6872422),
+                                mercator::FromLatLon(48.2043364, 11.4145979));
+  auto const result = CalculateRoutes(components, checkpoints);
+  TEST_EQUAL(result.second, RouterResultCode::NoError, ());
+  TEST_EQUAL(result.first.size(), 2, ());
+
+  auto const & active = *result.first[0];
+  auto const & alternative = *result.first[1];
+  TEST_LESS(alternative.GetTotalDistanceMeters(), active.GetTotalDistanceMeters(), ());
+  TEST_LESS(alternative.GetTotalTimeSec(), 1.25 * active.GetTotalTimeSec(), ());
 }
 
 }  // namespace bicycle_route_test

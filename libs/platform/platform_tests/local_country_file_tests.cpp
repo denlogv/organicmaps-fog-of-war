@@ -50,16 +50,17 @@ UNIT_TEST(LocalCountryFile_ParseVersion)
   TEST(!ParseVersion("150309 ", version), ());
   TEST(!ParseVersion(" 150309", version), ());
   TEST(!ParseVersion("-150309", version), ());
+  TEST(!ParseVersion("12\xC3\xA9", version), ());
   TEST(!ParseVersion("just string", version), ());
 }
 
 // Checks basic functionality of LocalCountryFile.
 UNIT_TEST(LocalCountryFile_Smoke)
 {
-  CountryFile countryFile("TestCountry", 1 /* size */, "sha1");
+  CountryFile countryFile("TestCountry", 1 /* size */, "hash");
   LocalCountryFile localFile("/test-dir", countryFile, 150309);
 
-  TEST_EQUAL("/test-dir/TestCountry" DATA_FILE_EXTENSION, localFile.GetPath(MapFileType::Map), ());
+  TEST_EQUAL(base::JoinPath("/test-dir", "TestCountry" DATA_FILE_EXTENSION), localFile.GetPath(MapFileType::Map), ());
 
   // Not synced with disk yet.
   TEST(!localFile.HasFiles(), ());
@@ -80,7 +81,7 @@ UNIT_TEST(LocalCountryFile_DiskFiles)
 {
   Platform & platform = GetPlatform();
 
-  CountryFile countryFile("TestCountry", 1 /* size */, "sha1");
+  CountryFile countryFile("TestCountry", 1 /* size */, "hash");
 
   for (int64_t version : {1, 150312})
   {

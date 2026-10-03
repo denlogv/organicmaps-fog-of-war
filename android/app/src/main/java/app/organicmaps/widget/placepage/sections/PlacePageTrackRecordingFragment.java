@@ -16,6 +16,7 @@ import app.organicmaps.sdk.bookmarks.data.TrackRecording;
 import app.organicmaps.sdk.bookmarks.data.TrackStatistics;
 import app.organicmaps.sdk.location.TrackRecorder;
 import app.organicmaps.sdk.util.StringUtils;
+import app.organicmaps.util.UiUtils;
 import app.organicmaps.util.Utils;
 import app.organicmaps.widget.placepage.ElevationProfileViewRenderer;
 import app.organicmaps.widget.placepage.PlacePageStateListener;
@@ -48,7 +49,10 @@ public class PlacePageTrackRecordingFragment
   public void onStart()
   {
     super.onStart();
-    TrackRecorder.nativeSetTrackRecordingStatsListener(this);
+    // The listener can only be attached while recording is enabled; it may have been stopped
+    // from the notification while the activity was stopped.
+    if (TrackRecorder.nativeIsTrackRecordingEnabled())
+      TrackRecorder.nativeSetTrackRecordingStatsListener(this);
   }
 
   @Override
@@ -76,10 +80,13 @@ public class PlacePageTrackRecordingFragment
             StringUtils.nativeFormatDistance(trackStatistics.getLength()).toString(getContext()) + " • "
             + Utils.formatRoutingTime(getContext(), (int) trackStatistics.getDuration(), R.dimen.text_size_body_3));
     ElevationInfo elevationInfo = TrackRecorder.nativeGetElevationInfo();
-    // This check is needed because the elevationInfo can be null in case there are no elevation data.
-    // When Track Recording has just started
-    if (elevationInfo == null)
-      return;
-    mElevationProfileViewRenderer.render(/* track */ null, elevationInfo, trackStatistics);
+    // elevationInfo can be null when Track Recording has just started and no elevation data exists yet.
+    if (elevationInfo != null)
+    {
+      mElevationProfileViewRenderer.render(/* track */ null, elevationInfo, trackStatistics);
+      UiUtils.show(requireView());
+    }
+    else
+      UiUtils.hide(requireView());
   }
 }

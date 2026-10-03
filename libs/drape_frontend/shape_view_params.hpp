@@ -73,7 +73,7 @@ struct AreaViewParams : CommonViewParams
   float m_minPosZ = 0;
   float m_posZ = 0;
   bool m_is3D = false;
-  std::string_view m_hatching;
+  std::string_view m_areaPattern;  // analytic pattern key (hatch or solid-fill), empty for a plain fill
   double m_baseGtoPScale = 1.0;
 };
 
@@ -110,6 +110,29 @@ struct PathTextViewParams : CommonOverlayViewParams
   std::string m_mainText;
   std::string m_auxText;
   double m_baseGtoPScale = 1.0;
+  // StringUtf8Multilang code of m_mainText for HarfBuzz `locl` shaping. The concatenated
+  // "main + aux" path-text is shaped under this single tag (aux is the minority case and
+  // typically shares main's script). kUnsupportedLanguageCode means "no locl hint".
+  int8_t m_lang = StringUtf8Multilang::kUnsupportedLanguageCode;
+
+  std::string ConcatRenderText() const
+  {
+    if (!m_auxText.empty())
+    {
+      if (m_mainText.size() > m_auxText.size())
+      {
+        if (m_mainText.find(m_auxText) != std::string::npos)
+          return m_mainText;
+      }
+      else
+      {
+        if (m_auxText.find(m_mainText) != std::string::npos)
+          return m_auxText;
+      }
+      return m_mainText + "   " + m_auxText;
+    }
+    return m_mainText;
+  }
 };
 
 struct PathSymbolViewParams : CommonViewParams
@@ -137,5 +160,8 @@ struct ColoredSymbolViewParams : CommonOverlayViewParams
   m2::PointF m_sizeInPixels{0, 0};
   float m_outlineWidth = 0;
   m2::PointF m_offset{0, 0};
+  // RoundedRectangle only: draw a triangular tail pointing from the body's nearest edge
+  // back to the pivot (i.e., the tail tip lands at -m_offset in body-local coords).
+  bool m_drawTail = false;
 };
 }  // namespace df

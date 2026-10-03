@@ -36,7 +36,14 @@ public:
   void ForClosestToPoint(FeatureCallback const & f, StopSearchCallback const & stopCallback, m2::PointD const & center,
                          double sizeM, int scale) const;
   void ForEachInScale(FeatureCallback const & f, int scale) const;
+
+  // Like ForEachInRectForMWM, but reads features of a single MWM covered by an aggregated multi-rect
+  // |covering| (see covering::AggCovering) instead of a single rect, to avoid one large bounding-rect
+  // query. |covering| must have been built at the MWM's coding scale (see covering::AggCovering).
+  void ForEachInCoveringForMWM(FeatureCallback const & f, covering::AggCovering & covering, int scale,
+                               MwmId const & id) const;
   void ForEachInRectForMWM(FeatureCallback const & f, m2::RectD const & rect, int scale, MwmId const & id) const;
+
   // "features" must be sorted using FeatureID::operator< as predicate.
   void ReadFeatures(FeatureCallback const & fn, std::vector<FeatureID> const & features) const;
 
@@ -91,17 +98,22 @@ public:
 
   MwmSet::MwmId const & GetId() const { return m_handle.GetId(); }
   MwmSet::MwmHandle const & GetHandle() const { return m_handle; }
+  FilesContainerR const & GetContainer() const;
 
   std::string GetCountryFileName() const;
   int64_t GetVersion() const;
-
   bool IsWorld() const;
+
   /// Editor core only method, to get 'untouched', original version of feature.
   std::unique_ptr<FeatureType> GetOriginalFeatureByIndex(uint32_t index) const;
-  std::unique_ptr<FeatureType> GetOriginalOrEditedFeatureByIndex(uint32_t index) const;
+
   /// Everyone, except Editor core, should use this method.
   std::unique_ptr<FeatureType> GetFeatureByIndex(uint32_t index) const;
   size_t GetNumFeatures() const { return m_source->GetNumFeatures(); }
+
+  /// Reads a full RouteRelation (with members) at relation index @p index.
+  /// Caller must ensure the MWM has a relations section.
+  feature::RouteRelation GetRelation(uint32_t index) const { return m_source->GetRelation(index); }
 
 private:
   MwmSet::MwmHandle m_handle;

@@ -1,12 +1,12 @@
 #include "drape/overlay_handle.hpp"
 
-#include "base/internal/message.hpp"
 #include "base/macros.hpp"
 
 #include "indexer/drawing_rule_def.hpp"
 
+#include "geometry/mercator.hpp"
+
 #include <algorithm>
-#include <sstream>
 
 namespace dp
 {
@@ -26,7 +26,7 @@ OverlayHandle::OverlayHandle(OverlayID const & id, dp::Anchor anchor, uint64_t p
   , m_extendedRectDirty(true)
   , m_isReady(false)
   , m_isSpecialLayerOverlay(false)
-  , m_displayFlag(false)
+// , m_displayFlag(false)
 {}
 
 void OverlayHandle::EnableCaching(bool enable)
@@ -60,15 +60,16 @@ m2::PointD OverlayHandle::GetPivot(ScreenBase const & screen, bool perspective) 
 
 bool OverlayHandle::IsIntersect(ScreenBase const & screen, ref_ptr<OverlayHandle> const h) const
 {
+  // Already checked before in ForEachInRect.
+  // GetExtendedPixelRect(screen).IsIntersect(h->GetExtendedPixelRect(screen))
+
   Rects const & ar1 = GetExtendedPixelShape(screen);
   Rects const & ar2 = h->GetExtendedPixelShape(screen);
-
-  for (size_t i = 0; i < ar1.size(); ++i)
-  {
-    for (size_t j = 0; j < ar2.size(); ++j)
-      if (ar1[i].IsIntersect(ar2[j]))
+  for (auto const & l : ar1)
+    for (auto const & r : ar2)
+      if (l.IsIntersect(r))
         return true;
-  }
+
   return false;
 }
 
@@ -174,7 +175,12 @@ m2::RectD SquareHandle::GetPixelRect(ScreenBase const & screen, bool perspective
   if (perspective)
     return GetPixelRectPerspective(screen);
 
-  m2::PointD const pxPivot = screen.GtoP(m_gbPivot) + m_pxOffset;
+  // Tile-base coordinates already have valid alignment via the tile offset and tile-based identity.
+  m2::PointD gbPivot = m_gbPivot;
+  if (m_id.m_tileCoords == OverlayID::NoCoordinates())
+    gbPivot.x = mercator::NearestWrapX(gbPivot.x, screen.GetOrg().x);
+
+  m2::PointD const pxPivot = screen.GtoP(gbPivot) + m_pxOffset;
   m2::RectD result(pxPivot - m_pxHalfSize, pxPivot + m_pxHalfSize);
   m2::PointD offset(0.0, 0.0);
 

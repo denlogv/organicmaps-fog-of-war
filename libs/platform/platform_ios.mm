@@ -14,30 +14,24 @@
 #include <fcntl.h>
 #include <ifaddrs.h>
 
-#include <mach/mach.h>
-
 #include <net/if.h>
 #include <net/if_dl.h>
 
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/xattr.h>
 
 #import <CoreFoundation/CFURL.h>
-#import <SystemConfiguration/SystemConfiguration.h>
 #import <UIKit/UIKit.h>
-#import <netinet/in.h>
 
 #include <memory>
-#include <sstream>
 #include <string>
 #include <utility>
 
 Platform::Platform()
 {
-  m_isTablet = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
+  m_isTablet = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad;
 
   NSBundle * bundle = NSBundle.mainBundle;
   NSString * path = [bundle resourcePath];
@@ -66,6 +60,10 @@ Platform::Platform()
 
   LOG(LINFO, ("Device:", device.model.UTF8String, "SystemName:", device.systemName.UTF8String,
               "SystemVersion:", device.systemVersion.UTF8String));
+
+  // Kick off the connection-status monitor at launch; its first asynchronous
+  // callback should arrive long before any UI code queries IsConnected().
+  ConnectionStatus();
 }
 
 // static
@@ -117,35 +115,6 @@ std::unique_ptr<ModelReader> Platform::GetReader(std::string const & file, std::
                                       READER_CHUNK_LOG_COUNT);
 }
 
-int Platform::VideoMemoryLimit() const
-{
-  return 8 * 1024 * 1024;
-}
-
-int Platform::PreCachingDepth() const
-{
-  return 2;
-}
-
-std::string Platform::GetMemoryInfo() const
-{
-  struct task_basic_info info;
-  mach_msg_type_number_t size = sizeof(info);
-  kern_return_t const kerr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &size);
-  std::stringstream ss;
-  if (kerr == KERN_SUCCESS)
-  {
-    ss << "Memory info: Resident_size = " << info.resident_size / 1024
-       << "KB; virtual_size = " << info.resident_size / 1024 << "KB; suspend_count = " << info.suspend_count
-       << " policy = " << info.policy;
-  }
-  else
-  {
-    ss << "Error with task_info(): " << mach_error_string(kerr);
-  }
-  return ss.str();
-}
-
 std::string Platform::DeviceName() const
 {
   return UIDevice.currentDevice.name.UTF8String;
@@ -186,30 +155,7 @@ int32_t Platform::IntVersion() const
   return (int32_t)(year - 2000) * 10000 + month * 100 + day;
 }
 
-Platform::EConnectionType Platform::ConnectionStatus()
-{
-  struct sockaddr_in zero;
-  bzero(&zero, sizeof(zero));
-  zero.sin_len = sizeof(zero);
-  zero.sin_family = AF_INET;
-  SCNetworkReachabilityRef reachability =
-      SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr *)&zero);
-  if (!reachability)
-    return EConnectionType::CONNECTION_NONE;
-  SCNetworkReachabilityFlags flags;
-  bool const gotFlags = SCNetworkReachabilityGetFlags(reachability, &flags);
-  CFRelease(reachability);
-  if (!gotFlags || ((flags & kSCNetworkReachabilityFlagsReachable) == 0))
-    return EConnectionType::CONNECTION_NONE;
-  SCNetworkReachabilityFlags userActionRequired =
-      kSCNetworkReachabilityFlagsConnectionRequired | kSCNetworkReachabilityFlagsInterventionRequired;
-  if ((flags & userActionRequired) == userActionRequired)
-    return EConnectionType::CONNECTION_NONE;
-  if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
-    return EConnectionType::CONNECTION_WWAN;
-  else
-    return EConnectionType::CONNECTION_WIFI;
-}
+// Platform::ConnectionStatus() lives in connection_status_apple.mm (shared with macOS).
 
 Platform::ChargingStatus Platform::GetChargingStatus()
 {

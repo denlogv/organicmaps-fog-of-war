@@ -10,19 +10,19 @@
 
 #include "drape/texture_manager.hpp"
 
-#include "geometry/point3d.hpp"
-
 #include <array>
 
 namespace df
 {
 namespace
 {
+// clang-format off
 std::array<float, 20> const kHalfLineWidthInPixel = {
     // 1   2     3     4     5     6     7     8     9     10
     1.0f, 1.2f, 1.5f, 1.5f, 1.7f, 2.0f, 2.0f, 2.3f, 2.5f, 2.7f,
     // 11   12    13    14    15   16    17    18    19     20
     3.0f, 3.5f, 4.5f, 5.5f, 7.0, 9.0f, 10.0f, 14.0f, 22.0f, 27.0f};
+// clang-format on
 }  // namespace
 
 SelectionShape::SelectionShape(ref_ptr<dp::GraphicsContext> context, ref_ptr<dp::TextureManager> mng)
@@ -80,7 +80,7 @@ std::optional<m2::PointD> SelectionShape::GetPixelPosition(ScreenBase const & sc
     posZ = 0.0;
   }
 
-  m2::PointD const pt = screen.GtoP(pos);
+  m2::PointD const pt = GtoPWrap(pos, screen);
   if (!screen.IsReverseProjection3d(pt))
     return screen.PtoP3d(pt, -posZ);
   return {};
@@ -94,7 +94,7 @@ void SelectionShape::Render(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::P
 
   if (m_selectionGeometry.empty())
   {
-    m2::PointD const adjustedPos = df::AdjustPointForViewport(m_position, screen);
+    m2::PointD const adjustedPos = AdjustPointForViewport(m_position, screen);
 
     gpu::ShapesProgramParams params;
     frameValues.SetTo(params);
@@ -134,8 +134,7 @@ void SelectionShape::Render(ref_ptr<dp::GraphicsContext> context, ref_ptr<gpu::P
     geomParams.m_lineParams = glsl::vec2(currentHalfWidth, screenHalfWidth);
     for (auto const & geometry : m_selectionGeometry)
     {
-      math::Matrix<float, 4, 4> mv = screen.GetModelView(geometry->GetPivot(), kShapeCoordScalar);
-      geomParams.m_modelView = glsl::make_mat4(mv.m_data);
+      geomParams.m_modelView = glsl::make_mat4(AdjustedScreen(screen, geometry->GetPivot()).GetShapeModelView().m_data);
       geometry->Render(context, mng, geomParams);
     }
   }
@@ -152,6 +151,12 @@ void SelectionShape::AddSelectionGeometry(drape_ptr<RenderNode> && renderNode, i
     return;
 
   m_selectionGeometry.push_back(std::move(renderNode));
+}
+
+void SelectionShape::ResetSelectionGeometry()
+{
+  m_recacheId++;
+  m_selectionGeometry.clear();
 }
 
 m2::RectD SelectionShape::GetSelectionGeometryBoundingBox() const

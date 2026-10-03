@@ -4,17 +4,25 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - .agents/**
+      - .claude/**
+      - .gemini/**
+      - '**/*.md'
   pull_request:
     paths-ignore:
+      - .agents/**
+      - .claude/**
+      - .gemini/**
       - .gitignore
       - .github/**
       - '!.github/workflows/ios-check.yaml'  # Run check on self change
+      - '**/*.md'
       - '**/*_tests/**'
       - '**/CMakeLists.txt'
       - CONTRIBUTORS
       - LICENSE
       - NOTICE
-      - README.md
       - android/**
       - data/organic_maps_emoji/**
       - data/strings/**
@@ -27,7 +35,6 @@ on:
       - platform/*_mac*
       - platform/*qt*
       - platform/*_win*
-      - pyhelpers/**
       - qt*/**
       - skin_generator/**
       - tools/**
@@ -36,9 +43,9 @@ on:
 jobs:
   ios-check:
     name: Build iOS
-    runs-on: macos-26
+    runs-on: xcode-27
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_27.0.app/Contents/Developer
       LANG: en_US.UTF-8  # Fastlane complains that the terminal is using ASCII.
       LANGUAGE: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -48,9 +55,10 @@ jobs:
       matrix:
         buildType: [Debug, Release]
     # Cancels previous jobs if the same branch or PR was updated again.
+    # Only cancel PR runs: master runs must finish to populate the shared cache.
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.buildType }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     permissions:
       contents: read
       actions: write  # To delete unnecessary cache.
@@ -62,31 +70,33 @@ jobs:
       - name: Show current version of Xcode
         run: xcodebuild -version
 
+      # Remove after https://github.com/actions/runner-images/issues/14548 is fixed.
+      - name: Ensure Metal Toolchain is available
+        run: |
+          if ! xcrun metal -v >/dev/null 2>&1; then
+            xcodebuild -downloadComponent MetalToolchain
+            xcrun -k
+          fi
+          xcrun metal -v
+
       - name: Checkout sources
         uses: actions/checkout@v6
-
-      - name: Restore Boost submodule from cache
-        uses: actions/cache@v5
-        with:
-          path: |
-            3party/boost
-            .git/modules/3party/boost
-          key: boost-submodule
 
       - name: Parallel submodules checkout
         shell: bash
         run: git submodule update --depth 1 --init --recursive --jobs=$(($(sysctl -n hw.logicalcpu) * 20))
-
-      - name: Configure repository
-        shell: bash
-        run: ./configure.sh
 
       - name: Configure XCode cache
         uses: irgaly/xcode-cache@v1
         with:
           key: xcode-cache-deriveddata-${{ github.workflow }}-${{ matrix.buildType }}-${{ github.sha }}
           restore-keys: xcode-cache-deriveddata-${{ github.workflow }}-${{ matrix.buildType }}
-          delete-used-deriveddata-cache: true
+          # Restore-only on PRs: master populates the shared cache, PRs read it.
+          # Avoids overflowing the 10GB repo limit, which evicts master's caches.
+          cache-read-only: ${{ github.ref != 'refs/heads/master' }}
+          # Only master may delete its used cache; otherwise a PR would delete
+          # the master DerivedData it just restored from (via restore-keys).
+          delete-used-deriveddata-cache: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Build and Run Tests (Debug)
         if: matrix.buildType == 'Debug'

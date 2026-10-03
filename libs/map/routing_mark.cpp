@@ -3,30 +3,38 @@
 #include "drape_frontend/color_constants.hpp"
 #include "drape_frontend/visual_params.hpp"
 
+#include "indexer/scales.hpp"
+
 #include "platform/localization.hpp"
 
 #include <algorithm>
 
 namespace
 {
-static std::string const kRouteMarkPrimaryText = "RouteMarkPrimaryText";
-static std::string const kRouteMarkPrimaryTextOutline = "RouteMarkPrimaryTextOutline";
-static std::string const kRouteMarkSecondaryText = "RouteMarkSecondaryText";
-static std::string const kRouteMarkSecondaryTextOutline = "RouteMarkSecondaryTextOutline";
+df::ColorConstant constexpr kRouteMarkPrimaryText = "RouteMarkPrimaryText";
+df::ColorConstant constexpr kRouteMarkPrimaryTextOutline = "RouteMarkPrimaryTextOutline";
+df::ColorConstant constexpr kRouteMarkSecondaryText = "RouteMarkSecondaryText";
+df::ColorConstant constexpr kRouteMarkSecondaryTextOutline = "RouteMarkSecondaryTextOutline";
 
-static std::string const kTransitMarkPrimaryText = "TransitMarkPrimaryText";
-static std::string const kTransitMarkPrimaryTextOutline = "TransitMarkPrimaryTextOutline";
-static std::string const kTransitMarkSecondaryText = "TransitMarkSecondaryText";
-static std::string const kTransitMarkSecondaryTextOutline = "TransitMarkSecondaryTextOutline";
+df::ColorConstant constexpr kTransitMarkPrimaryText = "TransitMarkPrimaryText";
+df::ColorConstant constexpr kTransitMarkSecondaryText = "TransitMarkSecondaryText";
 
-float const kRouteMarkPrimaryTextSize = 10.5f;
-float const kRouteMarkSecondaryTextSize = 10.0f;
-float const kRouteMarkSecondaryOffsetY = 2.0f;
-float const kTransitMarkTextSize = 12.0f;
+float constexpr kRouteMarkPrimaryTextSize = 10.5f;
+float constexpr kRouteMarkSecondaryTextSize = 10.0f;
+float constexpr kRouteMarkSecondaryOffsetY = 2.0f;
+float constexpr kTransitMarkTextSize = 12.0f;
 
-static std::string const kSpeedCameraMarkText = "SpeedCameraMarkText";
-static std::string const kSpeedCameraMarkBg = "SpeedCameraMarkBg";
-static std::string const kSpeedCameraMarkOutline = "SpeedCameraMarkOutline";
+df::ColorConstant constexpr kRouteMarkInterBg = "RouteMarkInterBg";
+df::ColorConstant constexpr kRouteMarkInterOutline = "RouteMarkInterOutline";
+df::ColorConstant constexpr kRouteMarkInterText = "RouteMarkInterText";
+
+float constexpr kRouteMarkInterTextSize = 11.0f;
+float constexpr kRouteMarkInterRadius = 10.0f;
+float constexpr kRouteMarkInterOutlineWidth = 2.0f;
+
+df::ColorConstant constexpr kSpeedCameraMarkText = "SpeedCameraMarkText";
+df::ColorConstant constexpr kSpeedCameraMarkBg = "SpeedCameraMarkBg";
+df::ColorConstant constexpr kSpeedCameraMarkOutline = "SpeedCameraMarkOutline";
 
 float constexpr kSpeedCameraMarkTextSize = 11.0f;
 float constexpr kSpeedCameraMarkTextMargin = 1.5f;
@@ -35,6 +43,21 @@ float constexpr kSpeedCameraOutlineWidth = 2.0f;
 
 int constexpr kMinSpeedCameraZoom = 13;
 int constexpr kMinSpeedCameraTitleZoom = 13;
+
+// RouteAltMark constants — ETA balloon (rounded rect) drawn on each route variant. Sized to be
+// legible at typical zoom levels; white background with dark text for readability over the route line.
+float constexpr kRouteAltMarkTextSize = 10.0f;
+float constexpr kRouteAltMarkTextMargin = 6.0f;
+float constexpr kRouteAltMarkRadius = 12.0f;
+float constexpr kRouteAltMarkOutlineWidth = 2.0f;
+int constexpr kMinRouteAltMarkZoom = 7;
+
+// Direct colors — theme color constants (e.g. "RouteMarkInterBg") resolve unpredictably across themes
+// so we hard-code the balloon palette to keep the ETA text readable on any background.
+dp::Color const kRouteAltMarkBg{255, 255, 255, 255};            // white
+dp::Color const kRouteAltMarkText{34, 34, 34, 255};             // near-black
+dp::Color const kRouteAltMarkActiveOutline{36, 116, 233, 255};  // route-blue
+dp::Color const kRouteAltMarkAltOutline{160, 160, 160, 255};    // muted gray
 }  // namespace
 
 RouteMarkPoint::RouteMarkPoint(m2::PointD const & ptOrg) : UserMark(ptOrg, Type::ROUTING)
@@ -94,12 +117,6 @@ bool RouteMarkPoint::IsEqualFullType(RouteMarkType type, size_t intermediateInde
   return m_markData.m_pointType == type;
 }
 
-void RouteMarkPoint::SetIsMyPosition(bool isMyPosition)
-{
-  SetDirty();
-  m_markData.m_isMyPosition = isMyPosition;
-}
-
 void RouteMarkPoint::SetPassed(bool isPassed)
 {
   SetDirty();
@@ -139,6 +156,7 @@ uint32_t RouteMarkPoint::GetIndex() const
 void RouteMarkPoint::SetMarkData(RouteMarkData && data)
 {
   SetDirty();
+  m_ptOrg = data.m_position;
   m_markData = std::move(data);
   m_titleDecl.m_primaryText = m_markData.m_title;
   if (!m_titleDecl.m_primaryText.empty())
@@ -152,19 +170,51 @@ void RouteMarkPoint::SetMarkData(RouteMarkData && data)
 
 drape_ptr<df::UserPointMark::TitlesInfo> RouteMarkPoint::GetTitleDecl() const
 {
-  if (m_followingMode)
+  bool const isIntermediate = m_markData.m_pointType == RouteMarkType::Intermediate;
+  if (m_followingMode && !isIntermediate)
     return nullptr;
 
   auto titles = make_unique_dp<TitlesInfo>();
-  titles->push_back(m_titleDecl);
+
+  if (isIntermediate)
+  {
+    dp::TitleDecl numberDecl;
+    numberDecl.m_primaryText = std::to_string(m_markData.m_intermediateIndex + 1);
+    numberDecl.m_primaryTextFont.m_color = df::GetColorConstant(kRouteMarkInterText);
+    numberDecl.m_primaryTextFont.m_size = kRouteMarkInterTextSize;
+    numberDecl.m_anchor = dp::Center;
+    numberDecl.m_forceNoWrap = true;
+    titles->push_back(std::move(numberDecl));
+  }
+
+  if (!m_followingMode)
+    titles->push_back(m_titleDecl);
+
   return titles;
 }
 
 drape_ptr<df::UserPointMark::ColoredSymbolZoomInfo> RouteMarkPoint::GetColoredSymbols() const
 {
-  auto coloredSymbol = make_unique_dp<ColoredSymbolZoomInfo>();
-  coloredSymbol->m_isSymbolStub = true;
-  return coloredSymbol;
+  if (m_markData.m_pointType == RouteMarkType::Intermediate)
+  {
+    auto const vs = static_cast<float>(df::VisualParams::Instance().GetVisualScale());
+
+    df::ColoredSymbolViewParams params;
+    params.m_color = df::GetColorConstant(kRouteMarkInterBg);
+    params.m_shape = df::ColoredSymbolViewParams::Shape::Circle;
+    params.m_radiusInPixels = kRouteMarkInterRadius * vs;
+    params.m_outlineColor = df::GetColorConstant(kRouteMarkInterOutline);
+    params.m_outlineWidth = kRouteMarkInterOutlineWidth * vs;
+
+    auto coloredSymbol = make_unique_dp<ColoredSymbolZoomInfo>();
+    coloredSymbol->m_zoomInfo[1] = params;
+    // Don't set m_addTextSize: it sizes the circle to fit titles[0], but then
+    // GenerateTextShapes sees symbolSize=0 (isTextBg path skips the update),
+    // so the address title below can't offset past the circle.
+    return coloredSymbol;
+  }
+
+  return nullptr;
 }
 
 void RouteMarkPoint::SetFollowingMode(bool enabled)
@@ -183,33 +233,24 @@ drape_ptr<df::UserPointMark::SymbolNameZoomInfo> RouteMarkPoint::GetSymbolNames(
   {
   case RouteMarkType::Start: name = "route-point-start"; break;
   case RouteMarkType::Finish: name = "route-point-finish"; break;
-  case RouteMarkType::Intermediate:
-  {
-    /// @todo Draw RouteMarkPoint icons dynamically like SpeedCameraMark.
-    if (m_markData.m_intermediateIndex < 19)
-      name = "route-point-" + std::to_string(m_markData.m_intermediateIndex + 1);
-    else
-      name = "route-point-20";
-  }
+  case RouteMarkType::Intermediate: return nullptr;
   }
   auto symbol = make_unique_dp<SymbolNameZoomInfo>();
   symbol->insert(std::make_pair(1 /* zoomLevel */, name));
   return symbol;
 }
 
-// This should be tested if the routing algorithm can handle this
-size_t const RoutePointsLayout::kMaxIntermediatePointsCount = 100;
-
 RoutePointsLayout::RoutePointsLayout(BookmarkManager & manager)
   : m_manager(manager)
   , m_editSession(manager.GetEditSession())
 {}
 
-void RoutePointsLayout::AddRoutePoint(RouteMarkData && data)
+RouteMarkPoint * RoutePointsLayout::AddRoutePoint(RouteMarkData && data)
 {
   auto const count = m_manager.GetUserMarkIds(UserMark::Type::ROUTING).size();
-  if (count == kMaxIntermediatePointsCount + 2)
-    return;
+  ASSERT_LESS_OR_EQUAL(count, kMaxRoutePointsCount, ());
+  if (count >= kMaxRoutePointsCount)
+    return nullptr;
 
   RouteMarkPoint * sameTypePoint = GetRoutePointForEdit(data.m_pointType, data.m_intermediateIndex);
   if (sameTypePoint != nullptr)
@@ -247,6 +288,7 @@ void RoutePointsLayout::AddRoutePoint(RouteMarkData && data)
   }
   auto * newPoint = m_editSession.CreateUserMark<RouteMarkPoint>(data.m_position);
   newPoint->SetMarkData(std::move(data));
+  return newPoint;
 }
 
 bool RoutePointsLayout::RemoveRoutePoint(RouteMarkType type, size_t intermediateIndex)
@@ -313,6 +355,37 @@ void RoutePointsLayout::RemoveIntermediateRoutePoints()
 {
   m_editSession.DeleteUserMarks<RouteMarkPoint>(UserMark::Type::ROUTING, [](RouteMarkPoint const * mark)
   { return mark->GetRoutePointType() == RouteMarkType::Intermediate; });
+}
+
+bool RoutePointsLayout::RemovePassedRoutePoints()
+{
+  auto const & markIds = m_manager.GetUserMarkIds(UserMark::Type::ROUTING);
+  if (!base::IsExistIf(markIds,
+                       [this](kml::MarkId markId) { return m_manager.GetMark<RouteMarkPoint>(markId)->IsPassed(); }))
+    return false;
+
+  m_editSession.DeleteUserMarks<RouteMarkPoint>(UserMark::Type::ROUTING,
+                                                [](RouteMarkPoint const * mark) { return mark->IsPassed(); });
+
+  // Re-index remaining intermediate points after removing passed ones.
+  std::vector<RouteMarkPoint *> remaining;
+  for (auto markId : markIds)
+  {
+    auto const * mark = m_manager.GetMark<RouteMarkPoint>(markId);
+    if (mark->GetRoutePointType() == RouteMarkType::Intermediate)
+    {
+      ASSERT(!mark->IsPassed(), ());
+      remaining.push_back(m_editSession.GetMarkForEdit<RouteMarkPoint>(markId));
+    }
+  }
+
+  std::sort(remaining.begin(), remaining.end(), [](RouteMarkPoint * a, RouteMarkPoint * b)
+  { return a->GetIntermediateIndex() < b->GetIntermediateIndex(); });
+
+  for (size_t i = 0; i < remaining.size(); ++i)
+    remaining[i]->SetIntermediateIndex(i);
+
+  return true;
 }
 
 bool RoutePointsLayout::MoveRoutePoint(RouteMarkType currentType, size_t currentIntermediateIndex,
@@ -524,11 +597,12 @@ drape_ptr<df::UserPointMark::SymbolNameZoomInfo> TransitMark::GetSymbolNames() c
 void TransitMark::GetDefaultTransitTitle(dp::TitleDecl & titleDecl)
 {
   titleDecl = dp::TitleDecl();
+  // White outline in both themes, because titles are usually colored with the transit line color.
   titleDecl.m_primaryTextFont.m_color = df::GetColorConstant(kTransitMarkPrimaryText);
-  titleDecl.m_primaryTextFont.m_outlineColor = df::GetColorConstant(kTransitMarkPrimaryTextOutline);
+  titleDecl.m_primaryTextFont.m_outlineColor = dp::Color::White();
   titleDecl.m_primaryTextFont.m_size = kTransitMarkTextSize;
   titleDecl.m_secondaryTextFont.m_color = df::GetColorConstant(kTransitMarkSecondaryText);
-  titleDecl.m_secondaryTextFont.m_outlineColor = df::GetColorConstant(kTransitMarkSecondaryTextOutline);
+  titleDecl.m_secondaryTextFont.m_outlineColor = dp::Color::White();
   titleDecl.m_secondaryTextFont.m_size = kTransitMarkTextSize;
 }
 
@@ -609,6 +683,123 @@ dp::Anchor SpeedCameraMark::GetAnchor() const
   return dp::Center;
 }
 
+// RouteAltMark -------------------------------------------------------------------------------------
+
+RouteAltMark::RouteAltMark(m2::PointD const & ptOrg) : UserMark(ptOrg, Type::ROUTE_ALT)
+{
+  auto const vs = static_cast<float>(df::VisualParams::Instance().GetVisualScale());
+
+  m_titleDecl.m_anchor = dp::Center;
+  // Near-black text on a white background — readable over any route color.
+  m_titleDecl.m_primaryTextFont.m_color = kRouteAltMarkText;
+  m_titleDecl.m_primaryTextFont.m_size = kRouteAltMarkTextSize;
+
+  df::ColoredSymbolViewParams params;
+  params.m_anchor = dp::Center;
+  params.m_shape = df::ColoredSymbolViewParams::Shape::RoundedRectangle;
+  params.m_radiusInPixels = kRouteAltMarkRadius * vs;
+  // Generous padding around the text — m_addTextSize=true *adds* this floor to the measured text
+  // dimensions, so big margins guarantee a comfortably-sized balloon even for short ETAs like "4 min".
+  auto const minSize = 2.0f * (kRouteAltMarkOutlineWidth + kRouteAltMarkTextMargin);
+  params.m_sizeInPixels = m2::PointF(minSize, minSize) * vs;
+  params.m_outlineWidth = kRouteAltMarkOutlineWidth * vs;
+  m_textBg.m_zoomInfo[kMinRouteAltMarkZoom] = params;
+  m_textBg.m_addTextSize = true;
+
+  // Initial palette = alternative (gray outline); flipped via SetIsActive() for the followed route.
+  RefreshBackground();
+}
+
+void RouteAltMark::SetEta(std::string const & etaText)
+{
+  if (m_titleDecl.m_primaryText == etaText)
+    return;
+  SetDirty();
+  m_titleDecl.m_primaryText = etaText;
+}
+
+void RouteAltMark::SetIsActive(bool isActive)
+{
+  if (m_isActive == isActive)
+    return;
+  SetDirty();
+  m_isActive = isActive;
+  RefreshBackground();
+}
+
+void RouteAltMark::SetRouteIdx(size_t idx)
+{
+  if (m_routeIdx == idx)
+    return;
+  SetDirty();
+  m_routeIdx = idx;
+}
+
+int RouteAltMark::GetMinZoom() const
+{
+  return kMinRouteAltMarkZoom;
+}
+
+int RouteAltMark::GetMinTitleZoom() const
+{
+  return kMinRouteAltMarkZoom;
+}
+
+void RouteAltMark::SetPixelOffset(m2::PointF const & offsetPx)
+{
+  auto const vs = static_cast<float>(df::VisualParams::Instance().GetVisualScale());
+  m2::PointF const offsetVs = offsetPx * vs;
+  bool const hasOffset = offsetPx.x != 0.0f || offsetPx.y != 0.0f;
+  SetDirty();
+  m_pixelOffsetPx = offsetPx;
+  for (auto & kv : m_textBg.m_zoomInfo)
+  {
+    kv.second.m_offset = offsetVs;
+    kv.second.m_drawTail = hasOffset;
+  }
+}
+
+drape_ptr<df::UserPointMark::SymbolOffsets> RouteAltMark::GetSymbolOffsets() const
+{
+  if (m_pixelOffsetPx.x == 0.0f && m_pixelOffsetPx.y == 0.0f)
+    return nullptr;
+  // m_titleDecl uses dp::Center anchor, which makes TitleDecl::m_primaryOffset a no-op
+  // in CalculateTextOffsets — the symbol offset is what shifts the text. Match the body's
+  // vs-scaled pixel offset so the ETA text follows the balloon.
+  auto const vs = static_cast<float>(df::VisualParams::Instance().GetVisualScale());
+  auto offsets = make_unique_dp<SymbolOffsets>(scales::UPPER_STYLE_SCALE, m_pixelOffsetPx * vs);
+  return offsets;
+}
+
+drape_ptr<df::UserPointMark::TitlesInfo> RouteAltMark::GetTitleDecl() const
+{
+  if (m_titleDecl.m_primaryText.empty())
+    return nullptr;
+  auto titleInfo = make_unique_dp<TitlesInfo>();
+  titleInfo->push_back(m_titleDecl);
+  return titleInfo;
+}
+
+drape_ptr<df::UserPointMark::ColoredSymbolZoomInfo> RouteAltMark::GetColoredSymbols() const
+{
+  if (m_titleDecl.m_primaryText.empty())
+    return nullptr;
+  return make_unique_dp<ColoredSymbolZoomInfo>(m_textBg);
+}
+
+void RouteAltMark::RefreshBackground()
+{
+  // White fill (always) keeps the dark ETA text readable regardless of the route's color.
+  // Outline distinguishes active vs alternative: active gets route-blue, alternatives get muted gray.
+  dp::Color const outline = m_isActive ? kRouteAltMarkActiveOutline : kRouteAltMarkAltOutline;
+
+  for (auto & kv : m_textBg.m_zoomInfo)
+  {
+    kv.second.m_color = kRouteAltMarkBg;
+    kv.second.m_outlineColor = outline;
+  }
+}
+
 RoadWarningMark::RoadWarningMark(m2::PointD const & ptOrg) : UserMark(ptOrg, Type::ROAD_WARNING) {}
 
 uint16_t RoadWarningMark::GetPriority() const
@@ -621,6 +812,9 @@ uint16_t RoadWarningMark::GetPriority() const
     case Toll: return static_cast<uint16_t>(Priority::RoadWarningFirstToll);
     case Ferry: return static_cast<uint16_t>(Priority::RoadWarningFirstFerry);
     case Dirty: return static_cast<uint16_t>(Priority::RoadWarningFirstDirty);
+    case Steps: return static_cast<uint16_t>(Priority::RoadWarningFirstSteps);
+    case Gate: return static_cast<uint16_t>(Priority::RoadWarningFirstGate);
+    case LiftGate: return static_cast<uint16_t>(Priority::RoadWarningFirstLiftGate);
     case Count: CHECK(false, ()); break;
     }
   }
@@ -660,6 +854,9 @@ drape_ptr<df::UserPointMark::SymbolNameZoomInfo> RoadWarningMark::GetSymbolNames
   case Toll: symbolName = "warning-paid_road"; break;
   case Ferry: symbolName = "warning-ferry"; break;
   case Dirty: symbolName = "warning-unpaved_road"; break;
+  case Steps: symbolName = "warning-steps"; break;
+  case Gate: symbolName = "warning-gate"; break;
+  case LiftGate: symbolName = "warning-lift_gate"; break;
   case Count: CHECK(false, ()); break;
   }
   auto symbol = make_unique_dp<SymbolNameZoomInfo>();
@@ -676,6 +873,9 @@ std::string RoadWarningMark::GetLocalizedRoadWarningType(RoadWarningMarkType typ
   case Toll: return platform::GetLocalizedString("toll_road");
   case Ferry: return platform::GetLocalizedString("ferry_crossing");
   case Dirty: return platform::GetLocalizedString("unpaved_road");
+  case Steps: return platform::GetLocalizedString("road_warning_steps");
+  case Gate: return platform::GetLocalizedString("road_warning_gate");
+  case LiftGate: return platform::GetLocalizedString("road_warning_lift_gate");
   case Count: CHECK(false, ("Invalid road warning mark type", type)); break;
   }
   return {};
@@ -689,7 +889,52 @@ std::string DebugPrint(RoadWarningMarkType type)
   case Toll: return "Toll";
   case Ferry: return "Ferry";
   case Dirty: return "Dirty";
+  case Steps: return "Steps";
+  case Gate: return "Gate";
+  case LiftGate: return "LiftGate";
   case Count: return "Count";
   }
   UNREACHABLE();
+}
+
+bool IsWarningShownFor(RoadWarningMarkType type, routing::RouterType router)
+{
+  using routing::RouterType;
+  bool const isCar = (router == RouterType::Vehicle);
+  bool const isPedestrianOrBicycle = (router == RouterType::Pedestrian || router == RouterType::Bicycle);
+  switch (type)
+  {
+    using enum RoadWarningMarkType;
+  case Toll:
+  case Dirty:
+  case LiftGate: return isCar;
+  case Steps: return isPedestrianOrBicycle;
+  case Ferry:
+  case Gate: return isCar || isPedestrianOrBicycle;
+  case Count: break;
+  }
+  return false;
+}
+
+RoadWarningMarkType ChooseRoadWarning(routing::RoutingOptions options, routing::RouterType router)
+{
+  using Road = routing::RoutingOptions::Road;
+  // Priority order, highest first. Router-type filtering is applied here, so Steps (pedestrian/
+  // bicycle) and Dirty (car) never compete: an unpaved staircase still yields Steps for a pedestrian.
+  std::pair<Road, RoadWarningMarkType> const order[] = {
+      {Road::Toll, RoadWarningMarkType::Toll},
+      {Road::Ferry, RoadWarningMarkType::Ferry},
+      {Road::Steps, RoadWarningMarkType::Steps},
+      {Road::Dirty, RoadWarningMarkType::Dirty},
+  };
+  for (auto const & [road, mark] : order)
+    if (options.Has(road) && IsWarningShownFor(mark, router))
+      return mark;
+  return RoadWarningMarkType::Count;
+}
+
+bool IsAvoidableRoadWarning(RoadWarningMarkType type)
+{
+  using enum RoadWarningMarkType;
+  return type == Toll || type == Ferry || type == Dirty;
 }

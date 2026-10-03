@@ -191,6 +191,36 @@ UNIT_TEST(GetTtsStreetTextTest)
       "you_have_reached_the_destination":"到着。"
       })";
 
+  // Chinese (incl. Cantonese) is written without spaces between words, so the "then" and
+  // distance separators must be omitted, just like for Japanese.
+  string const zhHansShortJson =
+      R"({
+      "in_300_meters":"在三百米后",
+      "in_500_meters":"在五百米后",
+      "then":"然后",
+      "onto":"进入",
+      "make_a_right_turn":"右转。",
+      "make_a_left_turn":"左转。",
+      "make_a_right_turn_street":"NULL",
+      "make_a_left_turn_street":"NULL",
+      "dist_direction_onto_street":"%1$s%2$s%3$s%4$s",
+      "you_have_reached_the_destination":"您已到达目的地。"
+      })";
+
+  string const yueShortJson =
+      R"({
+      "in_300_meters":"喺三百米後",
+      "in_500_meters":"喺五百米後",
+      "then":"跟住",
+      "onto":"入",
+      "make_a_right_turn":"轉右。",
+      "make_a_left_turn":"轉左。",
+      "make_a_right_turn_street":"NULL",
+      "make_a_left_turn_street":"NULL",
+      "dist_direction_onto_street":"%1$s%2$s%3$s%4$s",
+      "you_have_reached_the_destination":"你已經到咗目的地。"
+      })";
+
   string const faShortJson =
       R"({
       "in_300_meters":"ﺩﺭ ﺲﯿﺻﺩ ﻢﺗﺮﯾ",
@@ -213,6 +243,20 @@ UNIT_TEST(GetTtsStreetTextTest)
       "make_a_left_turn":"ﺎﻨﻌﻄﻓ ﻲﺳﺍﺭﺍ.",
       "dist_direction_onto_street":"%1$s %2$s %3$s %4$s",
       "you_have_reached_the_destination":"ﻞﻗﺩ ﻮﺼﻠﺗ."
+      })";
+
+  // Armenian sentences end with the Armenian full stop (U+0589), not an ASCII colon.
+  string const hyShortJson =
+      R"({
+      "in_300_meters":"Երեք հարյուր մետրից",
+      "in_500_meters":"Հինգ հարյուր մետրից",
+      "then":"Այնուհետև",
+      "onto":"դեպի",
+      "make_a_right_turn":"Թեքվեք աջ։",
+      "make_a_left_turn":"Թեքվեք ձախ։",
+      "make_a_right_turn_street":"NULL",
+      "make_a_left_turn_street":"NULL",
+      "dist_direction_onto_street":"%1$s %2$s %3$s %4$s"
       })";
 
   string const huShortJson =
@@ -273,6 +317,24 @@ UNIT_TEST(GetTtsStreetTextTest)
   TEST_EQUAL(getTtsText.GetTurnNotification(notification3), "三百メートル先左折です。", ());
   TEST_EQUAL(getTtsText.GetTurnNotification(notification4), "その先左折です。", ());
 
+  // No inter-field spaces for Chinese, neither in the street, distance nor "then" notifications.
+  getTtsText.ForTestingSetLocaleWithJson(zhHansShortJson, "zh-Hans");
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification1), "在五百米后右转进入Main Street", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification2), "在三百米后左转进入Main Street", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification3), "在三百米后左转。", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification4), "然后左转。", ());
+
+  getTtsText.ForTestingSetLocaleWithJson(yueShortJson, "yue");
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification1), "喺五百米後轉右入Main Street", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification2), "喺三百米後轉左入Main Street", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification3), "喺三百米後轉左。", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification4), "跟住轉左。", ());
+
+  // Regional Cantonese variants (yue-HK, yue-MO) must be treated like "yue".
+  getTtsText.ForTestingSetLocaleWithJson(yueShortJson, "yue-HK");
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification3), "喺三百米後轉左。", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification4), "跟住轉左。", ());
+
   getTtsText.ForTestingSetLocaleWithJson(faShortJson, "fa");
   TEST_EQUAL(getTtsText.GetTurnNotification(notification1), "ﺩﺭ ﭖﺎﻨﺻﺩ ﻢﺗﺮﯾ ﺐﻫ ﺭﺎﺴﺗ ﺐﭙﯿﭽﯾﺩ ﺐﻫ Main Street", ());
   TEST_EQUAL(getTtsText.GetTurnNotification(notification2), "ﺩﺭ ﺲﯿﺻﺩ ﻢﺗﺮﯾ ﺐﻫ ﭻﭘ ﺐﭙﯿﭽﯾﺩ ﺐﻫ Main Street", ());
@@ -284,6 +346,12 @@ UNIT_TEST(GetTtsStreetTextTest)
   TEST_EQUAL(getTtsText.GetTurnNotification(notification2), "ﺐﻋﺩ ﺙﻼﺜﻤﺋﺓ ﻢﺗﺭ ﺎﻨﻌﻄﻓ ﻲﺳﺍﺭﺍ ﺈﻟﻯ Main Street", ());
   TEST_EQUAL(getTtsText.GetTurnNotification(notification3), "ﺐﻋﺩ ﺙﻼﺜﻤﺋﺓ ﻢﺗﺭ ﺎﻨﻌﻄﻓ ﻲﺳﺍﺭﺍ.", ());
   TEST_EQUAL(getTtsText.GetTurnNotification(notification4), "ﺚﻣ ﺎﻨﻌﻄﻓ ﻲﺳﺍﺭﺍ.", ());
+
+  // The Armenian full stop must be dropped before a street name is spliced in, and kept otherwise.
+  getTtsText.ForTestingSetLocaleWithJson(hyShortJson, "hy");
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification1), "Հինգ հարյուր մետրից Թեքվեք աջ դեպի Main Street", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification3), "Երեք հարյուր մետրից Թեքվեք ձախ։", ());
+  TEST_EQUAL(getTtsText.GetTurnNotification(notification4), "Այնուհետև Թեքվեք ձախ։", ());
 
   getTtsText.ForTestingSetLocaleWithJson(huShortJson, "hu");
   TEST_EQUAL(getTtsText.GetTurnNotification(notification1), "Ötszáz méter után Forduljon jobbra a Main Streetre", ());

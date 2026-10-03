@@ -159,12 +159,6 @@ void ScreenBase::SetFromParams(m2::PointD const & org, double angle, double scal
   UpdateDependentParameters();
 }
 
-void ScreenBase::MatchGandP(m2::PointD const & g, m2::PointD const & p)
-{
-  m2::PointD g_current = PtoG(p);
-  SetOrg(m_Org - g_current + g);
-}
-
 void ScreenBase::MatchGandP3d(m2::PointD const & g, m2::PointD const & p3d)
 {
   m2::PointD g_current = PtoG(P3dtoP(p3d));
@@ -278,34 +272,11 @@ void ScreenBase::PtoG(m2::RectD const & pxRect, m2::RectD & glbRect) const
   glbRect = m2::RectD(PtoG(pxRect.LeftTop()), PtoG(pxRect.RightBottom()));
 }
 
-void ScreenBase::GetTouchRect(m2::PointD const & pixPoint, double pixRadius, m2::AnyRectD & glbRect) const
-{
-  double const r = pixRadius * m_Scale;
-  glbRect = m2::AnyRectD(PtoG(pixPoint), m_Angle, m2::RectD(-r, -r, r, r));
-}
-
-void ScreenBase::GetTouchRect(m2::PointD const & pixPoint, double const pxWidth, double const pxHeight,
-                              m2::AnyRectD & glbRect) const
+m2::AnyRectD ScreenBase::GetTouchRect(m2::PointD const & pixPoint, double const pxWidth, double const pxHeight) const
 {
   double const width = pxWidth * m_Scale;
   double const height = pxHeight * m_Scale;
-  glbRect = m2::AnyRectD(PtoG(pixPoint), m_Angle, m2::RectD(-width, -height, width, height));
-}
-
-bool IsPanningAndRotate(ScreenBase const & s1, ScreenBase const & s2)
-{
-  m2::RectD const & r1 = s1.GlobalRect().GetLocalRect();
-  m2::RectD const & r2 = s2.GlobalRect().GetLocalRect();
-
-  m2::PointD c1 = r1.Center();
-  m2::PointD c2 = r2.Center();
-
-  m2::PointD globPt(c1.x - r1.minX(), c1.y - r1.minY());
-
-  m2::PointD p1 = s1.GtoP(s1.GlobalRect().ConvertFrom(c1)) - s1.GtoP(s1.GlobalRect().ConvertFrom(c1 + globPt));
-  m2::PointD p2 = s2.GtoP(s2.GlobalRect().ConvertFrom(c2)) - s2.GtoP(s2.GlobalRect().ConvertFrom(c2 + globPt));
-
-  return p1.EqualDxDy(p2, 0.00001);
+  return m2::AnyRectD(PtoG(pixPoint), m_Angle, m2::RectD(-width, -height, width, height));
 }
 
 void ScreenBase::ExtractGtoPParams(MatrixT const & m, double & a, double & s, double & dx, double & dy)

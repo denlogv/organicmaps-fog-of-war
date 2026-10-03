@@ -138,8 +138,12 @@ public:
   using TMultilineGlyphsBuffer = buffer_vector<TGlyphsBuffer, 4>;
 
   using TShapedTextLines = buffer_vector<text::TextMetrics, 4>;
-  text::TextMetrics ShapeSingleTextLine(float fontPixelHeight, std::string_view utf8, TGlyphsBuffer * glyphRegions);
-  TShapedTextLines ShapeMultilineText(float fontPixelHeight, std::string_view utf8, char const * delimiters,
+  // `lang` is a StringUtf8Multilang code identifying the language of `utf8`. HarfBuzz uses it
+  // for OpenType `locl` substitutions, so non-English callers (Serbian Cyrillic, Turkish
+  // dotted-i, CJK regional forms) should pass the actual label language for correct glyph
+  // shapes. kUnsupportedLanguageCode means "no language hint -- skip locl".
+  text::TextMetrics ShapeSingleTextLine(std::string_view utf8, int8_t lang, TGlyphsBuffer * glyphRegions);
+  TShapedTextLines ShapeMultilineText(std::string_view utf8, char const * delimiters, int8_t lang,
                                       TMultilineGlyphsBuffer & multilineGlyphRegions);
 
   // This method must be called only on Frontend renderer's thread.
@@ -156,7 +160,6 @@ public:
 
   ref_ptr<Texture> GetSymbolsTexture() const;
   ref_ptr<Texture> GetTrafficArrowTexture() const;
-  ref_ptr<Texture> GetHatchingTexture(std::string_view key) const;
   ref_ptr<Texture> GetArrowTexture() const;
   ref_ptr<Texture> GetSMAAAreaTexture() const;
   ref_ptr<Texture> GetSMAASearchTexture() const;
@@ -186,13 +189,12 @@ private:
   ref_ptr<Texture> AllocateGlyphTexture();
   void GetRegionBase(ref_ptr<Texture> tex, BaseRegion & region, Texture::Key const & key);
 
-  size_t FindHybridGlyphsGroup(std::vector<text::GlyphMetrics> const & glyphs);
-
-  static uint32_t GetNumberOfGlyphsNotInGroup(std::vector<text::GlyphMetrics> const & glyphs, GlyphGroup const & group);
+  // Picks (or creates) the hybrid glyph group that should hold `glyphs` and merges the
+  // deduplicated input keys into the chosen group's m_glyphKeys. The returned reference is
+  // valid until the next mutation of m_glyphGroups.
+  GlyphGroup & FindAndUpdateGlyphsGroup(text::TextMetrics::GlyphMetricsBuffer const & glyphs);
 
   void UpdateGlyphTextures(ref_ptr<dp::GraphicsContext> context);
-
-  static constexpr size_t GetInvalidGlyphGroup();
 
 private:
   bool m_isInitialized = false;
@@ -202,8 +204,6 @@ private:
   drape_ptr<Texture> m_colorTexture;
   std::vector<drape_ptr<Texture>> m_glyphTextures;
   mutable std::mutex m_glyphTexturesMutex;
-
-  std::map<std::string_view, drape_ptr<Texture>> m_hatchingTextures;
 
   drape_ptr<Texture> m_trafficArrowTexture;
   drape_ptr<Texture> m_arrowTexture;

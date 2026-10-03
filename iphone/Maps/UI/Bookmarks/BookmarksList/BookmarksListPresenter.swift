@@ -1,0 +1,513 @@
+final class BookmarksListPresenter {
+  private weak var view: IBookmarksListView?
+  private let router: IBookmarksListRouter
+  private var interactor: IBookmarksListInteractor
+  private var bookmarkGroup: BookmarkGroup
+  private var searchText: String?
+  private var searchResults: [Bookmark]?
+  private var sortedSections: [BookmarksSection]?
+  private var sortingRevision = 0
+  private var movingItemIds = Set<BookmarksListItemId>()
+
+  init(view: IBookmarksListView,
+       router: IBookmarksListRouter,
+       interactor: IBookmarksListInteractor) {
+    self.view = view
+    self.router = router
+    self.interactor = interactor
+    bookmarkGroup = interactor.getBookmarkGroup()
+    subscribeOnGroupReloading()
+  }
+
+  private func subscribeOnGroupReloading() {
+    interactor.onCategoryReload = { [weak self] result in
+      guard let self else { return }
+      switch result {
+      case .notFound:
+        self.router.goBack()
+      case .success:
+        self.bookmarkGroup = self.interactor.getBookmarkGroup()
+        self.reload()
+      }
+    }
+  }
+
+  private func updateInfo() {
+    let info = BookmarksListInfo(title: bookmarkGroup.title,
+                                 description: bookmarkGroup.detailedAnnotation,
+                                 hasDescription: bookmarkGroup.hasDescription,
+                                 isHtmlDescription: bookmarkGroup.isHtmlDescription,
+                                 imageUrl: bookmarkGroup.imageUrl)
+    view?.setInfo(info)
+  }
+
+  private func reload() {
+    let hasEditableItems = bookmarkGroup.bookmarksCount > 0 || bookmarkGroup.trackCount > 0
+    view?.enableEditing(hasEditableItems)
+
+    sortingRevision += 1
+    sortedSections = nil
+    if let searchText {
+      search(searchText)
+    }
+
+    guard hasEditableItems, let sortingType = interactor.lastSortingType() else {
+      showSections()
+      return
+    }
+
+    sort(sortingType)
+  }
+
+  private func showSections() {
+    // A sort may finish before the current query; never display the full category in that case.
+    if searchText != nil, searchResults == nil {
+      return
+    }
+
+    guard let sortedSections else {
+      if let searchResults, searchText != nil {
+        let bookmarks = mapBookmarks(searchResults)
+        view?.setSections(bookmarks.isEmpty ? [] : [BookmarksSectionViewModel(title: L("bookmarks"),
+                                                                              bookmarks: bookmarks)])
+      } else {
+        setDefaultSections()
+      }
+      return
+    }
+
+    let matchingIds = searchText == nil ? nil : searchResults.map { Set($0.map(\.bookmarkId)) }
+    let sections = sortedSections.compactMap { section -> IBookmarksListSectionViewModel? in
+      if let bookmarks = section.bookmarks {
+        let visibleBookmarks = matchingIds.map { ids in bookmarks.filter { ids.contains($0.bookmarkId) } } ?? bookmarks
+        guard !visibleBookmarks.isEmpty else { return nil }
+        return BookmarksSectionViewModel(title: section.sectionName, bookmarks: mapBookmarks(visibleBookmarks))
+      }
+      if let tracks = section.tracks {
+        guard matchingIds == nil else { return nil }
+        return TracksSectionViewModel(tracks: tracks.map { makeTrackViewModel($0) })
+      }
+      fatalError()
+    }
+    view?.setSections(sections)
+  }
+
+  private func setDefaultSections() {
+    var sections: [IBookmarksListSectionViewModel] = []
+    let tracks = bookmarkGroup.tracks.map { makeTrackViewModel($0) }
+    if !tracks.isEmpty {
+      sections.append(TracksSectionViewModel(tracks: tracks))
+    }
+
+    let bookmarks = mapBookmarks(bookmarkGroup.bookmarks)
+    if !bookmarks.isEmpty {
+      sections.append(BookmarksSectionViewModel(title: L("bookmarks"), bookmarks: bookmarks))
+    }
+    view?.setSections(sections)
+  }
+
+  private func mapBookmarks(_ bookmarks: [Bookmark]) -> [BookmarkViewModel] {
+    let location = LocationManager.lastLocation()
+    return bookmarks.map { bookmark in
+      let formattedDistance: String?
+      if let location = location {
+        let distance = location.distance(from: CLLocation(latitude: bookmark.locationCoordinate.latitude,
+                                                          longitude: bookmark.locationCoordinate.longitude))
+        formattedDistance = formatDistance(distance)
+      } else {
+        formattedDistance = nil
+      }
+      return BookmarkViewModel(bookmark, formattedDistance: formattedDistance, colorDidTap: { [weak self] anchor in
+        self?.view?.showColorPicker(anchor: anchor, currentColor: bookmark.bookmarkColor) { color in
+          self?.interactor.setColor(color, for: [.bookmark(bookmark.bookmarkId)])
+          self?.reload()
+        }
+      })
+    }
+  }
+
+  private func makeTrackViewModel(_ track: Track) -> TrackViewModel {
+    TrackViewModel(track,
+                   formattedDistance: formatDistance(Double(track.trackLengthMeters)),
+                   colorDidTap: { [weak self] anchor in
+                     self?.view?.showColorPicker(anchor: anchor, currentColor: track.trackColor) { color in
+                       self?.interactor.setColor(color, for: [.track(track.trackId)])
+                       self?.reload()
+                     }
+                   },
+                   visibilityDidTap: { [weak self] in
+                     self?.toggleTrackVisibility(trackId: track.trackId, isVisible: track.isVisible)
+                   })
+  }
+
+  private func formatDistance(_ distance: Double) -> String {
+    DistanceFormatter.distanceString(fromMeters: distance)
+  }
+
+  private func showSortMenu() {
+    var sortItems = interactor.availableSortingTypes(hasMyPosition: LocationManager.lastLocation() != nil)
+      .map { sortingType -> BookmarksListMenuItem in
+        switch sortingType {
+        case .distance:
+          return BookmarksListMenuItem(title: L("sort_distance"), action: { [weak self] in
+            self?.sort(.distance)
+          })
+        case .date:
+          return BookmarksListMenuItem(title: L("sort_date"), action: { [weak self] in
+            self?.sort(.date)
+          })
+        case .type:
+          return BookmarksListMenuItem(title: L("sort_type"), action: { [weak self] in
+            self?.sort(.type)
+          })
+        case .name:
+          return BookmarksListMenuItem(title: L("sort_name"), action: { [weak self] in
+            self?.sort(.name)
+          })
+        }
+      }
+    sortItems.append(BookmarksListMenuItem(title: L("sort_default"), action: { [weak self] in
+      guard let self else { return }
+      interactor.resetSort()
+      sortingRevision += 1
+      sortedSections = nil
+      showSections()
+    }))
+    view?.showMenu(sortItems, from: .sort)
+  }
+
+  private func showMoreMenu() {
+    var moreItems: [BookmarksListMenuItem] = []
+    moreItems.append(BookmarksListMenuItem(title: L("search_show_on_map"), action: { [weak self] in
+      self?.viewOnMap()
+    }))
+    moreItems.append(BookmarksListMenuItem(title: L("edit"), action: { [weak self] in
+      self?.editCategory()
+    }))
+
+    func exportMenuItem(for fileType: FileType) -> BookmarksListMenuItem {
+      let title: String
+      switch fileType {
+      case .kml:
+        title = L("export_file")
+      case .gpx:
+        title = L("export_file_gpx")
+      case .geoJson:
+        title = L("export_file_geojson")
+      default:
+        fatalError("Unexpected file type")
+      }
+      return BookmarksListMenuItem(title: title, action: { [weak self] in
+        self?.interactor.exportFile(fileType: fileType) { status, url in
+          switch status {
+          case .success:
+            guard let url = url else { fatalError() }
+            self?.view?.share(url, displayName: self?.bookmarkGroup.title ?? "") {
+              self?.interactor.finishExportFile()
+            }
+          case .emptyCategory:
+            self?.view?.showError(title: L("bookmarks_error_title_share_empty"),
+                                  message: L("bookmarks_error_message_share_empty"))
+          case .archiveError, .fileError:
+            self?.view?.showError(title: L("dialog_routing_system_error"),
+                                  message: L("bookmarks_error_message_share_general"))
+          }
+        }
+      })
+    }
+    moreItems.append(exportMenuItem(for: .kml))
+    moreItems.append(exportMenuItem(for: .gpx))
+    moreItems.append(exportMenuItem(for: .geoJson))
+    moreItems.append(BookmarksListMenuItem(title: L("delete_list"),
+                                           destructive: true,
+                                           enabled: interactor.canDeleteGroup(),
+                                           action: { [weak self] in
+                                             self?.interactor.deleteBookmarksGroup()
+                                           }))
+    view?.showMenu(moreItems, from: .more)
+  }
+
+  private func viewOnMap() {
+    view?.saveSearchStateBeforeShowingOnMap(searchText: searchText)
+    interactor.viewOnMap()
+    router.viewOnMap(bookmarkGroup)
+  }
+
+  private func toggleTrackVisibility(trackId: MWMTrackID, isVisible: Bool) {
+    interactor.setTrack(trackId, visible: !isVisible)
+    reload()
+  }
+
+  private func sort(_ sortingType: BookmarksListSortingType) {
+    sortingRevision += 1
+    let revision = sortingRevision
+    let location = LocationManager.lastLocation()
+    // A by-distance sort without a position yields no sections, and the interactor drops that result, so the
+    // completion below would never run and the list would stay unpopulated — use the default order instead.
+    guard sortingType != .distance || location != nil else {
+      sortedSections = nil
+      showSections()
+      return
+    }
+
+    // Resetting to the default order does not cancel an in-flight core sort.
+    interactor.sort(sortingType, location: location) { [weak self] sortedSections in
+      guard let self, self.sortingRevision == revision else { return }
+      self.sortedSections = sortedSections
+      self.showSections()
+    }
+  }
+}
+
+extension BookmarksListPresenter: IBookmarksListPresenter {
+  func viewDidLoad() {
+    reload()
+    updateInfo()
+  }
+
+  func viewDidAppear() {
+    interactor.reloadCategory()
+  }
+
+  func restoreSearchText(_ text: String?) {
+    searchText = text?.isEmpty == false ? text : nil
+  }
+
+  func activateSearch() {
+    interactor.prepareForSearch()
+  }
+
+  func cancelSearch() {
+    searchText = nil
+    searchResults = nil
+    reload()
+  }
+
+  func search(_ text: String) {
+    assert(!text.isEmpty)
+    searchText = text
+    searchResults = nil
+    interactor.search(text) { [weak self] in
+      guard let self, self.searchText == text else { return }
+      self.searchResults = $0
+      self.showSections()
+    }
+  }
+
+  func more() {
+    showMoreMenu()
+  }
+
+  func editCategory() {
+    router.listSettings(bookmarkGroup, delegate: self)
+  }
+
+  func sort() {
+    showSortMenu()
+  }
+
+  func deleteItems(with itemIds: Set<BookmarksListItemId>) {
+    interactor.deleteItems(with: itemIds)
+    reload()
+  }
+
+  func moveItems(with itemIds: Set<BookmarksListItemId>) {
+    guard !itemIds.isEmpty else { return }
+    movingItemIds = itemIds
+    router.selectGroup(currentGroupId: bookmarkGroup.categoryId, delegate: self)
+  }
+
+  func changeColor(of itemIds: Set<BookmarksListItemId>) {
+    guard !itemIds.isEmpty else { return }
+    view?.showBatchColorPicker { [weak self] color in
+      guard let self else { return }
+      interactor.setColor(color, for: itemIds)
+      view?.finishEditing()
+      reload()
+    }
+  }
+
+  func editItem(in section: IBookmarksListSectionViewModel, at index: Int) {
+    switch section {
+    case let bookmarksSection as IBookmarksSectionViewModel:
+      guard let bookmarkId = (bookmarksSection.bookmarks[index] as? BookmarkViewModel)?.bookmarkId else { fatalError() }
+      router.editBookmark(bookmarkId: bookmarkId) { [weak self] wasChanged in
+        if wasChanged {
+          self?.reload()
+        }
+      }
+    case let tracksSection as ITracksSectionViewModel:
+      guard let trackId = (tracksSection.tracks[index] as? TrackViewModel)?.trackId else { fatalError() }
+      router.editTrack(trackId: trackId) { [weak self] wasChanged in
+        if wasChanged {
+          self?.reload()
+        }
+      }
+    default:
+      fatalError("Cannot edit item: unsupported section type: \(section.self)")
+    }
+  }
+
+  func selectItem(in section: IBookmarksListSectionViewModel, at index: Int) {
+    view?.saveSearchStateBeforeShowingOnMap(searchText: searchText)
+    switch section {
+    case let bookmarksSection as IBookmarksSectionViewModel:
+      let bookmark = bookmarksSection.bookmarks[index] as! BookmarkViewModel
+      interactor.viewBookmarkOnMap(bookmark.bookmarkId)
+      router.viewOnMap(bookmarkGroup)
+    case let tracksSection as ITracksSectionViewModel:
+      let track = tracksSection.tracks[index] as! TrackViewModel
+      interactor.viewTrackOnMap(track.trackId)
+      router.viewOnMap(bookmarkGroup)
+    default:
+      fatalError("Wrong section type: \(section.self)")
+    }
+  }
+
+  func showDescription() {
+    router.showDescription(bookmarkGroup)
+  }
+}
+
+extension BookmarksListPresenter: CategorySettingsViewControllerDelegate {
+  func categorySettingsController(_: CategorySettingsViewController, didDelete _: MWMMarkGroupID) {
+    router.goBack()
+  }
+
+  func categorySettingsController(_: CategorySettingsViewController, didEndEditing _: MWMMarkGroupID) {
+    bookmarkGroup = interactor.getBookmarkGroup()
+    updateInfo()
+  }
+}
+
+extension BookmarksListPresenter: SelectBookmarkGroupViewControllerDelegate {
+  func bookmarkGroupViewController(_ viewController: SelectBookmarkGroupViewController,
+                                   didSelect _: String,
+                                   groupId: MWMMarkGroupID) {
+    defer { viewController.dismiss(animated: true) }
+
+    let itemIds = movingItemIds
+    movingItemIds.removeAll()
+    guard groupId != bookmarkGroup.categoryId, !itemIds.isEmpty else { return }
+
+    interactor.moveItems(with: itemIds, toGroupId: groupId)
+    view?.finishEditing()
+
+    if bookmarkGroup.isEmpty {
+      // Avoid briefly showing an empty group between dismissing the picker and returning to the parent list.
+      if let rootNavigationController = viewController.presentingViewController as? UINavigationController {
+        rootNavigationController.popViewController(animated: false)
+      }
+    } else {
+      reload()
+    }
+  }
+}
+
+extension IBookmarksSectionViewModel {
+  var numberOfItems: Int { bookmarks.count }
+  var editableItems: [IBookmarksListItemViewModel] { bookmarks }
+}
+
+extension ITracksSectionViewModel {
+  var numberOfItems: Int { tracks.count }
+  var sectionTitle: String { L("tracks_title") }
+  var editableItems: [IBookmarksListItemViewModel] { tracks }
+}
+
+private struct BookmarkViewModel: IBookmarksListItemViewModel {
+  let bookmarkId: MWMMarkID
+  let name: String
+  let subtitle: String
+  var itemId: BookmarksListItemId { .bookmark(bookmarkId) }
+  var image: UIImage {
+    circleImageForColor(bookmarkColor, frameSize: 22, iconName: bookmarkIconName)
+  }
+
+  var colorDidTapAction: ((_ anchor: UIView?) -> Void)?
+
+  private let bookmarkColor: UIColor
+  private let bookmarkIconName: String
+
+  init(_ bookmark: Bookmark, formattedDistance: String?, colorDidTap: ((_ anchor: UIView?) -> Void)?) {
+    bookmarkId = bookmark.bookmarkId
+    name = bookmark.bookmarkName
+    bookmarkColor = bookmark.bookmarkColor
+    bookmarkIconName = bookmark.bookmarkIconName
+    subtitle = [formattedDistance, bookmark.bookmarkType].compactMap { $0 }.joined(separator: " • ")
+    colorDidTapAction = colorDidTap
+  }
+}
+
+private struct TrackViewModel: ITrackViewModel {
+  let trackId: MWMTrackID
+  let name: String
+  let subtitle: String
+  let isVisible: Bool
+  var itemId: BookmarksListItemId { .track(trackId) }
+  var image: UIImage {
+    circleImageForColor(trackColor, frameSize: 22)
+  }
+
+  var colorDidTapAction: ((_ anchor: UIView?) -> Void)?
+  let visibilityDidTapAction: () -> Void
+
+  private let trackColor: UIColor
+
+  init(_ track: Track,
+       formattedDistance: String,
+       colorDidTap: ((_ anchor: UIView?) -> Void)?,
+       visibilityDidTap: @escaping () -> Void) {
+    trackId = track.trackId
+    name = track.trackName
+    subtitle = "\(L("length")) \(formattedDistance)"
+    isVisible = track.isVisible
+    trackColor = track.trackColor
+    colorDidTapAction = colorDidTap
+    visibilityDidTapAction = visibilityDidTap
+  }
+}
+
+private struct BookmarksSectionViewModel: IBookmarksSectionViewModel {
+  let sectionTitle: String
+  let bookmarks: [IBookmarksListItemViewModel]
+
+  init(title: String, bookmarks: [IBookmarksListItemViewModel]) {
+    sectionTitle = title
+    self.bookmarks = bookmarks
+  }
+}
+
+private struct TracksSectionViewModel: ITracksSectionViewModel {
+  let tracks: [ITrackViewModel]
+}
+
+private struct BookmarksListMenuItem: IBookmarksListMenuItem {
+  let title: String
+  let destructive: Bool
+  let enabled: Bool
+  let action: () -> Void
+
+  init(title: String, destructive: Bool = false, enabled: Bool = true, action: @escaping () -> Void) {
+    self.title = title
+    self.destructive = destructive
+    self.enabled = enabled
+    self.action = action
+  }
+}
+
+private struct BookmarksListInfo: IBookmarksListInfoViewModel {
+  let title: String
+  let description: String
+  let hasDescription: Bool
+  let isHtmlDescription: Bool
+  let imageUrl: URL?
+
+  init(title: String, description: String, hasDescription: Bool, isHtmlDescription: Bool, imageUrl: URL? = nil) {
+    self.title = title
+    self.description = description
+    self.hasDescription = hasDescription
+    self.isHtmlDescription = isHtmlDescription
+    self.imageUrl = imageUrl
+  }
+}

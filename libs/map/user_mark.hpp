@@ -31,6 +31,9 @@ public:
     RoadWarningFirstDirty,
     RoadWarningFirstToll,
     RoadWarningFirstFerry,
+    RoadWarningFirstSteps,
+    RoadWarningFirstGate,
+    RoadWarningFirstLiftGate,
   };
 
   enum Type : uint32_t
@@ -43,14 +46,15 @@ public:
     SPEED_CAM,
     ROAD_WARNING,
     TRANSIT,
-    LOCAL_ADS,
     TRACK_INFO,
     TRACK_SELECTION,
     DEBUG_MARK,  // Plain "DEBUG" results in a name collision.
     COLORED,
+    ROUTE_ALT,  // ETA balloon attached to a route variant (active or alternative).
     USER_MARK_TYPES_COUNT,
     USER_MARK_TYPES_COUNT_MAX = 1000,
   };
+  static_assert(BOOKMARK == 0);
 
   UserMark(kml::MarkId id, m2::PointD const & ptOrg, UserMark::Type type);
   UserMark(m2::PointD const & ptOrg, UserMark::Type type);
@@ -87,7 +91,6 @@ public:
   bool IsMarkAboveText() const override { return false; }
   float GetSymbolOpacity() const override { return 1.0f; }
   bool IsSymbolSelectable() const override { return false; }
-  bool IsNonDisplaceable() const override { return false; }
 
   ms::LatLon GetLatLon() const;
 

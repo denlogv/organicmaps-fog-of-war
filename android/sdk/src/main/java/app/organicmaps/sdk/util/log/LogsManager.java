@@ -2,7 +2,6 @@ package app.organicmaps.sdk.util.log;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,9 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Build;
-import android.os.Debug;
 import android.util.Log;
-import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -45,14 +42,14 @@ public final class LogsManager
 {
   public interface OnZipCompletedListener
   {
-    // Called from the logger thread.
+    // Called from the background logs task thread.
     void onCompleted(final boolean success, @Nullable final String zipPath);
   }
 
   private final static String TAG = LogsManager.class.getSimpleName();
 
   public final static LogsManager INSTANCE = new LogsManager();
-  final static ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+  private final static ExecutorService TASK_EXECUTOR = Executors.newSingleThreadExecutor();
 
   @Nullable
   private Context mApplicationContext;
@@ -168,6 +165,12 @@ public final class LogsManager
 
   private void switchFileLoggingEnabled(boolean enabled)
   {
+    if (!enabled)
+    {
+      Logger.flushFileLogs();
+      Logger.closeFileLogs();
+    }
+
     mIsFileLoggingEnabled = enabled;
     // Only Debug builds log DEBUG level to Android system log.
     nativeToggleCoreDebugLogs(enabled || BuildConfig.DEBUG);
@@ -220,7 +223,7 @@ public final class LogsManager
 
     Log.i(TAG, "Zipping log files in " + mLogsFolder);
     final Runnable task = new ZipLogsTask(mLogsFolder, mLogsFolder + ".zip", listener);
-    EXECUTOR.execute(task);
+    TASK_EXECUTOR.execute(task);
   }
 
   /**
@@ -284,43 +287,6 @@ public final class LogsManager
     sb.append("\n\n");
 
     return sb.toString();
-  }
-
-  // Called from JNI.
-  @SuppressWarnings("unused")
-  @NonNull
-  @Keep
-  public static String getMemoryInfo(@NonNull Context context)
-  {
-    final Debug.MemoryInfo debugMI = new Debug.MemoryInfo();
-    Debug.getMemoryInfo(debugMI);
-    final ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-    final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-    activityManager.getMemoryInfo(mi);
-
-    final StringBuilder log = new StringBuilder(256);
-    log.append("Memory info: ")
-        .append(" Debug.getNativeHeapSize() = ")
-        .append(Debug.getNativeHeapSize() / 1024)
-        .append("KB; Debug.getNativeHeapAllocatedSize() = ")
-        .append(Debug.getNativeHeapAllocatedSize() / 1024)
-        .append("KB; Debug.getNativeHeapFreeSize() = ")
-        .append(Debug.getNativeHeapFreeSize() / 1024)
-        .append("KB; debugMI.getTotalPrivateDirty() = ")
-        .append(debugMI.getTotalPrivateDirty())
-        .append("KB; debugMI.getTotalPss() = ")
-        .append(debugMI.getTotalPss())
-        .append("KB; mi.availMem = ")
-        .append(mi.availMem / 1024)
-        .append("KB; mi.threshold = ")
-        .append(mi.threshold / 1024)
-        .append("KB; mi.lowMemory = ")
-        .append(mi.lowMemory)
-        .append("; mi.totalMem = ")
-        .append(mi.totalMem / 1024)
-        .append("KB;");
-
-    return log.toString();
   }
 
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)

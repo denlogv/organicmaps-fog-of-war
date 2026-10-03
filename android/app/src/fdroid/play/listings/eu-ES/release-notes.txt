@@ -1,9 +1,10 @@
-• OSM maparen datuak martxoaren 10etik aurrera, Wikipedia martxoaren 1etik aurrera
-• Txinako probintzietarako kota-isolinea zehatzagoak
-• Zuhaitz lerroak, larru-dendak eta erlijio-ondasunak saltzen dituzten dendak gehitu dira
-• Baldintzapeko abiadura-mugetarako laguntza gehitu da
-• Tanzania eskualde txikiagotan banatu da
-• Negozioen ordutegiaren bistaratzea hobetu
-• Hainbat hutsegite konpondu dira
-• Aplikazioen eta herrialdeen izenen itzulpenak hobetu dira
-omaps.org/eu/news
+• OSM datuak abuztuaren 26koak
+• BERRIA: markagailuen eta arrastoen hautaketa anitza
+• BERRIA: arrastoak banaka ezkutatu begi-ikonoarekin
+• BERRIA: Wikipediako artikuluak bengaleraz, hindiz, marathiz, polonieraz, tamileraz, teluguz eta urduz
+• Konponduta hutsegiteak eta blokeoak
+• Mapan gehitu dira hegazti-behatokiak, agertokiak, muinoak eta harri-arkuak
+• Lekuak partekatzeko modu hobea
+• Android Auto konponketak
+• Konponduta ibilbideko geldialdien hautaketa
+…gehiago: omaps.org/eu/news

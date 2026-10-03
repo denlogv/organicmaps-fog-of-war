@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "Heimilisfang";
+"type.building.construction" = "Bygging í byggingu";
 "type.building.has_parts" = "Bygging";
 "type.building_part" = "Bygging";
 "type.building.garage" = "Verkstæði";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "Miðjarðarhafs";
 "type.cuisine.mexican" = "Mexíkanskt";
 "type.cuisine.moroccan" = "Marokkanskt";
-"type.cuisine.noodles" = "Núðlur";
+"type.cuisine.noodle" = "Núðlur";
 "type.cuisine.oriental" = "Austur-asískt";
 "type.cuisine.pancake" = "Pönnukökur";
 "type.cuisine.pasta" = "Pasta";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "Kryddpylsur";
 "type.cuisine.savory_pancakes" = "Girnilegar pönnukökur";
 "type.cuisine.seafood" = "Sjávarréttir";
+"type.cuisine.shawarma" = "Shawarma";
 "type.cuisine.soba" = "Soba-núðlur";
 "type.cuisine.spanish" = "Spænskt";
 "type.cuisine.steak_house" = "Steikhús";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "Japanskur kastali";
 "type.historic.castle.stately" = "Kastalasetur";
 "type.historic.city_gate" = "Borgarhlið";
+"type.man_made.ceremonial_gate" = "Hátíðleg hlið";
 "type.historic.citywalls" = "Borgarmúr";
 "type.historic.fort" = "Virki";
 "type.historic.gallows" = "Gálgar";
@@ -716,6 +719,7 @@
 "type.landuse" = "Landnotkun";
 "type.landuse.allotments" = "Úthlutuð svæði";
 "type.landuse.basin" = "Lægð";
+"type.landuse.basin.intermittent" = "Tímabundin lægð";
 "type.landuse.brownfield" = "Órækt";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "Grjótnáma";
 "type.landuse.railway" = "Járnbrautasvæði";
 "type.landuse.recreation_ground" = "Leikvöllur";
-"type.landuse.reservoir" = "Uppistöðulón";
 "type.landuse.residential" = "Íbúðasvæði";
 "type.landuse.retail" = "Smásölusvæði";
 "type.landuse.salt_pond" = "Salttjörn";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "Skautahöll";
 "type.leisure.marina" = "Bátalægi";
 "type.leisure.nature_reserve" = "Náttúruverndarsvæði";
+"type.leisure.bird_hide" = "Fuglaskoðunarbyrgi";
 "type.leisure.outdoor_seating" = "Sæti utandyra";
 "type.leisure.firepit" = "Eldgryfja";
 "type.leisure.park" = "Almenningsgarður";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "Uppistöðulón";
 "type.natural.water.basin" = "Lægð";
 "type.natural.water.river" = "Á";
+"type.natural.water.intermittent" = "Tímabundið vatn";
 "type.natural.land" = "Land";
 "type.natural.meadow" = "Skógarlundur";
 "type.natural.orchard" = "Trjágarður";
 "type.natural.peak" = "Tindur";
+"type.natural.hill" = "Hóll";
+"type.natural.arch" = "Steinbogagöng";
 "type.natural.saddle" = "Fjallsröðull";
 "type.natural.rock" = "Klettar";
 "type.natural.scrub" = "Runnar";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "Trjáröð";
 "type.natural.vineyard" = "Vínekra";
 "type.natural.volcano" = "Eldfjall";
+"type.natural.volcano.active" = "Virkur eldfjall";
 "type.natural.water" = "Vatn";
 "type.natural.wetland" = "Votlendi";
 "type.natural.wetland.bog" = "Fen";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "Grashokkí";
 "type.sport.badminton" = "Badminton";
 "type.sport.pelota" = "Baskneskt Pelota";
+"type.sport.boules" = "Boules";
+"type.sport.cycling" = "Hjólreiðar";
+"type.sport.four_square" = "Fjórir ferningar";
+"type.sport.horse_racing" = "Veðhlaup";
+"type.sport.karting" = "Gokart";
+"type.sport.motocross" = "Motokross";
+"type.sport.motor" = "Vélaakstursíþrótt";
+"type.sport.netball" = "Netbolti";
+"type.sport.pickleball" = "Pickleball";
+"type.sport.rugby_union" = "Ruðningur";
+"type.sport.running" = "Hlaup";
+"type.sport.softball" = "Softbolti";
 "type.tourism" = "Ferðamennska";
 "type.tourism.aquarium" = "Fiskabúr";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "Sögustaður";
 "type.attraction.maze" = "Völundarhús";
 "type.attraction.roller_coaster" = "Rússíbani";
+"type.roller_coaster.track" = "Rússíbani";
 "type.attraction.water_slide" = "Vatnsrennibraut";
 "type.tourism.attraction.specified" = "Aðdráttarafl";
 "type.tourism.camp_site" = "Tjaldsvæði";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Hraðahindrun";
 "type.traffic_calming.hump" = "Hraðahindrun";
 "type.waterway" = "Siglingaleið";
+"type.waterway.access_point" = "Aðgengispunktur vatnaleiðar";
 "type.waterway.canal" = "Skipaskurður";
 "type.waterway.canal.tunnel" = "Skipaskurðsgöng";
 "type.waterway.fish_pass" = "Fiskastigi";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "Félagsþjónusta";
+"type.amenity.stage" = "Svið";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "Inngangur á bráðamóttöku";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "Úrsmiður";
 "type.xmas_feature.market" = "Jólamarkaður";
 "type.xmas_feature.tree" = "Jólatré";
+"type.amenity.hookah_lounge" = "Vatnspípubar";

@@ -5,11 +5,20 @@
 
 #include "routing/routing_integration_tests/routing_test_tools.hpp"
 
+#include "routing/route.hpp"
+
 #include "platform/platform_tests_support/helpers.hpp"
 
 #include "geometry/mercator.hpp"
 
+#include "base/scope_guard.hpp"
+#include "base/stl_helpers.hpp"
+
+#include <algorithm>
 #include <limits>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace route_test
 {
@@ -73,12 +82,6 @@ UNIT_TEST(RussiaMoscowNoServiceCrossing)
 {
   CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Car), FromLatLon(55.77787, 37.70405), {0., 0.},
                                    FromLatLon(55.77682, 37.70391), 3140.);
-}
-
-UNIT_TEST(RussiaMoscowShortWayToService)
-{
-  CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Car), FromLatLon(55.77787, 37.70405), {0., 0.},
-                                   FromLatLon(55.77691, 37.70428), 171.);
 }
 
 UNIT_TEST(PriceIslandLoadCrossGeometryTest)
@@ -163,6 +166,36 @@ UNIT_TEST(GermanyToTallinCrossMwmRoute)
 {
   CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Car), FromLatLon(48.397416, 16.515289), {0.0, 0.0},
                                    FromLatLon(59.437214, 24.745355), 1650000.);
+}
+
+// https://github.com/organicmaps/organicmaps/issues/13346
+UNIT_TEST(Canada_Lethbridge_Inuvik_NoBacktrack)
+{
+  std::set<std::string> const mwmNames = {
+      "Canada_Alberta_Edmonton",
+      "Canada_Alberta_North",
+      "Canada_Alberta_South",
+      "Canada_British Columbia_Central",
+      "Canada_British Columbia_Far_North",
+      "Canada_British Columbia_North",
+      "Canada_British Columbia_Northeast",
+      "Canada_Northwest Territories_North",
+      "Canada_Yukon_North",
+      "Canada_Yukon_Whitehorse",
+  };
+
+  // Keep the complete dataset on disk and register only the maps needed for this route in a dedicated router.
+  std::vector<LocalCountryFile> localFiles;
+  GetAllLocalFiles(localFiles);
+  base::EraseIf(localFiles,
+                [&mwmNames](LocalCountryFile const & file) { return !mwmNames.contains(file.GetCountryName()); });
+  TEST_EQUAL(localFiles.size(), mwmNames.size(), (mwmNames));
+  std::sort(localFiles.begin(), localFiles.end(), [](LocalCountryFile const & lhs, LocalCountryFile const & rhs)
+  { return lhs.GetCountryName() < rhs.GetCountryName(); });
+
+  VehicleRouterComponents components(localFiles, VehicleType::Car);
+  CalculateRouteAndTestRouteLength(components, FromLatLon(49.6956, -112.8451), {0., 0.}, FromLatLon(68.3607, -133.7230),
+                                   3'717'609, 0.05);
 }
 
 UNIT_TEST(Russia_Moscow_Leningradskiy39RepublicOfSouthAfricaCapeTownCenterRouteTest)
@@ -932,30 +965,164 @@ UNIT_TEST(Belarus_Kopyl_Minsk)
                                    FromLatLon(53.57253, 27.47209), 82109);
 }
 
-UNIT_TEST(Germany_MaxspeedConditional)
+UNIT_TEST(Lithuania_MaxspeedConditional)
 {
   using namespace platform::tests_support;
 
-  auto const from = FromLatLon(50.853998, 12.837031);
-  auto const to = FromLatLon(50.867373, 12.806966);
+  // A1 motorway
+  auto const from = FromLatLon(54.6860678, 25.0537404);
+  auto const to = FromLatLon(54.7520237, 24.9163073);
 
   auto components = CreateAllMapsComponents(VehicleType::Car, {});
   time_t currentTime;
   components->SetCurrentTimeGetter([&currentTime] { return currentTime; });
 
-  // maxspeed = 100
+  // maxspeed = 110 (Nov-Mar)
   currentTime = GetUnixtimeByDate(2026, Month::Feb, 20, 19, 00);
   TRouteResult result = CalculateRoute(*components, from, {0., 0.}, to);
   TEST_EQUAL(result.second, RouterResultCode::NoError, ());
   auto const eta1 = result.first->GetTotalTimeSec();
 
-  // maxspeed = none
-  currentTime = GetUnixtimeByDate(2026, Month::Feb, 20, 14, 00);
+  // maxspeed = 130
+  currentTime = GetUnixtimeByDate(2026, Month::Apr, 20, 14, 00);
   result = CalculateRoute(*components, from, {0., 0.}, to);
   TEST_EQUAL(result.second, RouterResultCode::NoError, ());
   auto const eta2 = result.first->GetTotalTimeSec();
 
-  TEST_LESS(eta2 * 1.2, eta1, ());
+  TEST_LESS(eta2 * 1.1, eta1, ());
+}
+
+// https://github.com/organicmaps/organicmaps/issues/10848
+UNIT_TEST(Russia_Nsk_NoPassThrough)
+{
+  // Direct route via "Забалуева"
+  CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Car), FromLatLon(54.989096, 82.814513), {0., 0.},
+                                   FromLatLon(54.988888, 82.808875), 418.7);
+  // Detour route via "Порт-Артурская" avoiding pass through service
+  CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Car), FromLatLon(54.9886261, 82.8091597), {0., 0.},
+                                   FromLatLon(54.9924478, 82.8082036), 1254.17);
+}
+
+// The destination (43.5298373, 5.44563164) lies on Rue de la Treille. The route must
+// reach it along a road, not end ~120 m away (on the parallel Rue du Bon Pasteur) with a long straight
+// offroad "snap" onto the destination.
+// https://github.com/organicmaps/organicmaps/issues/11709
+UNIT_TEST(France_RueDeLaTreille_FinishSnap)
+{
+  auto const finish = FromLatLon(43.5298373, 5.44563164);
+  m2::PointD const starts[] = {
+      FromLatLon(43.5322251, 5.44530922),  // far start (long one-way detour, but must still reach the finish).
+      FromLatLon(43.5308099, 5.44491621),  // near start.
+  };
+
+  for (auto const & start : starts)
+  {
+    TRouteResult const res = CalculateRoute(GetVehicleComponents(VehicleType::Car), start, {0., 0.}, finish);
+    TEST_EQUAL(res.second, RouterResultCode::NoError, ());
+
+    auto const & segments = res.first->GetRouteSegments();
+    TEST(!segments.empty(), ());
+
+    // The last real road point must be next to the destination: a missing final segment shows up as a
+    // long straight offroad jump from the last road point to the finish.
+    m2::PointD lastRoadPoint = finish;
+    for (auto it = segments.rbegin(); it != segments.rend(); ++it)
+    {
+      if (it->GetSegment().IsRealSegment())
+      {
+        lastRoadPoint = it->GetJunction().GetPoint();
+        break;
+      }
+    }
+    double const snapM = mercator::DistanceOnEarth(lastRoadPoint, finish);
+    TEST_LESS(snapM, 30.0, ("Finish reached with a", snapM, "m offroad snap instead of a final road segment"));
+  }
+}
+
+// Regression test: forward and backward A* waves meet on a two-way feature, which used to wire a
+// same-feature cycle into the connectibility "parents" graph and hang IndexGraph::IsRestricted forever.
+// https://github.com/organicmaps/organicmaps/issues/13063
+UNIT_TEST(India_Bangalore_ShortRoute)
+{
+  CalculateRouteAndTestRouteLength(GetVehicleComponents(VehicleType::Car), FromLatLon(12.963008, 77.648966), {0., 0.},
+                                   FromLatLon(12.9600501, 77.6451721), 1997.79);
+}
+
+// The variant the user picked must survive a rebuild: after switching to the shorter alternative,
+// recalculating the route (as happens after every off-route deviation) has to keep the
+// distance-biased weights instead of silently returning the fastest route again.
+// https://github.com/organicmaps/organicmaps/issues/13205
+UNIT_TEST(Germany_FrankfurtDarmstadt_KeepAlternativeAfterRebuild)
+{
+  auto & components = GetVehicleComponents(VehicleType::Car);
+  // Frankfurt -> Darmstadt: A5 motorway (fastest) vs the shorter B3 (about 1.4 km less).
+  Checkpoints const checkpoints(FromLatLon(50.1109, 8.6821), FromLatLon(49.8728, 8.6512));
+
+  // The router keeps the chosen variant until the next route is built; don't leak it into the
+  // tests that share these components.
+  SCOPE_GUARD(clearRouter, [&components] { components.GetRouter().ClearState(); });
+
+  auto const initial = CalculateRoutes(components, checkpoints);
+  TEST_EQUAL(initial.second, RouterResultCode::NoError, ());
+  TEST_EQUAL(initial.first.size(), 2, ());
+
+  double const fastestM = initial.first[0]->GetTotalDistanceMeters();
+  double const shortestM = initial.first[1]->GetTotalDistanceMeters();
+  TEST_LESS(shortestM, fastestM, ());
+
+  // The user switches to the shorter alternative, then the route is rebuilt.
+  components.GetRouter().SwapAltRouteToActive();
+
+  auto const rebuilt = CalculateRoutes(components, checkpoints);
+  TEST_EQUAL(rebuilt.second, RouterResultCode::NoError, ());
+  TEST_EQUAL(rebuilt.first.size(), 2, ());
+  TEST_ALMOST_EQUAL_ABS(rebuilt.first[0]->GetTotalDistanceMeters(), shortestM, 1.0, ());
+  TEST_ALMOST_EQUAL_ABS(rebuilt.first[1]->GetTotalDistanceMeters(), fastestM, 1.0, ());
+
+  // Switching back to the fastest one is remembered just the same.
+  components.GetRouter().SwapAltRouteToActive();
+
+  auto const restored = CalculateRoutes(components, checkpoints);
+  TEST_EQUAL(restored.second, RouterResultCode::NoError, ());
+  TEST_EQUAL(restored.first.size(), 2, ());
+  TEST_ALMOST_EQUAL_ABS(restored.first[0]->GetTotalDistanceMeters(), fastestM, 1.0, ());
+
+  // A new journey resets the choice, including when the distance-biased route was active.
+  components.GetRouter().SwapAltRouteToActive();
+  components.GetRouter().ClearState();
+  auto const newJourney = CalculateRoutes(components, checkpoints);
+  TEST_EQUAL(newJourney.second, RouterResultCode::NoError, ());
+  TEST_EQUAL(newJourney.first.size(), 2, ());
+  TEST_ALMOST_EQUAL_ABS(newJourney.first[0]->GetTotalDistanceMeters(), fastestM, 1.0, ());
+
+  // Move along the selected route far enough to exercise its cached suffix during adjustment.
+  auto const & selected = *newJourney.first[1];
+  auto const & segments = selected.GetRouteSegments();
+  auto const startIt = std::find_if(segments.begin(), segments.end(), [](RouteSegment const & segment)
+  { return segment.GetDistFromBeginningMeters() >= 2000.0; });
+  TEST(startIt != segments.end(), ());
+  Checkpoints const advanced(startIt->GetJunction().GetPoint(), checkpoints.GetFinish());
+  components.GetRouter().SwapAltRouteToActive();
+
+  RouterDelegate delegate;
+  RoutesResult adjusted;
+  TEST_EQUAL(components.GetRouter().CalculateRoute(advanced, {} /* startDirection */, true /* adjust */,
+                                                   true /* needAlternatives */, delegate, adjusted),
+             RouterResultCode::NoError, ());
+  TEST_EQUAL(adjusted.m_routes.size(), 1, ());
+  TEST_LESS(Route(adjusted.GetActive()).GetTotalDistanceMeters(), shortestM, ());
+
+  // An adjustment publishes only the active route, but must retain its strategy for a later
+  // full rebuild. Compare that rebuild with a fresh fastest-first calculation at the same start.
+  auto const afterAdjust = CalculateRoutes(components, advanced);
+  TEST_EQUAL(afterAdjust.second, RouterResultCode::NoError, ());
+  components.GetRouter().ClearState();
+  auto const reference = CalculateRoutes(components, advanced);
+  TEST_EQUAL(reference.second, RouterResultCode::NoError, ());
+  TEST_EQUAL(reference.first.size(), 2, ());
+  TEST_EQUAL(afterAdjust.first.size(), 2, ());
+  TEST_ALMOST_EQUAL_ABS(afterAdjust.first[0]->GetTotalDistanceMeters(), reference.first[1]->GetTotalDistanceMeters(),
+                        1.0, ());
 }
 
 }  // namespace route_test

@@ -229,7 +229,7 @@ ScreenBase const & UserEventStream::ProcessEvents(bool & modelViewChanged, bool 
     {
       m_needTrackCenter = false;
       ref_ptr<TouchEvent> touchEvent = make_ref(e);
-      breakAnim = ProcessTouch(*touchEvent.get());
+      breakAnim = ProcessTouch(*touchEvent);
     }
     break;
     case UserEvent::EventType::Rotate:
@@ -310,11 +310,13 @@ void UserEventStream::ApplyAnimations()
 {
   if (m_animationSystem.AnimationExists(Animation::Object::MapPlane))
   {
+    ScreenBase const & current = GetCurrentScreen();
     ScreenBase screen;
-    if (m_animationSystem.GetScreen(GetCurrentScreen(), screen))
+    if (m_animationSystem.GetScreen(current, screen) && screen != current)
+    {
       m_navigator.SetFromScreen(screen);
-
-    m_modelViewChanged = true;
+      m_modelViewChanged = true;
+    }
   }
 
   /// @todo (By VNG): NormalizeScreenOriginX is disabled — it causes full tile invalidation because
@@ -427,12 +429,7 @@ bool UserEventStream::OnSetCenter(ref_ptr<SetCenterEvent> centerEvent)
 
   center.x = mercator::NearestWrapX(center.x, GetCurrentScreen().GetOrg().x);
 
-  bool const trackViewport = centerEvent->TrackVisibleViewport();
-
-  m2::PointD const pixelTarget =
-      trackViewport ? m_visibleViewport.Center() : GetCurrentScreen().PixelRectIn3d().Center();
-
-  if (trackViewport)
+  if (centerEvent->TrackVisibleViewport())
   {
     m_needTrackCenter = true;
     m_trackedCenter = center;
@@ -443,17 +440,17 @@ bool UserEventStream::OnSetCenter(ref_ptr<SetCenterEvent> centerEvent)
   if (zoom != kDoNotChangeZoom)
   {
     screen.SetFromParams(center, screen.GetAngle(), GetScreenScale(zoom));
-    screen.MatchGandP3d(center, pixelTarget);
+    screen.MatchGandP3d(center, m_visibleViewport.Center());
   }
   else if (scaleFactor > 0.0)
   {
     screen.SetOrg(center);
-    ApplyScale(pixelTarget, scaleFactor, screen);
+    ApplyScale(m_visibleViewport.Center(), scaleFactor, screen);
   }
   else
   {
     GetTargetScreen(screen);
-    screen.MatchGandP3d(center, pixelTarget);
+    screen.MatchGandP3d(center, m_visibleViewport.Center());
   }
 
   return SetScreen(screen, centerEvent->IsAnim(), centerEvent->GetParallelAnimCreator());

@@ -1,6 +1,7 @@
 #import "MWMMapDownloaderTableViewCell.h"
 #import "MWMCircularProgress.h"
-#import "NSString+Categories.h"
+#import "NSString+Ranges.h"
+#import "SwiftBridge.h"
 
 #import <CoreApi/MWMCommon.h>
 #import <CoreApi/MWMFrameworkHelper.h>
@@ -26,6 +27,12 @@
   UILongPressGestureRecognizer * lpGR = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                                       action:@selector(onLongPress:)];
   [self addGestureRecognizer:lpGR];
+}
+
+- (void)layoutSubviews
+{
+  [super layoutSubviews];
+  [self alignSeparatorWithView:self.title];
 }
 
 - (void)prepareForReuse
@@ -65,8 +72,8 @@
   [self configProgress:nodeAttrs];
 
   self.title.attributedText = [self matchedString:nodeAttrs.nodeName
-                                    selectedAttrs:@{NSFontAttributeName: [UIFont bold17]}
-                                  unselectedAttrs:@{NSFontAttributeName: [UIFont regular17]}];
+                                    selectedAttrs:@{NSFontAttributeName: UIFont.bold17.dynamic}
+                                  unselectedAttrs:@{NSFontAttributeName: UIFont.regular17.dynamic}];
 
   uint64_t size = 0;
   BOOL isModeDownloaded = self.mode == MWMMapDownloaderModeDownloaded;
@@ -131,7 +138,7 @@
 
 - (void)setDownloadProgress:(CGFloat)progress
 {
-  self.progress.progress = kMaxProgress * progress;
+  self.progress.progress = AppConstants.maxProgress * progress;
 }
 
 #pragma mark - MWMCircularProgressProtocol

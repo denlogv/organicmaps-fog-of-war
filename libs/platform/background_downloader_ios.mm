@@ -39,15 +39,26 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
 
 @interface MapFileSaveStrategy : NSObject
 
-- (NSURL *)getLocationForWebUrl:(NSURL *)webUrl;
+- (nullable NSURL *)getLocationForTask:(NSURLSessionTask *)task;
 
 @end
 
 @implementation MapFileSaveStrategy
 
-- (NSURL *)getLocationForWebUrl:(NSURL *)webUrl
+- (nullable NSURL *)getLocationForTask:(NSURLSessionTask *)task
 {
-  NSString * path = @(downloader::GetFilePathByUrl(webUrl.path.UTF8String).c_str());
+  NSString * path = task.taskDescription;
+  if (path.length == 0)
+  {
+    // A background task restored after an app relaunch can reach here before it is re-attached
+    // (which sets taskDescription), so derive the save path from the URL. That only works for the
+    // official CDN layout (maps/<v>/<f>.mwm); for any other layout (e.g. a custom ?map-download-server
+    // with a base path) bail out instead of letting GetFilePathByUrl abort on a CHECK.
+    std::string const urlPath = task.currentRequest.URL.path.UTF8String;
+    if (!downloader::IsUrlSupported(urlPath))
+      return nil;
+    path = @(downloader::GetFilePathByUrl(urlPath).c_str());
+  }
   return [NSURL fileURLWithPath:path];
 }
 
@@ -58,7 +69,10 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
 @property(nonatomic, strong) NSURLSession * session;
 @property(nonatomic, strong) NSMutableDictionary * tasks;
 @property(nonatomic, strong) NSMutableDictionary * restoredTasks;
-/// Stores a map of URL.path => NSData to resume failed downloads.
+/// Maps a full download URL string => resume NSData. Keyed by the full URL, not just the path,
+/// because resume data is bound to the server that produced it: -downloadTaskWithResumeData:
+/// rebuilds the request from the blob and re-issues it to that server, so reusing it for a
+/// different mirror (CDN fallback or ?map-download-server) would ignore the newly selected server.
 @property(nonatomic, strong) NSMutableDictionary * resumeData;
 @property(nonatomic, strong) MapFileSaveStrategy * saveStrategy;
 
@@ -134,6 +148,7 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
 }
 
 - (NSUInteger)downloadWithUrl:(NSURL *)url
+                     filePath:(NSString *)filePath
                    completion:(DownloadCompleteBlock)completion
                      progress:(DownloadProgressBlock)progress
 {
@@ -141,6 +156,7 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
   NSURLSessionTask * restoredTask = [self.restoredTasks objectForKey:url.path];
   if (restoredTask)
   {
+    restoredTask.taskDescription = filePath;
     TaskInfo * info = [[TaskInfo alloc] initWithTask:restoredTask completion:completion progress:progress];
     [self.tasks setObject:info forKey:@(restoredTask.taskIdentifier)];
     [self.restoredTasks removeObjectForKey:url.path];
@@ -148,9 +164,10 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
   }
   else
   {
-    NSData * resumeData = self.resumeData[url.path];
+    NSData * resumeData = self.resumeData[url.absoluteString];
     NSURLSessionTask * task =
         resumeData ? [self.session downloadTaskWithResumeData:resumeData] : [self.session downloadTaskWithURL:url];
+    task.taskDescription = filePath;
     TaskInfo * info = [[TaskInfo alloc] initWithTask:task completion:completion progress:progress];
     [self.tasks setObject:info forKey:@(task.taskIdentifier)];
     [task resume];
@@ -166,7 +183,7 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
   if (info)
   {
     [info.task cancel];
-    [self.resumeData removeObjectForKey:info.task.currentRequest.URL.path];
+    [self.resumeData removeObjectForKey:info.task.currentRequest.URL.absoluteString];
     [self.tasks removeObjectForKey:@(taskIdentifier)];
   }
   else
@@ -177,7 +194,7 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
       if (restoredTask.taskIdentifier == taskIdentifier)
       {
         [restoredTask cancel];
-        [self.resumeData removeObjectForKey:restoredTask.currentRequest.URL.path];
+        [self.resumeData removeObjectForKey:restoredTask.currentRequest.URL.absoluteString];
         [self.restoredTasks removeObjectForKey:key];
         break;
       }
@@ -187,10 +204,12 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
 
 - (void)clear
 {
-  for (TaskInfo * info in self.tasks)
+  // Fast enumeration over an NSDictionary yields its keys, not its values: self.tasks is keyed by
+  // task identifier and restoredTasks by URL path. Iterate allValues to cancel the task objects.
+  for (TaskInfo * info in self.tasks.allValues)
     [info.task cancel];
 
-  for (NSURLSessionTask * restoredTask in self.restoredTasks)
+  for (NSURLSessionTask * restoredTask in self.restoredTasks.allValues)
     [restoredTask cancel];
 
   [self.tasks removeAllObjects];
@@ -204,10 +223,13 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
 {
   NSString * urlPath = downloadTask.currentRequest.URL.path;
   [self.restoredTasks removeObjectForKey:urlPath];
+
+  // Resume data is keyed by the full URL (see resumeData declaration), unlike restoredTasks above.
+  NSString * urlString = downloadTask.currentRequest.URL.absoluteString;
   if (error && error.userInfo && error.userInfo[NSURLSessionDownloadTaskResumeData])
-    self.resumeData[urlPath] = error.userInfo[NSURLSessionDownloadTaskResumeData];
+    self.resumeData[urlString] = error.userInfo[NSURLSessionDownloadTaskResumeData];
   else
-    [self.resumeData removeObjectForKey:urlPath];
+    [self.resumeData removeObjectForKey:urlString];
 
   TaskInfo * info = [self.tasks objectForKey:@(downloadTask.taskIdentifier)];
   if (!info)
@@ -236,8 +258,18 @@ static constexpr NSTimeInterval kTimeoutIntervalInSeconds = 10;
   }
   else
   {
-    NSURL * destinationUrl = [self.saveStrategy getLocationForWebUrl:downloadTask.currentRequest.URL];
-    [[NSFileManager defaultManager] moveItemAtURL:location.filePathURL toURL:destinationUrl error:&error];
+    NSURL * destinationUrl = [self.saveStrategy getLocationForTask:downloadTask];
+    if (destinationUrl != nil)
+    {
+      [[NSFileManager defaultManager] moveItemAtURL:location.filePathURL toURL:destinationUrl error:&error];
+    }
+    else
+    {
+      LOG(LWARNING,
+          ("Can't resolve a save path for a restored download:", downloadTask.currentRequest.URL.absoluteString));
+      error = [[NSError alloc] initWithDomain:@"app.omaps.http" code:500 userInfo:nil];
+      [[NSFileManager defaultManager] removeItemAtURL:location.filePathURL error:nil];
+    }
   }
   dispatch_async(dispatch_get_main_queue(), ^{ [self finishDownloading:downloadTask error:error]; });
 }

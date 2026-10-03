@@ -38,6 +38,8 @@ enum class TransitType : uint32_t
 
 extern std::map<TransitType, std::string> const kTransitSymbols;
 
+std::string DebugPrint(TransitType type);
+
 struct TransitStepInfo
 {
   TransitStepInfo() = default;
@@ -62,6 +64,8 @@ struct TransitStepInfo
   int m_intermediateIndex = 0;
 };
 
+std::string DebugPrint(TransitStepInfo const & info);
+
 struct TransitRouteInfo
 {
   void AddStep(TransitStepInfo const & step);
@@ -83,10 +87,10 @@ struct TransitRouteInfo
 struct TransitTitle
 {
   TransitTitle() = default;
-  TransitTitle(std::string const & text, df::ColorConstant const & color) : m_text(text), m_color(color) {}
+  TransitTitle(std::string const & text, std::string color) : m_text(text), m_color(std::move(color)) {}
 
   std::string m_text;
-  df::ColorConstant m_color;
+  std::string m_color;
 };
 
 struct TransitMarkInfo
@@ -102,15 +106,15 @@ struct TransitMarkInfo
   m2::PointD m_point;
   std::vector<TransitTitle> m_titles;
   std::string m_symbolName;
-  df::ColorConstant m_color;
+  std::string m_color;
   FeatureID m_featureId;
 };
 
 struct SubrouteParams
 {
-  df::ColorConstant m_lastColor;
+  std::string m_lastColor;
   m2::PointD m_lastDir;
-  ::transit::TransitId m_lastLineId = ::transit::kInvalidTransitId;
+  routing::transit::LineId m_lastLineId = routing::transit::kInvalidLineId;
   df::SubrouteMarker m_marker;
   TransitMarkInfo m_transitMarkInfo;
   TransitType m_transitType = TransitType::Pedestrian;
@@ -121,11 +125,14 @@ struct SubrouteParams
 
 struct SubrouteSegmentParams
 {
-  SubrouteSegmentParams(routing::TransitInfo const & transitInfo) : m_transitInfo(transitInfo) {}
+  SubrouteSegmentParams(routing::TransitInfo const & transitInfo, TransitDisplayInfo const & displayInfo)
+    : m_transitInfo(transitInfo)
+    , m_displayInfo(displayInfo)
+  {}
   int m_time = 0;
   double m_distance = 0.0;
-  routing::TransitInfo m_transitInfo;
-  TransitDisplayInfo m_displayInfo;
+  routing::TransitInfo const & m_transitInfo;
+  TransitDisplayInfo const & m_displayInfo;
   MwmSet::MwmId m_mwmId;
 };
 
@@ -145,16 +152,12 @@ public:
   TransitRouteInfo const & GetRouteInfo();
 
 private:
+  using StopId = routing::transit::StopId;
   void AddEdgeSubwayForSubroute(routing::RouteSegment const & segment, df::Subroute & subroute, SubrouteParams & sp,
-                                SubrouteSegmentParams & ssp);
-  void AddEdgePTForSubroute(routing::RouteSegment const & segment, df::Subroute & subroute, SubrouteParams & sp,
-                            SubrouteSegmentParams & ssp);
+                                SubrouteSegmentParams & ssp, StopId legBoardId, StopId legAlightId);
 
   void AddGateSubwayForSubroute(routing::RouteSegment const & segment, df::Subroute & subroute, SubrouteParams & sp,
                                 SubrouteSegmentParams & ssp);
-
-  void AddGatePTForSubroute(routing::RouteSegment const & segment, df::Subroute & subroute, SubrouteParams & sp,
-                            SubrouteSegmentParams & ssp);
 
   void CollectTransitDisplayInfo(std::vector<routing::RouteSegment> const & segments,
                                  TransitDisplayInfos & transitDisplayInfos);

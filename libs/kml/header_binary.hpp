@@ -23,18 +23,44 @@ enum class Version : uint8_t
   V8 = 8,  // 24 September 2020: add compilations to types and corresponding section to kmb and
            // tags to kml
   V9 = 9,  // 01 October 2020: add minZoom to bookmarks
+  // Latest deliberately stays at V9 so that files we write remain readable by older builds.
+  // Collections (the compilations added in V8) are no longer supported: the section and the fields
+  // referencing it keep their slots in the layout, but we always write them empty and ignore
+  // whatever a file we read contains. See kml::CategoryData::m_unusedCompilationId.
   Latest = V9,
-  V8MM = 10,  // 27 July 2023: MapsMe released version v15.0.71617. Technically its version is 8
-              // (first byte is 0x08), but it's not compatible with V8 from this repo. It has
-              // no compilations.
-  V9MM = 11   // In July 2024 MapsMe released version with a new KMB format. Technically its version is 9
-              // (first byte is 0x09), but it's not compatible with OrganicMaps V9 from this repo.
-              // It supports multiline geometry.
+  // MapsMe-incompatible variants use internal identifiers after V9, distinct from their
+  // on-disk version bytes. V8MM and V9MM use bytes 8 and 9 and are distinguished from OM
+  // files by their five-offset headers; V10MM uses byte 10 and has its own preamble.
+  V8MM = 10,   // 27 July 2023: MapsMe released version v15.0.71617. On-disk byte is 0x08 but the
+               // layout is not compatible with this repo's V8 (no compilations section).
+  V9MM = 11,   // July 2024: MapsMe released a new KMB format. On-disk byte is 0x09 but not
+               // compatible with this repo's V9 (track uses vector<MultiGeometry>, no
+               // compilations). A later MapsMe release evolved the track layout to drop
+               // m_constant3 and append a per-point capture-timestamp vector; both shapes
+               // decode through this path — the legacy c3=0 byte reads as ts_count=0.
+  V10MM = 12,  // September 2026 samples: on-disk byte 0x0a, no device/server IDs,
+               // shorter categories and changed bookmark/track tails.
 };
 
 inline std::string DebugPrint(Version v)
 {
-  return ::DebugPrint(static_cast<int>(v));
+  switch (v)
+  {
+  case Version::V0: return "V0";
+  case Version::V1: return "V1";
+  case Version::V2: return "V2";
+  case Version::V3: return "V3";
+  case Version::V4: return "V4";
+  case Version::V5: return "V5";
+  case Version::V6: return "V6";
+  case Version::V7: return "V7";
+  case Version::V8: return "V8";
+  case Version::V9: return "V9";  // == Latest
+  case Version::V8MM: return "V8MM";
+  case Version::V9MM: return "V9MM";
+  case Version::V10MM: return "V10MM";
+  }
+  return "Unknown(" + ::DebugPrint(static_cast<int>(v)) + ")";
 }
 
 struct Header
@@ -75,6 +101,8 @@ struct Header
     return visitor.m_size;
   }
 
+  // Only V8/V9 have a compilations section. We write it empty but may read legacy files where it is populated;
+  // MapsMe's V8MM/V9MM/V10MM variants do not have this section.
   bool HasCompilationsSection() const { return m_version == Version::V8 || m_version == Version::V9; }
 
   Version m_version = Version::Latest;

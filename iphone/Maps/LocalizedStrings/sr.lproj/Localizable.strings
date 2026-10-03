@@ -115,7 +115,7 @@
 /* Search category sight seeings and touristic attractions; any changes should be duplicated in categories.txt @category_tourism! */
 "category_tourism" = "Туристичка атракција";
 
-/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! */
+/* Search category for entertainment; any changes should be duplicated in categories.txt @category_entertainment! Also a bookmarks list group header when sorting by type. */
 "category_entertainment" = "Забава";
 
 /* Search category for ATMs; any changes should be duplicated in categories.txt @category_atm! */
@@ -148,7 +148,7 @@
 /* Search category for recycling; any changes should be duplicated in categories.txt @category_recycling! */
 "category_recycling" = "Рециклажа";
 
-/* Search category for water; any changes should be duplicated in categories.txt @category_water! also used to sort bookmarks by type */
+/* Search category for water; any changes should be duplicated in categories.txt @category_water! Also a bookmarks list group header when sorting by type. */
 "category_water" = "Вода";
 
 /* Search category for RV facilities; any changes should be duplicated in categories.txt @category_rv! */
@@ -174,11 +174,23 @@
 /* Warning message when doing search around current position */
 "unknown_current_position" = "Ваша локација још није одређена";
 
-/* Subject for emailed bookmark */
-"bookmark_share_email_subject" = "Хеј, види мој маркер у Organic Maps-у!";
+/* Text shown before a shared "my position" link, and the email subject when sharing the current location. */
+"share_my_position" = "Овде сам на мапи Organic Maps";
 
-/* Subject for emailed position */
-"my_position_share_email_subject" = "Хеј, види моју тренутну локацију на Organic Maps мапи!";
+/* Email subject when sharing a place. %1$@ is the place name or address. */
+"share_place_subject" = "%1$@ у Organic Maps";
+
+/* Email subject when sharing a place that has no name or address. */
+"share_place_subject_default" = "Место у Organic Maps";
+
+/* Shared email link text; opens the shared place in Organic Maps or in a web browser. */
+"share_open_in_om_or_browser" = "Отвори у Organic Maps или у прегледачу";
+
+/* Shared email link text; leads to the Organic Maps download page. */
+"share_get_om" = "Преузми Organic Maps";
+
+/* Title for the "Open in Another App" button on the PlacePage; also shared email link text: opens the shared place in another (geo:) maps app. */
+"open_in_app" = "Отвори у другој апликацији";
 
 /* Share by email button text, also used in editor and About. */
 "email" = "Email";
@@ -195,6 +207,7 @@
 /* Length of track in cell that describes route */
 "length" = "Дужина";
 "share_my_location" = "Подели моју локацију";
+"prefs_group_network" = "Мрежа";
 "prefs_group_route" = "Навигација";
 
 /* Setting name which enables or disables zoom buttons on the map screen. */
@@ -218,6 +231,24 @@
 /* A message in Settings/Preferences explaining why is it not possible to enable 3D buildings when max power saving mode is enabled */
 "pref_map_3d_buildings_disabled_summary" = "3D зграде се не приказују у режиму чувања батерије";
 
+/* Settings: title of the satellite imagery (custom raster tiles) screen */
+"pref_bg_tiles_title" = "Сателитски снимци";
+
+/* Settings «Satellite Imagery»: title of the tile server URL input field */
+"pref_bg_tiles_url_title" = "URL сервера";
+
+/* Settings «Satellite Imagery»: shown under the Server URL field when its value is malformed (must start with http(s):// and contain the {z}/{x}/{y} placeholders) */
+"pref_bg_tiles_url_error" = "Унесите исправан URL са {z}/{x}/{y}";
+
+/* Settings «Satellite Imagery»: title of the on-disk tile cache size limit (in megabytes) */
+"pref_bg_tiles_size_title" = "Величина кеша (MB)";
+
+/* Settings «Satellite Imagery»: opacity of vector area objects drawn over the imagery (0% hides them) */
+"pref_bg_tiles_opacity_title" = "Непрозирност површинских објеката";
+
+/* Settings «Satellite Imagery»: legal note that the user is responsible for the custom tile source they configure */
+"pref_bg_tiles_disclaimer" = "Изворе прилагођених плочица обезбеђујете ви. Користите само услуге којима смете да приступате. Ви сте одговорни за приписивање ауторства, услове лиценце, API кључеве, квоте и ограничења коришћења.";
+
 /* Settings «Route» category: «Tts enabled» title */
 "pref_tts_enable_title" = "Гласовне инструкције";
 
@@ -230,8 +261,17 @@
 /* Settings «Route» category: «Tts language» title */
 "pref_tts_language_title" = "Језик гласа";
 
-/* Settings «Route» category: «Test Voice Directions» title */
-"pref_tts_test_voice_title" = "Тестирај гласовне инструкције (Текст-у-говор)";
+/* Settings «Navigation» category: «Voice language» footer */
+"pref_tts_download_voices_description" = "Да бисте преузели глас вишег квалитета, отворите апликацију Подешавања и идите у Приступачност → VoiceOver → Говор → Глас.";
+
+/* Header above Apple's group of novelty text-to-speech voices (Bells, Bubbles, Zarvox...), shown after the regional voice sections and Eloquence group. Use Apple's term for this group from Settings > Accessibility > VoiceOver > Speech. */
+"pref_tts_voice_group_novelty" = "Novelty";
+
+/* Accessibility label of the button that plays a sample of a text-to-speech voice. */
+"pref_tts_voice_preview_play" = "Play sample";
+
+/* Accessibility label of the button that stops the sample of a text-to-speech voice being played. */
+"pref_tts_voice_preview_stop" = "Stop sample";
 "pref_map_auto_zoom" = "Аутоматско увећавање";
 "placepage_distance" = "Раздаљина";
 "search_show_on_map" = "Прикажи на мапи";
@@ -367,9 +407,6 @@
 /* Settings "Appearance" category: "Dark" title, should be consistent with the pref_appearance_title translation. */
 "pref_appearance_dark" = "Тамно";
 
-/* Title for "Other" section in TTS settings. */
-"pref_tts_other_section_title" = "Остало";
-
 /* Tex label above the Donate button */
 "donate_description" = "Поклоните бесплатне мапе без огласа милионима корисника!";
 
@@ -387,9 +424,6 @@
 
 /* Alert title */
 "email_error_title" = "Грешка приликом слања email-а";
-
-/* Settings item title */
-"pref_calibration_title" = "Калибрација компаса";
 
 /* Downloaded maps category */
 "downloader_available_maps" = "Расположиве";
@@ -488,6 +522,8 @@
 "twentyfour_seven" = "24/7";
 "day_off_today" = "Данас не ради";
 "day_off" = "Затворено";
+"midnight" = "Поноћ";
+"noon" = "Подне";
 "today" = "Данас";
 "opens_in" = "Отвара се за %@";
 "closes_in" = "Затвара се за %@";
@@ -571,9 +607,6 @@
 "day" = "д";
 "second" = "с";
 "placepage_more_button" = "Више";
-
-/* A disable button text in the explanation dialog that opens hotel details page on Kayak website. */
-"placepage_edit_bookmark_button" = "Измени маркер";
 "placepage_personal_notes_hint" = "Личне белешке (текст или хтмл)";
 "editor_comment_hint" = "Коментар…";
 "editor_reset_edits_message" = "Брисање свих измена које нису послате?";
@@ -621,8 +654,10 @@
 "planning_route_manage_route" = "Измени руту";
 "button_plan" = "План";
 "placepage_remove_stop" = "Уклони међуодредиште";
-"placepage_add_stop" = "Међуодредиште";
-"saved" = "Saved";
+
+/* Keep it short: PlacePage button, search field hint and full-screen map point picker title shown while choosing a new intermediate stop of a route. */
+"placepage_add_stop" = "Додај међуодредиште";
+"saved" = "Сачувано";
 "error_enter_correct_name" = "Молим Вас да унесете исправан назив";
 "bookmark_lists" = "Листе";
 
@@ -640,14 +675,20 @@
 "bookmarks_error_title_list_name_already_taken" = "Овај назив већ постоји";
 "profile" = "OpenStreetMap профил";
 "restore" = "Реконструиши";
+
+/* Settings privacy group in settings screen */
+"privacy" = "Приватност";
 "privacy_policy" = "Политика приватности";
 "terms_of_use" = "Услови коришћења";
 
 /* Hiking routes layer name in the Styles and Layers dialog */
-"button_layer_hiking" = "Hiking";
+"button_layer_hiking" = "Планинарење";
 
 /* Cycling routes layer name in the Styles and Layers dialog */
-"button_layer_cycling" = "Cycling";
+"button_layer_cycling" = "Бициклизам";
+
+/* Map layers menu: toggle button for the satellite imagery layer */
+"button_layer_satellite" = "Сателит";
 "button_layer_subway" = "Метро";
 "layers_title" = "Стилови мапе и слојеви";
 
@@ -684,12 +725,18 @@
 "power_managment_setting_manual_max" = "Увек";
 
 /* Settings/Bookmark Text Placement */
-"bookmarks_text_placement_title" = "Bookmark names on the map";
-"bookmarks_text_placement_description" = "If there are too many bookmarks, displaying their names on the map may slow down the app.";
-"show_to_the_right" = "Show to the right";
-"show_at_the_bottom" = "Show at the bottom";
+"bookmarks_text_placement_title" = "Имена обележивача на мапи";
+"bookmarks_text_placement_description" = "Ако има превише обележивача, приказивање њихових имена на мапи може успорити апликацију.";
+"show_to_the_right" = "Прикажи десно";
+"show_at_the_bottom" = "Прикажи на дну";
 "enable_logging_warning_message" = "Привремено укључите ову опцију да бисте сачували детаљне дијагностичке логове уколико имате неки проблем. Логове можете да нам пошаљете коришћењем опције \"Пријавите проблем\" у прозору Помоћ. Напомена: Логови могу да садрже информације о вашој локацији.";
 "driving_options_title" = "Опције рутирања";
+
+/* Routing setting that automatically reorders intermediate stops */
+"route_optimization" = "Оптимизација руте";
+
+/* Explains that route optimization automatically reorders intermediate stops */
+"route_optimization_description" = "Аутоматски мења редослед међуодредишта ради ефикасније руте.";
 
 /* Recommended length for CarPlay and Android Auto is around 25-27 characters */
 "avoid_tolls" = "Избегавај путарине";
@@ -707,6 +754,15 @@
 "toll_road" = "Путеви са путаринама";
 "unpaved_road" = "Неасфалтирани путеви";
 "ferry_crossing" = "Линије трајекта";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_steps" = "Степенице";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_gate" = "Капија";
+
+/* Route warning shown on the map for this obstacle type. */
+"road_warning_lift_gate" = "Рампа";
 
 /* A generic "Yes" button in dialogs */
 "yes" = "Да";
@@ -789,7 +845,6 @@
 "location_services_disabled_on_device_3" = "3. Изаберите Локацијски сервиси";
 "location_services_disabled_on_device_4" = "4. Укључите Локацијске сервисе";
 "location_services_disabled_on_device_additional_message" = "Или наставите да користите Organic Maps без локације";
-"book_button" = "Резервиши";
 "placepage_call_button" = "Позови";
 "placepage_bookmark_name_hint" = "Назив маркера";
 "placepage_delete_bookmark_button" = "Обриши маркер";
@@ -800,9 +855,6 @@
 /* iOS dialog for the case when recent track recording is on and the app comes back from background */
 "recent_track_background_dialog_title" = "Искључити снимање ваше недавно пређене руте?";
 "off_recent_track_background_button" = "Искључи";
-
-/* For sharing via SMS and so on */
-"sharing_call_action_look" = "Погледај";
 "recent_track_background_dialog_message" = "Organic Maps користи у позадини вашу локацију да би сачувао вашу недавно пређену руту.";
 "general_settings" = "Општа подешавања";
 
@@ -810,7 +862,7 @@
 "traffic_update_app_message" = "Да бисте видели податке о саобраћају, морате да ажурирате апликацију.";
 "log_file_size" = "Величина лог фајла: %@";
 "planning_route_remove_title" = "Превуците овде за уклањање";
-"placepage_replace_stop" = "Replace Stop";
+"placepage_replace_stop" = "Замени Stop";
 "start_from_my_position" = "Крени од";
 
 /* For iOS message 'alert_reauth_message' should be splitted in two parts: message + link. Here's first part */
@@ -831,12 +883,6 @@
 "popular_place" = "Популарно";
 "hide_from_map" = "Сакриј на карти";
 "tags_loading_error_subtitle" = "Десила се грешка приликом учитавања тагова, покушајте поново";
-
-/* Position of the name label on the map relative to the bookmark pin (on the right) */
-"right" = "Right";
-
-/* Position of the name label on the map relative to the bookmark pin (at the bottom) */
-"bottom" = "Bottom";
 "trip_start" = "Крећемо";
 "pick_destination" = "Одредиште";
 "follow_my_position" = "Центрирај";
@@ -885,6 +931,15 @@
 "medicine" = "Медицина";
 "search_in_the_list" = "Претражи листу";
 "religious_places" = "Верска места";
+
+/* Button that starts multi-selection in a bookmark list. */
+"select" = "Изабери";
+
+/* Action that selects every bookmark and track in a bookmark list. */
+"select_all" = "Изабери све";
+
+/* Action that clears the multi-selection in a bookmark list. */
+"deselect_all" = "Поништи избор";
 "transit_not_found" = "Навигација у метроу у овом региону још није доступна";
 "dialog_pedestrian_route_is_long_header" = "Није пронађена метро рута";
 "dialog_pedestrian_route_is_long_message" = "Молим вас изаберите почетну и крајњу тачку ближе метро станицама";
@@ -895,6 +950,9 @@
 "elevation_profile_descent" = "Спуст";
 "elevation_profile_min_elevation" = "Минимална висина";
 "elevation_profile_max_elevation" = "Максимална висина";
+
+/* Displayed in the elevation profile chart while track recording has fewer than two points. */
+"elevation_profile_placeholder" = "Почните да се крећете да бисте видели висински профил";
 "isolines_toast_zooms_1_10" = "Увећајте да бисте видели изолиније";
 "downloader_loading_ios" = "Преузимање";
 
@@ -959,11 +1017,14 @@
 "bookmarks_export" = "Експортуј све маркере и путање";
 "drive_through" = "Пролаз за возила";
 
+/* Accessibility text for the zoom-in button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_in" = "Увећај";
+
+/* Accessibility text for the zoom-out button on the map and visible title for the CarPlay dashboard button. Keep it short. */
+"zoom_out" = "Умањи";
+
 /* Restaurant or other food place's menu URL field in the Editor */
 "website_menu" = "Линк менија";
-
-/* Title for the "Open in Another App" button on the PlacePage. */
-"open_in_app" = "Отвори у другој апликацији";
 
 /* To indicate if the place proposed self service… */
 "self_service" = "Самопослуживање";
@@ -1016,6 +1077,12 @@
 /* Text for the editing the Track's color button. */
 "change_color" = "Промени боју";
 
+/* Text for the hiding track. */
+"hide_track" = "Hide track";
+
+/* Text for the showing track. */
+"show_track" = "Show track";
+
 /* Main screen title "Map" displayed in the navigation back button's menu. */
 "map" = "Мапа";
 
@@ -1034,7 +1101,7 @@
 /* Message for the "iCloud is Disabled" alert. */
 "icloud_disabled_message" = "Молим Вас да укључите iCloud у подешавањима вашег уређаја да бисте користили ову опцију.";
 
-/* Title for the "Enable iCloud Syncronization" alert's "Enable" action button. */
+/* Action button that enables a disabled feature, such as iCloud synchronization or location services. */
 "enable" = "Укључи";
 
 /* Title for the "Enable iCloud Syncronization" alert's "Backup" action button. */
@@ -1103,7 +1170,7 @@
 "ft" = "стопа";
 
 /* Toast text when the maps version should be updated to display the OSM hiking and cycling routes */
-"routes_update_maps_text" = "To display routes, maps must be updated.";
+"routes_update_maps_text" = "Да би се приказале руте, мапе морају бити ажуриране.";
 
 /* Subway exits for public transport marks on the map */
 "core_exit" = "Излаз";
@@ -1131,3 +1198,27 @@
 
 /* Toast message shown when track colors are changed in category settings */
 "toast_tracks_color_changed" = "Боја путања је промењена";
+
+/* Accessibility label of the icon-only button beside the search field, shown while choosing or replacing a route point; it opens a full-screen map picker with a crosshair */
+"choose_on_map" = "Изабери на мапи";
+
+/* Search field hint and full-screen map point picker title shown while choosing the starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_start_location" = "Полазак";
+
+/* Search field hint and full-screen map point picker title shown while choosing the destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"choose_destination" = "Одредиште";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set starting point of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_start_location" = "Промени полазак";
+
+/* Search field hint and full-screen map point picker title shown while replacing the already set destination of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_destination" = "Промени одредиште";
+
+/* Search field hint and full-screen map point picker title shown while replacing an already added intermediate stop of a route. Kept short because shortcut and voice-search buttons narrow the field */
+"change_stop_along_route" = "Промени међуодредиште";
+
+/* Toast shown when the user tries to add one more intermediate stop to a route that already holds the maximum allowed number */
+"routing_max_stops_reached" = "Постигнут максималан број међуодредишта";
+
+/* Hint under the title of the full-screen route point picker: a crosshair stays fixed in the centre of the screen while the user moves the map under it */
+"choose_point_on_map_hint" = "Померите и зумирајте мапу да бисте поставили крст";

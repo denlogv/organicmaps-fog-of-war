@@ -20,24 +20,25 @@ bool RelationsDrawSettings::MatchHikingOrCycling(feature::RouteRelationBase::Typ
           (cycling && (type == RR::Type::Bicycle || type == RR::Type::MTB)));
 }
 
-dp::Color constexpr kDefaultRouteColor{128, 0, 128};  // purple
+dp::Color constexpr kDefaultRouteColor = dp::Color::Purple();
 
 bool RelationsDrawInfo::HasHikingOrCycling(FeatureType & ft) const
 {
   for (uint32_t relID : ft.GetRelations())
-    if (m_sett.MatchHikingOrCycling(ft.ReadRelationType(relID)))
+    if (m_sett.MatchHikingOrCycling(ft.ReadRelation(relID).GetType()))
       return true;
   return false;
 }
 
 void RelationsDrawInfo::Init(FeatureType & ft)
 {
-  using RR = feature::RouteRelationBase;
+  if (m_sett.IsEmpty())
+    return;
 
   buffer_vector<std::pair<std::string, int>, 4> refs;
   for (uint32_t relID : ft.GetRelations())
   {
-    auto const rel = ft.ReadRelation<RR>(relID);
+    auto rel = ft.ReadRelation(relID);
     if (m_sett.MatchHikingOrCycling(rel.GetType()) || (m_sett.PT && rel.IsPTRoute()))
     {
       auto clr = rel.GetColor();
@@ -62,7 +63,7 @@ void RelationsDrawInfo::Init(FeatureType & ft)
 
     if (m_sett.PT)
     {
-      auto const & r = rel.GetRef();
+      auto const & r = rel.GetRel().GetRef();
       if (!r.empty())
       {
         // Get prefix integer value to sort by.
@@ -86,7 +87,11 @@ void RelationsDrawInfo::Init(FeatureType & ft)
   }
 
   // Most used color first.
-  std::sort(m_colors.begin(), m_colors.end(), [](auto const & r1, auto const & r2) { return r1.second > r2.second; });
+  // Use stable sort to keep equal Relations order (less relID).
+  /// @todo For the nice order (consistent with the neighbor Ways) they should be sorted somehow by geom criteria
+  /// (say from North/West to South/East), independently from the actual Way's direction.
+  std::stable_sort(m_colors.begin(), m_colors.end(),
+                   [](auto const & r1, auto const & r2) { return r1.second > r2.second; });
 
   if (m_sett.PT && !refs.empty())
   {

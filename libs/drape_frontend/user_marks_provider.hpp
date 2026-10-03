@@ -14,6 +14,7 @@
 
 #include "platform/placement_settings.hpp"
 
+#include <optional>
 #include <vector>
 
 namespace df
@@ -69,6 +70,7 @@ public:
 
   virtual DepthLayer GetDepthLayer() const = 0;
   virtual drape_ptr<TitlesInfo> GetTitleDecl() const = 0;
+  /// Used for titles only. Symbols and other mark shapes always use GetDepthLayer().
   virtual DepthLayer GetDepthLayerEx(settings::Placement) const { return GetDepthLayer(); }
   virtual drape_ptr<TitlesInfo> GetTitleDeclEx(settings::Placement, dp::Color) const { return GetTitleDecl(); }
 
@@ -80,16 +82,20 @@ public:
   virtual df::SpecialDisplacement GetDisplacement() const = 0;
   virtual uint32_t GetIndex() const = 0;
   virtual bool SymbolIsPOI() const = 0;
+  /// @return true  Then GetPriority() and GetDisplacement() are also assigned to TextShape's from GetTitleDecl().
   virtual bool HasTitlePriority() const = 0;
   virtual int GetMinZoom() const = 0;
   virtual int GetMinTitleZoom() const = 0;
   virtual FeatureID GetFeatureID() const = 0;
   virtual bool HasCreationAnimation() const = 0;
   virtual df::ColorConstant GetColorConstant() const = 0;
+  /// Explicit theme-independent color; only Bookmark overrides it for custom (non-preset) colors.
+  virtual std::optional<dp::Color> GetCustomColor() const { return std::nullopt; }
   virtual bool IsMarkAboveText() const = 0;
   virtual float GetSymbolOpacity() const = 0;
+
+  /// Non-POI sprites need an overlay handle to participate in hit testing.
   virtual bool IsSymbolSelectable() const = 0;
-  virtual bool IsNonDisplaceable() const = 0;
 
 private:
   kml::MarkId m_id;
@@ -113,6 +119,7 @@ public:
   virtual dp::Color GetColor(size_t layerIndex) const = 0;
   virtual float GetWidth(size_t layerIndex) const = 0;
   virtual float GetDepth(size_t layerIndex) const = 0;
+  virtual bool IsVisible() const = 0;
 
   using GeometryFnT = std::function<void(std::vector<m2::PointD> &&)>;
   virtual void ForEachGeometry(GeometryFnT && fn) const = 0;

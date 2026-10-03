@@ -2,9 +2,9 @@
 
 /********** Types **********/
 
-"type.addr_interpolation" = "כתובת/שכונה";
-"type.addr_interpolation.even" = "כתובת/שכונה";
-"type.addr_interpolation.odd" = "כתובת/שכונה";
+"type.addr_interpolation" = "כתובת/בלוק";
+"type.addr_interpolation.even" = "כתובת/בלוק";
+"type.addr_interpolation.odd" = "כתובת/בלוק";
 "type.aerialway" = "Aerialway";
 "type.aerialway.cable_car" = "רכבל";
 "type.aerialway.chair_lift" = "רכבל סקי";
@@ -89,7 +89,7 @@
 "type.amenity.library" = "ספרייה";
 "type.amenity.loading_dock" = "מתחם העמסה";
 "type.amenity.luggage_locker" = "Luggage Locker";
-"type.amenity.marketplace" = "זירת מסחר";
+"type.amenity.marketplace" = "שוק";
 "type.amenity.motorcycle_parking" = "חניית אופנועים";
 "type.amenity.nightclub" = "מועדון לילה";
 "type.amenity.nursing_home" = "בית אבות";
@@ -249,6 +249,7 @@
 
 /* Duplicates [address] in strings.txt */
 "type.building.address" = "כתובת";
+"type.building.construction" = "בניין בבנייה";
 "type.building.has_parts" = "מבנה";
 "type.building_part" = "מבנה";
 "type.building.garage" = "מחסן/חנייה";
@@ -340,7 +341,7 @@
 "type.cuisine.mediterranean" = "מטבח ים-תיכוני";
 "type.cuisine.mexican" = "מטבח מקסיקני";
 "type.cuisine.moroccan" = "מטבח מרוקאי";
-"type.cuisine.noodles" = "אטריות";
+"type.cuisine.noodle" = "אטריות";
 "type.cuisine.oriental" = "מטבח מזרחי";
 "type.cuisine.pancake" = "פנקייק";
 "type.cuisine.pasta" = "פסטה";
@@ -356,6 +357,7 @@
 "type.cuisine.sausage" = "נקניק";
 "type.cuisine.savory_pancakes" = "חביתיות מתובלות";
 "type.cuisine.seafood" = "מאכלי ים";
+"type.cuisine.shawarma" = "שוארמה";
 "type.cuisine.soba" = "אטריות סובה";
 "type.cuisine.spanish" = "מטבח ספרדי";
 "type.cuisine.steak_house" = "סטקייה";
@@ -642,6 +644,7 @@
 "type.historic.castle.shiro" = "טירה יפנית";
 "type.historic.castle.stately" = "טירה מפוארת";
 "type.historic.city_gate" = "שער העיר";
+"type.man_made.ceremonial_gate" = "שער טקסי";
 "type.historic.citywalls" = "חומת העיר";
 "type.historic.fort" = "מִבצָר";
 "type.historic.gallows" = "גרדום";
@@ -716,6 +719,7 @@
 "type.landuse" = "שימושי קרקע";
 "type.landuse.allotments" = "חלקות חקלאיות";
 "type.landuse.basin" = "אגן מים";
+"type.landuse.basin.intermittent" = "אגן מים זמני";
 "type.landuse.brownfield" = "קרקע מזוהמת";
 
 /* In most (European) countries, сemeteries are usually independent of places of worship (e.g. military cemeteries), while grave yards are usually the yard of a place of worship. */
@@ -748,7 +752,6 @@
 "type.landuse.quarry" = "מחצבה";
 "type.landuse.railway" = "שטחי רכבת";
 "type.landuse.recreation_ground" = "אזור מיועד לבילוי";
-"type.landuse.reservoir" = "מאגר";
 "type.landuse.residential" = "אזור מגורים";
 "type.landuse.retail" = "אזור קמעונאות";
 "type.landuse.salt_pond" = "בריכת מלח";
@@ -770,6 +773,7 @@
 "type.leisure.ice_rink" = "החלקה על קרח";
 "type.leisure.marina" = "מרינה";
 "type.leisure.nature_reserve" = "שמורת טבע";
+"type.leisure.bird_hide" = "מסתור לצפייה בציפורים";
 "type.leisure.outdoor_seating" = "ישיבה בחוץ";
 "type.leisure.firepit" = "Firepit";
 "type.leisure.park" = "פארק";
@@ -788,8 +792,8 @@
 "type.leisure.stadium" = "אצטדיון";
 "type.leisure.swimming_pool" = "בריכת שחייה";
 "type.leisure.swimming_pool.private" = "בריכת שחייה פרטית";
-"type.leisure.track" = "Track";
-"type.leisure.track.area" = "Track";
+"type.leisure.track" = "מסלול ספורט";
+"type.leisure.track.area" = "מסלול ספורט";
 "type.leisure.water_park" = "פארק מים";
 "type.leisure.beach_resort" = "אתר נופש על החוף";
 "type.man_made" = "מלאכותי-מעשה ידי אדם";
@@ -869,10 +873,13 @@
 "type.natural.water.reservoir" = "מאגר מים";
 "type.natural.water.basin" = "אגן מים";
 "type.natural.water.river" = "נהר";
+"type.natural.water.intermittent" = "גוף מים זמני";
 "type.natural.land" = "ארץ";
 "type.natural.meadow" = "אָחוּ";
 "type.natural.orchard" = "פרדס";
 "type.natural.peak" = "פסגה";
+"type.natural.hill" = "גבעה";
+"type.natural.arch" = "קשת הסלע";
 "type.natural.saddle" = "אוכף הרים";
 "type.natural.rock" = "סלע";
 "type.natural.scrub" = "עשבייה";
@@ -882,6 +889,7 @@
 "type.natural.tree_row" = "שורת עצים";
 "type.natural.vineyard" = "כרם";
 "type.natural.volcano" = "הר געש";
+"type.natural.volcano.active" = "הר געש פעיל";
 "type.natural.water" = "מים";
 "type.natural.wetland" = "ביצה";
 "type.natural.wetland.bog" = "ביצת כבול";
@@ -1443,6 +1451,18 @@
 "type.sport.field_hockey" = "הדש יקוה";
 "type.sport.badminton" = "תיצונ";
 "type.sport.pelota" = "תיקסאב הטלפ";
+"type.sport.boules" = "פטאנק";
+"type.sport.cycling" = "רכיבה על אופניים";
+"type.sport.four_square" = "ארבע משבצות";
+"type.sport.horse_racing" = "מרוצי סוסים";
+"type.sport.karting" = "קארטינג";
+"type.sport.motocross" = "מוטוקרוס";
+"type.sport.motor" = "ספורט מוטורי";
+"type.sport.netball" = "נטבול";
+"type.sport.pickleball" = "פיקלבול";
+"type.sport.rugby_union" = "רוגבי 15";
+"type.sport.running" = "ריצה";
+"type.sport.softball" = "סופטבול";
 "type.tourism" = "תיירות";
 "type.tourism.aquarium" = "אַקוַרִיוּם";
 
@@ -1463,6 +1483,7 @@
 "type.attraction.historic" = "אטרקצייה היסטורית";
 "type.attraction.maze" = "מָבוֹך";
 "type.attraction.roller_coaster" = "רכבת הרים";
+"type.roller_coaster.track" = "רכבת הרים";
 "type.attraction.water_slide" = "מגלשת מים";
 "type.tourism.attraction.specified" = "אטרקצייה תיירותית";
 "type.tourism.camp_site" = "אתר מחנאות";
@@ -1496,6 +1517,7 @@
 "type.traffic_calming.bump" = "Traffic Bump";
 "type.traffic_calming.hump" = "פס האטה";
 "type.waterway" = "נתיב מים";
+"type.waterway.access_point" = "נקודת גישה לנתיב מים";
 "type.waterway.canal" = "תעלת מים";
 "type.waterway.canal.tunnel" = "תעלת מים תת קרקעית";
 "type.waterway.fish_pass" = "סולם דגים";
@@ -1555,6 +1577,7 @@
 
 /* https://wiki.openstreetmap.org/wiki/Key:social_facility */
 "type.amenity.social_facility" = "מתקן חברתי";
+"type.amenity.stage" = "במה";
 
 /* https://wiki.openstreetmap.org/wiki/Tag:emergency=emergency_ward_entrance */
 "type.emergency.emergency_ward_entrance" = "כניסה למיון";
@@ -1589,3 +1612,4 @@
 "type.craft.watchmaker" = "שָׁעָן";
 "type.xmas_feature.market" = "שוק חג המולד";
 "type.xmas_feature.tree" = "עץ חג המולד";
+"type.amenity.hookah_lounge" = "בר נרגילה";

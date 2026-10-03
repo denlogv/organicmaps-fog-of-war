@@ -15,6 +15,7 @@
 #include "map/search_api.hpp"
 #include "map/search_mark.hpp"
 #include "map/selection_processor.hpp"
+#include "map/share.hpp"
 #include "map/track.hpp"
 #include "map/track_statistics.hpp"
 #include "map/traffic_manager.hpp"
@@ -63,6 +64,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -84,6 +86,8 @@ class Loader;
 /// Uncomment line to make fixed position settings and
 /// build version for screenshots.
 // #define FIXED_LOCATION
+
+class RasterTileProvider;
 
 struct FrameworkParams
 {
@@ -163,6 +167,10 @@ protected:
   TViewportChangedFn m_viewportChangedFn;
 
   drape_ptr<df::DrapeEngine> m_drapeEngine;
+  double m_fontScaleFactor = 1.0;
+
+  // POC source of raster background tiles (see tileBackgroundReadFn in CreateDrapeEngine).
+  std::unique_ptr<RasterTileProvider> m_rasterTileProvider;
 
   StorageDownloadingPolicy m_storageDownloadingPolicy;
   storage::Storage m_storage;
@@ -205,6 +213,9 @@ protected:
   void OnViewportChanged(ScreenBase const & screen);
 
   void InitTransliteration();
+
+  // Builds m_rasterTileProvider for the given XYZ source and the "bg_tiles" disk cache.
+  void CreateBackgroundTilesProvider(std::string const & url, uint32_t cacheSizeMB);
 
 public:
   explicit Framework(FrameworkParams const & params = {}, bool loadMaps = true);
@@ -268,13 +279,23 @@ public:
   kml::MarkGroupId AddCategory(std::string const & categoryName);
 
   kml::MarkGroupId LastEditedBMCategory() { return GetBookmarkManager().LastEditedBMCategory(); }
-  kml::PredefinedColor LastEditedBMColor() const { return GetBookmarkManager().LastEditedBMColor(); }
+  kml::ColorData LastEditedBMColor() const { return GetBookmarkManager().LastEditedBMColor(); }
 
   void ShowBookmark(kml::MarkId id);
   void ShowBookmark(Bookmark const * bookmark);
   void ShowTrack(kml::TrackId trackId);
+  // Sets individual track visibility. Hiding the track that is currently shown in the
+  // Place Page also resets the selection so nothing stays selected on an invisible track.
+  void SetTrackVisibility(kml::TrackId trackId, bool visible);
+  // Deletes the track, closing the Place Page first if it currently shows this track.
+  void DeleteTrack(kml::TrackId trackId);
+  // Same for a whole multi-select batch. Call this rather than the EditSession method it wraps, so that the
+  // Place Page cleanup does not have to be repeated per platform.
+  void DeleteBookmarksAndTracks(kml::MarkIdCollection const & bookmarkIds, kml::TrackIdCollection const & trackIds);
   void ShowFeature(FeatureID const & featureId);
   void ShowBookmarkCategory(kml::MarkGroupId categoryId, bool animation = true);
+
+  void SelectTrackCandidate(kml::TrackId trackId, RelationID const & relationId);
 
   void AddBookmarksFile(std::string const & filePath, bool isTemporaryFile);
 
@@ -309,7 +330,8 @@ private:
   void DeactivateHotelSearchMark();
 
 public:
-  void DeactivateMapSelection();
+  /// @return true if a transit route selection was recovered (PP re-activated).
+  bool DeactivateMapSelection();
   void DeactivateMapSelectionCircle(bool restoreViewport);
   void SwitchFullScreen();
   /// Used to "refresh" UI in some cases (e.g. feature editing).
@@ -336,7 +358,8 @@ public:
   void InvalidateRendering();
   void EnableDebugRectRendering(bool enabled);
 
-  void EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition);
+  void EnableChoosePositionMode(bool enable, bool enableBounds, m2::PointD const * optionalPosition,
+                                bool shouldChangeViewport = true);
   void BlockTapEvents(bool block);
 
   using TCurrentCountryChanged = std::function<void(storage::CountryId const &)>;
@@ -352,8 +375,12 @@ private:
 
   void OnTapEvent(place_page::BuildInfo const & buildInfo);
   place_page::Info BuildPlacePageInfo(place_page::BuildInfo const & buildInfo);
-  void BuildTrackPlacePage(Track::TrackSelectionInfo const & trackSelectionInfo, place_page::Info & info);
-  Track::TrackSelectionInfo FindTrackInTapPosition(place_page::BuildInfo const & buildInfo) const;
+  std::optional<kml::TrackData> TryBuildRelationTrack(Track::TrackSelectionInfo const & candidateInfo);
+  bool BuildTrackPlacePage(Track::TrackSelectionInfo const & trackSelectionInfo, place_page::Info & info);
+  std::vector<Track::TrackSelectionInfo> FindTracksInTapPosition(place_page::BuildInfo const & buildInfo) const;
+  /// Builds temporary track candidates for route relations associated with tapped line features.
+  std::vector<Track::TrackSelectionInfo> FindRelationTracksInTapPosition(
+      std::vector<std::pair<double, FeatureID>> const & lineCandidates, m2::PointD const & mercator);
   UserMark const * FindUserMarkInTapPosition(place_page::BuildInfo const & buildInfo) const;
   FeatureID FindBuildingAtPoint(m2::PointD const & mercator) const;
 
@@ -467,14 +494,35 @@ private:
   std::unique_ptr<descriptions::Loader> m_descriptionsLoader;
   SelectionProcessor m_selectionProcessor;
 
+  struct RouteTransitSelection
+  {
+    FeatureID m_featureId;
+    uint32_t m_relID = 0;
+  };
+
+  std::optional<RouteTransitSelection> m_routeTransitSelection;
+
 public:
-  // Moves viewport to the search result and taps on it.
+  // Stops location follow, opens the result's place page and centers the viewport
+  // without cancelling searches or clearing their marks.
   void SelectSearchResult(search::Result const & res, bool animation);
 
-  // Cancels all searches, stops location follow and then selects
-  // search result.
+  // Highlights a public-transport route line on the map, using the current place page's feature
+  // to locate the relation. The current place page (stop) remains open.
+  void SelectRoute(uint32_t relID);
+
+  // Builds a TransitInfo (lines + stops) for @p relID relative to the current place page's feature
+  // and shows it on the transit scheme layer (with the usual map dim).
+  void ShowRouteTransit(uint32_t relID);
+  // Returns the ref string of the currently selected transit route, or empty if none.
+  std::string GetActiveTransitRouteRef() const;
+  // Is called on PT PP close. Clears drape's transit scheme if ShowRouteTransit above was called before.
+  void HideRouteTransitIfNeeded();
+
+  // Cancels all searches, then selects the result via SelectSearchResult.
   void ShowSearchResult(search::Result const & res, bool animation = true);
 
+  // Applies the search results viewport policy, see search::AdjustViewportToSearchResults().
   void UpdateViewport(search::Results const & results);
 
   void FillSearchResultsMarks(bool clear, search::Results const & results);
@@ -489,29 +537,28 @@ public:
   bool GetDistanceAndAzimut(m2::PointD const & point, double lat, double lon, double north,
                             platform::Distance & distance, double & azimut);
 
-  /// @name Manipulating with model view
-  m2::PointD PtoG(m2::PointD const & p) const { return m_currentModelView.PtoG(p); }
-  m2::PointD P3dtoG(m2::PointD const & p) const { return m_currentModelView.PtoG(m_currentModelView.P3dtoP(p)); }
-  m2::PointD GtoP(m2::PointD const & p) const { return m_currentModelView.GtoP(p); }
-  m2::PointD GtoP3d(m2::PointD const & p) const { return m_currentModelView.PtoP3d(m_currentModelView.GtoP(p)); }
+  /// @name Screen pixel to geo point conversions.
+  /// @{
+  m2::PointD PtoG(m2::PointD const & p) const;
+  m2::PointD P3dtoG(m2::PointD const & p) const;
+  /// @}
 
   /// Show all model by it's world rect.
   void ShowAll();
 
   m2::PointD GetVisiblePixelCenter() const;
 
-  m2::PointD const & GetViewportCenter() const;
+  /// @returns Geo point under the visible viewport center: the pixel where the Add-Place crosshair
+  /// is drawn and the anchor that SetViewportCenter() matches its argument to.
+  m2::PointD GetViewportCenter() const;
   void SetViewportCenter(m2::PointD const & pt, int zoomLevel = -1, bool isAnim = true,
                          bool trackVisibleViewport = false);
 
   m2::RectD GetCurrentViewport() const;
   void SetVisibleViewport(m2::RectD const & rect);
 
-  /// - Check minimal visible scale according to downloaded countries.
-  void ShowRect(m2::RectD const & rect, int maxScale = -1, bool animation = true, bool useVisibleViewport = false);
+  void ShowRect(m2::RectD const & rect, bool animation = true, bool useVisibleViewport = false);
   void ShowRect(m2::AnyRectD const & rect, bool animation = true, bool useVisibleViewport = false);
-
-  void GetTouchRect(m2::PointD const & center, uint32_t pxRadius, m2::AnyRectD & rect);
 
   void SetViewportListener(TViewportChangedFn const & fn);
 
@@ -592,12 +639,14 @@ private:
   /// This function can be used for enabling some experimental features for routing.
   bool ParseRoutingDebugCommand(search::SearchParams const & params);
 
+  /// @returns true if command was handled by downloader debug commands.
+  bool ParseDownloaderDebugCommand(search::SearchParams const & params);
+
   static bool ParseAllTypesDebugCommand(search::SearchParams const & params);
 
-  /// Tries to build a temporary track from a route relation associated with the feature.
-  /// If successful, fills outInfo as a track selection and returns true.
-  bool TryBuildRelationTrack(FeatureID const & fid, m2::PointD const & mercator, place_page::Info & outInfo);
-  void FillUserMarkInfo(UserMark const * mark, place_page::Info & outInfo);
+  /// @return false if @a outInfo was not filled (e.g. a stale track mark), so the caller should fall
+  /// back to the regular tap matching instead of activating an empty selection.
+  bool FillUserMarkInfo(UserMark const * mark, place_page::Info & outInfo);
   void FillApiMarkInfo(ApiMarkPoint const & api, place_page::Info & info) const;
   void FillSearchResultInfo(SearchMarkPoint const & smp, place_page::Info & info) const;
   void FillMyPositionInfo(place_page::Info & info, place_page::BuildInfo const & buildInfo) const;
@@ -607,12 +656,21 @@ private:
   void FillRoadTypeMarkInfo(RoadWarningMark const & roadTypeMark, place_page::Info & info) const;
   void FillPointInfoForBookmark(Bookmark const & bmk, place_page::Info & info) const;
   void FillBookmarkInfo(Bookmark const & bmk, place_page::Info & info) const;
-  void FillTrackInfo(Track const & track, m2::PointD const & trackPoint, place_page::Info & info) const;
+  void FillTrackInfo(Track const & track, Track::TrackSelectionInfo const & trackSelectionInfo,
+                     place_page::Info & info) const;
 
   SelectionProcessor const & GetSelectionProcessor() const { return m_selectionProcessor; }
 
 public:
   search::ReverseGeocoder::Address GetAddressAtPoint(m2::PointD const & pt) const;
+
+  /// Builds the text shared for a place page object (a place, a bookmark or an unknown map point).
+  /// The address is reverse-geocoded when the place page has none.
+  share::Result GetShareData(place_page::Info const & info) const;
+  /// Builds the text shared for the current user position at |ll| (reverse-geocodes the address).
+  share::Result GetShareDataForMyPosition(ms::LatLon const & ll) const;
+  /// Builds the text shared for a bookmark by id (used when sharing straight from the bookmarks list).
+  share::Result GetShareDataForBookmark(kml::MarkId id) const;
 
   /// Delegates to SelectionProcessor::GetFeatureAtPoint.
   FeatureID GetFeatureAtPoint(m2::PointD const & mercator) const;
@@ -641,9 +699,6 @@ public:
                               double elapsedSeconds);
 
 public:
-  static std::string CodeGe0url(Bookmark const * bmk, bool addName);
-  static std::string CodeGe0url(double lat, double lon, double zoomLevel, std::string const & name);
-
   /// @name Api
   std::string GenerateApiBackUrl(ApiMarkPoint const & point) const;
   url_scheme::ParsedMapApi const & GetApiDataHolder() const { return m_parsedMapApi; }
@@ -673,7 +728,33 @@ public:
   static std::string GetMapLanguageCode();
   void SetMapLanguageCode(std::string const & langCode);
 
+  // Custom raster background tiles (user-provided XYZ {z}/{x}/{y} source). SetBackgroundTiles is the
+  // single apply entry point for the settings UI (call it when the tiles settings are committed):
+  // it persists all values (kept even while disabled) and applies them. cacheSizeMB and
+  // areaOpacityPct are clamped to the limits below. areaOpacityPct is the opacity of vector area
+  // fills drawn over the imagery (0 hides them). The layer renders only when enabled AND a non-empty
+  // URL is set.
+  static uint32_t constexpr kBackgroundTilesMinCacheSizeMB = 1;
+  static uint32_t constexpr kBackgroundTilesMaxCacheSizeMB = 1000;
+  static uint32_t constexpr kBackgroundTilesMinAreaOpacityPct = 0;
+  static uint32_t constexpr kBackgroundTilesMaxAreaOpacityPct = 100;
+
+  void SetBackgroundTiles(bool enabled, std::string url, uint32_t cacheSizeMB, uint32_t areaOpacityPct);
+  // Flips only the on/off flag, keeping the configured URL / cache size / area opacity. Lighter than
+  // SetBackgroundTiles: it just switches the rendered mode (creating the provider on first enable).
+  void SetBackgroundTilesEnabled(bool enabled);
+  static std::string GetBackgroundTilesURL();
+  static bool IsBackgroundTilesEnabled();
+  static uint32_t GetBackgroundTilesCacheSize();
+  static uint32_t GetBackgroundTilesAreaOpacity();
+  // Basic sanity check for a user-entered XYZ template: requires an http(s):// scheme, a non-empty host,
+  // and all three {z}/{x}/{y} placeholders present literally (the braces must not be percent-encoded).
+  // The settings UI calls this before committing and refuses to close on an enabled, malformed URL.
+  static bool IsWellFormedBackgroundTilesURL(std::string const & url);
+
   void SetLargeFontsSize(bool isLargeSize);
+  // Multiplied on top of the SetLargeFontsSize (Large Fonts) factor.
+  void SetFontScaleFactor(double scaleFactor);
   bool LoadLargeFontsSize();
 
   bool LoadAutoZoom();
@@ -750,6 +831,9 @@ public:
 
   void UpdateFogTrackPoints();
   void InvalidateFogTiles();
+  // Generates the fog tile synchronously and sends it to drape. Returns false if drape is not ready.
+  bool RequestFogTile(df::TileKey const & tileKey);
+  uint64_t m_fogTileUidCounter = 0;
 
   static dp::ApiVersion LoadPreferredGraphicsAPI();
   static void SavePreferredGraphicsAPI(dp::ApiVersion apiVersion);
@@ -775,7 +859,8 @@ public:
   void DeleteFeature(FeatureID const & fid);
   osm::NewFeatureCategories GetEditorCategories() const;
   bool RollBackChanges(FeatureID const & fid);
-  void CreateNote(osm::MapObject const & mapObject, osm::Editor::NoteProblemType const type, std::string const & note);
+  void CreateNote(osm::EditableMapObject const & mapObject, osm::Editor::NoteProblemType const type,
+                  std::string const & note);
 
 private:
   settings::UsageStats m_usageStats;
@@ -812,7 +897,6 @@ public:
   std::string GetDonateUrl() const;
   bool CanShowCrowdfundingPromo() const;
   void DidShowDonationPage() const;
-  void DidPossiblyReturnFromDonationPage() const;
   // Only for testing purposes.
   void ResetDonations();
 
