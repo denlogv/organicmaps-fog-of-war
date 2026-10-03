@@ -25,6 +25,7 @@ The fog is revealed by:
 - 📍 **Real-time reveal** around your GPS position (throttled, smooth updates)
 - 📂 **GPX track support** — import tracks to reveal previously visited areas
 - 🔄 **Live fog updates** — fog clears as you move, with automatic track recording
+- ✂️ **Track editor** — select a range on the elevation profile and delete it from the GPX file (Android). Long-press the chart to set the second point; the fog of war is automatically refreshed after editing.
 - ⚙️ **Configurable settings:**
   - **Reveal radius** (50–2000 m)
   - **Fog opacity** (10–100%)
@@ -64,6 +65,8 @@ For a deep dive into the architecture, see [`docs/FOG_OF_WAR_ARCHITECTURE.md`](d
 ## Building
 
 Follow the standard [Organic Maps build instructions](https://github.com/organicmaps/organicmaps/blob/master/docs/INSTALL.md).
+
+Android F-Droid pre-releases from this fork use the package name `app.organicmaps.fogofwar` and a distinct launcher icon, so they can be installed alongside the upstream Organic Maps app.
 
 ```bash
 git clone --recursive https://github.com/denlogv/organicmaps-fog-of-war.git

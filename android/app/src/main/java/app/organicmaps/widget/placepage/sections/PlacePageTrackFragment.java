@@ -42,6 +42,7 @@ public class PlacePageTrackFragment extends Fragment
     super.onViewCreated(view, savedInstanceState);
 
     mElevationProfileViewRenderer = new ElevationProfileViewRenderer(view.findViewById(R.id.elevation_profile));
+    mElevationProfileViewRenderer.setViewModel(mViewModel);
   }
 
   @Override
@@ -78,7 +79,9 @@ public class PlacePageTrackFragment extends Fragment
     Track track = (Track) mapObject;
     if (track.getElevationInfo() != null)
     {
-      if (mTrack == null || mTrack.getTrackId() != track.getTrackId() || track.isRelationTrack())
+      // The length changes when a part of the track is deleted, so the chart must be rebuilt for the same track id.
+      if (mTrack == null || mTrack.getTrackId() != track.getTrackId() || track.isRelationTrack()
+          || mTrack.getLength().mDistance != track.getLength().mDistance)
         mElevationProfileViewRenderer.render(track, track.getElevationInfo(), track.getTrackStatistics());
       UiUtils.show(requireView());
     }

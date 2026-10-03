@@ -106,7 +106,6 @@ std::string_view constexpr kFogOfWarRadiusKey = "FogOfWarRadius";
 std::string_view constexpr kFogOfWarOpacityKey = "FogOfWarOpacity";
 std::string_view constexpr kFogOfWarColorKey = "FogOfWarColor";
 std::string_view constexpr kFogOfWarGradientKey = "FogOfWarGradient";
-std::string_view constexpr kFogOfWarMinVisibleKey = "FogOfWarMinVisible";
 std::string_view constexpr kFogThrottleSpeed1Key = "FogThrottleSpeed1";
 std::string_view constexpr kFogThrottleSpeed2Key = "FogThrottleSpeed2";
 std::string_view constexpr kFogThrottleSpeed3Key = "FogThrottleSpeed3";
@@ -3244,6 +3243,15 @@ void Framework::EnableFogOfWar(bool enable)
     m_drapeEngine->EnableFogOfWar(enable);
 }
 
+void Framework::UpdateFogOfWarAfterTrackChange()
+{
+  if (LoadFogOfWarEnabled())
+  {
+    UpdateFogTrackPoints();
+    InvalidateFogTiles();
+  }
+}
+
 // Decimate a polyline in-place: keep only points that are >= minDistSq apart.
 // Always preserves the first and last points.
 static void DecimatePoints(std::vector<m2::PointD> & pts, double minDistSq)
@@ -3401,13 +3409,11 @@ bool Framework::RequestFogTile(df::TileKey const & tileKey)
   double const tileWidth = tileRect.SizeX();
   double const tileHeight = tileRect.SizeY();
 
-  // Keep the true scale by default, but allow enforcing a larger minimum
-  // footprint when the user wants revealed areas to stay visible while zoomed out.
-  constexpr double kDefaultMinRadiusPx = 1.5;
-  constexpr double kMinVisibleRadiusPx = 8.0;
+  // Enforce an absolute floor so the trail doesn't vanish when
+  // the natural radius is sub-pixel at far zoom.
+  constexpr double kMinRadiusPx = 1.5;
   double const naturalRadiusPx = revealRadiusMercator / tileWidth * kTileSize;
-  double const minRadiusPx = GetFogOfWarMinVisible() ? kMinVisibleRadiusPx : kDefaultMinRadiusPx;
-  double const radiusPx = std::max(minRadiusPx, naturalRadiusPx);
+  double const radiusPx = std::max(kMinRadiusPx, naturalRadiusPx);
 
   // Use the effective pixel-space radius (back-converted to Mercator)
   // for the expanded rect so that the kMinRadiusPx boost is respected
@@ -3699,19 +3705,6 @@ int Framework::GetFogOfWarGradient()
 void Framework::SetFogOfWarGradient(int percent)
 {
   settings::Set(kFogOfWarGradientKey, percent);
-  InvalidateFogTiles();
-}
-
-bool Framework::GetFogOfWarMinVisible()
-{
-  bool enabled = true;
-  settings::Get(kFogOfWarMinVisibleKey, enabled);
-  return enabled;
-}
-
-void Framework::SetFogOfWarMinVisible(bool enabled)
-{
-  settings::Set(kFogOfWarMinVisibleKey, enabled);
   InvalidateFogTiles();
 }
 

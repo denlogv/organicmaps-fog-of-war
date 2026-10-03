@@ -112,6 +112,10 @@
   <dimen name="elevation_profile_separator_dash">8dp</dimen>
   <dimen name="elevation_profile_separator_gap">4dp</dimen>
   <dimen name="elevation_profile_marker_width">25dp</dimen>
+  <dimen name="elevation_profile_range_handle_width">22dp</dimen>
+  <dimen name="elevation_profile_range_handle_height">34dp</dimen>
+  <dimen name="elevation_profile_range_handle_touch_outer">44dp</dimen>
+  <dimen name="elevation_profile_range_handle_touch_inner">12dp</dimen>
   <dimen name="map_button_size">48dp</dimen>
   <dimen name="map_button_icon_size">32dp</dimen>
   <dimen name="map_button_arrow_icon_size">34dp</dimen>

@@ -46,6 +46,11 @@ public class ElevationProfileViewRenderer implements PlacePageStateListener
     mDifficultyLevels[2] = mDifficultyContainer.findViewById(R.id.difficulty_level_3);
   }
 
+  public void setViewModel(@NonNull PlacePageViewModel viewModel)
+  {
+    mChartController.setViewModel(viewModel);
+  }
+
   public void render(@Nullable Track track, @NonNull ElevationInfo elevationInfo, @NonNull TrackStatistics stats)
   {
     mChartController.setData(track, elevationInfo, stats);
